@@ -1,0 +1,23 @@
+import ez_setup
+ez_setup.use_setuptools()
+
+from setuptools import setup, find_packages
+
+setup(
+	name = 'getcite',
+	version = '1.3.13',
+	description = 'Pulls original sources from Westlaw and HeinOnline.org',
+	author = 'Samuel Alexander',
+	author_email = 'salexander2000@gmail.com',
+	license = 'GPL',
+	packages = ['getcite'],
+
+	include_package_data = True,
+	package_data = { '': ['*'], },
+	
+	install_requires = [
+	'selenium>=2.48.0',
+	'PyPDF>=1.13'
+	],
+
+)
