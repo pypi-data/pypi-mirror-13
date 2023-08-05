@@ -1,0 +1,47 @@
+*******
+INSTALL
+*******
+
+.. code:: sh
+
+    pip install django-pg-badges
+
+add `badges` to your settings.INSTALLED_APPS
+
+create a json file describing your badges:
+
+for example:
+
+.. code:: js
+
+    [{"name": "Pionner",
+      "code": "pionner",
+      "condition": "age(NEW.date_joined) > interval '1 year'",
+      "trigger_condition": "update",
+      "trigger_table": "auth_user",
+      "user_field": "id"
+    }]
+
+sync your database to create the badge model:
+
+.. code:: python
+
+    python manage.py migrate
+
+create the triggers
+
+.. code:: python
+
+    python manage.py create_triggers
+
+*******
+TESTING
+*******
+
+clone the repository from git
+
+.. code:: sh
+
+    git clone https://github.com/boblefrag/django-pg-badges
+    pip install tox
+    tox
