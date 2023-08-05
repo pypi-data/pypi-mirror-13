@@ -1,0 +1,211 @@
+#!/usr/bin/env python
+
+'''Avena - an image processing tool
+
+Usage:
+    avena [options] average <image>...
+    avena [options] clip from (<y1> <x1>) to (<y2> <x2>) <image>...
+    avena [options] filter (high|low) <radius> <image>...
+    avena [options] flip (vertical|horizontal) <image>...
+    avena [options] interp <factor> <image>...
+    avena [options] logistic <k> [<x0>] <image>...
+    avena [options] tile [--periodic] (9) <image>...
+    avena [options] translate [--] (<y> <x>) <image>...
+    avena [options] view <image>...
+    avena [options] xcor (<image> <image>)...
+    avena -h | --help
+    avena -v | --version
+
+Options:
+    --ext=<STR>     Specify the format to save images.
+    --random        Save to a random file name.
+    --in-place      Overwrite the file.
+    --normalize     Normalize images before saving.
+    --no-normalize  Save images without normalizing.
+    --tiled=<k>     Map on tiles of size (k, k).
+    -h, --help      Print this help.
+    -v, --version   Print version information.
+'''
+
+
+from __future__ import print_function
+
+from docopt import docopt
+import functools
+try:
+    from itertools import (
+        ifilter as filter,
+        imap as map,
+        izip as zip,
+    )
+except ImportError:
+    pass
+import os
+
+from avena import avena, image
+
+
+long_version = 'Avena ' + avena.__version__
+
+
+if __name__ == '__main__':
+
+    arguments = docopt(__doc__, version=long_version)
+
+    files = arguments['<image>']
+    files = list(map(os.path.expanduser, files))
+    files = list(map(os.path.abspath, files))
+    files = list(filter(os.path.exists, files))
+    images = map(image.read, files)
+
+    ext = arguments['--ext'] or '.png'
+    random = False if arguments['--in-place'] else True
+    normalize = False if arguments['--no-normalize'] else True
+    image_save = functools.partial(
+        image.save,
+        ext=ext,
+        random=random,
+        normalize=normalize,
+    )
+
+    if arguments['average']:
+
+        n = len(files)
+        average_img = sum(images) * 1.0 / float(n)
+        print(image_save(average_img, files[0]))
+
+    elif arguments['clip']:
+
+        y1, x1 = int(arguments['<y1>']), int(arguments['<x1>'])
+        y2, x2 = int(arguments['<y2>']), int(arguments['<x2>'])
+        for filename, img in zip(files, images):
+            clipped_img = img[y1:y2, x1:x2]
+            print(image_save(clipped_img, filename))
+
+    elif arguments['filter']:
+
+        from avena import filter
+
+        radius = int(arguments['<radius>'])
+        for filename, img in zip(files, images):
+            if arguments['high']:
+                filtered_img = filter.highpass(img, radius)
+            elif arguments['low']:
+                filtered_img = filter.lowpass(img, radius)
+            print(image_save(filtered_img, filename))
+
+    elif arguments['flip']:
+
+        from avena import flip
+
+        if arguments['vertical']:
+            flip_func = flip.flip_vertical
+        else:
+            flip_func = flip.flip_horizontal
+        for filename, img in zip(files, images):
+            flipped_img = flip_func(img)
+            print(image_save(flipped_img, filename))
+
+    elif arguments['interp']:
+
+        from avena import interp
+
+        factor = float(arguments['<factor>'])
+        try:
+            k = int(arguments['--tiled'])
+            interp2 = functools.partial(interp.interp2, tiles=(k, k))
+        except:
+            interp2 = interp.interp2
+
+        for filename, img in zip(files, images):
+            interp_img = interp2(img, factor)
+            print(image_save(interp_img, filename))
+
+    elif arguments['logistic']:
+
+        from avena import logistic
+
+        k = float(arguments['<k>'])
+        x0 = float(arguments.get('<x0>', None) or 0.5)
+
+        for filename, img in zip(files, images):
+            log_img = logistic.logistic(k, (0.0, 1.0), x0, img)
+            print(image_save(log_img, filename))
+
+    elif arguments['tile']:
+
+        from avena import tile
+
+        if arguments['--periodic']:
+            if arguments['9']:
+                tile_func = tile.tile9_periodic
+        for filename, img in zip(files, images):
+            tiled_img = tile_func(img)
+            print(image_save(tiled_img, filename))
+
+    elif arguments['translate']:
+
+        from avena import translate
+
+        y = int(arguments['<y>'])
+        x = int(arguments['<x>'])
+        for filename, img in zip(files, images):
+            translated_img = translate.translate(img, (y, x))
+            print(image_save(translated_img, filename))
+
+    elif arguments['view']:
+
+        import pyglet
+        from avena import np
+
+        format = 'RGB'
+
+        for filename, img in zip(files, images):
+
+            img = np.to_uint8(img)
+            img = img[:, :, :3]
+            height, width = img.shape[:2]
+            pitch = width * 3 * -1
+
+            img_data = pyglet.image.ImageData(
+                width=width,
+                height=height,
+                format=format,
+                pitch=pitch,
+                data=img.tostring(),
+            )
+
+            window = pyglet.window.Window(
+                width=width,
+                height=height,
+                resizable=False,
+                caption=filename,
+                visible=False,
+                vsync=False,
+            )
+
+            @window.event
+            def on_draw():
+                window.clear()
+                img_data.blit(0, 0)
+
+            @window.event
+            def on_key_press(symbol, modifiers):
+                if symbol == pyglet.window.key.Q:
+                    window.close()
+                    pyglet.app.exit()
+                    return True
+
+            window.set_visible()
+            pyglet.app.run()
+
+    elif arguments['xcor']:
+
+        from avena import xcor2
+
+        first = next(images)
+        for filename, img in zip(files, images):
+            last = img
+            xcor_img = xcor2.xcor2(first, last)
+            print(image_save(xcor_img, filename))
+            first = last
