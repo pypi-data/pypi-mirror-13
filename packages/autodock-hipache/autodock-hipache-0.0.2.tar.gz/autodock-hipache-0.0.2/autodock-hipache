@@ -1,0 +1,195 @@
+#!/usr/bin/env python
+
+
+"""autodock-hipache
+
+Automatically reconfigure hipache virtualhosts upon on container events.
+When a container is started and has an environment variable called VIRTUALHOST
+it is used to reconfigure hipache to route web requests to the new container.
+An optional ALIAS environment value can be given as an extra virtualhost
+typically used for a www. alias to a domain.
+"""
+
+
+from __future__ import print_function
+
+import sys
+import logging
+from os import environ
+from operator import itemgetter
+from collections import namedtuple
+
+
+from autodock.plugin import Plugin
+from hipachectl.api import Hipache as HipacheAPI
+
+
+logging.basicConfig(
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    level=logging.INFO,
+    stream=sys.stderr
+)
+
+
+logger = logging.getLogger(__name__)
+
+
+ContainerInfo = namedtuple(
+    "ContainerInfo",
+    ["ip", "port", "ports", "virtualhost", "alias"]
+)
+
+
+def parse_args(parser):
+    parser.add_argument(
+        "-r", "--redis-url", action="store", dest="redis_url", metavar="URL", type=str,
+        default=environ.get("REDIS_PORT_6379", environ.get("REDIS_URL", "tcp://redis:6379")),
+        help="Redis URL for Hipache"
+    )
+
+    return parser
+
+
+class Hipache(Plugin):
+
+    def init(self, *args):
+        super(Hipache, self).init(*args)
+
+        # Cache of id -> ContainerInfo tuples
+        # in case we can't get information on
+        # a container due to docker run --rm ...
+        self.cache = {}
+
+        self.hipache = HipacheAPI(self.args.redis_url)
+
+        # Add all known containers at startup
+        map(
+            self._add_container,
+            map(
+                itemgetter("Id"),
+                self.rpc.docker("containers", True)
+            )
+        )
+
+    def _add_container(self, id):
+        ip, port, ports, virtualhost, alias = self._get_container_info(id)
+
+        if not virtualhost:
+            return
+
+        if port not in ports:
+            logging.warning(
+                "Container {} requesting routing for {} to unexposed {}:{}".format(
+                    id, virtualhost, ip, port
+                )
+            )
+            return
+
+        logging.info(
+            "Container {} requested routing for {} ({}) to {}:{}".format(
+                id[:10], virtualhost, alias or "", ip, port
+            )
+        )
+
+        self.hipache.add(virtualhost, virtualhost, ip, port)
+
+        if alias:
+            self.hipache.add(virtualhost, alias, ip, port)
+
+    def _get_container_info(self, id):
+        response = self.rpc.docker("inspect_container", id)
+        if "error" in response:
+            return self.cache.pop(id, None)
+
+        exposed = [
+            k.split("/")
+            for k in response["Config"].get("ExposedPorts", {}).keys()
+        ]
+
+        ports = [
+            int(port)
+            for port, protocol in exposed
+            if protocol == "tcp"
+        ]
+
+        ip = response["NetworkSettings"]["IPAddress"]
+
+        env = dict(
+            [
+                e.replace("==", "=").split("=")
+                for e in response["Config"]["Env"]
+            ]
+        )
+
+        port = int(env.get("PORT", "80"))
+        virtualhost = env.get("VIRTUALHOST", None)
+        alias = env.get("ALIAS", None)
+
+        self.cache[id] = ContainerInfo(ip, port, ports, virtualhost, alias)
+
+        return self.cache[id]
+
+    def _remove_container(self, id):
+        info = self._get_container_info(id)
+        if info is None:
+            logging.warn(
+                "Container {}'s information could not be found!".format(
+                    id[:10]
+                )
+            )
+
+        logging.info(
+            "Container {} routing removed for {} ({}) to {}:{}".format(
+                id[:10], info.virtualhost, info.alias or "", info.ip, info.port
+            )
+        )
+
+        self.hipache.delete(
+            info.virtualhost, info.virtualhost, info.ip, info.port
+        )
+
+        if info.alias:
+            self.hipache.delete(
+                info.virtualhost, info.alias, info.ip, info.port
+            )
+
+    def container_started(self, event, **data):
+        logging.info("Container {} started".format(data["id"][:10]))
+
+        self._add_container(data["id"])
+
+    def container_stopped(self, event, **data):
+        logging.info("Container {} stopped".format(data["id"][:10]))
+
+        self._remove_container(data["id"])
+
+    def container_killed(self, event, **data):
+        logging.info("Container {} killed".format(data["id"][:10]))
+
+        self._remove_container(data["id"])
+
+    def container_died(self, event, **data):
+        logging.info("Container {} died".format(data["id"][:10]))
+
+        self._remove_container(data["id"])
+
+    def container_paused(self, event, **data):
+        logging.info("Container {} paused".format(data["id"][:10]))
+
+        self._remove_container(data["id"])
+
+    def container_restarted(self, event, **data):
+        logging.info("Container {} restarted".format(data["id"][:10]))
+
+    def container_unpaused(self, event, **data):
+        logging.info("Container {} unpaused".format(data["id"][:10]))
+
+        self._add_container(data["id"])
+
+
+def main():
+    Hipache(parse_args).run()
+
+
+if __name__ == "__main__":
+    main()
