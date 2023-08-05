@@ -1,0 +1,283 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>About Roundup &amp;mdash; Roundup 1.5.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/style.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+          URL_ROOT:    './',
+          VERSION:     '1.5.1',
+          COLLAPSE_MODINDEX: false,
+          FILE_SUFFIX: '.html'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="top" title="Roundup 1.5.1 documentation" href="index.html" /> 
+  </head>
+  <body>
+    <div class="header"><h1>Roundup</h1>
+        <div id="searchbox" style="display: none">
+          <form class="search" action="search.html" method="get">
+            <input type="text" name="q" size="18" />
+            <input type="submit" value="Search" />
+            <input type="hidden" name="check_keywords" value="yes" />
+            <input type="hidden" name="area" value="default" />
+          </form>
+        </div>
+        <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+    <div class="navigation">
+      <div class="menu">
+       
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/announcement.txt"
+             rel="nofollow">Show Source</a></li>
+    </ul>
+  <div id="searchbox" style="display: none">
+    <h3>Quick search</h3>
+      <form class="search" action="search.html" method="get">
+        <input type="text" name="q" size="18" />
+        <input type="submit" value="Go" />
+        <input type="hidden" name="check_keywords" value="yes" />
+        <input type="hidden" name="area" value="default" />
+      </form>
+      <p style="font-size: 90%">Enter search terms or a module, class or function name.</p>
+  </div>
+  <script type="text/javascript">$('#searchbox').show(0);</script>
+      </div>
+    </div>
+    <div class="content">
+       
+    <div class="related related-top">
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="index.html">Roundup 1.5.1 documentation</a></li> 
+      </ul>
+    </div>
+       <p>I&#8217;m proud to release version 1.5.1 of Roundup which has been possible
+due to the help of several contributors.  This release contains
+important security enhancements, so make sure to read
+<a class="reference external" href="http://www.roundup-tracker.org/docs/upgrading.html">doc/upgrading.txt</a>
+to bring your tracker up to date. Other changes, as usual, include some
+new features and many bug fixes.</p>
+<p>Features:</p>
+<ul class="simple">
+<li>The example local_replace.py has been updated to show how to link to
+modern revision systems using hex revision identifiers.
+This extension is used to expand shortcuts in msgs. (Bernhard Reiter)</li>
+<li>Drop comment in user settings about numeric hour offsets instead of using
+pytz timezone names. Due to DST these are wrong half of the year, it is
+much better to use timezone names. (Thomas Arendsen Hein)</li>
+<li>issue2550793: Wrap messages with very long lines in the web interface.
+(Thomas Arendsen Hein)</li>
+<li>New Link / Multilink option &#8220;try_id_parsing&#8221;: Sometimes the key of a
+class can be numeric &#8211; in that case roundup will try to parse the
+value as an ID when evaluating form values &#8211; not as a key. Specifying
+try_id_parsing=&#8217;no&#8217; for these Link/Multilink will skip the ID step,
+default is &#8216;yes&#8217;. (Ralf Schlatterbeck)</li>
+<li>New configuration option &#8216;isolation_level&#8217; in rdbms section. Currently
+supported for Postgres and mysql, sets the transaction isolation level.
+Wrong history entries for concurrent database updates observed in
+issue2550806 can be prevented by setting this to &#8216;repeatable read&#8217; if
+you want to pay the performance penalty. We test this behaviour in the
+regression tests for Postgres but not currently for mysql.
+See <a class="reference external" href="http://www.postgresql.org/docs/9.1/static/transaction-iso.html">http://www.postgresql.org/docs/9.1/static/transaction-iso.html</a>
+(Ralf Schlatterbeck)</li>
+<li>/xmlrpc endpoint now shows link to XML-RPC documentation if accessed
+through browser, without text/xml Content-Type (anatoly techtonik)</li>
+<li>docs: New dedicated chapter for extensions in <code class="docutils literal"><span class="pre">doc/customizing.txt</span></code>
+(anatoly techtonik)</li>
+<li>Increase default height of classhelp windows from 400 to 600.
+(Thomas Arendsen Hein)</li>
+<li>Date properties now can specify (on input) an explicit timezone suffix
+(similar to RFC 2822), e.g. +0200 for CEST or -0500 for EST. This also
+works in the XMLRPC interface. For examples see roundup.date.Date.
+(Ralf Schlatterbeck)</li>
+<li>Add RejectRaw exception to allow unescaped HTML error messages to be
+displayed to the user (thanks Ezio Melotti for the initial patch)
+(John Kristensen)</li>
+</ul>
+<p>Fixed:</p>
+<ul class="simple">
+<li>issue2550869 Duplicate mail headers (Reply-To, Message-ID, In-Reply-To)
+when sending out email. Reported with first fix by Mathias Behrle.
+(Bernhard Reiter)</li>
+<li>issue2550830 An empty LinkHTMLProperty cannot be compared successfully.
+Improves the query editing page. Reported and fixed by R David Murray
+(Bernhard Reiter).</li>
+<li>Fix Release-date of 1.5.0 in this file (thanks to Bernhard for
+discovery) (Ralf Schlatterbeck)</li>
+<li>Pythons cgi form code can return a TypeError, we now guard for this
+condition. (Ralf Schlatterbeck)</li>
+<li>Small bug-fix in SQL backends: A query (e.g. in a html menu) with a
+where-clause that always evaluates to false now will not raise a
+traceback. (Ralf Schlatterbeck)</li>
+<li>Remove Python 2.3 compatibility code for i18n (anatoly techtonik)</li>
+<li>If documentation &#8216;sphinx-build&#8217; tool is not found in system PATH,
+&#8216;setup.py build_doc&#8217; command now tries to detect it from PYTHONPATH
+(anatoly techtonik)</li>
+<li>Read version and release for generated documentation from
+roundup/__init__.py. (Thomas Arendsen Hein)</li>
+<li>Do not throw an internal error if a .mo file can not be read
+(Thomas Arendsen Hein)</li>
+<li>issue2550673 Make the &#8220;Make a copy&#8221; link work by fixing copy_url to properly
+handle multilink properties. (John Rouillard)</li>
+<li>issue2550583, issue2550635 Do not limit results with Xapian indexer
+(Thomas Arendsen Hein)</li>
+<li>Allow using plain() on unsaved dates in HTML forms
+(Thomas Arendsen Hein)</li>
+<li>setup.py now installs static files of the HTML documentation (stylesheets,
+images, etc.) (Thomas Arendsen Hein)</li>
+<li>executable .py scripts need &#8220;#!/usr/bin/env python&#8221;, add this to demo.py,
+remove exec bits from website/wiki/wiki/data/plugin/theme/roundup.py
+(Thomas Arendsen Hein)</li>
+<li>issue2550822: Fix showing more than one additional property in class menu.
+Report and fix by James Mack (Thomas Arendsen Hein)</li>
+<li>Fix String search with special SQL wildcard characters in LIKE/ILIKE
+clause and add testcase (Ralf Schlatterbeck)</li>
+<li>Fix subtle bug when sorting by a Link that contains a Multilink from
+which we also search for an attribute. In that case the LEFT OUTER
+JOIN clause was missing in generated SQL. (Ralf Schlatterbeck)</li>
+<li>Fix another XSS issue2550817. Note that the code that triggers that
+particular bug is no longer in roundup core. But the change to the
+templates we suggest is a <em>lot</em> safer as it by default escapes the
+error and ok messages now. Thanks to Thibault Fevry for the original
+bug-report. (Ralf Schlatterbeck)</li>
+<li>issue2117897: Fixed two more places in date.py where seconds can be
+rounded to 60.0 and causing exceptions. Change them to 59.999 as was
+done in the fix for issue2550802. (Thomas Arendsen Hein)</li>
+<li>Fix batch.propchanged for transitive id properties (would result in a
+backtrace when trying to group by property.id) (Ralf Schlatterbeck)</li>
+<li>Fix issue2550835, the test checks for date-range queries with an
+interval that depends on the local time. Put the queried date a little
+later to avoid a race condition where the queried interval doesn&#8217;t
+match the date because the clock has advanced. (Ralf Schlatterbeck)</li>
+<li>Apply german translation fixes from Debian team in issue2550761,
+thanks to Kai Storbeck for taking the time to report these.
+(Ralf Schlatterbeck)</li>
+<li>Fix issue2550843 Pass text of Unauthorised and Login exceptions instead
+of the exception instance to avoid traceback with string operations.
+(Thomas Arendsen Hein)</li>
+<li>Fix issue2550841 roundup-demo templates not found in virtualenv (John
+Kristensen)</li>
+<li>Security: Default user permissions should not include all user
+attributes. We now limit this to the username, realname and some
+further attributes depending on the schema. Note that we no longer
+include the email addresses, depending on your installation you may
+want to further restrict this or add some attributes like <code class="docutils literal"><span class="pre">address</span></code>
+and <code class="docutils literal"><span class="pre">alternate_addresses</span></code>. (Ralf Schlatterbeck)</li>
+<li>Correctly recreate the database directory when re-initialising a tracker
+instance. (John Kristensen)</li>
+<li>In case of an error, date fields would lose the calendar help, fixed.
+(Ralf Schlatterbeck)</li>
+<li>demo.py usage message improved: explains &#8220;nuke&#8221; now. (Bernhard Reiter)</li>
+<li>Fix issue2550735 Missing doc for xmlrpc schema. Thanks to Cedric Krier
+for the patch. (anatoly techtonik)</li>
+<li>Fix two line-break accidents in devel and responsive milestone.item.html
+(Thomas Arendsen Hein)</li>
+<li>Fix broken images in legacy spec.html and original_overview.html, and
+restore web presence for &#8220;Roundup&#8217;s Design Document&#8221; (anatoly techtonik)</li>
+<li>Template jinja2: Updated URL to point to <a class="reference external" href="http://www.roundup-tracker.org/">http://www.roundup-tracker.org/</a>,
+fixed a typo. (Bernhard Reiter)</li>
+<li>Security: Add mime-type whitelist for attachmens that can be safely
+rendered from Roundup without trigerring security bugs in browser
+plugins, XSS issues and spam. The option <code class="docutils literal"><span class="pre">allow_html_file</span></code> didn&#8217;t
+provide protection for invalid content-type, in which case browser
+tried to guess the best one. Thanks to Kay Hayen for reporting and
+helping debug this. issue2550848 (Ralf Schlatterbeck, anatoly techtonik)</li>
+<li>Documentation: configuration messages_to_author value &#8220;nosy&#8221; now documented
+in chapter &#8220;customizing&#8221;. (Bernhard Reiter)</li>
+<li>issue2550877 Failures in test_mailgw.py because of duplicated headers
+and more precise comparision. Writing headers with the email module will use
+continuation_ws = &#8216; &#8216; now for python 2.5 and 2.6. (Bernhard Reiter)</li>
+<li>issue2550870 migrate use of &#8216;rfc822&#8217; module to the &#8216;email&#8217; module
+(Bernhard Reiter/John Kristensen)</li>
+<li>Doctests for roundup.date.Date are now really executable and don&#8217;t
+fail. Bug-Fixes in range properties, open intervals with &#8216;to&#8217; didn&#8217;t
+always work. (Ralf Schlatterbeck)</li>
+<li>issue2550881 demo.py: Add pointer how to access demo from remote host.
+Suggested by Karl-Philipp Richter. (Bernhard Reiter)</li>
+<li>issue2550884 roundup-mailgw &#8211;help text improved to explain the allowed
+parameters better. Suggested by by Karl-Philipp Richter. (Bernhard Reiter)</li>
+<li>Fix form-parsing: If multiple new items are added to a multilink
+property, the old version would create the new items but only link
+one. (Ralf Schlatterbeck)</li>
+<li>issue2550892 (translation error of priority in locale de) Thanks
+Martin Thomas Swaton for reporting. (Bernhard Reiter)</li>
+<li>Help-Window now gets focus, this prevents the case that help doesn&#8217;t
+work because an old help-window is below the main window.
+(Ralf Schlatterbeck)</li>
+<li>issue2550811 20% fix: jinja2 template engine now has an example
+how to use non-ascii unicode contents with a custom filter (&#8216;| u&#8217;).
+See updates on <a class="reference external" href="http://www.roundup-tracker.org/cgi-bin/moin.cgi/Jinja2">http://www.roundup-tracker.org/cgi-bin/moin.cgi/Jinja2</a>
+(Bernhard Reiter)</li>
+</ul>
+<p>If you&#8217;re upgrading from an older version of Roundup you <em>must</em> follow
+the &#8220;Software Upgrade&#8221; guidelines given in the maintenance documentation.</p>
+<p>Roundup requires python 2.5 or later (but not 3+) for correct operation.</p>
+<p>To give Roundup a try, just download (see below), unpack and run:</p>
+<div class="highlight-python"><div class="highlight"><pre>python demo.py
+</pre></div>
+</div>
+<dl class="docutils">
+<dt>Release info and download page:</dt>
+<dd><a class="reference external" href="http://pypi.python.org/pypi/roundup">http://pypi.python.org/pypi/roundup</a></dd>
+<dt>Source and documentation is available at the website:</dt>
+<dd><a class="reference external" href="http://roundup-tracker.org/">http://roundup-tracker.org/</a></dd>
+<dt>Mailing lists - the place to ask questions:</dt>
+<dd><a class="reference external" href="http://sourceforge.net/mail/?group_id=31577">http://sourceforge.net/mail/?group_id=31577</a></dd>
+</dl>
+<div class="section" id="about-roundup">
+<h1>About Roundup<a class="headerlink" href="#about-roundup" title="Permalink to this headline">¶</a></h1>
+<p>Roundup is a simple-to-use and -install issue-tracking system with
+command-line, web and e-mail interfaces. It is based on the winning design
+from Ka-Ping Yee in the Software Carpentry &#8220;Track&#8221; design competition.</p>
+<p>Note: Ping is not responsible for this project. The contact for this
+project is <a class="reference external" href="mailto:richard&#37;&#52;&#48;users&#46;sourceforge&#46;net">richard<span>&#64;</span>users<span>&#46;</span>sourceforge<span>&#46;</span>net</a>.</p>
+<p>Roundup manages a number of issues (with flexible properties such as
+&#8220;description&#8221;, &#8220;priority&#8221;, and so on) and provides the ability to:</p>
+<ol class="loweralpha simple">
+<li>submit new issues,</li>
+<li>find and edit existing issues, and</li>
+<li>discuss issues with other participants.</li>
+</ol>
+<p>The system will facilitate communication among the participants by managing
+discussions and notifying interested parties when issues are edited. One of
+the major design goals for Roundup that it be simple to get going. Roundup
+is therefore usable &#8220;out of the box&#8221; with any python 2.5+ (but not 3+)
+installation. It doesn&#8217;t even need to be &#8220;installed&#8221; to be operational,
+though an install script is provided.</p>
+<p>It comes with two issue tracker templates (a classic bug/feature tracker and
+a minimal skeleton) and four database back-ends (anydbm, sqlite, mysql
+and postgresql).</p>
+</div>
+
+       
+    <div class="related related-bottom">
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="index.html">Roundup 1.5.1 documentation</a></li> 
+      </ul>
+    </div>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2009-2016, Richard Jones, Roundup-Team.
+    </div>
+  </body>
+</html>
