@@ -1,0 +1,113 @@
+Metadata-Version: 1.1
+Name: hubward
+Version: 0.2.2
+Summary: Manage the visualization of large amounts of other people's [often messy] genomics data
+Home-page: https://github.com/daler/hubward
+Author: Ryan Dale
+Author-email: dalerr@niddk.nih.gov
+License: BSD
+Description: ``hubward``
+        ===========
+        
+        
+        .. image:: https://travis-ci.org/daler/hubward.svg
+            :target: https://travis-ci.org/daler/hubward
+        
+        .. image:: https://img.shields.io/badge/install%20with-bioconda-brightgreen.svg?style=flat-square
+            :target: http://bioconda.github.io
+        
+        A common question when reading an interesting paper is, "how does relate to my
+        favorite gene locus?". To address this question, usually we need to download
+        the supplemental data, figure out what format it's in, convert it to some other
+        useful format, and visualize it alongside our own data.
+        
+        `hubward` helps manage this process, lowering the effort required to track,
+        manage, organize, and upload many studies for cross-comparison in the UCSC
+        Genome Browser.
+        
+        Data are organized into `track hubs
+        <https://genome.ucsc.edu/goldenPath/help/hgTrackHubHelp.html>`_ on the UCSC
+        Genome Browser, and the name `hubward` indicates the direction in which data
+        are moved into these track hubs. It can also refer to a direction in `other
+        complex systems <http://wiki.lspace.org/mediawiki/Hubwards>`_.
+        
+        The separate repository, `hubward-studies
+        <https://github.com/daler/hubward-studies>`_, contains examples of prepared
+        track hubs. Subsets of these can be combined into user-defined hubs, or can
+        serve as examples for preparing other studies.
+        
+        Documentation can be found at `<https://daler.github.io/hubward>`_.
+        
+        Overview
+        --------
+        `This poster
+        <https://github.com/daler/hubward/raw/master/docs/images/hubward-poster.pdf>`_ gives an overview of `hubward`, and provides a worked example.
+        
+        Further details can be found in the `full documentation <https://daler.github.io/hubward>`_.
+        
+        
+        
+        
+        History
+        =======
+        
+        0.2.2 (2016-01-20)
+        ------------------
+        - Support for liftover of BAMs (includes a workaround for Crossmap bug that
+          segfaulted on liftovers with a specified output filename in the test
+          environment).
+        - When lifting over between assemblies and the source assembly doesn't match
+          what is configured for a track, raise a ValueError.
+        - For lifted-over studies, the `metadata.yaml` config keeps track of the
+          liftover history in the new `study/liftover` section
+        - improved test environment setup
+        - improved tests (checking for existence of uploaded files)
+        
+        
+        0.2.1 (2015-12-05)
+        ------------------
+        - if the `description` field is empty or missing, fill in the contents of
+          README as documentation.
+        - add functools32 to requirements.txt (thanks Titus Brown)
+        - fixes to `hubward liftover`:
+            - downloaded chainfiles are cached
+            - skip tracks where assembly of track differs from the requested
+              `--from_assembly`
+            - upon lifting over, add a note to the description of the study's
+              metadata.yaml to reflect this and also as a comment in the YAML file.
+            - workaround for a bug in CrossMap on BED9+ files. The thickStart and
+              thickEnd fields were not being lifted over correctly.
+        - use pycurl for downloading for better handling of URL redirects. This
+          happens, for example, when downloading supplemental data from ScienceDirect
+        - less verbose bigbed/bigwig conversion
+        - allow optional fields in metadata to be blank
+        - improvements to testing framework
+        
+        
+        0.2.0 (2015-10-24)
+        ------------------
+        Streamlining of the code and CLI. This causes some backward
+        incompatibility with `metadata.yaml` config files in version 0.1.0, in
+        particular, the "source" section is now required. There is now a defined schema
+        for the metadata and the grouping files so that future changes can be validated
+        and automatically fixed.
+        
+        
+        0.1.0 (2014-01-11)
+        ---------------------
+        
+        * First release on PyPI.
+        
+Keywords: hubward
+Platform: UNKNOWN
+Classifier: Development Status :: 2 - Pre-Alpha
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: BSD License
+Classifier: Natural Language :: English
+Classifier: Topic :: Scientific/Engineering :: Bio-Informatics
+Classifier: Programming Language :: Python :: 2
+Classifier: Programming Language :: Python :: 2.6
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.3
+Classifier: Programming Language :: Python :: 3.4

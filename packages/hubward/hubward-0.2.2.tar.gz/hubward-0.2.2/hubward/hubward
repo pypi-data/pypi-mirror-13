@@ -1,0 +1,252 @@
+#!/usr/bin/env python
+
+from io import StringIO
+import os
+import argparse
+import stat
+import tempfile
+import shutil
+import yaml
+import argh
+from argh import arg
+import hubward
+
+description = """
+Command-line interface for hubward.
+"""
+
+
+@arg('items', help='Path to directory containing metadata.yaml file or '
+     'metadata-builder.yaml file, or path to a group config YAML file. Can '
+     'specify multiple.',
+     nargs="+")
+def process(items):
+    """
+    Process one or many studies.
+
+    *items* can be one or more directories or files to process. They are
+    handled as follows:
+
+    - If an item to process is a *directory* then it is expected to contain
+      either:
+
+        - a file called metadata.yaml (in which case that file is used as-is)
+
+            or
+
+        - a file called metadata-builder.py (in which case it is executed and
+          is expected to create a metadata.yaml file).
+
+        Each output file in the metadata.yaml file is considered up-to-date if
+        it are newer than both the input file and the script that creates it.
+        If it's up-to-date then nothing is done.  Otherwise, the script is run
+        to update the output file.
+
+    - If an item to process is a *file* then it is assumed to be a group
+      configuration YAML-format file. All directories listed in that file's
+      `studies` section will be processed.
+
+    For creating a new study, see `hubward skeleton` which creates template
+    files that can be filled in.
+    """
+    if isinstance(items, str):
+        items = [items]
+    for item in items:
+        if os.path.isdir(item):
+            _study = hubward.models.Study(item)
+            _study.process()
+        elif os.path.isfile(item):
+            _group = hubward.models.Group(filename)
+            _group.process()
+
+
+@arg('filename', help='Group config file')
+@arg('--hub-only', help='Just update the hub text files, not data files')
+@arg('--host', help='Host to upload to. Overrides [server][host] in the group '
+     ' config file.')
+@arg('--user', help='User for host. Overrides [server][user] in the group '
+     'config file.')
+@arg('--hub_remote', help='Remote filename for the top-level hub file. '
+     'Overrides [server][hub_remote] in the config file.')
+@arg('--rsync_options', help='Options for rsync. Default is "%(default)s"')
+def upload(filename, hub_only=False, rsync_options='-avrL --progress',
+           host=None, user=None, hub_remote=None):
+    """
+    Creates a track hub and uploads to configured host.
+
+    Track hub files include hub.txt, genomes.txt, and trackDb.txt files. If
+    --hub-only has been specified, only these files will be uploaded to the
+    host configured in the group config file.
+
+    Otherwise, these files and all of the configured data files (bigBed,
+    bigWig, BAM, and VCF files) from individual studies are uploaded via rsync
+    to their respective configured locations on the remote host.
+    """
+    _group = hubward.models.Group(filename)
+
+    _group.upload(
+        hub_only=hub_only,
+        host=host,
+        user=user,
+        hub_remote=hub_remote,
+        rsync_options=rsync_options,
+    )
+
+
+@arg('dirname', help='Single study to liftover')
+@arg('newdir', help='Destination directory')
+@arg('--from_assembly', help='Source assembly')
+@arg('--to_assembly', help='Destination assembly')
+def liftover(dirname, newdir, from_assembly=None, to_assembly=None):
+    """
+    Lift over coordinates from one assembly to another, in bulk.
+
+    For all configured tracks in <dirname>/metadata.yaml, if the configured
+    track genome matches <from_assembly> then perform the liftover to
+    a temporary directory and then move the result to <newdir> when complete.
+
+    Currently, only studies where all tracks are in the same assembly are
+    supported. If a track is found that is from a different assembly,
+    a ValueError is raised.
+
+    The genome field of each track is also edited to reflect the new genome,
+    and a symlink called ORIGINAL-STUDY is placed in <newdir>. In the end,
+    a complete version of <dirname> is available in <newdir> with appropriate
+    tracks lifted over to the new assembly and appropriate metadata edited to
+    reflect the liftover.
+
+    Note: this uses CrossMap (http://crossmap.sourceforge.net) which currently
+    only runs in Python 2.7.
+    """
+    _study = hubward.models.Study(dirname)
+    dirname = dirname.rstrip(os.path.sep)
+    newdir = newdir.rstrip(os.path.sep)
+
+    # First process everything into a temporary directory
+    tmpdir = tempfile.mkdtemp()
+    for d in _study.tracks:
+        if d.genome != from_assembly:
+            raise ValueError(
+                '{0} has a configured genome of {1} but liftover requested '
+                'from {1}.'
+                .format(d.short_label, d.genome, from_assembly)
+            )
+        infile = d.processed
+        outfile = d.processed.replace(dirname, newdir)
+        d.liftover(from_assembly, to_assembly, outfile)
+
+        # Edit the metadata to reflect the liftover:
+        #
+        # new assembly
+        d.obj['genome'] = to_assembly
+
+        # overwrite source fn and url to avoid re-running later
+        d.obj['source']['fn'] = (
+            'lifted over from {0} to {1}; see {2} for original'
+            .format(from_assembly, to_assembly, dirname)
+        )
+
+        d.obj['source']['url'] = (
+            'lifted over from {0} to {1}; see {2} for original'
+            .format(from_assembly, to_assembly, dirname)
+        )
+
+    # Note the liftover in the description
+    _study.metadata['study']['description'] += (
+        '\nData were lifted over from {0} to {1}\n'
+        .format(from_assembly, to_assembly)
+    )
+
+    # Keep track of the original assembly for documentation purposes. If this
+    # study was consecutively lifted over, pull the original assembly and study
+    # data from the existing `liftover` section of the config.
+    original_assembly = _study.metadata['study']\
+        .get('liftover', {})\
+        .get('original_assembly', from_assembly)
+
+    original_study = _study.metadata['study']\
+        .get('liftover', {})\
+        .get('original_study', dirname)
+
+    _study.metadata['study']['liftover'] = {
+        'from_assembly': from_assembly,
+        'to_assembly': to_assembly,
+        'original_study': original_study,
+        'original_assembly': original_assembly,
+        'previous_study': dirname,
+    }
+
+    with open(os.path.join(newdir, 'metadata.yaml'), 'w') as fout:
+        fout.write(
+            '# This config file was created when lifting over {0} from {1} '
+            'to {2}.\n\n'.format(dirname, from_assembly, to_assembly)
+        )
+        hubward.log('Writing new metadata to {0}'.format(fout.name))
+        yaml.dump(_study.metadata, fout)
+
+    symlink = os.path.join(newdir, 'ORIGINAL-STUDY')
+    if os.path.exists(symlink):
+        os.unlink(symlink)
+    os.symlink(os.path.abspath(dirname), symlink)
+
+
+@arg('dirname', help='Path to contain skeleton project')
+@arg('--use-metadata-builder', help='Sets up a metadata-builder.py script '
+     'instead of a metadata.yaml config file. Useful for more complicated '
+     'studies')
+def skeleton(dirname, use_metadata_builder=False):
+    """
+    Populate <dirname> with template files that can be customized on
+    a per-study basis.
+
+    The skeleton is actually a working example:
+
+        hubward skeleton <dirname>
+        hubward process <dirname>
+        hubward upload <dirname>/example-group.yaml \\
+                --host <host> --user <user> \\
+                --hub_remote <remotepath>
+
+    """
+    if os.path.exists(dirname):
+        raise ValueError("Directory {0} exists. Aborting!".format(dirname))
+
+    os.makedirs(os.path.join(dirname, 'src'))
+
+    if use_metadata_builder:
+        with open(os.path.join(dirname, 'metadata-builder.py'), 'w') as fout:
+            fout.write(
+                hubward.utils.get_resource('metadata_builder_template.py'))
+        hubward.utils.make_executable(fout.name)
+
+    else:
+        metadata_schema = hubward.utils.get_resource(
+            'metadata_schema.yaml', as_tempfile=True)
+        with open(os.path.join(dirname, 'metadata.yaml'), 'w') as fout:
+            hubward.generate_config_from_schema.create_config(
+                metadata_schema, fout)
+
+    group_schema = hubward.utils.get_resource(
+        'group_schema.yaml').format(dirname=dirname)
+    tmp = tempfile.NamedTemporaryFile(delete=False).name
+    with open(tmp, 'w') as fout:
+        fout.write(group_schema)
+    with open(os.path.join(dirname, 'example-group.yaml'), 'w') as fout:
+        hubward.generate_config_from_schema.create_config(
+            tmp, fout)
+    os.unlink(tmp)
+
+    with open(os.path.join(dirname, 'README.rst'), 'w') as fout:
+        fout.write('Description of study and necessary processing steps\n')
+
+    with open(os.path.join(dirname, 'src', 'dat2bigbed.sh'), 'w') as fout:
+        fout.write(
+            hubward.utils.get_resource('dat2bigbed.sh'))
+    hubward.utils.make_executable(fout.name)
+
+
+parser = argparse.ArgumentParser(description=description)
+argh.add_commands(parser, [process, upload, liftover, skeleton])
+
+if __name__ == "__main__":
+    argh.dispatch(parser)
