@@ -1,0 +1,17 @@
+<h2 class="text-center">НОВОСТИ</h2>
+<div class="row">
+{% for news in news_list %}
+    <div class="col-lg-4 col-md-4">
+        <h3><a href="{% url 'news-page' news.slug %}">{{ news.title }}</a></h3>
+        <p class="small text-muted">{{ news.date|date:"j b Y" }} г.</p>
+        <div>{% if news.short %}
+            {{ news.short|safe }}
+        {% else %}
+            {{ news.text|default_if_none:""|truncatewords_html:30|safe }}
+        {% endif %} </div>
+    </div>
+{% empty %}
+    <p class="text-center text-muted"><em>На сайте еще нет обновлений</em></p>
+{% endfor %}
+</div>
+<div class="text-right"><a href="{% url 'news-list' %}">Все новости &rarr;</a></div>
