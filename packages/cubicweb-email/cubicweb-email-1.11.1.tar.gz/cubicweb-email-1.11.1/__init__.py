@@ -1,0 +1,2 @@
+"""cubicweb-email"""
+
