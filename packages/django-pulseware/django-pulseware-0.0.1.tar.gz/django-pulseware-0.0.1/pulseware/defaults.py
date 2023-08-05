@@ -1,0 +1,8 @@
+from django.conf import settings
+
+
+PULSEWARE_PATH = getattr(settings, 'PULSEWARE_PATH', '/heartbeat')
+PULSEWARE_RETURN_CODE = getattr(settings, 'PULSEWARE_RETURN_CODE', 503)
+PULSEWARE_CACHE_HEALTH = getattr(settings, 'PULSEWARE_CACHE_HEALTH', False)
+PULSEWARE_DATABASE_READ_HEALTH = getattr(settings, 'PULSEWARE_DATABASE_READ_HEALTH', True)
+PULSEWARE_DATABASE_WRITE_HEALTH = getattr(settings, 'PULSEWARE_DATABASE_WRITE_HEALTH', False)
