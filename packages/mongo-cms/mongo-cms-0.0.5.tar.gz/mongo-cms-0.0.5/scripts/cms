@@ -1,0 +1,135 @@
+#! /usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+.. module:: TODO
+   :platform: Unix
+   :synopsis: TODO.
+
+.. moduleauthor:: Aljosha Friemann aljosha.friemann@gmail.com
+
+"""
+
+import sys
+
+import click
+
+from cms.cms import CMS
+from cms.util import editor_input
+
+@click.group()
+@click.option('--host', default='localhost')
+@click.option('--database', default='cms')
+@click.pass_context
+def cli(ctx, host, database):
+    ctx.obj['cms'] = CMS(host, database)
+
+@cli.group()
+def add():
+    pass
+
+@add.command()
+@click.pass_context
+def post(ctx):
+    title = input('Title: ')
+    extension = '.html' if input('Style [markdown]/html: ').startswith('h') else '.md'
+    content = editor_input(extension)
+
+    if len(content) == 0:
+        print("input was empty")
+        sys.exit(1)
+
+    tags = [ s.strip() for s in input('Tags: ').split(',') ]
+
+    ctx.obj['cms'].add_post(title, content, tags)
+
+@add.command()
+@click.pass_context
+def snippet(ctx):
+    title = input('Title: ')
+    extension = input('Extension: ')
+    content = editor_input(extension).strip()
+
+    if len(content) == 0:
+        print("input was empty")
+        sys.exit(1)
+
+    tags = [ s.strip() for s in input('Tags: ').split(',') ]
+
+    ctx.obj['cms'].add_snippet(title, extension, content, tags)
+
+@cli.group()
+def get():
+    pass
+
+@get.command()
+@click.argument('number', type=int, nargs=-1)
+@click.pass_context
+def post(ctx, number):
+    posts = []
+
+    if len(number) == 0:
+        posts = ctx.obj['cms'].get_posts()
+    else:
+        for num in number:
+            post = ctx.obj['cms'].get_posts(num)
+            if post: posts.append(post)
+
+    for post in posts:
+        print(post)
+
+@get.command()
+@click.argument('number', type=int, nargs=-1)
+@click.pass_context
+def snippet(ctx, number):
+    snippets = []
+
+    if len(number) == 0:
+        snippets = ctx.obj['cms'].get_snippets()
+    else:
+        for num in number:
+            snippet = ctx.obj['cms'].get_snippet(num)
+            if snippet: snippets.append(snippet)
+
+    for snippet in snippets:
+        print(snippet)
+
+@cli.group()
+def drop():
+    pass
+
+@drop.command()
+@click.argument('number', type=int, nargs=-1)
+@click.pass_context
+def post(ctx, number):
+    posts = []
+
+    if len(number) == 0:
+        if input('This action will drop all snippets, do you want to continue? [n]/y ').lower() != 'y': sys.exit(1)
+        posts = ctx.obj['cms'].get_posts()
+    else:
+        for num in number:
+            posts.append(ctx.obj['cms'].get_posts(num))
+
+    for post in posts:
+        ctx.obj['cms'].drop_post(post.number)
+
+@drop.command()
+@click.argument('number', type=int, nargs=-1)
+@click.pass_context
+def snippet(ctx, number):
+    snippets = []
+
+    if len(number) == 0:
+        if input('This action will drop all snippets, do you want to continue? [n]/y ').lower() != 'y': sys.exit(1)
+        snippets = ctx.obj['cms'].get_snippets()
+    else:
+        for num in number:
+            snippets.append(ctx.obj['cms'].get_snippet(num))
+
+    for snippet in snippets:
+        ctx.obj['cms'].drop_snippet(snippet.number)
+
+if __name__ == '__main__':
+    cli(obj={})
+
+# vim: tabstop=8 expandtab shiftwidth=4 softtabstop=4 fenc=utf-8
