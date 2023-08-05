@@ -1,0 +1,87 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+{% block meta %}
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <!--Let browser know website is optimized for mobile-->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+{% endblock %}
+<title>SACRUD{% block title %}{% endblock %}</title>
+
+{% block css %}
+  <link href="{{ request.static_url('pyramid_sacrud:static/favicon.ico') }}" rel="shortcut icon" type="image/x-icon" />
+  <link href="{{ request.static_url('pyramid_sacrud:static/css/__main.css') }}" rel="stylesheet" />
+{% endblock %}
+
+{% block js %}
+  <script src="{{ request.static_url('pyramid_sacrud:static/js/assets/__main.js') }}"></script>
+{% endblock %}
+</head>
+
+<body>
+{% block menu %}
+  <div>
+    <nav>
+      <div class="nav-wrapper blue-grey darken-1">
+        <a href="{{ request.route_url(PYRAMID_SACRUD_HOME) }}" class="brand-logo left">SACRUD</a>
+        {% block inner_menu %}
+        {% endblock %}
+      </div>
+    </nav>
+  {% endblock %}
+  <div class="container">
+
+    {% block popup %}
+      <div id="modal1" class="modal">
+        <div class="modal-content">
+          {% block popup_content %}{% endblock %}
+        </div>
+        <div class="modal-footer">
+          {% block popup_footer %}{% endblock %}
+        </div>
+      </div>
+    {% endblock %}
+
+    {% block breadcrumbs %}
+      {% if breadcrumbs %}
+        <div class="breadcrumb">
+          {% for crumb in breadcrumbs %}
+            {% if not loop.last %}
+              <li><a href="{% if crumb.visible %}
+                  {{ request.route_path(crumb.view, table=crumb.param['name']) }}
+                {% endif %}">{{ _ps(_(crumb.name)) }}</a></li>
+            {% else %}<li>{{ _ps(_(crumb.name)) }}</li>
+            {% endif %}
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endblock %}
+
+    {% block flash_message %}
+      {% if request.session %}
+        {% if request.session.peek_flash() %}
+          {% set flash = request.session.pop_flash() %}
+          {% for message in flash %}
+            <div class="chip white-text
+              {% if message[1] == "success" %}
+                green
+              {% elif message[1] == "error" %}
+                red
+              {% elif message[1] == "warning" %}
+                yellow
+              {% endif %}">{{ _ps(message[0])|safe }}
+              <i class="material-icons">close</i>
+            </div>
+          {% endfor %}
+        {% endif %}
+      {% endif %}
+    {% endblock %}
+
+    {% block body %}{% endblock %}
+  </div>
+  {% block footer %}{% endblock %}
+</div>
+{% block extra_js %}{% endblock %}
+</body>
+</html>
