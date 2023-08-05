@@ -1,0 +1,107 @@
+#! /bin/sh 
+
+# usage:  cron_sync
+#
+#    options:  --check-files --check-sha1sum --fetch-references [context selection]
+#
+#    example context selections:
+#        nothing ==  hst-operational
+#        --contexts hst_0257.pmap hst_0283.pmap hst-operational
+#        --last 20
+#        --all
+#
+#   requires:  
+#        CRDS_PATH        (cache directory)
+#        CRDS_SERVER_URL  (server synced from)
+#        CRDS_LOCKS       (locks directory)
+#
+# This script is intended to be run in a cron job at a relatively high
+# rate, say once every 30 minutes.  
+#
+# The contexts which are selected for syncing should be a sufficiently large recent
+# group of contexts that cron_sync is guaranteed to be run between the last and any
+# other preceding context in the group,  i.e.  Set Context is called twice for that
+# group of contexts,  guaranteeing that no new files are missed.   --all is the safest
+# absolute setting but becomes slower as more contexts are created.   --last 20 seemed
+# like a good fixed lenth worst case setting which has constant run time.
+#
+# --fetch-references is required to download references to the CRDS cache.
+# Omitting --fetch-references, rapid --check-sha1sum is possible for only the
+# selected contexts / rules, not all their references.  It is not uncommon for
+# different versions of rules to have different contents but identical lengths.
+#
+# --check-files is a good idea, it checks length, file status (bad file,
+# undelivered, etc) and file existence in cache.  --verbose, not mentioned,
+# is optional but will produce checking output for 20k+ files.
+#
+# --check-sha1sum is only suitable for periodic cache checks or without
+# --fetch-references, it requires around 8 hours to check all the references.
+#
+
+# -------------------------------------------------------------------------
+
+# default CRDS_LOCKS to CRDS_PATH unless it is known that the CRDS_PATH
+# file system has broken flock's,  i.e. a limited network file system.
+if [[ -z "$CRDS_LOCKS" ]]
+then
+    export CRDS_LOCKS="$CRDS_PATH"
+fi
+mkdir -p $CRDS_LOCKS
+
+# Add time to log messages
+export CRDS_LOG_TIME=1
+
+# Make the cache writable by default,  most common.
+export CRDS_READONLY_CACHE=0
+
+# Use a plugin downloader,  defaults to wget
+export CRDS_DOWNLOAD_MODE=plugin
+
+#
+# CUSTOM PLUGINS: CRDS will run another program like this filling in for
+# ${SOURCE_URL} and ${OUTPUT_PATH}.  Use that syntax exactly.   You could
+# e.g. use axel instead of wget providing your own command line template.
+#
+# export CRDS_DOWNLOAD_PLUGIN="/usr/bin/wget --no-check-certificate --quiet ${SOURCE_URL}  -O ${OUTPUT_PATH}"
+#
+
+# -------------------------------------------------------------------------
+( flock --exclusive --nonblock 200 # --nonblock means fail on unavailable locks,  cron collision
+
+  if [[ $? != 0 ]]
+  then
+    echo "cron_sync: WARNING: failed to obtain crds.sync.lock"
+    exit 1
+  else
+     echo "cron_sync: INFO: obtained crds.sync.lock"
+    
+     # sync doesn't block bestrefs, syncs rules and references,  doesn't update context / config
+     export CRDS_CLIENT_RETRY_COUNT=60
+     export CRDS_CLIENT_RETRY_DELAY_SECONDS=10
+     # override pipeline global readonly setting.
+     export CRDS_READONLY_CACHE=0
+     python -m crds.sync $* --stats # nominally --last 10 --fetch-references
+     exit $?
+  fi
+    
+) 200> ${CRDS_LOCKS}/crds.sync.lock 
+status=$?
+# echo "existing with status $status"
+exit $status
+
+#
+#   Summarizing overall design of sync + bestrefs in pipelines:
+#
+#   crds.sync.lock ensures that no two cron_syncs run concurrently.
+#
+#   cron_sync does not block bestrefs
+#   bestrefs does not block bestrefs
+#   sync transfers files then updates the config area last
+#   bestrefs does not update the cache when run with --readonly-cache
+#
+#   To prevent a race condition where the context updates before the arrival
+#   of mappings,  all programs in the pipeline environment
+#   should export CRDS_READONLY_CACHE=1 as a default setting to prevent
+#   cache updates by programs other than cron_sync.
+#
+
