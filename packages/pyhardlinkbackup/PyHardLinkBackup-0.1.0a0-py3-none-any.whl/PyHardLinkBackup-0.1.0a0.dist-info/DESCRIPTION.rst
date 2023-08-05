@@ -1,0 +1,84 @@
+----------------
+PyHardLinkBackup
+----------------
+
+HardLink Backups with Python
+
+Currently python 3 is needed.
+
+--------
+Try out:
+--------
+
+**setup**
+
+::
+
+    ~$ virtualenv -p python3 PyHardLinkBackupEnv
+    $ cd PyHardLinkBackupEnv/
+    ~/PyHardLinkBackupEnv $ source bin/activate
+    (PyHardLinkBackupEnv) ~/PyHardLinkBackupEnv $ pip install -U pip
+    (PyHardLinkBackupEnv) ~/PyHardLinkBackupEnv $ pip install -e git+https://github.com/jedie/PyHardLinkBackup.git#egg=PyHardLinkBackup
+    (PyHardLinkBackupEnv) ~/PyHardLinkBackupEnv $ phlb migrate
+
+**Note:** If you not use python 3.5+, then '`scandir <https://pypi.python.org/pypi/scandir>`_' will be installed and so you need the **python3-dev** package...
+
+------------------
+start a backup run
+------------------
+
+::
+
+    ~$ ./PyHardLinkBackupEnv/bin/phlb backup ~/Photo
+
+or:
+
+::
+
+    ~$ source ./PyHardLinkBackupEnv/bin/activate
+    (PyHardLinkBackupEnv) ~$ phlb backup ~/documents
+
+-------------
+run unittests
+-------------
+
+::
+
+    $ cd PyHardLinkBackupEnv/
+    ~/PyHardLinkBackupEnv $ source bin/activate
+    (PyHardLinkBackupEnv) ~/PyHardLinkBackupEnv $ phlb test
+
+----------
+some notes
+----------
+
+Why in hell do you use django?!?
+--------------------------------
+
+* Well, just because of the great database ORM and the Admin Site ;)
+
+How to use the django admin?
+----------------------------
+
+::
+
+    $ cd PyHardLinkBackupEnv/
+    ~/PyHardLinkBackupEnv $ source bin/activate
+    (PyHardLinkBackupEnv) ~/PyHardLinkBackupEnv $ phlb runserver
+
+And then just request 'localhost'
+
+What is 'phlb' ?!?
+------------------
+
+the **phlb** executable is the similar to django **manage.py**, but it always
+used the PyHardLinkBackup settings.
+
+----
+TODO
+----
+
+* copy file meta data like owner, mode etc.
+
+* handle symlinks
+
