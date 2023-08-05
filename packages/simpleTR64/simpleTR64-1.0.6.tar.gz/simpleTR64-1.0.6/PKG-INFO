@@ -1,0 +1,148 @@
+Metadata-Version: 1.1
+Name: simpleTR64
+Version: 1.0.6
+Summary: An easy to use UPnP TR64 protocol library
+Home-page: http://bpannier.github.io/simpletr64/
+Author: Benjamin Pannier
+Author-email: sourcecode@ka.ro
+License: Apache 2.0
+Description: Simple TR64 UPnP: A simple way to talk to your UPnP and/or TR64 protocol devices
+        ================================================================================
+        
+        
+        This library supports the discovery of UPnP devices in the local network and let you execute actions on them if
+        the device supports any. Also it contains a convenient way to execute TR64 protocol actions on routers or other network
+        devices which supports TR64.
+        
+        .. code-block:: python
+        
+            >>> results = simpletr64.discover()
+            >>> print(results[0])
+            LOC: http://192.168.178.1:49000/tr64desc.xml SRV: urn:dslforum-org:device:InternetGatewayDevice:1
+            ...
+            >>> device = simpletr64.DeviceTR64(hostname=192.168.178.1, port=49000)
+            ...
+            >>> device.execute("/upnp/control/hosts", "urn:dslforum-org:service:Hosts:1", "GetGenericHostEntry", NewIndex=1)
+            {'NewActive': '0', 'NewIPAddress': '192.168.0.23', 'NewMACAddress': '9C:20:7B:E7:FF:5F', 'NewInterfaceType':
+                'Ethernet', 'NewHostName': 'Apple-TV', 'NewAddressSource': 'DHCP', 'NewLeaseTimeRemaining': '0'}
+        
+        or even easier, execute:
+        
+        .. code-block:: python
+        
+            >>> device = System("192.168.178.1")
+            >>> device.setupTR64Device("fritz.box")
+            >>> print(device.getSystemInfo().manufactureName)
+            "AVM"
+        
+        On the command line::
+        
+            $ upnp_tools discover
+        
+        Features
+        --------
+        
+        - Discovery of UPnP devices in the local network
+        - Gathering of UPnP device information's
+        - Executing of UPnP actions
+        - Authentication for username/password or password only
+        - HTTP(S) proxy support
+        - Unicode
+        - Provides shell command 'upnp_tools' for all above
+        
+        Installation
+        ------------
+        
+        To install Simple TR64, simply:
+        
+        .. code-block:: bash
+        
+            $ pip install simpletr64
+        
+        Documentation
+        -------------
+        
+        Please, see the `documentation here <http://bpannier.github.io/simpletr64/>`_
+        
+        
+        .. :changelog:
+        
+        Release History
+        ---------------
+        
+        1.0.6 (2016-01-24)
+        ++++++++++++++++++
+        
+        * Fix error in upnp_tools when no command was given
+        
+        1.0.5 (2016-01-15)
+        ++++++++++++++++++
+        
+        * Adding the support for DNLA devices which announce some device definitions slightly differently
+        * Moving all tools/ scripts into one "upnp_tools" script and move it to bin so it get installed into exe path
+        
+        1.0.4 (2016-01-11)
+        ++++++++++++++++++
+        
+        * Adding Fritz specific actions
+        * Fix a bug with installing the package, thanks to Raphael Sobik
+        
+        1.0.3 (2016-01-08)
+        ++++++++++++++++++
+        
+        * Added timeout to any TR64 action
+        * Added getSpecificAssociatedDeviceInfo in Wifi actions
+        * Added setEnable to toggle the LAN/WAN/Wifi interface on/off
+        * Added setSSID and setChannel to set these Wifi interface parameters accordingly
+        * Added softwareUpdateAvailable
+        * Added requestConnection and terminateConnection for a WAN connection
+        * Added AVM Fritz Box product specific capabilities in new Fritz class
+        * Fix reboot action
+        * Fix all TR64 actions with bool results which were always True
+        
+        1.0.2 (2016-01-06)
+        ++++++++++++++++++
+        
+        * Added the ability to request the namespace for a TR64 action
+        * Added interface ID's to all actions in Lan, Wan and Wifi
+        * Added a factory method to DeviceTR64 which takes an URL to the device definitions
+        * Improved error handling on XML parsing problems of any content
+        * Changed the declaration of getGenericAssociatedDeviceInfo for consistency reasons
+        * Changed for all Wifi actions that the interface id is now optional
+        * Changed all TR64 action classes to be a sub class of DeviceTR64
+        * Fix an issue with relative URL's in the device definition
+        
+        1.0.1 (2016-01-04)
+        ++++++++++++++++++
+        
+        * Added better error reporting
+        * Added timeout to any network interaction
+        * added the possibility to discover more than one service at the same time
+        * fixed getHostDetailsByMACAddress()
+        
+        1.0.0 (2016-01-02)
+        ++++++++++++++++++
+        
+        * Birth!
+        
+        
+Keywords: TR64 protocol network UPnP
+Platform: UNKNOWN
+Classifier: Development Status :: 4 - Beta
+Classifier: Intended Audience :: Developers
+Classifier: Intended Audience :: Education
+Classifier: Intended Audience :: System Administrators
+Classifier: Intended Audience :: Telecommunications Industry
+Classifier: License :: OSI Approved :: Apache Software License
+Classifier: Programming Language :: Python :: 2
+Classifier: Programming Language :: Python :: 2.6
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.2
+Classifier: Programming Language :: Python :: 3.3
+Classifier: Programming Language :: Python :: 3.4
+Classifier: Programming Language :: Python :: 3.5
+Classifier: Topic :: Home Automation
+Classifier: Topic :: System :: Networking
+Classifier: Topic :: System :: Networking :: Monitoring
+Classifier: Topic :: Software Development :: Libraries
