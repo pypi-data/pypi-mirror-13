@@ -1,0 +1,161 @@
+#!/usr/bin/env python
+
+import os
+import sys
+if sys.version_info < (2,7):
+    print("viewlog needs Python 2.7 to run, please upgrade")
+    sys.exit(7)
+
+from subprocess import check_output, call
+from pick import pick
+import argparse
+import shlex
+import tempfile
+import traceback
+
+DEFAULT_BRANCH="master"
+
+def getBranch (filename):
+    os.chdir(os.path.dirname(filename))
+    cmd = "git rev-parse --abbrev-ref HEAD"
+    try:
+        output = check_output(shlex.split(cmd))
+        return output.strip()
+    except:
+        print "Unable to get branch for {0} using cmd {1}".format(filename, cmd)
+        return DEFAULT_BRANCH
+
+def getPrettyCommits (filename, branch=DEFAULT_BRANCH, after=None, before=None, nomerges=False, skip = 0, limit = 10, logformat="%H - %ar, %an blessed the code thusly: %<(50,trunc)%s", logoptions="", grep=None):
+    commits = []
+
+    # Get terminal width
+    rows, columns = os.popen('stty size', 'r').read().split()
+    width = int(columns) - 7
+
+    try:
+        # Form command
+        mergestr = "--no-merges" if nomerges else ""
+        afterstr = "--after \"" + after + "\"" if after else ""
+        beforestr = "--before \"" + before + "\"" if before else ""
+        grepstr = "--grep \"" + grep + "\"" if grep else ""
+        cmd = "git log {5} {4} {6} {7} {8} {9} --skip={0} --max-count={1} --pretty=format:\"{2}\" -- {3}".format(skip, limit, logformat, filename, branch, mergestr, afterstr, beforestr, logoptions, grepstr)
+
+        os.chdir(os.path.dirname(filename))
+        output = check_output(shlex.split(cmd))
+        for line in output.split("\n"):
+            if not isBlank(line):
+                if width < len(line):
+                    commits.append(line[:width] + "..." )
+                else:
+                    commits.append(line)
+    except:
+        print "Unable to get commits when running: " + cmd
+        pass
+    return commits
+
+def gitAbsolutePath (filename):
+    try:
+        cmd = "git ls-tree --full-name --name-only HEAD {0}".format(filename)
+        return check_output(shlex.split(cmd)).strip()
+    except:
+        #best effort
+        print "Unable to get git absolute path for {0} using cmd {1}".format(filename, cmd)
+        return filename
+
+def getAbsolutePath (path):
+    if path is None:
+        return path
+    return os.path.abspath(os.path.expandvars(os.path.expanduser(path)))
+
+def setupParser ():
+    parser = argparse.ArgumentParser(description='terminal git log browser')
+    parser.add_argument('filename', help="Path to filename")
+    parser.add_argument('-e', '--editor', help="Editor to use", default="less")
+    parser.add_argument('-s', '--skip', help="Starting commit offset", default=0, type=int)
+    parser.add_argument('-l', '--limit', help="Total commits to show", default=10, type=int)
+    parser.add_argument('-f', '--logformat', help='Pretty format for git commit', default="%H - %ar, %an blessed the code thusly: %s")
+    parser.add_argument('-b', '--branch', help='Branch to use', default=DEFAULT_BRANCH)
+    parser.add_argument('-n', '--nomerges', help='Do not include commits from merged branches (Default: false)', action='store_true')
+    parser.add_argument('-a', '--after', help='Commits after/since date', default=None)
+    parser.add_argument('-u', '--before', help='Commits before/until date', default=None)
+    parser.add_argument('-g', '--grep', help='Limit the commits output to ones with log message that matches the specified pattern (regular expression)', default=None)
+    parser.add_argument('-o', '--logoptions', help='Extra options to pass directly to git log. (Escape the -- using \-\-)', default="")
+    parser.add_argument('-k', '--keeptemp', help='Keep any created temp files (Default: false)', action='store_true')
+    return parser
+
+def isBlank (myString):
+    return not (myString and myString.strip())
+
+def isFileReadable (path):
+    if os.path.exists(path):
+        if os.access(path, os.R_OK):
+            return True
+        else:
+            print "File {0} is not readable".format(path)
+    else:
+        print "File {0} does not exist".format(path)
+    return False
+
+def crux ():
+    parser = setupParser()
+    args = parser.parse_args()
+
+    absFilename = getAbsolutePath(args.filename)
+
+    if not isFileReadable(absFilename):
+        sys.exit(5)
+
+    branch = getBranch(absFilename)
+    skip = args.skip
+    original_skip = skip
+    limit = args.limit
+    current_index = 0
+    while True:
+        options = getPrettyCommits(absFilename, branch=branch, after=args.after, before=args.before, nomerges=args.nomerges, skip=skip, limit=limit, logformat=args.logformat, logoptions=args.logoptions, grep=args.grep)
+        try:
+            optionCount = len(options)
+            if optionCount == limit:
+                options.append("next page")
+            if skip > original_skip:
+                options.append("previous page")
+
+            title = 'Pick your git commit id (choose \'exit\' or ctrl-c to quit)\nFile: ' + absFilename
+            if skip == 0 and optionCount == 0:
+                print "No commits for " + absFilename
+                title += "\n\nNo commits found!"
+            elif skip > 0 and optionCount == 0:
+                title += "\n\nNo more commits found."
+
+            options.append("exit")
+            option, index = pick(options, title, "=>", current_index)
+            if option == "exit" or option == "exit (no commits)":
+                sys.exit(0)
+            if option == "next page":
+                current_index = 0 # Reset current_index before drawing next page
+                skip = skip + limit
+                continue
+            if option == "previous page":
+                current_index = 0 # Reset current_index before drawing previous page
+                skip = skip - limit
+                continue
+
+            current_index = index # Save current_index for this page
+            commit = option.split()[0]
+            gitAbsFilename = gitAbsolutePath(absFilename)
+            basename = os.path.basename(gitAbsFilename)
+            extension = os.path.splitext(gitAbsFilename)[1]
+            tf = tempfile.NamedTemporaryFile(mode='w+', prefix=basename, suffix=extension, delete=not args.keeptemp)
+            cmd = "git show {0}:{1}".format(commit, gitAbsFilename)
+            call(shlex.split(cmd), stdout = tf)
+            tf.flush()
+
+            #Do not close the tf here. It will close when this program exits.
+            #This is a hack that is needed for editors that open in the background
+            #like open, mvim etc.
+
+            cmd = "{0} {1}".format(args.editor, tf.name)
+            call(shlex.split(cmd))
+        except:
+            sys.exit(3)
+
+if __name__ == "__main__":  crux()
