@@ -1,0 +1,48 @@
+{% extends "skeleton.html" %}
+{% load staticfiles cms_tags menu_tags zinnia analytical %}
+
+{% block head %}{% analytical_head_top %}{{ block.super }}{% analytical_head_bottom %}{% endblock head %}
+
+{% block css %}	<!--[if lt IE 9]>{# IE8 support of HTML5 elements and media queries #}
+	<script src="{% static 'js/ie/html5shiv-printshiv.js' %}"></script>
+	<script src="{% static 'js/ie/respond.min.js' %}"></script>
+	<![endif]-->
+	<link rel="stylesheet" type="text/css" href="{% block theme_css %}{% static 'css/styles.css' %}{% endblock %}">
+{% endblock css %}
+{% block js %}
+	<script type="text/javascript" src="{% block theme_js %}{% static 'js/scripts.js' %}{% endblock %}"></script>
+{% endblock js %}
+
+{% block title_tag %}{% block title %}{% page_attribute page_title %}{% endblock title %} | {{ current_site.name }}{% endblock title_tag %}
+
+{% block header_class %}row{% endblock %}
+{% block container_class %}container{% endblock %}
+{% block menu_class %}row{% endblock %}
+{% block main_class %}row{% endblock %}
+{% block nav_class %}col-xs-12 col-sm-4 col-md-3 col-lg-2 hidden-print{% endblock %}
+{% block content_class %}col-xs-12 col-sm-8 col-md-6 col-lg-7{% endblock %}
+{% block sidebar_class %}col-xs-12 col-sm-8 col-md-3 col-lg-3 col-sm-push-0 col-md-push-0{% endblock %}
+{% block footer_class %}row{% endblock %}
+
+{% block body %}{% analytical_body_top %}{{ block.super }}{% analytical_body_bottom %}{% endblock body %}
+
+{% block menu %}{% spaceless %}
+	{% include 'profile_dropdown.html' %}
+	{% language_chooser %}
+{% endspaceless %}{% endblock menu %}
+
+{% block nav %}{% spaceless %}
+	{% show_menu %}
+{% endspaceless %}{% endblock nav %}
+
+{% block content %}
+				{% block breadcrumb %}<ul class="breadcrumb">{% spaceless %}
+					{% show_breadcrumb %}{% endspaceless %}</ul>{% endblock breadcrumb %}
+{% endblock content %}
+
+{% block sidebar %}
+				<div id="highlights">{% block highlights %}{% endblock %}</div>
+				<div id="calendar" class="hidden-print">{% block calendar %}
+					{% get_calendar_entries %}
+				{% endblock calendar %}</div>
+{% endblock sidebar %}
