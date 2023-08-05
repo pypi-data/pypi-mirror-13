@@ -1,0 +1,37 @@
+#! /usr/bin/env bash
+
+# Copyright (C) 2015  Alejandro López Espinosa (kudrom)
+
+command -v python2 > /dev/null
+if [ $? -eq 0 ]
+then
+    ID=`id -u`
+    if [ $ID -ne 0 ]
+    then
+        echo "[!] YOU MIGHT NEED SUPERUSER PERMISSIONS DEPENDING ON THE LISTENER YOU USE."
+    fi
+    if [ ! -f settings.py ]
+    then
+        echo "You need to execute lupulo from a valid project directory."
+        exit 1
+    fi
+
+    command="from lupulo.settings import settings; print settings['lupulo_cwd']"
+    path=$(python2 -c "$command")
+
+    dir=$(realpath ./)
+
+    if [ $# -gt 0 ]
+    then
+        if [ $1 == '--daemonize' ]
+        then
+            LUPULO_PROJECT_DIR=$dir twistd -y "$path/startup.tac"
+        else
+            echo "The parameter $1 is invalid."
+        fi
+    else
+        LUPULO_PROJECT_DIR=$dir twistd -ny "$path/startup.tac"
+    fi
+else
+    echo "You need a python2 interpreter."
+fi
