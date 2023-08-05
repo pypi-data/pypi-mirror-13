@@ -1,0 +1,496 @@
+Metadata-Version: 1.1
+Name: udiskie
+Version: 1.4.0
+Summary: Removable disk automounter for udisks
+Home-page: https://github.com/coldfix/udiskie
+Author: Thomas Gläßle
+Author-email: t_glaessle@gmx.de
+License: MIT
+Description: =======
+        udiskie
+        =======
+        
+        |Version| |Downloads| |License|
+        
+        *udiskie* is a front-end for UDisks written in python. Its main purpose is
+        automatically mounting removable media, such as CDs or flash drives. It has
+        optional mount notifications, a GTK tray icon and user level CLIs for manual
+        mount and unmount operations. The media will be mounted in a new directory
+        under ``/media`` or ``/run/media/USER/``, using the device name if possible.
+        
+        
+        Project pages
+        -------------
+        
+        The `source code`_ is hosted on github.
+        
+        Check out the `wiki`_ for installation instructions and general questions.
+        Feel free to edit.
+        
+        You can use the github `issue tracker`_ to report any issues you encounter,
+        ask general questions or suggest new features.
+        
+        There is also a public `mailing list`_ if you prefer email.
+        
+        The `latest release`_ can be downloaded from PyPI.
+        
+        .. _source code: https://github.com/coldfix/udiskie
+        .. _wiki: https://github.com/coldfix/udiskie/wiki
+        .. _issue tracker: https://github.com/coldfix/udiskie/issues
+        .. _mailing list: http://lists.coldfix.de/mailman/listinfo/udiskie
+        .. _latest release: https://pypi.python.org/pypi/udiskie/
+        
+        
+        Usage
+        -----
+        
+        Start the automount and notification daemon and show a system tray icon:
+        
+        .. code-block:: bash
+        
+            udiskie --tray
+        
+        Mount or unlock a specific device manually:
+        
+        .. code-block:: bash
+        
+            udiskie-mount /dev/sdb1
+        
+        Unmount or remove a specific device manually:
+        
+        .. code-block:: bash
+        
+            udiskie-umount /media/<device-name>
+            # or with udisks2
+            udiskie-umount -2 /run/media/<user>/<device>
+        
+        See the man page for further instructions
+        
+        
+        Installation
+        ------------
+        
+        0. benefit from others' work
+        
+           - *udiskie* may be in your distribution's official repositories
+           - check out the wiki_ for guidance
+        
+           If neither of this helps, here are some general hints:
+        
+        1. install dependencies:
+        
+           Required:
+        
+           - setuptools_
+           - PyGObject_
+           - UDisks_ (UDisks1 or UDisks2)
+           - docopt_ (can automatically be installed by pip)
+        
+           Optional:
+        
+           - GTK3 (+introspection) for tray icon and password prompt. GTK2 also works
+             if not using the tray icon.
+           - libnotify (+introspection)
+           - the notification daemon of your choice
+           - gettext_ to build translation files (during setup step)
+           - PyYAML_ for config file (can automatically be installed by pip)
+           - python-keyutils_ 0.3 to cache passwords
+        
+           Access to system resources is mediated using PyGObject_, which is why some
+           packages need to be built with *+introspection*. Check the contents of the
+           folder ``/usr/lib/girepository-1.0/`` (or similar). There should be the
+           following typelibs:
+        
+           - Gio-2.0
+           - GLib-2.0
+           - Gtk-3.0
+           - Notify-0.7
+        
+           If you installed the above dependencies, but some of the typelibs are
+           missing they might be distributed in separate packages.
+        
+        2. use pip to download and install *udiskie* itself:
+        
+           .. code-block:: bash
+        
+               # from PyPI:
+               pip install udiskie
+        
+               # from a local checkout:
+               pip install .
+        
+        3. go back to the wiki_ and edit. ;)
+        
+        
+        .. _wiki: https://github.com/coldfix/udiskie/wiki
+        .. _setuptools: https://pypi.python.org/pypi/setuptools/
+        .. _UDisks: http://www.freedesktop.org/wiki/Software/udisks
+        .. _PyGObject: https://wiki.gnome.org/Projects/PyGObject
+        .. _PyYAML: https://pypi.python.org/pypi/PyYAML
+        .. _python-keyutils: https://pypi.python.org/pypi/keyutils/0.3
+        .. _docopt: http://docopt.org/
+        .. _gettext: http://www.gnu.org/software/gettext/
+        
+        
+        Permissions
+        -----------
+        
+        *udiskie* requires permission for some polkit_ actions which are usually
+        granted when using a desktop environment. If your login session is not
+        properly activated you may need to customize your polkit settings. Create the
+        file ``/etc/polkit-1/rules.d/50-udiskie.rules`` with the following contents:
+        
+        .. code-block:: javascript
+        
+            polkit.addRule(function(action, subject) {
+              var YES = polkit.Result.YES;
+              // NOTE: there must be a comma at the end of each line except for the last:
+              var permission = {
+                // required for udisks1:
+                "org.freedesktop.udisks.filesystem-mount": YES,
+                "org.freedesktop.udisks.luks-unlock": YES,
+                "org.freedesktop.udisks.drive-eject": YES,
+                "org.freedesktop.udisks.drive-detach": YES,
+                // required for udisks2:
+                "org.freedesktop.udisks2.filesystem-mount": YES,
+                "org.freedesktop.udisks2.encrypted-unlock": YES,
+                "org.freedesktop.udisks2.eject-media": YES,
+                "org.freedesktop.udisks2.power-off-drive": YES,
+                // required for udisks2 if using udiskie from another seat (e.g. systemd):
+                "org.freedesktop.udisks2.filesystem-mount-other-seat": YES,
+                "org.freedesktop.udisks2.encrypted-unlock-other-seat": YES,
+                "org.freedesktop.udisks2.eject-media-other-seat": YES,
+                "org.freedesktop.udisks2.power-off-drive-other-seat": YES
+              };
+              if (subject.isInGroup("storage")) {
+                return permission[action.id];
+              }
+            });
+        
+        This configuration allows all members of the *storage* group to run
+        udiskie.
+        
+        .. _polkit: http://www.freedesktop.org/wiki/Software/polkit/
+        
+        
+        GTK icons
+        ---------
+        
+        *udiskie* comes with a set of themeable custom Tango-style GTK icons for its
+        tray icon menu. The installer tries to install the icons into GTK's default
+        hicolor theme. Typically this is located in ``/usr/share/icons/hicolor``. If
+        you have any problems with this or you need a custom path you can manually do
+        it like so:
+        
+        .. code-block:: bash
+        
+            cp ./icons/scalable /usr/share/icons/hicolor -r
+            gtk-update-icon-cache /usr/share/icons/hicolor
+        
+        When doing a local installation, for example in a virtualenv, you can
+        manually change the installation prefix for the icon data files like so:
+        
+        .. code-block:: bash
+        
+            python setup.py install --install-data ~/.local
+        
+        The icons roughly follow the `Tango style guidelines`_. Some icons incorporate
+        the CDROM icon of the base icon theme of the `Tango desktop project`_
+        (released into the public domain).
+        
+        .. _`Tango style guidelines`: http://tango.freedesktop.org/Tango_Icon_Theme_Guidelines
+        .. _`Tango desktop project`: http://tango.freedesktop.org/Tango_Desktop_Project
+        
+        
+        Contributing
+        ------------
+        
+        *udiskie* is developed on github_. Feel free to contribute patches as pull
+        requests here.
+        
+        Try to be consistent with the PEP8_ guidelines. Add `unit tests`_ for all
+        non-trivial functionality if possible. `Dependency injection`_ is a great
+        pattern to keep modules flexible and testable.
+        
+        Commits should be reversible, independent units if possible. Use descriptive
+        titles and also add an explaining commit message unless the modification is
+        trivial. See also: `A Note About Git Commit Messages`_.
+        
+        Further resources:
+        
+        - `UDisks1 API`_
+        - `UDisks2 API`_
+        - `PyGObject APIs`_
+        - `Icon naming`_
+        - `Icon lookup`_
+        
+        .. _github: https://github.com/coldfix/udiskie
+        .. _PEP8: http://www.python.org/dev/peps/pep-0008/
+        .. _`unit tests`: http://docs.python.org/2/library/unittest.html
+        .. _`Dependency injection`: http://www.youtube.com/watch?v=RlfLCWKxHJ0
+        .. _`A Note About Git Commit Messages`: http://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html
+        
+        .. _`UDisks1 API`: http://udisks.freedesktop.org/docs/1.0.5/
+        .. _`UDisks2 API`: http://udisks.freedesktop.org/docs/latest/
+        .. _`PyGObject APIs`: http://lazka.github.io/pgi-docs/index.html
+        .. _`Icon naming`: http://standards.freedesktop.org/icon-naming-spec/icon-naming-spec-latest.html
+        .. _`Icon lookup`: http://standards.freedesktop.org/icon-theme-spec/icon-theme-spec-latest.html
+        
+        
+        .. |Version| image:: http://coldfix.de:8080/v/udiskie/badge.svg
+           :target: https://pypi.python.org/pypi/udiskie/
+           :alt: Latest Version
+        
+        .. |Downloads| image:: http://coldfix.de:8080/d/udiskie/badge.svg
+           :target: https://pypi.python.org/pypi/udiskie#downloads
+           :alt: Downloads
+        
+        .. |License| image:: http://coldfix.de:8080/license/udiskie/badge.svg
+           :target: https://github.com/coldfix/udiskie/blob/master/COPYING
+           :alt: License
+        
+        CHANGELOG
+        ---------
+        
+        1.4.0
+        ~~~~~
+        Date: 19.12.2015
+        
+        - go async (with self-made async module for now, until gbulb becomes ready)
+        - specify GTK/Notify versions to be imported (hence fix warnings and a problem
+          for the tray icon resulting from accidentally importing GTK2)
+        - add optional password caching
+        
+        
+        1.3.2
+        ~~~~~
+        
+        - revert "respect the automount flag for devices"
+        - make dependency on Gtk optional
+        
+        
+        1.3.1
+        ~~~~~
+        
+        - use icon hints from udev settings in notifications
+        - respect the automount flag for devices
+        - don't fail if libnotify is not available
+        
+        
+        1.3.0
+        ~~~~~
+        
+        - add actions to "Device added" notification
+        - allow to configure which actions should be added to notifications
+        
+        
+        1.2.1
+        ~~~~~
+        
+        - fix unicode issue in setup script
+        - update license/copyright notices
+        
+        
+        1.2.0
+        ~~~~~
+        
+        - use UDisks2 by default
+        - add --password-prompt command line argument and config file entry
+        
+        
+        1.1.3
+        ~~~~~
+        
+        - fix password prompt for GTK2 (tray is still broken for GTK2)
+        - fix minor documentation issues
+        
+        
+        1.1.2
+        ~~~~~
+        
+        - add key ``device_id`` for matching devices rather than only file systems
+        - improve documentation regarding dependencies
+        
+        
+        1.1.1
+        ~~~~~
+        
+        - fix careless error in man page
+        
+        
+        1.1.0
+        ~~~~~
+        
+        - implemented internationalization
+        - added spanish translation
+        - allow to choose icons from a configurable list
+        
+        
+        1.0.4
+        ~~~~~
+        
+        - compatibility with older version of pygobject (e.g. in Slackware 14.1)
+        
+        
+        1.0.3
+        ~~~~~
+        
+        - handle exception if no notification service is installed
+        
+        
+        1.0.2
+        ~~~~~
+        
+        - fix crash when calling udiskie mount/unmount utilites without udisks1
+          installed
+        
+        
+        1.0.1
+        ~~~~~
+        
+        - fix crash when calling udiskie without having udisks1 installed
+          (regression)
+        
+        
+        1.0.0
+        ~~~~~
+        
+        - port to PyGObject, removing dependencies on pygtk, zenity, dbus-python,
+          python-notify
+        - use a PyGObject based password dialog
+        - remove --password-prompt parameter
+        - rename command line parameters
+        - add negations for all command line parameters
+        
+        
+        0.8.0
+        ~~~~~
+        
+        - remove the '--filters' parameter for good
+        - change config format to YAML
+        - change default config path to $XDG_CONFIG_HOME/udiskie/config.yml
+        - separate ignore filters from mount option filters
+        - allow to match multiple attributes against a device (AND-wise)
+        - allow to overwrite udiskies default handleability settings
+        - raise exception if --config file doesn't exist
+        - add --options parameter for udiskie-mount
+        - simplify local installations
+        
+        
+        0.7.0
+        ~~~~~
+        
+        There are some backward incompatible changes, hence the version break:
+        
+        - command line parameter '-f'/'--filters' renamed to '-C'/'--config'
+        - add sections in config file to disable individual mount notifications and
+          set defaults for some program options (udisks version, prompt, etc)
+        - refactor ``udiskie.cli``, ``udiskie.config`` and ``udiskie.tray``
+        - revert 'make udiskie a namespace package'
+        - add 'Browse folder' action to tray menu
+        - add 'Browse folder' action button to mount notifications
+        - add '--no-automounter' command line option to disable automounting
+        - add '--auto-tray' command line option to use a tray icon that
+          automatically disappears when no actions are available
+        - show notifications when devices dis-/appear (can be disabled via config
+          file)
+        - show 'id_label' in tray menu, if available (instead of mount path or
+          device path)
+        - add 'Job failed' notifications
+        - add 'Retry' button to failed notifications
+        - remove automatic retries to unlock LUKS partitions
+        - pass only device name to external password prompt
+        - add '--quiet' command line option
+        - ignore devices ignored by udev rules
+        
+        
+        0.6.4
+        ~~~~~
+        
+        - fix logging in setup.py
+        - more verbose log messages (with time) when having -v on
+        - fix mounting devices that are added as 'external' and later changed to
+          'internal' [udisks1] (applies to LUKS devices that are opened by an udev
+          rule for example)
+        
+        
+        0.6.3 (bug fix)
+        ~~~~~~~~~~~~~~~
+        
+        - fix exception in Mounter.detach_device if unable to detach
+        - fix force-detach for UDisks2 backend
+        - automatically use UDisks2 if UDisks1 is not available
+        - mount unlocked devices only once, removes error message on UDisks2
+        - mention __ignore__ in man page
+        
+        0.6.2 (aesthetic)
+        ~~~~~~~~~~~~~~~~~
+        
+        - add custom icons for the context menu of the system tray widget
+        
+        
+        0.6.1 (bug fix)
+        ~~~~~~~~~~~~~~~
+        
+        - fix udisks2 external device detection bug: all devices were considered
+          external when using ``Sniffer`` (as done in the udiskie-mount and
+          udiskie-umount tools)
+        
+        
+        0.6.0 (udisks2 support, bug fix)
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        
+        - cache device states to avoid some race conditions
+        - show filesystem label in mount/unmount notifications
+        - retry to unlock LUKS devices when wrong password was entered twice
+        - show 'eject' only if media is available (udisks1 ejects only in this case)
+        - (un-) mount/lock notifications shown even when operations failed
+        - refactor internal API
+        - experimental support for udisks2
+        
+        
+        0.5.3 (feature, bug fix)
+        ~~~~~~~~~~~~~~~~~~~~~~~~
+        
+        - add '__ignore__' config file option to prevent handling specific devices
+        - delay notifications until termination of long operations
+        
+        
+        0.5.2 (tray icon)
+        ~~~~~~~~~~~~~~~~~
+        
+        - add tray icon (pygtk based)
+        - eject / detach drives from command line
+        
+        
+        0.5.1 (mainly internal changes)
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        
+        - use setuptools entry points to create the executables
+        - make udiskie a namespace package
+        
+        
+        0.5.0 (LUKS support)
+        ~~~~~~~~~~~~~~~~~~~~
+        
+        - support for LUKS devices (using zenity for password prompt)
+        - major refactoring
+        - use setuptools as installer
+        
+        
+Platform: UNKNOWN
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: Environment :: Console
+Classifier: Environment :: X11 Applications :: GTK
+Classifier: Intended Audience :: Developers
+Classifier: Intended Audience :: End Users/Desktop
+Classifier: Operating System :: POSIX :: Linux
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Programming Language :: Python :: 3.3
+Classifier: Programming Language :: Python :: 3.4
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Topic :: Desktop Environment
+Classifier: Topic :: Software Development
+Classifier: Topic :: System :: Filesystems
+Classifier: Topic :: System :: Hardware
+Classifier: Topic :: Utilities
