@@ -1,0 +1,49 @@
+<div metal:define-macro="ss_event_view_macro">
+  <tal:differentday tal:condition="python:not context.start().Date() == context.end().Date()"
+                    i18n:translate="event_when_differentday">
+      <span i18n:name="startdate"
+            metal:define-macro="startdate-field-view"
+            id="parent-fieldname-startDate"
+            tal:attributes="class string:dtstart;">
+        <span metal:define-slot="inside">
+          <span tal:replace="python:plone_view.toLocalizedTime(context.start())">Start Date</span>
+          <tal:word i18n:translate="event_when_differentday_optional_word_between_date_and_time" />
+          <span tal:replace="python:plone_view.toLocalizedTime(context.start(), time_only=1)">Start Time</span>
+        </span>
+      </span>
+      to
+      <br i18n:name="linebreak" />
+      <span i18n:name="enddate"
+            metal:define-macro="enddate-field-view"
+            id="parent-fieldname-endDate"
+            tal:attributes="class string:dtend;">
+         <span metal:define-slot="inside">
+           <span tal:replace="python:plone_view.toLocalizedTime(context.end())">End Date</span>
+           <tal:word i18n:translate="event_when_differentday_optional_word_between_date_and_time" />
+           <span tal:replace="python:plone_view.toLocalizedTime(context.end(), time_only=1)">End Time</span>
+        </span>
+      </span>
+  </tal:differentday>
+  <tal:sameday tal:condition="python:context.start().Date() == context.end().Date()"
+               i18n:translate="event_when_sameday">
+      <span tal:replace="python:plone_view.toLocalizedTime(context.start())"
+            i18n:name="date">
+          Start Date Time</span>
+      <br i18n:name="linebreak" />
+      from
+      <span metal:define-macro="startdatesame-field-view"
+            id="parent-fieldname-startDate"
+            tal:attributes="class string:dtstart;"
+            i18n:name="starttime">
+            <span metal:define-slot="inside"
+                  tal:content="python:plone_view.toLocalizedTime(context.start(), time_only=1)">Start Time</span>
+      </span> to
+      <span metal:define-macro="enddatesame-field-view"
+            id="parent-fieldname-endDate"
+            tal:attributes="class string: dtend;"
+            i18n:name="endtime">
+            <span metal:define-slot="inside"
+                  tal:content="python:plone_view.toLocalizedTime(context.end(), time_only=1)">End Time</span>
+      </span>
+  </tal:sameday>
+</div>

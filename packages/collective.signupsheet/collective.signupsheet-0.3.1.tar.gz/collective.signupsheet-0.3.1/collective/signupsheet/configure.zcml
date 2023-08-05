@@ -1,0 +1,64 @@
+<configure
+    xmlns="http://namespaces.zope.org/zope"
+    xmlns:five="http://namespaces.zope.org/five"
+    xmlns:i18n="http://namespaces.zope.org/i18n"
+    xmlns:cmf="http://namespaces.zope.org/cmf"
+    xmlns:genericsetup="http://namespaces.zope.org/genericsetup"
+    i18n_domain="collective.signupsheet">
+
+  <five:registerPackage package="." initialize=".initialize" />
+  <i18n:registerTranslations directory="locales" />
+  <cmf:registerDirectory name="skins" directory="skins" recursive="True"/>
+
+  <include package="Products.CMFCore" />
+  <include file="permissions.zcml" />
+
+  <include package=".adapters" />
+  <include package=".browsers" />
+  <include package=".contents" />
+  <include package=".events" />
+  <include package=".utilities" />
+
+  <genericsetup:registerProfile
+      name="default"
+      title="SignupSheet"
+      directory="profiles/default"
+      description="A solution for manage signup attendance to events"
+      provides="Products.GenericSetup.interfaces.EXTENSION"
+      />
+
+  <genericsetup:registerProfile
+      name="uninstall"
+      title="SignupSheet: uninstall"
+      directory="profiles/uninstall"
+      description="Remove collective.signupsheet"
+      provides="Products.GenericSetup.interfaces.EXTENSION"
+      />
+
+  <genericsetup:importStep
+      name="collective.signupsheet.various"
+      title="collective.signupsheet: miscellaneous import steps"
+      description="Various import steps that are not handled by GS import/export handlers."
+      handler="collective.signupsheet.setuphandlers.setupVarious">
+    <depends name="typeinfo"/>
+	<depends name="types"/>
+  </genericsetup:importStep>
+
+  <genericsetup:registerProfile
+      name="to1010"
+      title="Migrate SignupSheet to version 0.2"
+      directory="profiles/to1010"
+      description=""
+      provides="Products.GenericSetup.interfaces.EXTENSION"
+      />
+  <genericsetup:upgradeStep
+        title="Upgrade to collective.signupsheet 0.2.0"
+        description="Migrates collective.analyticspanel to 1010"
+        source="1000"
+        destination="1010"
+        handler=".setuphandlers.migrateTo1010"
+        sortkey="1"
+        profile="collective.signupsheet:default"
+    />
+
+</configure>
