@@ -1,0 +1,110 @@
+Metadata-Version: 2.0
+Name: django-modeldict-yplan
+Version: 1.5.0
+Summary: Stores a model as a dictionary
+Home-page: https://github.com/YPlan/django-modeldict
+Author: YPlan
+Author-email: adam@yplanapp.com
+License: UNKNOWN
+Platform: UNKNOWN
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: Framework :: Django
+Classifier: Intended Audience :: Developers
+Classifier: Intended Audience :: System Administrators
+Classifier: License :: OSI Approved :: Apache Software License
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python :: 2
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.4
+Classifier: Programming Language :: Python :: 3.5
+Classifier: Programming Language :: Python
+Classifier: Topic :: Software Development
+
+================
+django-modeldict
+================
+
+.. image:: https://img.shields.io/pypi/v/django-modeldict-yplan.svg
+    :target: https://pypi.python.org/pypi/django-modeldict-yplan
+
+.. image:: https://travis-ci.org/YPlan/django-modeldict.svg?branch=master
+    :target: https://travis-ci.org/YPlan/django-modeldict
+
+
+``ModelDict`` is a very efficient way to store things like settings in your database. The entire model is transformed into a dictionary (lazily) as well as stored in your cache. It's invalidated only when it needs to be (both in process and based on ``CACHE_BACKEND``).
+
+It was originally created by `Disqus <https://github.com/disqus/django-modeldict>`_, but due to the inactivity we at YPlan have taken over maintenance on this fork.
+
+Requirements
+------------
+
+Tested with all combinations of:
+
+* Python: 2.7, 3.5
+* Django: 1.8, 1.9
+
+Install
+-------
+
+Install it with ``pip`` (or ``easy_install``):
+
+.. code-block:: bash
+
+    pip install django-modeldict-yplan
+
+Make sure you ``pip uninstall django-modeldict`` first if you're upgrading from the original to this fork - the packages clash.
+
+Example Usage
+-------------
+
+.. code-block:: python
+
+    # You'll need a model with fields to use as key and value in the dict
+    class Setting(models.Model):
+        key = models.CharField(max_length=32)
+        value = models.CharField(max_length=200)
+
+    # Create the ModelDict...
+    settings = ModelDict(Setting, key='key', value='value', instances=False)
+
+    # And you can treat it like a normal dict:
+
+    # Missing values = KeyError
+    settings['foo']
+    >>> KeyError
+
+    # Sets supported
+    settings['foo'] = 'hello'
+
+    # Fetch the current value using normal dictionary access
+    settings['foo']
+    >>> 'hello'
+
+    # ...or by normal model queries
+    Setting.objects.get(key='foo').value
+    >>> 'hello'
+
+
+
+
+=======
+History
+=======
+
+Pending Release
+---------------
+
+* Forked by YPlan
+* Fixed concurrency TOCTTOU bug for threaded Django servers.
+* Stopped including the 'tests' directory in package
+* Django 1.8 and 1.9 supported.
+* Python 3 support added.
+* Fixed ``setdefault()`` to return the value that was set/found, as per normal dict semantics. Thanks @olevinsky.
+
+1.4.1 (2012-12-04)
+------------------
+
+* Last release by Disqus
+
+
