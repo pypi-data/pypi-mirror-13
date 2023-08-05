@@ -1,0 +1,2 @@
+class DirectionNotFoundException(Exception):
+    pass
