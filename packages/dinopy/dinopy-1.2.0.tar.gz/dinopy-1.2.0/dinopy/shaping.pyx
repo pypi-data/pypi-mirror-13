@@ -1,0 +1,439 @@
+# -*- coding: utf-8 -*-
+#cython: wraparound=False
+"""This module contains functions to shape q-grams.
+
+Note:
+    The :func:`dinopy.processors.qgrams` function that creates (shaped)
+    q-grams from a sequence is considered a processor and can be found
+    in the :mod:`dinopy.processors` module.
+
+"""
+import array as array
+import numpy as np
+
+from .exceptions import InvalidDtypeError
+
+cimport cython
+
+cpdef apply_shape(object qgram, object shp):
+    """Applies the given shape to the given q-gram.
+    Calls :func:`_apply_shape_array` or :func:`_apply_shape_unicode`,
+    depending on the type of q-gram.
+
+    Arguments:
+        qgram (dtype): A q-gram of any :ref:`dtype <dtype>`.
+        qgram_shape (Shape): see :class:`dinopy.shape.Shape`
+
+    Returns:
+        dtype: A reduced q-gram. The result of applying `qgram_shape` to `qgram`,
+        e.g. applying `#__##` to `ACGTA` results in `ATA`.
+    """
+    if isinstance(qgram, int):
+        raise ValueError("`apply_shape` does not support integer encoded qgrams. Please use the specialized method _apply_shape_int instead.")
+    cdef int len_qgram = len(qgram)
+    cdef int len_shape = len(shp)
+    if len_qgram != len_shape:
+        raise ValueError("""q-gram and shape don't have the same size.
+                            len(q-gram) = {},
+                            len(shape) = {}""".format(len_qgram, len_shape))
+    cdef Shape bshape = Shape(shp)
+
+    if isinstance(qgram, bytes):
+        return _apply_shape_bytes(qgram, bshape)
+    elif isinstance(qgram, bytearray):
+        return _apply_shape_bytearray(qgram, bshape)
+    elif isinstance(qgram, unicode) or isinstance(qgram, str):
+        return _apply_shape_unicode(qgram, bshape)
+    elif isinstance(qgram, np.ndarray):
+        return _apply_shape_numpy_array(qgram, bshape)
+    else:
+        raise TypeError("Unsupported type of qgram: {}".format(str(type(qgram))))
+
+cdef bytes _apply_shape_bytes(bytes qgram, Shape qgram_shape):
+    """Reduce the q-gram by applying the given shape.
+
+    Arguments:
+        qgram (bytes): A bytes q-gram.
+        qgram_shape (Shape): see :class:`dinopy.shape.Shape`
+
+    Returns:
+        bytes: The reduced q-gram.
+    """
+    cdef unsigned char index
+    return bytes([qgram[index] for index in qgram_shape.index_shape_care])
+
+cdef np.ndarray _apply_shape_numpy_array(np.ndarray qgram, Shape qgram_shape):
+    """Reduce the q-gram by applying the given shape.
+
+    Arguments:
+        qgram (numpy array): A q-gram as numpy array.
+        qgram_shape (Shape): see :class:`dinopy.shape.Shape`
+
+    Returns:
+        numpy array: The reduced q-gram.
+    """
+    return qgram[qgram_shape.index_shape_care]
+
+cdef bytearray _apply_shape_bytearray(bytearray qgram, Shape qgram_shape):
+    """Apply a shape to a q-gram, return reduced q-gram.
+
+    Arguments:
+        qgram (bytearray): A bytearray q-gram.
+        qgram_shape (Shape): see :class:`dinopy.shape.Shape`
+
+    Returns:
+        bytearray: The reduced q-gram.
+    """
+    cdef unsigned char index
+    return bytearray([qgram[index] for index in qgram_shape.index_shape_care])
+
+cdef unsigned long _apply_shape_int(unsigned long qgram, Shape qgram_shape, int bits_needed, bool sentinel=False):
+    """Apply a shape to a bit encoded q-gram, return reduced q-gram.
+
+    Arguments:
+        qgram (unsigned long): A bitencoded q-gram.
+        qgram_shape (Shape): see :class:`dinopy.shape.Shape`
+        bits_needed (int): Number of bits used for the encoding. Should be 2 or 4.
+
+    Returns:
+        unsigned long: The reduced q-gram.
+    """
+    cdef:
+        unsigned long bitmask = <unsigned long>cpow(2, bits_needed) - 1
+        unsigned long result = 0, rev_result = 0
+        unsigned long num_cares = <unsigned long> qgram_shape.num_care
+        unsigned long bitrepr = qgram
+
+    for i in range(len(qgram_shape) - 1, -1, -1):
+        if qgram_shape[i]:
+            rev_result <<= bits_needed
+            rev_result |= bitrepr & bitmask
+        bitrepr >>= bits_needed
+
+    result = bitmask if sentinel else 0
+    for i in range(num_cares):
+        result <<= bits_needed
+        result |= rev_result & bitmask
+        rev_result >>= bits_needed
+    return result
+
+cdef unicode _apply_shape_unicode(unicode qgram, Shape qgram_shape):
+    """Apply a shape to a q-gram, return reduced q-gram.
+
+    Arguments:
+        qgram (str): A bytearray q-gram.
+        qgram_shape (Shape): see :class:`dinopy.shape.Shape`
+
+    Returns:
+        str: The reduced q-gram.
+    """
+    cdef unsigned char index
+    return "".join([qgram[index] for index in qgram_shape.index_shape_care])
+
+cpdef list windows_list (seq, object qgram_shape):
+    """Check the type of the input and invoke the right _windows_<type>
+    function to create all windows created by the given q-gram shape
+
+    Arguments:
+        seq (dtype): A sequence of any :ref:`dtype <dtype>`.
+        qgram_shape: see :mod:`dinopy.shape`
+
+    Returns:
+        list: A list containing all gapped q-grams generated by applying :func:`qgram_shape`
+            to all q-grams of seq.
+
+    Raises:
+        InvalidDtypeError: If the seq has an invalid dtype.
+    """
+    cdef Shape bshape = Shape(qgram_shape)
+    if isinstance(seq, bytes):
+        return _windows_bytes_list(seq, bshape)
+    elif isinstance(seq, bytearray):
+        return _windows_bytearray_list(seq, bshape)
+    elif isinstance(seq, (unicode, str)):
+        return _windows_unicode_list(seq, bshape)
+    elif isinstance(seq, array):
+        return _windows_unicode_view_list(seq, bshape)
+    else:
+        raise InvalidDtypeError("Unrecognized dtype of seq {}".format(type(seq)))
+
+def windows(object seq, object qgram_shape):
+    """Create all windows described by the shape from the seq.
+
+    Check the type of the input and invoke the right _windows_<type>
+
+    Arguments:
+        seq (dtype): A sequence of any :ref:`dtype <dtype>`.
+        qgram_shape: see :mod:`dinopy.shape`
+
+    Yields:
+        dtype: An iterator over all gapped q-grams generated by applying 
+        `qgram_shape` to all q-grams of seq.
+
+    Raises:
+        TypeError: If seq is of an unsupported type. Supported types are:
+          - bytes
+          - bytearray
+          - string / unicode
+          - array
+    """
+    cdef Shape bshape
+    bshape = Shape(qgram_shape)
+    if isinstance(seq, bytes):
+        yield from _windows_bytes(seq, bshape)
+    elif isinstance(seq, bytearray):
+        yield from _windows_bytearray(seq, bshape)
+    elif isinstance(seq, unicode):
+        yield from _windows_unicode(seq, bshape)
+    elif isinstance(seq, array):
+        yield from _windows_unicode_view(seq, bshape)
+    elif isinstance (seq, np.ndarray):
+        yield from _windows_numpy_array(seq, bshape)
+    else:
+        raise TypeError("seq has to be of type bytes, bytearray, unicode or array.array, not {}".format(type(seq)))
+
+def _windows_bytes(bytes seq, Shape qgram_shape):
+    """Return an iterator over all windows of the reference described by the shape.
+
+    Arguments:
+        seq (bytes): A bytes sequence.
+        qgram_shape: see :mod:`dinopy.shape`
+
+    Yields:
+        bytes: An iterator over all (gapped) q-grams generated by applying
+        `qgram_shape` to all q-grams of seq.
+    """
+    cdef:
+        int qgram_shape_length = len(qgram_shape)
+        int seq_length = len(seq)
+        int index
+        bytes unreduced_qgram
+        bool solid = qgram_shape.is_solid()
+
+    if solid:
+        for index in range(seq_length - qgram_shape_length + 1):
+            yield seq[index : index + qgram_shape_length]
+    else:
+        for index in range(seq_length - qgram_shape_length + 1):
+            unreduced_qgram = seq[index : index + qgram_shape_length]
+            yield(_apply_shape_bytes(unreduced_qgram, qgram_shape))
+
+def _windows_bytearray(bytearray seq, Shape qgram_shape):
+    """Return an iterator over all windows of the reference described by the shape.
+
+    Arguments:
+        seq (bytearray): A bytearray sequence.
+        qgram_shape: see :mod:`dinopy.shape`
+
+    Yields:
+        bytearray: An iterator over all (gapped) q-grams generated by applying
+        `qgram_shape` to all q-grams of seq.
+    """
+    cdef:
+        int qgram_shape_length = len(qgram_shape)
+        int seq_length = len(seq)
+        int index
+        bytearray unreduced_qgram
+        bool solid = qgram_shape.is_solid()
+
+    if solid:
+        for index in range(seq_length - qgram_shape_length + 1):
+            yield seq[index : index + qgram_shape_length]
+    else:
+        for index in range(seq_length - qgram_shape_length + 1):
+            unreduced_qgram = seq[index : index + qgram_shape_length]
+            yield(_apply_shape_bytearray(unreduced_qgram, qgram_shape))
+
+def _windows_unicode(unicode seq, Shape qgram_shape):
+    """Return an iterator over all windows of the reference described by the shape.
+
+    Arguments:
+        seq (str): A str / unicode sequence.
+        qgram_shape: see :mod:`dinopy.shape`
+
+    Yields:
+        str: An iterator over all (gapped) q-grams generated by applying
+        `qgram_shape` to all q-grams of seq.
+    """
+    cdef:
+        unicode item
+        int qgram_shape_length = len(qgram_shape)
+        int seq_length = len(seq)
+        int index
+        unicode unreduced_qgram
+        bool solid = qgram_shape.is_solid()
+
+    if solid:
+        for index in range(seq_length - qgram_shape_length + 1):
+            yield seq[index : index + qgram_shape_length]
+    else:
+        for index in range(seq_length - qgram_shape_length + 1):
+            unreduced_qgram = seq[index : index + qgram_shape_length]
+            yield(_apply_shape_unicode(unreduced_qgram, qgram_shape))
+
+def _windows_unicode_view (unicode[:] seq, Shape qgram_shape):
+    """Return an iterator over all windows of the reference described by the shape.
+
+    Arguments:
+        seq (unicode view): A str / unicode sequence.
+        qgram_shape: see :mod:`dinopy.shape`
+
+    Yields:
+        str: An iterator over all (gapped) q-grams generated by applying
+        `qgram_shape` to all q-grams of seq.
+    """
+    cdef:
+        unicode item
+        int qgram_shape_length = len(qgram_shape)
+        int seq_length = len(seq)
+        int index
+        unicode[:] unreduced_qgram
+        bool solid = qgram_shape.is_solid()
+
+    if solid:
+        for index in range(seq_length - qgram_shape_length + 1):
+            yield seq[index : index + qgram_shape_length]
+    else:
+        for index in range(seq_length - qgram_shape_length + 1):
+            unreduced_qgram = seq[index : index + qgram_shape_length]
+            yield(_apply_shape_unicode(unreduced_qgram, qgram_shape))
+
+def _windows_numpy_array (np.ndarray seq, Shape qgram_shape):
+    """Return an iterator over all windows of the reference described by the shape.
+
+    Arguments:
+        seq (numpy array): A str / unicode sequence.
+        qgram_shape: see :mod:`dinopy.shape`
+
+    Yields:
+        numpy array: An iterator over all (gapped) q-grams generated by applying
+        `qgram_shape` to all q-grams of seq.
+    """
+    cdef:
+        unicode item
+        int qgram_shape_length = len(qgram_shape)
+        int seq_length = len(seq)
+        int index
+        np.ndarray unreduced_qgram
+        bool solid = qgram_shape.is_solid()
+
+    if solid:
+        for index in range(seq_length - qgram_shape_length + 1):
+            yield seq[index : index + qgram_shape_length]
+    else:
+        for index in range(seq_length - qgram_shape_length + 1):
+            unreduced_qgram = seq[index : index + qgram_shape_length]
+            yield(_apply_shape_numpy_array(unreduced_qgram, qgram_shape))
+
+
+cdef list _windows_unicode_view_list (unicode[:] seq, Shape qgram_shape):
+    """Return all windows of the reference described by the shape.
+
+    Arguments:
+        seq (unicode view): A unicode view sequence.
+        qgram_shape: see :mod:`dinopy.shape`
+
+    Returns:
+        list of str: All (gapped) q-grams generated by applying
+        `qgram_shape` to all q-grams of seq.
+    """
+    cdef:
+        int qgram_shape_length = len(qgram_shape)
+        int seq_length = len(seq)
+        int index
+        unicode[:] unreduced_qgram
+        list qgrams = []
+        bool solid = qgram_shape.is_solid()
+
+    if solid:
+        for index in range(seq_length - qgram_shape_length + 1):
+            qgrams.append(seq[index : index + qgram_shape_length])
+    else:
+        for index in range(seq_length - qgram_shape_length + 1):
+            unreduced_qgram = seq[index : index + qgram_shape_length]
+            qgrams.append((_apply_shape_unicode(unreduced_qgram, qgram_shape)))
+    return qgrams
+
+cdef list _windows_unicode_list (unicode seq, Shape qgram_shape):
+    """Return all windows of the reference described by the shape.
+
+    Arguments:
+        seq (str): A str / unicode sequence.
+        qgram_shape: see :mod:`dinopy.shape`
+
+    Returns:
+        list of str: All (gapped) q-grams generated by applying
+        `qgram_shape` to all q-grams of seq.
+    """
+    cdef:
+        int qgram_shape_length = len(qgram_shape)
+        int seq_length = len(seq)
+        int index
+        unicode unreduced_qgram
+        list qgrams = []
+        bool solid = qgram_shape.is_solid()
+
+    if solid:
+        for index in range(seq_length - qgram_shape_length + 1):
+            qgrams.append(seq[index : index + qgram_shape_length])
+    else:
+        for index in range(seq_length - qgram_shape_length + 1):
+            unreduced_qgram = seq[index : index + qgram_shape_length]
+            qgrams.append((_apply_shape_unicode(unreduced_qgram, qgram_shape)))
+    return qgrams
+
+cdef list _windows_bytes_list (bytes seq, Shape qgram_shape):
+    """Return all windows of the reference described by the shape.
+
+    Arguments:
+        seq (bytes): A bytes sequence.
+        qgram_shape: see :mod:`dinopy.shape`
+
+    Returns:
+        list of bytes: All (gapped) q-grams generated by applying
+        `qgram_shape` to all q-grams of seq.
+    """
+    cdef:
+        int qgram_shape_length = len(qgram_shape)
+        int seq_length = len(seq)
+        int index
+        bytes unreduced_qgram
+        list qgrams = []
+        bool solid = qgram_shape.is_solid()
+
+    if solid:
+        for index in range(seq_length - qgram_shape_length + 1):
+            qgrams.append(seq[index : index + qgram_shape_length])
+    else:
+        for index in range(seq_length - qgram_shape_length + 1):
+            unreduced_qgram = seq[index : index + qgram_shape_length]
+            qgrams.append((_apply_shape_bytes(unreduced_qgram, qgram_shape)))
+    return qgrams
+
+cdef list _windows_bytearray_list (bytearray seq, Shape qgram_shape):
+    """Return all windows of the reference described by the shape.
+
+    Arguments:
+        seq (bytearray): A bytearray sequence.
+        qgram_shape: see :mod:`dinopy.shape`
+
+    Returns:
+        list of bytearrays: All (gapped) q-grams generated by applying
+        `qgram_shape` to all q-grams of seq.
+    """
+    cdef:
+        int qgram_shape_length = len(qgram_shape)
+        int seq_length = len(seq)
+        int index
+        bytearray unreduced_qgram
+        list qgrams = []
+        bool solid = qgram_shape.is_solid()
+
+    if solid:
+        for index in range(seq_length - qgram_shape_length + 1):
+            qgrams.append(seq[index : index + qgram_shape_length])
+    else:
+        for index in range(seq_length - qgram_shape_length + 1):
+            unreduced_qgram = seq[index : index + qgram_shape_length]
+            qgrams.append((_apply_shape_bytes(unreduced_qgram, qgram_shape)))
+    return qgrams
