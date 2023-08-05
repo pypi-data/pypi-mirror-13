@@ -1,0 +1,68 @@
+language: python
+python:
+  #  - "2.6"
+  - "2.7"
+  # - "3.2"
+  # - "3.3"
+  # - "3.4"
+virtualenv:
+    system_site_packages: true
+before_install:
+#    - sudo add-apt-repository ppa:yjwong/cmake -y
+    - sudo apt-get update -qq
+    - sudo apt-get install -qq git g++ sox make curl
+    - sudo apt-get install -qq libinsighttoolkit3-dev libpng12-dev libgdcm2-dev libvtk5-dev
+    - sudo add-apt-repository ppa:kubuntu-ppa/backports -y
+#    ppa:smspillaz/cmake-2.8.12
+    - sudo apt-get update -q
+    - sudo apt-get install -qq cmake
+    # - sudo apt-get install -qq python python-dev
+    - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
+    - chmod +x miniconda.sh
+    - ./miniconda.sh -b
+    - pwd
+    - ls
+    - export PATH=/home/travis/miniconda2/bin:$PATH
+    - conda config --set always_yes yes
+    #  Update conda else if will result in a problem when conda updates the repos...
+    - conda update --yes conda
+    # GUI
+    - "export DISPLAY=:99.0"
+    - sh -e /etc/init.d/xvfb start
+# command to install dependencies
+install:
+    - cmake --version
+    - conda update --yes conda
+    - conda install --yes pip nose coverage
+    # Install dependencies
+    - conda install --yes -c SimpleITK -c luispedro -c mjirik --file requirements_conda.txt
+    - pip install -r requirements_pip.txt
+
+    - git clone https://github.com/mjirik/skelet3d.git
+    - mkdir skelet3d/build
+    - cd skelet3d/build
+    - cmake ..
+    # - cmake .. -DNO_SHARED_INSTALL
+    - cmake --build .
+    # this install thinningCxxShared to /usr/local/lib/libBinaryThinningCxxShared.dylib
+    - sudo make install
+    # nosudo install for skelet3d into anaconda, for now we are using pypi version of skelet3d
+    # - pip install .
+    # library is installed but not for anaconda
+#    - python setup.py install
+    - 'echo "include /usr/local/lib" | sudo tee -a /etc/ld.so.conf'
+    - 'sudo ldconfig -v'
+#
+    - cd ..
+    - cd ..
+
+    # get sample data
+    - python -m imtools.sample_data biodur_sample -o sample_data
+
+
+# command to run tests
+script: nosetests --with-coverage --verbose --cover-package=quantan
+# script: nosetests --with-coverage --verbose --nocapture --nologcapture --cover-package=lisa
+# script: nosetests --with-coverage --cover-package=lisa
+after_success:
+    - coveralls
