@@ -1,0 +1,57 @@
+[ui]
+
+[extensions]
+color=
+graphlog=
+histedit=
+rebase=
+record=
+shelve=
+
+[hooks]
+# This hook adds "%include ../.hgrc" to .hg/hgrc if the .hgrc file exists in
+# the top level.  This allows one to store a set of paths for example.
+# See http://stackoverflow.com/a/24195392/1088938
+update = if [ -e .hgrc ] && touch .hg/hgrc \
+                         && ! grep -q '%include \.\./\.hgrc' .hg/hgrc; then \
+           echo '%include ../.hgrc' >> .hg/hgrc; \
+         fi
+
+[alias]
+lga = glog --style=${MMF_SETUP}/_data/hgthemes/map-cmdline.lg -l20
+
+# The following provide options for commiting only clean versions of
+# jupyter notebooks.  They require the nbstripout package:
+# pip install --index-url=https://bitbucket.org/mforbes/mypi/ nbstripout
+
+# The commit versions
+cclean = !hg tag -fl cstatus_parent &&\
+          hg com -qm "CHK: cstatus checkpoint" &&\
+          hg tag -fl cstatus_checkpoint &&\
+          hg debugsetparents cstatus_parent &&\
+          hg debugrebuilddirstate&&\
+          hg status -man0 | xargs nbstripout
+
+crestore = !hg update -C cstatus_checkpoint &&\
+            hg debugsetparents cstatus_parent &&\
+            hg debugrebuilddirstate &&\
+            hg strip cstatus_checkpoint --no-backup &&\
+            hg tag -l --remove cstatus_parent
+
+cstatus = !hg cclean &&\
+           hg status "$@" &&\
+           hg crestore
+
+cdiff = !hg cclean && hg diff "$@" && hg crestore
+cediff = !hg cclean && hg ediff "$@" && hg crestore
+
+ccommit = !hg cclean &&\
+           hg commit "$@" &&\
+           hg tag -fl ccommit-parent &&\
+           hg crestore &&\
+           hg debugsetparents ccommit-parent &&\
+           hg debugrebuilddirstate &&\
+           hg commit -qm "OUT: Automatic commit of output" &&\
+           hg debugsetparents ccommit-parent &&\
+           hg debugrebuilddirstate &&\
+           hg tag -l --remove ccommit-parent
