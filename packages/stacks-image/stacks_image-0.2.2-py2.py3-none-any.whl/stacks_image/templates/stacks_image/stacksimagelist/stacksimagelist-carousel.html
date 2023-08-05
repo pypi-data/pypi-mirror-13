@@ -1,0 +1,23 @@
+<!--StacksImageList Carousel-->
+
+<div class="stacks-module list-carousel stacks-image stacks-image-list-carousel grid">
+    {% if context.display_title %}<h2 class="module-title">{{ context.display_title }}</h2>{% endif %}
+    <div class="grid-block carousel">
+        {% for image in context.images %}
+            <div class="item">
+                <img class="lazyOwl" data-src="{{ image.image.full_width }}"/>
+                {% if image.attribution %}
+                    <p class="attribution">{{ image.attribution }}</p>
+                {% endif %}
+                {% if image.optional_content.raw_text or image.display_title %}
+                <div class="text-container">
+                    {% if image.display_title %}
+                    <h4 class="list-heading">{{ image.display_title }}</h4>
+                    {% endif %}
+                    {{ image.optional_content.as_html }}
+                </div>
+                {% endif %}
+            </div>
+        {% endfor %}
+    </div>
+</div>
