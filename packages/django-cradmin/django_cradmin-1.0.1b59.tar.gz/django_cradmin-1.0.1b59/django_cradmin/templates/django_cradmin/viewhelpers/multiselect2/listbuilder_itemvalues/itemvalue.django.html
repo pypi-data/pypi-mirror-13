@@ -1,0 +1,28 @@
+{% extends "django_cradmin/viewhelpers/listbuilder/itemvalue/titledescription.django.html" %}
+{% load cradmin_tags %}
+{% load cradmin_icon_tags %}
+
+{% block end-of-content %}
+    {% block buttons %}
+        <p class="django-cradmin-multiselect2-itemvalue-buttons">
+            {% block select-button %}
+                <button type="button"
+                        id="{{ me.get_selectbutton_dom_id }}"
+                        class="btn btn-default django-cradmin-multiselect2-itemvalue-button"
+                        django-cradmin-multiselect2-select={{ select_directive_json|safe }}
+                        aria-label='{{ me.get_selectbutton_aria_label }}'>
+                    {% block usethis-button-content %}
+                        {{ me.get_selectbutton_text }}
+                        {% block usethis-button-icon %}
+                            <span class="{% cradmin_icon 'select-left' %} hidden-xs"></span>
+                        {% endblock usethis-button-icon %}
+                    {% endblock usethis-button-content %}
+                </button>
+            {% endblock select-button %}
+        </p>
+    {% endblock buttons %}
+
+    {% block preview-wrapper %}
+        {% cradmin_render_renderable me.selected_item_renderer %}
+    {% endblock preview-wrapper %}
+{% endblock end-of-content %}
