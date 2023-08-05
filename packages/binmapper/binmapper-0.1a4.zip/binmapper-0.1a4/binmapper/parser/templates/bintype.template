@@ -1,0 +1,91 @@
+import binmapper.types
+import weakref
+
+_id2obj_dict = weakref.WeakValueDictionary()
+
+def remember(obj):
+    oid = id(obj)
+    _id2obj_dict[oid] = obj
+    return oid
+
+def id2obj(oid):
+    return _id2obj_dict[oid]
+
+{% for class in classes %}    
+class {{class.name}}(object):
+    def parse( self, stream ):
+        result  = 0
+        for  elem  in self._field_names_by_order:
+            e = elem.__get__(self)
+            result += e.parse( stream )
+        for  elem  in self._let_field_names_by_order:
+            e = elem.__get__(self)
+            e.value = e.value.eval()
+        return result
+    def store(self, stream, sync = True):
+        result  = 0
+        for  elem  in self._field_names_by_order:
+            e = elem.__get__(self)
+            e.store( stream , sync = sync)
+        return result
+    def byte_size(self, recursive = True):
+        result = 0
+        for  elem  in self._field_names_by_order:
+            e = elem.__get__(self)
+            result += e.byte_size(recursive)
+        return result
+    
+    {% for field in class.fields %}
+    {% set field_fq = field.id + field.suffix %}
+    def get_{{field_fq}}(self):
+        return self._{{field_fq}}
+    def set_{{field_fq}}(self, value):
+        self._{{field_fq}} = value
+    {{field_fq}} = property( get_{{field_fq}}, set_{{field_fq}} )
+    {% endfor %}
+    
+    {{class.class_fields_by_order}}
+    
+    {% for let_field in class.let_fields %}
+    {% set let_field_fq = let_field.id + let_field.suffix %}
+    def get_{{let_field_fq}}(self):
+        return self._{{let_field_fq}}
+    def set_{{let_field_fq}}(self, value):
+        self._{{let_field_fq}} = value
+    {{let_field_fq}} = property( get_{{let_field_fq}}, set_{{let_field_fq}} )
+    {% endfor %}
+    
+    {{class.let_fields_by_order}}
+    
+    def get_byteorder(self):
+        return self._byteorder
+    def set_byteorder(self, value):
+        self._byteorder = value
+    byteorder = property( get_byteorder, set_byteorder )
+    
+    def __init__(self, parent = None, byteorder = None):
+        id_self = remember(self)
+        
+        self.byteorder = binmapper.types.Expr(lambda: 'littleendian') {# default class byteorder #}
+        
+        {# priority: user byteorder > definition byteorder > parent byteorder #}
+        if type(byteorder) is binmapper.types.Expr:
+            self.byteorder = byteorder         {# override class byteorder from parent #}
+        {{class.set_class_byteorder}}                {# override class byteorder from definition #} 
+        if type(byteorder) is str:
+            self.byteorder = binmapper.types.Expr(byteorder)   {# override class byteorder from user string#}
+       
+        byteorder = binmapper.types.Expr(lambda: id2obj(id_self).byteorder.eval()) 
+        
+        {% for field in class.fields %}
+        {% set field_fq = field.id + field.suffix %}
+        self._{{field_fq}} = {{field.ctor}}
+        {% endfor %}
+        
+        {% for let_field in class.let_fields %}
+        {% set let_field_fq = let_field.id + let_field.suffix %}
+        self._{{let_field_fq}} = {{let_field.ctor}}
+        self._{{let_field_fq}}.value = {{let_field.value}}
+        {% endfor %}
+
+{% endfor %}
