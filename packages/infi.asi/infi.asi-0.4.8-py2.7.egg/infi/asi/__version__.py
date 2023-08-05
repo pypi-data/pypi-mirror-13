@@ -1,0 +1,10 @@
+__version__ = "0.4.8"
+__git_commiter_name__ = "Guy Rozendorn"
+__git_commiter_email__ = "guy@rzn.co.il"
+__git_branch__ = '(HEAD detached at v0.4.8)'
+__git_remote_tracking_branch__ = '(No remote tracking)'
+__git_remote_url__ = '(Not remote tracking)'
+__git_head_hash__ = 'e14e4340450df24b1e5e35dcdaaf6635946e1501'
+__git_head_subject__ = 'STORAGEMODEL-359 allow_unsupported_addressing_format for HPUX support'
+__git_head_message__ = ''
+__git_dirty_diff__ = ''
