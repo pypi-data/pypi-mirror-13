@@ -1,0 +1,173 @@
+<tal:block metal:define-macro="master"
+           define="errors options/state/getErrors | python:{};
+                   schematas nothing;
+                   allow_tabbing python:False;
+                   fieldsets python:['default'];
+                   default_fieldset string:default;
+                   fieldset default_fieldset;
+                   fields python:here.fgFields(request);
+                   portal_type python:here.getPortalTypeName().lower().replace(' ', '_');
+                   type_name here/getPortalTypeName|here/archetype_name;
+                   base_macros here/fg_edit_macros_p3/macros;
+                   edit_template python:'%s_edit' % portal_type;
+                   edit_macros python:path('here/%s/macros | nothing' % edit_template);
+                   header_macro edit_macros/header | header_macro | base_macros/header;
+                   typedescription_macro edit_macros/typedescription | typedescription_macro | base_macros/typedescription;
+                   body_macro edit_macros/body | body_macro | base_macros/body;
+                   footer_macro edit_macros/footer | footer_macro | base_macros/footer;
+                   css python:here.getUniqueWidgetAttr(fields, 'helper_css');
+                   js python:here.getUniqueWidgetAttr(fields, 'helper_js');
+                   portal portal | context/@@plone_portal_state/portal">
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xml:lang="en"
+      lang="en"
+      xmlns:tal="http://xml.zope.org/namespaces/tal"
+      xmlns:metal="http://xml.zope.org/namespaces/metal"
+      xmlns:i18n="http://xml.zope.org/namespaces/i18n"
+      metal:use-macro="here/main_template/macros/master"
+      i18n:domain="collective.signupsheet">
+
+  <metal:head fill-slot="top_slot">
+    <tal:block define="macro edit_macros/topslot | nothing"
+                    condition="macro">
+      <metal:block use-macro="macro" />
+    </tal:block>
+  </metal:head>
+
+  <metal:javascript_head fill-slot="javascript_head_slot">
+    <tal:block define="macro here/archetypes_custom_js/macros/javascript_head | nothing"
+               condition="macro">
+      <metal:block use-macro="macro" />
+    </tal:block>
+    <tal:js condition="js"
+            repeat="item js">
+      <script type="text/javascript"
+              charset="iso-8859-1"
+              tal:condition="python:exists('portal/%s' % item)"
+              tal:attributes="src string:$portal_url/$item">
+      </script>
+    </tal:js>
+
+    <tal:block define="macro edit_macros/javascript_head | nothing"
+                    condition="macro">
+      <metal:block use-macro="macro" />
+    </tal:block>
+
+    <tal:expr replace="structure here/getHeaderInjection | nothing" />
+
+  </metal:javascript_head>
+
+  <metal:css fill-slot="style_slot">
+    <tal:css condition="css"
+             repeat="item css">
+      <style type="text/css"
+             media="all"
+             tal:condition="python:exists('portal/%s' % item)"
+             tal:content="structure string:&lt;!-- @import url($portal_url/$item); --&gt;">
+      </style>
+    </tal:css>
+    <link rel="stylesheet"
+          type="text/css"
+          media="screen"
+          tal:attributes="href string:${portal/absolute_url}/++resource++collective.signupsheet.resources/signupsheet.css">
+  </metal:css>
+  <body>
+    <metal:fill fill-slot="main">
+      <metal:main define-macro="main">
+      <tal:base_view tal:define="plone_view nocall:context/@@plone;
+                                 view context/@@susbase_utiltities_view"
+                     tal:condition="python: not 'formsubscribe' in request and not 'form_submit' in request">
+                <div tal:replace="structure provider:plone.abovecontenttitle" />
+                <h1 tal:content="context/Title" class="documentFirstHeading">
+                  Title or id
+                </h1>
+                <p class="documentDescription"
+                   tal:content="here/Description"
+                   tal:condition="here/Description">
+                    Description
+                </p>
+                <div id="body-text" tal:content="structure context/getBodyText"/>
+                <div tal:condition="python: context.start() and context.end()"
+                     id="signupsheet_date" i18n:domain="plone">
+                    <tal:event tal:content="string:Here the translation domain it's plone: we use as is the plone code for events, except for the label"
+                               tal:condition="nothing"/>
+                    <h3 i18n:domain="collective.signupsheet"
+                        i18n:translate="event_view_when">When</h3>
+                    <metal:event metal:use-macro="here/signupsheet_event_macro/macros/ss_event_view_macro" />
+                </div>
+                <div id="signupsheet_early_bird"
+                     tal:condition="context/getEarlyBirdDate">
+                    <span class="label" i18n:translate="Early bird until">Early bird until</span>:
+                    <span tal:content="python: plone_view.toLocalizedTime(context.getEarlyBirdDate())" />
+                </div>
+                <div tal:condition="context/getRegistrationDeadline">
+                    <span class="label" i18n:translate="Registration deadline">Registration deadline</span>:
+                    <span tal:content="python: plone_view.toLocalizedTime(context.getRegistrationDeadline(), long_format=True)" />
+                </div>
+                <div id="signupsheet_subscribe"
+                  tal:define="wf_state python: context.portal_workflow.getInfoFor(context, 'review_state')"
+                  tal:condition="python: not view.getSignupStatus() =='full'">
+                <div>
+
+                  <div id="registration-closed" 
+                       tal:condition="python: wf_state == 'closed'">
+                      <strong i18n:translate="">The registration is closed</strong>
+                  </div>
+
+                  <div id="registration-open"
+                       tal:condition="view/can_subscribe" >
+                      <p class="seatsleft"
+                        tal:condition="context/getDisplay_size_left"
+                         i18n:translate="seats_left_message">
+                         <span tal:replace="view/getSeatsLeft"
+                               i18n:name="seats">21</span> seats left.
+                      </p>
+                         <form method="post" action="#"
+                               tal:attributes="action context/absolute_url">
+                              <input type="submit" value="" 
+                                     tal:attributes="value view/getSignupMessage"
+                                     name="formsubscribe"/>
+                         </form>
+                  </div>
+
+                </div>
+              </div>
+              <div id="ss-registration-full" 
+                   tal:condition="python:view.getSignupStatus() == 'full' ">
+                      <strong i18n:translate="text_registration_full">Registration is full</strong>
+              </div>
+        <div tal:replace="structure provider:plone.abovecontentbody" />
+      </tal:base_view>
+      <tal:subscription-form tal:condition="python: 'formsubscribe' in request or 'form_submit' in request">
+
+        <div tal:replace="structure provider:plone.abovecontentbody" />
+            <h1 class="documentFirstHeading">
+               <tal:label i18n:translate="subscription_form_title">
+                   Register for
+               </tal:label>
+               <tal:title tal:replace="context/Title"/>
+            </h1>
+            <tal:if tal:condition="here/getFormPrologue | nothing">
+              <metal:field use-macro="python:context.widget('formPrologue', mode='view')">
+                  Body text
+              </metal:field>
+            </tal:if>
+
+            <metal:use_body use-macro="body_macro" />
+            
+            <tal:if tal:condition="here/getFormEpilogue | nothing">
+              <metal:field use-macro="python:context.widget('formEpilogue', mode='view')">
+                  Body text
+              </metal:field>
+            </tal:if>
+        </tal:subscription-form>
+
+      </metal:main>
+    </metal:fill>
+
+  </body>
+
+</html>
+
+</tal:block>

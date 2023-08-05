@@ -1,0 +1,91 @@
+<configure
+    xmlns="http://namespaces.zope.org/zope"
+    xmlns:browser="http://namespaces.zope.org/browser"
+    xmlns:zcml="http://namespaces.zope.org/zcml"
+    i18n_domain="collective.signupsheet">
+
+  <browser:page
+    for="collective.signupsheet.interfaces.ISignupSheet"
+    class="Products.PloneFormGen.browser.quickedit.QuickEditView"
+    name="quickedit"
+    template="quickedit.pt"
+    permission="cmf.ModifyPortalContent"
+    />
+
+  <browser:page
+    for="..interfaces.ISignupSheet"
+    name="susbase_utiltities_view"
+    class=".signupsheet_baseview.SignupSheetBaseView"
+    permission="zope2.View"
+    allowed_attributes="getSignupStatus getSeatsLeft getSignupMessage check_add_registrants_permission"
+    />
+
+  <browser:page
+    for="..interfaces.ISignupSheet"
+    name="view_registrants"
+    class=".registrants_data.ViewRegistrants"
+    template="view_registrants.pt"
+    permission="collective.signupsheet.viewregistrants"
+    />
+
+  <browser:page
+    for="..interfaces.ISignupSheet"
+    name="registrants_data_import"
+    class=".registrants_data.ImportRegistrants"
+    permission="collective.signupsheet.viewregistrants"
+    />
+
+  <browser:page
+    for="..interfaces.ISignupSheet"
+    name="registrants_data_export"
+    class=".registrants_data.RegistrantDataExport"
+    permission="collective.signupsheet.viewregistrants"
+    />
+
+  <browser:page
+    for="..interfaces.ISignupSheet"
+    name="registrants-notification"
+    class=".registrants_notification.RegistrantNotificationView"
+	template="registrants_notification.pt"
+    permission="collective.signupsheet.viewregistrants"
+    />
+
+  <browser:page
+    for="*"
+    name="check_manager_mail_form"
+    class=".pfg_utilities.ChecksManagerMailerSendAction"
+    permission="zope2.View"
+    />
+
+  <browser:pages
+    for="*"
+    class=".pfg_utilities.PfgFormUtilities"
+    permission="zope2.View">
+    <browser:page attribute="check_state_field_is_visible"
+                  name="check_state_field_is_visible" />
+
+    <browser:page attribute="default_name_value"
+                  name="default_name_value" />
+
+    <browser:page attribute="default_surname_value"
+                  name="default_surname_value" />
+
+    <browser:page attribute="default_email_value"
+                  name="default_email_value" />
+  </browser:pages>
+
+  <browser:pages
+    for="*"
+    class=".pfg_utilities.PfgPublicFormUtilities"
+    permission="zope.Public">
+
+    <browser:page attribute="get_registrant_title"
+                  name="get_registrant_title" />
+
+  </browser:pages>
+
+ <browser:resourceDirectory
+     name="collective.signupsheet.resources"
+     directory="resources"
+     />
+</configure>
