@@ -1,0 +1,299 @@
+#!/usr/bin/env python2
+#Copyright (C) 2015 Mohamed Aziz knani
+
+#This program is free software: you can redistribute it and/or modify
+#it under the terms of the GNU General Public License as published by
+#the Free Software Foundation, either version 3 of the License, or
+#(at your option) any later version.
+
+#This program is distributed in the hope that it will be useful,
+#but WITHOUT ANY WARRANTY; without even the implied warranty of
+#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#GNU General Public License for more details.
+
+#You should have received a copy of the GNU General Public License
+#along with this program.  If not, see <http://www.gnu.org/licenses/>
+
+# When I wrote this code I was learning WXpython so only God and I knows
+# what I were doing, now only god knows ...
+
+import time
+import wx
+import mytodo.tools as tools
+import sys
+from datetime import datetime
+import wx.lib.mixins.listctrl as listmix
+
+class configMenu(wx.Frame):
+
+  def __init__(self, *args, **kwargs):
+    super(configMenu, self).__init__(*args, **kwargs)
+    self.data = tools.loadUserConfig()
+    self.panel = wx.Panel( self, wx.ID_ANY )
+
+    vbox = wx.BoxSizer(wx.VERTICAL)
+    hbox1 = wx.BoxSizer(wx.HORIZONTAL)
+    hbox2 = wx.BoxSizer(wx.HORIZONTAL)
+    hbox3 = wx.BoxSizer(wx.HORIZONTAL)
+
+    label1 = wx.StaticText( self.panel, wx.ID_ANY, 'Username' )
+    self.input1 = wx.TextCtrl( self.panel, wx.ID_ANY, value=self.data['username'] )
+
+    label2 = wx.StaticText( self.panel, wx.ID_ANY, 'Password' )
+    self.input2 = wx.TextCtrl( self.panel, wx.ID_ANY, value=self.data['password'] )
+
+    label3 = wx.StaticText( self.panel, wx.ID_ANY, 'Host' )
+    self.input3 = wx.TextCtrl( self.panel, wx.ID_ANY, value=self.data['host'] )
+
+    ok = wx.Button(self.panel, wx.ID_ANY, 'Save')
+    self.Bind(wx.EVT_BUTTON, self.onAccept, ok)
+    self.Bind(wx.EVT_CLOSE, self.onClose, self)
+
+
+    hbox1.Add( label1, 0, wx.ALL, 5 )
+    hbox1.Add( self.input1, 0, wx.ALL|wx.EXPAND, 5 )
+
+    hbox2.Add( label2 , 0, wx.ALL, 5)
+    hbox2.Add( self.input2 , 0, wx.ALL|wx.EXPAND, 5)
+
+    hbox3.Add( label3 , 0, wx.ALL, 5)
+    hbox3.Add( self.input3 , 0, wx.ALL|wx.EXPAND, 5)
+    vbox.Add( hbox1, 0, wx.ALL, 5 )
+    vbox.Add( hbox2 , 0, wx.ALL|wx.EXPAND, 5)
+    vbox.Add( hbox3 , 0, wx.ALL|wx.EXPAND, 5)
+    vbox.Add( wx.StaticLine(self.panel), 0, wx.ALL|wx.EXPAND, 5 )
+    vbox.Add( ok, 0, wx.ALL|wx.ALIGN_CENTER, 5 )
+
+    self.panel.SetSizer(vbox)
+    vbox.Fit(self)
+
+  def onAccept(self, e):
+    data = {
+        'username' : self.input1.GetValue() ,
+        'password' : self.input2.GetValue(),
+        'host' : self.input3.GetValue()
+    }
+
+    tools.saveUserConfig( data )
+    self.onClose(None)
+
+  def onClose(self, e):
+    self.Hide()
+
+
+class MyListCtrl(wx.ListCtrl, listmix.ListCtrlAutoWidthMixin):
+
+  def __init__(self, *args, **kwargs):
+    wx.ListCtrl.__init__(self, *args, **kwargs)
+    listmix.ListCtrlAutoWidthMixin.__init__(self)
+
+
+class mytodoGui(wx.Frame):
+
+  CONNECT_DATA = wx.NewId()
+  NEW          = wx.NewId()
+  UN_DONE      = wx.NewId()
+  UPDATE       = wx.NewId()
+  DELETE       = wx.NewId()
+  SEARCH       = wx.NewId()
+  EDIT         = wx.NewId()
+
+  def __init__(self, *args, **kwargs):
+    super(mytodoGui, self).__init__(*args, **kwargs)
+    panel = wx.Panel(self)
+    hbox = wx.BoxSizer(wx.HORIZONTAL)
+    #pTree = wx.TreeCtrl( panel, 3, 0 )
+    a = tools.loadUserConfig()
+    self.clie = tools.Client(a['username'],
+                           a['password'])
+    #print out
+    self.listctrl = MyListCtrl(panel,
+                               2,
+                               style=wx.LC_REPORT |
+                               wx.BORDER_NONE |
+                               wx.LC_EDIT_LABELS
+                               )
+    hbox.Add(self.listctrl, 1, wx.EXPAND | wx.ALL, 20)
+    btnPanel = wx.Panel(panel, wx.ID_ANY)
+    vbox = wx.BoxSizer(wx.VERTICAL)
+    new = wx.Button(btnPanel, self.NEW, 'New', size=(90, 30))
+    ren = wx.Button(btnPanel, self.UN_DONE, '(Un)Done', size=(90, 30))
+    dlt = wx.Button(btnPanel, self.DELETE, 'Delete', size=(90, 30))
+    clr = wx.Button(btnPanel, self.UPDATE, 'Update', size=(90, 30))
+    edt = wx.Button(btnPanel, self.EDIT, 'Edit', size=(90, 30))
+
+    # status = self.CreateStatusBar()
+    menubar = wx.MenuBar()
+    connectmenu = wx.Menu()
+
+    self.il = wx.ImageList(24,24, True)
+    for name in [tools.currdir('img/close.png'), tools.currdir('img/done.png')]:
+      bmp = wx.Bitmap(name, wx.BITMAP_TYPE_PNG)
+      self.il.Add(bmp)
+
+    self.listctrl.SetImageList(self.il, wx.IMAGE_LIST_SMALL)
+
+    connectmenu.Append(self.CONNECT_DATA, 'Connection options',
+        'Connect to a mytodo server')
+
+    menubar.Append(connectmenu, 'Options')
+    self.SetMenuBar(menubar)
+    self.listctrl.SetImageList(self.il, wx.IMAGE_LIST_SMALL)
+
+    self.pSearch = wx.SearchCtrl( btnPanel, self.SEARCH, size=(90, 30),
+        style=wx.TE_PROCESS_ENTER)
+
+    self.pSearch.ShowCancelButton( True )
+
+    self.Bind(wx.EVT_MENU, self.ConnectMenu, id=self.CONNECT_DATA)
+    self.Bind(wx.EVT_BUTTON, self.Add, id=self.NEW)
+    self.Bind(wx.EVT_BUTTON, self.Undone, id=self.UN_DONE)
+    self.Bind(wx.EVT_BUTTON, self.Reload, id=self.UPDATE)
+    self.Bind(wx.EVT_BUTTON, self.Delete, id=self.DELETE)
+    self.Bind(wx.EVT_BUTTON, self.Edit, id=self.EDIT)
+    # self.Bind(wx.EVT_TEXT_ENTER, self.onSearch, self.pSearch)
+    self.pSearch.Bind(wx.EVT_TEXT, self.onSearch)
+    self.Bind(wx.EVT_SEARCHCTRL_CANCEL_BTN, self.onSearchCancel, self.pSearch)
+    self.listctrl.Bind(wx.EVT_RIGHT_DOWN, self.OnRightClick)
+    self.listctrl.Bind(wx.EVT_LIST_END_LABEL_EDIT, self.EditLabel)
+
+    vbox.Add((-1, 20))
+    vbox.Add(new)
+    vbox.Add(ren, 0, wx.TOP, 5)
+    vbox.Add(dlt, 0, wx.TOP, 5)
+    vbox.Add(clr, 0, wx.TOP, 5)
+    vbox.Add(edt, 0, wx.TOP, 5)
+    vbox.Add(self.pSearch, 0, wx.ALL, 5)
+    btnPanel.SetSizer(vbox)
+    hbox.Add(btnPanel, 0.6, wx.EXPAND | wx.RIGHT, 20)
+    panel.SetSizer(hbox)
+    self.Menu = configMenu(self, -1, 'Config Menu')
+    self.Reload()
+
+  def EditLabel(self, e):
+    if self.onExclamation("Edit"):
+      self.clie.edit(self.out[self.getSelected()[0]][3],
+                     self.listctrl.GetEditControl().GetLineText(0)
+                     )
+
+  def OnRightClick(self, e):
+    if not hasattr(self, "PopId1"):
+      self.PopId1 = wx.NewId()
+      self.PopId2 = wx.NewId()
+      self.PopId3 = wx.NewId()
+      self.PopId4 = wx.NewId()
+      self.PopId5 = wx.NewId()
+      self.PopId6 = wx.NewId()
+
+      self.Bind(wx.EVT_MENU, self.Reload, id=self.PopId1)
+      self.Bind(wx.EVT_MENU, self.Add, id=self.PopId2)
+      self.Bind(wx.EVT_MENU, self.Delete, id=self.PopId3)
+      self.Bind(wx.EVT_MENU, self.Edit, id=self.PopId4)
+
+    menu = wx.Menu()
+
+    menu.Append(self.PopId1, "Reload")
+    menu.Append(self.PopId2, "Add a task")
+    menu.Append(self.PopId3, "Remove")
+    if self.listctrl.GetSelectedItemCount() == 1:
+      menu.Append(self.PopId4, "Edit")
+
+    self.PopupMenu(menu)
+    menu.Destroy()
+
+  def Edit(self, e):
+    self.listctrl.EditLabel(self.getSelected()[0])
+
+  def ConnectMenu(self, e):
+    self.Menu.Show()
+
+  def Add(self, e):
+    text = wx.GetTextFromUser('Enter your TODO', 'Insert Dialog')
+    if text != '':
+      self.clie.add(text)
+    self.Reload()
+
+  def Reload(self, e=1, out=[]):
+    self.listctrl.ClearAll()
+    self.listctrl.InsertColumn(0, "Todos")
+    self.listctrl.InsertColumn(1, "Date")
+    if not out:
+      out = self.clie.listall()
+      if not out:
+        wx.MessageBox('Could not connect to mytodo server', 'Error',
+            wx.OK | wx.ICON_ERROR)
+        self.Menu.Show()
+        return
+    self.out = out
+    for i, e in enumerate(out):
+
+      #parsed = datetime.today() - timedelta(e[4])
+      parsed = time.strptime(e[0], "%Y/%m/%d %H:%M:%S")
+      d = (datetime.today() - datetime(parsed.tm_year, parsed.tm_mon, parsed.tm_mday)).days
+      dayz = str(d)+' days ago' if d else 'today'
+      #self.listctrl.Append( [e[2], time.strftime('%A %B %Y', parsed)] )
+      img_id = 1 if e[2] else 0
+      index = self.listctrl.InsertStringItem(sys.maxint, e[4], img_id)
+      self.listctrl.SetStringItem(index, 1, dayz)
+    #print self.il.GetImageCount()
+
+    for i in range(2):
+      self.listctrl.SetColumnWidth(i, wx.LIST_AUTOSIZE)
+
+  def Undone(self, e):
+    for i in self.getSelected():
+      if self.out[i][2]:
+        self.clie.undone(self.out[i][3])
+      else :
+        self.clie.done(self.out[i][3])
+    self.Reload()
+
+  def Delete(self, e):
+    if self.onExclamation("Delete"):
+      map(lambda rx : self.clie.remove(self.out[rx][3]), self.getSelected())
+      self.Reload()
+
+  def onExclamation(self, event):
+
+      msg = "Are you sure you want to perform this action ?"
+      if isinstance(event, str):
+        msg = "Are you sure you want to %s this todo ?" % event
+      return self.showMessageDlg(msg, "Question",
+                          wx.YES_NO|wx.YES_DEFAULT|wx.ICON_QUESTION)
+
+  def showMessageDlg(self, msg, title, style):
+      dlg = wx.MessageDialog(parent=None, message=msg,
+                              caption=title, style=style)
+      if dlg.ShowModal() == wx.ID_YES:
+        dlg.Destroy()
+        return True
+      dlg.Destroy()
+      return False
+
+
+  def getSelected(self):
+    """
+    Returns selected items
+    """
+    # this code may be inefficient but it works
+    # TODO : use GetNextSelected method.
+    # TODO : save the above todo on mytodo ...
+    c = []
+    for i in range(self.listctrl.GetItemCount()):
+      if self.listctrl.IsSelected(i):
+        c.append(i)
+    return c
+
+  def onSearchCancel(self, e):
+    self.Reload()
+
+  def onSearch(self, e):
+
+    self.Reload(out= self.clie.category(self.pSearch.GetValue()))
+
+if __name__ == '__main__':
+  app = wx.App()
+  mytg = mytodoGui(None, -1, 'mytodo', size=(700, 400))
+  mytg.Show()
+  app.MainLoop()
+
