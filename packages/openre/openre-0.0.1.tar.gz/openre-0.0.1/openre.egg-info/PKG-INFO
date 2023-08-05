@@ -1,0 +1,83 @@
+Metadata-Version: 1.1
+Name: openre
+Version: 0.0.1
+Summary: OpenRE - self-learning neural network
+Home-page: https://github.com/openre/openre
+Author: Dmitriy Boyarshinov
+Author-email: dmitriy.boyarshinov@gmail.com
+License: The MIT License
+
+Copyright (c) 2015-2016 Dmitriy Boyarshinov
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+
+
+Download-URL: https://github.com/openre/openre/tarball/0.0.1
+Description: # OpenRE
+        
+        Библиотека для моделирования распределенной нейронной сети.
+        Моделирование происходит на GPU или CPU устройствах.
+        
+        ## Install
+        
+        Пример установки для Ubuntu.
+        
+        Перед установкой было проделано:
+        ```bash
+        sudo apt-get install build-essential python-dev
+        ```
+        
+        Желательно поставить virtualenvwrapper - иструкция написана исходя из предположения что он стоит.
+        
+        Для установки pyopencl нужно сначала скачать заголовочные файлы и любой ICD Loader, а так же опционально реализацию (ICD implementation).
+        Согласно [этой странице](http://wiki.tiker.net/OpenCLHowTo#Debian) устанавливаем:
+        ICD Loader:
+        ```bash
+        sudo apt-get install amd-libopencl1
+        ```
+        
+        Далее я установил AMD ICD loader и CPU ICD согдласно инструкции [тут](http://wiki.tiker.net/OpenCLHowTo#Installing_the_AMD_ICD_loader_and_CPU_ICD_.28from_the_.22APP_SDK.22.29) (Installing the AMD ICD loader and CPU ICD (from the "APP SDK")):
+        Скачиваем архив для системы, распаковываем и запускаем:
+        ```bash
+        sudo ./AMD-APP-SDK-VERSION-GA-linux64.sh
+        ```
+        После установки я дополнительно сделал (если pip install -r requirements.txt отрабатывает без ошибки, то этот шаг не нужен):
+        ```bash
+        cd /usr/lib
+        sudo ln -s ../../opt/AMDAPPSDK-3.0/lib/x86_64/libOpenCL.so
+        ```
+        В этом случае ошибки (/usr/bin/ld: cannot find -lOpenCL) при компиляции pyopencl (это будет ниже) не возникает, но очевидно это не очень правильно.
+        
+        Далее сама установка
+        ```bash
+        git clone https://github.com/openre/openre.git
+        cd openre
+        mkvirtualenv openre
+        pip install -r requirements.txt # без этого setup.py не работает
+        ./setup.py install
+        ```
+        
+Platform: any
+Classifier: Development Status :: 1 - Planning
+Classifier: Environment :: Console
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python
+Classifier: Topic :: Scientific/Engineering :: Artificial Intelligence
