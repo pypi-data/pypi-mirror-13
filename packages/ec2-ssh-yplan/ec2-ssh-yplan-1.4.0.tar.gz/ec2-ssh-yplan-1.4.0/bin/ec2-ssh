@@ -1,0 +1,63 @@
+#!/usr/bin/env python
+# -*- coding:utf-8 -*-
+from __future__ import print_function
+
+import argparse
+import os
+import subprocess
+import sys
+
+parser = argparse.ArgumentParser(
+    description="""
+    SSH into an ec2 host where <tag-value> matches a tag which defaults to
+    'Name' or environment variable EC2_HOST_TAG. In the case there is more than
+    one such instance, one will be chosen at random. 'username' defaults to
+    ubuntu.  A small bashrc file is added over ssh to give a nice prompt. Any
+    extra arguments at the end are passed to ssh directly.
+    """
+)
+parser.add_argument('-t', '--tag', type=str,
+                    default=None, help="Tag to match, defaults to 'Name'")
+parser.add_argument('value', help="The value for the tag to match")
+
+
+def main():
+    args, unparsed = parser.parse_known_args()
+
+    if '@' in args.value:
+        username, value = args.value.split('@', 1)
+    else:
+        username = 'ubuntu'
+        value = args.value
+
+    host_name = get_host_name(args.tag, value)
+
+    if not host_name:
+        print("ec2-ssh: no hosts matched", file=sys.stderr)
+        sys.exit(1)
+
+    command = [
+        'ssh',
+        '-t', '-t',
+        username + '@' + host_name,
+    ]
+    if unparsed:
+        command.extend(unparsed)
+
+    print("ec2-ssh connecting to {}".format(host_name), file=sys.stderr)
+    sys.stdout.flush()
+    os.execlp(*command)
+
+
+def get_host_name(tag, value):
+    command = ["ec2-host"]
+    if tag:
+        command.extend(["-t", tag])
+    command.append(value)
+
+    hosts = subprocess.check_output(command)
+    return hosts[:hosts.find('\n')]
+
+
+if __name__ == '__main__':
+    main()
