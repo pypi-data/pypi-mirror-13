@@ -1,0 +1,158 @@
+#!/usr/bin/python3
+import argparse
+import configparser
+import datetime
+import getpass
+import os
+import sys
+
+import botocore
+import botocore.session
+
+from ._version import VERSION
+
+SIX_HOURS_IN_SECONDS = 21600
+
+
+def main(args=None):
+    if args is None:
+        args = sys.argv[1:]
+
+    parser = argparse.ArgumentParser(
+        prog='awsmfa',
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument('--version',
+                        default=False,
+                        action='store_true',
+                        help='Display version number and exit.')
+    parser.add_argument('role_to_assume',
+                        nargs='?',
+                        metavar='role-to-assume',
+                        default=os.environ.get('AWS_MFA_ROLE_TO_ASSUME'),
+                        help='Full ARN of the role you wish to assume. If not '
+                             'provided, the temporary credentials will '
+                             'inherit the user\'s policies. The temporary '
+                             'credentials will also satisfy the '
+                             'aws:MultiFactorAuthPresent condition variable. '
+                             'If the AWS_MFA_ROLE_TO_ASSUME environment '
+                             'variable is set, it will be used as the default '
+                             'value.')
+    parser.add_argument('--aws-credentials',
+                        default=os.path.join(os.path.expanduser('~'),
+                                             '.aws/credentials'),
+                        help='Full path to the ~/.aws/credentials file.')
+    parser.add_argument('--duration',
+                        type=int,
+                        default=int(os.environ.get('AWS_MFA_DURATION',
+                                                   SIX_HOURS_IN_SECONDS)),
+                        help='The number of seconds that you wish the '
+                             'temporary credentials to be valid for. For role '
+                             'assumption, this will be limited to an hour. If '
+                             'the AWS_MFA_DURATION environment variable is '
+                             'set, it will be used as the default value.')
+    parser.add_argument('--identity-profile',
+                        default=os.environ.get('AWS_MFA_IDENTITY_PROFILE',
+                                               'identity'),
+                        help='Name of the section in the credentials file '
+                             'representing your long-lived credentials. '
+                             'All values in this section '
+                             '(including custom parameters such as "region" '
+                             'or "s3") will be copied to the '
+                             '--target-profile, with the access key, secret '
+                             'key, and session key replaced by the temporary '
+                             'credentials. If the AWS_MFA_IDENTITY_PROFILE '
+                             'environment variable is set, it will be used as '
+                             'the default value.')
+    parser.add_argument('--serial-number',
+                        default=os.environ.get('AWS_MFA_SERIAL_NUMBER', None),
+                        help='Full ARN of the MFA device. If not provided, '
+                             'this will be read from the '
+                             'AWS_MFA_SERIAL_NUMBER environment variable or '
+                             'queried from IAM automatically. For automatic '
+                             'detection to work, your identity profile must '
+                             'have IAM policies that allow "aws iam '
+                             'get-user" and "aws iam list-mfa-devices".')
+    parser.add_argument('--target-profile',
+                        default=os.environ.get('AWS_MFA_TARGET_PROFILE',
+                                               'default'),
+                        help='Name of the section in the credentials file to '
+                             'overwrite with temporary credentials. This '
+                             'defaults to "default" because most tools read '
+                             'that profile. The existing values in this '
+                             'profile will be overwritten. If the '
+                             'AWS_MFA_TARGET_PROFILE environment variable is '
+                             'set, it will be used as the default value.')
+    parser.add_argument('--role-session-name',
+                        default='awsmfa_%s' % datetime.datetime.now().strftime(
+                            '%Y%m%dT%H%M%S'),
+                        help='The name of the temporary session. Applies only '
+                             'when assuming a role.')
+    parser.add_argument('--token-code',
+                        default=os.environ.get('AWS_MFA_TOKEN_CODE'),
+                        help='The 6 digit numeric MFA code generated by your '
+                             'device. If the AWS_MFA_TOKEN_CODE environment '
+                             'variable is set, it will be used as the default '
+                             'value.')
+    args = parser.parse_args(args)
+
+    if args.version:
+        print(VERSION)
+        return
+
+    credentials = configparser.ConfigParser(default_section=None)
+    credentials.read(args.aws_credentials)
+
+    session = botocore.session.Session(profile=args.identity_profile)
+    iam = session.create_client('iam')
+
+    username = iam.get_user()['User']['UserName']
+    if not args.serial_number:
+        devices = iam.list_mfa_devices(UserName=username)
+        if not len(devices["MFADevices"]):
+            raise Exception("No MFA devices are attached with this IAM user.")
+        args.serial_number = devices["MFADevices"][0]["SerialNumber"]
+
+    if args.token_code is None:
+        while args.token_code is None or len(args.token_code) != 6:
+            args.token_code = getpass.getpass("MFA Token Code: ")
+
+    sts = session.create_client('sts')
+    if args.role_to_assume:
+        response = sts.assume_role(
+            DurationSeconds=min(args.duration, 3600),
+            RoleArn=args.role_to_assume,
+            RoleSessionName=args.role_session_name,
+            SerialNumber=args.serial_number,
+            TokenCode=args.token_code)
+    else:
+        response = sts.get_session_token(
+            DurationSeconds=args.duration,
+            SerialNumber=args.serial_number,
+            TokenCode=args.token_code)
+    remaining = response['Credentials']['Expiration'] - datetime.datetime.now(
+        tz=datetime.timezone.utc)
+    print("Temporary credentials will expire in %s." % remaining)
+    update_credentials_file(args, credentials, response['Credentials'])
+
+
+def update_credentials_file(args, credentials, temporary_credentials):
+    credentials.remove_section(args.target_profile)
+    credentials.add_section(args.target_profile)
+    for k, v in credentials.items(args.identity_profile):
+        credentials.set(args.target_profile, k, v)
+    credentials.set(args.target_profile, 'aws_access_key_id',
+                    temporary_credentials['AccessKeyId'])
+    credentials.set(args.target_profile, 'aws_secret_access_key',
+                    temporary_credentials['SecretAccessKey'])
+    credentials.set(args.target_profile, 'aws_session_token',
+                    temporary_credentials['SessionToken'])
+    credentials.set(args.target_profile, 'awsmfa_expiration',
+                    temporary_credentials['Expiration'].isoformat())
+    temp_credentials_file = args.aws_credentials + ".tmp"
+    with open(temp_credentials_file, "w") as out:
+        credentials.write(out)
+    os.rename(temp_credentials_file, args.aws_credentials)
+
+
+if __name__ == '__main__':
+    main()
