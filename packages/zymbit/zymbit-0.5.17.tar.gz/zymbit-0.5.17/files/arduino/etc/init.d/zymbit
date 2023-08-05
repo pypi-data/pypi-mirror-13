@@ -1,0 +1,30 @@
+#!/bin/sh /etc/rc.common
+# Copyright (C) 2006 OpenWrt.org
+START=99
+
+export HOME=/
+
+BIN="/usr/bin/zymbit"
+DEFAULT=/etc/default/zymbit
+OPTIONS="connect"
+
+start() {
+  env >> /tmp/env
+	[ -f $DEFAULT ] && . $DEFAULT
+	$BIN $OPTIONS > /tmp/zymbit.log &
+}
+
+stop() {
+	kill -9 $(ps | grep -v grep | grep $BIN | awk '{print $1}')
+}
+
+reload() {
+  restart
+}
+
+restart() {
+  stop
+  sleep 5
+  start
+}
+
