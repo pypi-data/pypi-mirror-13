@@ -1,0 +1,41 @@
+{% extends widget.get_base_template %}
+
+{% load i18n %}
+
+{% block content %}
+<ul class="breadcrumb {{ widget.orientation }}">
+{% if widget.orientation == "vertical" %}
+{% for url, more, title in trail %}
+{% if not forloop.first %}
+<li {% if not url %}class="active"{% endif %}>
+	{% if url %}
+	<a href="{{ url }}">{% if forloop.first and widget.root_label %}{{ widget.root_label }}{% else %}{{ title }}{% endif %}</a>
+	{% else %}
+	{{ title }}
+	{% endif %}
+</li>
+{% endif %}
+{% endfor %}
+{% if not include_self %}
+{{ extension|safe }}
+{% endif %}
+{% else %}
+{% for url, more, title in trail %}
+{% if title != '' %}
+{% if not forloop.first %}
+<li {% if not url %}class="active"{% endif %}>
+	{% if url and title %}
+	<a href="{{ url }}">{% if forloop.first and widget.root_label %}{{ widget.root_label }}{% else %}{{ title }}{% endif %}</a>
+	{% else %}
+	{{ title }}
+	{% endif %}
+</li>
+{% endif %}
+{% endif %}
+{% endfor %}
+{% if not include_self %}
+{{ extension|safe }}
+{% endif %}
+{% endif %}
+</ul>
+{% endblock %}
