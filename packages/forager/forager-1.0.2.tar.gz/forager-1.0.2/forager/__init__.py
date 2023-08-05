@@ -1,0 +1,227 @@
+from __future__ import unicode_literals
+from builtins import object
+# -*- coding: utf-8 -*-
+import logging
+import re
+import requests
+import time
+
+from collections import namedtuple
+from datetime import datetime, timedelta
+from future.moves.urllib.parse import urlparse, urljoin
+from bs4 import BeautifulSoup
+
+REQUEST_DELAY = timedelta(microseconds=200000)
+REQUEST_TIMEOUT = 5
+USER_AGENT = 'Forager Feed Finder'
+
+# A default of 1 means that if the base url is html, we will search it for possible feeds
+# Passing max_depth of 0 to find_feeds means we will only return a url if the base url itself is a feed
+MAX_DEPTH = 1
+
+logger = logging.getLogger(__name__)
+
+
+def find_feeds(url, max_depth=MAX_DEPTH):
+    return Forager(max_depth=max_depth).find_feeds(url)
+
+
+def find_xmlrpc(url):
+    return Forager().find_xmlrpc(url)
+
+
+FetchResult = namedtuple('FetchResult', ['soup', 'url'])
+
+
+class Forager(object):
+    def __init__(self,
+                 max_depth=MAX_DEPTH,
+                 user_agent=USER_AGENT,
+                 request_delay=REQUEST_DELAY,
+                 request_timeout=REQUEST_TIMEOUT):
+        self._max_depth = max_depth
+        self._request_timeout = request_timeout
+        self._request_delay = request_delay
+        self._request_previous = datetime.now() - (self._request_delay * 2)
+        self._user_agent = user_agent
+        self._seen_urls = set()
+
+    def find_feeds(self, url):
+        url = self._fix_url(url)
+
+        found_feeds = set()
+
+        found_feeds.update(self._find_feeds_worker(url))
+
+        for predicted_url in self._predicted_urls(url):
+            found_feeds.update(self._find_feeds_worker(predicted_url))
+
+        return found_feeds
+
+    def find_xmlrpc(self, url):
+        url = self._fix_url(url)
+        soup = self._fetch_and_parse(url).soup
+
+        if not soup:
+            return set()
+
+        rpc_urls = []
+        rpc_urls.extend(soup.findAll('link', rel='EditURI'))
+        rpc_urls.extend(soup.findAll('link', type='application/rsd+xml'))
+        rpc_urls = {rpc_url['href'] for rpc_url in rpc_urls if rpc_url.get('href')}
+
+        return rpc_urls
+
+    def _find_feeds_worker(self, url, curr_depth=0, soup=None):
+        if not soup:
+            soup, url = self._fetch_and_parse(url)
+
+        if not soup:
+            return set()
+
+        if Forager._soup_contains_feed(soup):
+            return {url}
+
+        if not Forager._soup_contains_html(soup):
+            return set()
+
+        links_to_crawl = self._get_relevant_links(soup, curr_depth)
+
+        found_feeds = set()
+
+        for new_url in links_to_crawl:
+            new_url = urljoin(url, new_url)
+            new_url = self._fix_url(new_url)
+            found_feeds.update(self._find_feeds_worker(new_url, curr_depth=curr_depth + 1))
+
+        return found_feeds
+
+    def _get_relevant_links(self, soup, curr_depth):
+        def _find_linked_resources_to_crawl():
+            return curr_depth < self._max_depth
+
+        def _find_linked_feeds_to_crawl():
+            return curr_depth < (self._max_depth - 1)
+
+        links_to_crawl = set()
+
+        if _find_linked_resources_to_crawl():
+            links_to_crawl.update(Forager._find_feed_hrefs(soup))
+
+        if _find_linked_feeds_to_crawl():
+            links_to_crawl.update(Forager._find_all_hrefs(soup))
+
+        return links_to_crawl
+
+    def _fetch_and_parse(self, url):
+        if url in self._seen_urls:
+            return FetchResult(None, url)
+
+        try:
+            source = self._requests_get(url)
+        except requests.RequestException:
+            return FetchResult(None, url)
+
+        self._seen_urls.add(url)
+
+        soup = BeautifulSoup(source.text, 'html.parser')
+
+        return FetchResult(soup, source.url)
+
+    @staticmethod
+    def _fix_url(url):
+        def _schemify(domain):
+            return 'http://{}'.format(domain)
+
+        if url.startswith('http://') or url.startswith('https://'):
+            corrected_url = url
+
+        elif url.startswith('feed://'):
+            corrected_url = _schemify(url[7:])
+
+        else:
+            corrected_url = _schemify(url)
+
+        return corrected_url
+
+    @staticmethod
+    def _predicted_urls(url):
+        domain = urlparse(url).netloc
+        return {
+            'http://{}/rss/'.format(domain),
+            'http://{}/feeds/'.format(domain),
+            'http://{}/feed/'.format(domain)
+        }
+
+    def _ratelimit(self):
+        delay = self._request_delay - (datetime.now() - self._request_previous)
+        delay = delay.total_seconds()
+        time.sleep(delay if delay > 0 else 0)
+        self._request_previous = datetime.now()
+
+    def _requests_get(self, url):
+        self._ratelimit()
+        return requests.get(url, headers={'User-Agent': self._user_agent}, timeout=self._request_timeout)
+
+    @staticmethod
+    def _url_looks_feedish(url):
+        hints = ['atom', 'feed', 'rss', 'rdf', 'xml']
+        return any([hint in url for hint in hints])
+
+    @staticmethod
+    def _url_looks_irrelevant(url):
+        extensions = ['css', 'jpg', 'js', 'gif', 'jpeg', 'png', 'ico']
+        hints = [r'.*?\.{}'.format(ext) for ext in extensions]
+        hints.append('^.*?mailto:.*@.*$')
+        hints.append('^javascript:.*$')
+        return any([re.match(pat, url) for pat in hints])
+
+    @staticmethod
+    def _type_is_feedish(link_type):
+        feed_types = [
+            'application/rss+xml',
+            'text/xml',
+            'application/atom+xml',
+            'application/x.atom+xml',
+            'application/x-atom+xml'
+        ]
+        return any([feed_type == link_type for feed_type in feed_types])
+
+    @staticmethod
+    def _find_resources(soup):
+        return {
+            resource
+            for resource
+            in soup.findAll(['link', 'a'])
+            if resource.get('href')
+            }
+
+    @staticmethod
+    def _find_all_hrefs(soup):
+        return {
+            resource.get('href')
+            for resource
+            in Forager._find_resources(soup)
+            if not Forager._url_looks_irrelevant(resource.get('href'))
+            }
+
+    @staticmethod
+    def _find_feed_hrefs(soup):
+        return {
+            resource.get('href')
+            for resource
+            in Forager._find_resources(soup)
+            if Forager._type_is_feedish(resource.get('type')) or Forager._url_looks_feedish(resource.get('href'))
+            }
+
+    @staticmethod
+    def _soup_contains_html(soup):
+        return bool(soup.findAll('html'))
+
+    @staticmethod
+    def _soup_contains_feed(soup):
+        return bool(
+                soup.findAll('rss') or
+                soup.findAll('rdf') or soup.findAll('rdf:rdf') or
+                soup.findAll('feed')
+        )
