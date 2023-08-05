@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--start main rule, only theme if #visual-portal-wrapper exist -->
+<rules
+    xmlns="http://namespaces.plone.org/diazo"
+    xmlns:css="http://namespaces.plone.org/diazo/css"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+    xmlns:xi="http://www.w3.org/2001/XInclude">
+    
+    <!-- Drop styles in the head - these are added back by including them from Plone -->
+    <drop theme="/html/head/style | /html/head/script | /html/head/link | /html/head/title | /html/head/meta" />
+    <prepend theme="/html/head" content="/html/head/base | /html/head/link | /html/head/style | /html/head/script | /html/head/meta | /html/head/title" />
+    <replace theme="/html" content="/html" attributes="lang"/>
+    <merge theme="/html/body" content="/html/body" attributes="class"/>
+    <merge theme="/html/body" content="/html/body" attributes="dir"/>
+    <append css:theme="body" css:content="#plone-analytics"/>
+    
+    <!--logo-->
+    <replace css:theme-children="#title" css:content="#portal-logo"/>
+    
+    <!--Login-->
+    <drop theme='//div[@id="user"]' if-not-content="//div[@id='portal-personaltools-wrapper']" />
+    <replace theme-children='//div[@id="user"]' if-content="//div[@id='portal-personaltools-wrapper']">
+	<xsl:apply-templates select="//a[@id='personaltools-login']" />
+        <xsl:apply-templates select="//a[@id='user-name']" />
+        <xsl:if css:test="dl#portal-personaltools">
+            <ul id="action-menu-content">
+                <xsl:for-each select="//dl[@id='portal-personaltools']/dd/ul/li">
+                    <li>
+                        <xsl:apply-templates select="a" />
+                    </li>
+                </xsl:for-each>
+            </ul>
+        </xsl:if>
+    </replace>
+    
+    <!--navigation-->
+    <replace css:theme-children="#portal-globalnav" css:content-children="#portal-globalnav"/>
+    <replace css:theme-children=".theme_button" css:content-children="#portal-globalnav"/>
+    
+    <!--breadcrumbs-->
+    <replace css:content="#portal-breadcrumbs">
+	<ul class="breadcrumbs">
+	    <xsl:for-each css:select="#portal-breadcrumbs > span">
+		<xsl:if css:test="span > a">
+		    <li>
+			<xsl:copy-of css:select="span > a"/>
+		    </li>
+		</xsl:if>
+	    </xsl:for-each>
+	    <xsl:if css:test="#breadcrumbs-current">
+		<li class="current">
+		    <xsl:value-of css:select="#breadcrumbs-current"/>
+		</li>
+	    </xsl:if>
+	</ul>
+    </replace>
+    
+    <!--Main search-->
+    <replace css:theme-children="#search-container">
+        <form class="search-site"><xsl:attribute name="action">
+            <xsl:value-of select="//*[@id='portal-searchbox']/form/@action"/></xsl:attribute>
+            <div>
+                <xsl:copy-of css:select="#portal-searchbox input[name='SearchableText']"/>
+                <input type="submit" class="show-for-medium-up" value="Search" />
+                <xsl:copy-of css:select="#LSResult"/>
+            </div>
+        </form>
+    </replace>
+    
+    <!--footer-->
+    <replace css:theme-children="#footer-container > div > div">
+        <xsl:copy-of css:select="#portal-footer > p"/>
+        <xsl:copy-of css:select="#portal-colophon > div > ul"/>
+        <xsl:copy-of css:select="#portal-siteactions"/>
+    </replace>
+    
+    <!-- Alert message -->
+    <strip css:content=".portalMessage dd"/>
+    <drop css:content=".portalMessage dt"/>
+    <replace css:content=".portalMessage">
+	<xsl:choose>
+	    <xsl:when css:test=".portalMessage[style]"/>
+	    <xsl:when css:test=".portalMessage.info">
+		<div data-alert="" class="alert-box info radius">
+		    <!--<strong><xsl:apply-templates select="./dt/text()"/></strong>-->
+		    <xsl:apply-templates select="./*"/>
+		    <a href="#" class="close">×</a>
+		</div>
+	    </xsl:when>
+	    <xsl:when css:test=".portalMessage.error">
+		<div data-alert="" class="alert-box alert radius">
+		    <xsl:apply-templates select="./*"/>
+		    <a href="#" class="close">×</a>
+		</div>
+	    </xsl:when>
+	    <xsl:when css:test=".portalMessage.success">
+		<div data-alert="" class="alert-box success radius">
+		    <xsl:apply-templates select="./*"/>
+		    <a href="#" class="close">×</a>
+		</div>
+	    </xsl:when>
+	    <xsl:when css:test=".portalMessage.warning">
+		<div data-alert="" class="alert-box warning radius">
+		    <xsl:apply-templates select="./*"/>
+		    <a href="#" class="close">×</a>
+		</div>
+	    </xsl:when>
+	    <xsl:otherwise>
+		<div data-alert="" class="alert-box ">
+		    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+		    <xsl:apply-templates select="./dd/text()"/>
+		</div>
+	    </xsl:otherwise>
+	</xsl:choose>
+    </replace>
+    
+    <!--replace theme content-->
+    <replace css:theme-children="#main" css:content-children="#portal-column-content"/>
+    <replace css:theme-children="#sidebar-left" css:content-children="#portal-column-one"/>
+    <replace css:theme-children="#sidebar-right" css:content-children="#portal-column-two"/>
+    
+    <!--templates-->
+    <notheme css:if-not-content="#visual-portal-wrapper" />
+    <theme href="center-content.html" if-content="//div[@id='portal-column-one'] and //div[@id='portal-column-two']"/>
+    <theme href="right-content.html" css:if-content="#portal-column-one"/>
+    <theme href="left-content.html" css:if-content="#portal-column-two"/>
+    <theme href="content.html"/>
+    
+    <drop theme="/html/body/script | /html/body/link" />
+    <after css:theme-children="body">
+        <script src="++theme++plonetheme.office/bower_components/foundation/js/foundation.min.js"></script>
+        <script src="++theme++plonetheme.office/js/app.js"></script>
+        <xsl:copy-of css:select="#portal-footer-wrapper > div > script" />
+    </after>
+        
+</rules>
