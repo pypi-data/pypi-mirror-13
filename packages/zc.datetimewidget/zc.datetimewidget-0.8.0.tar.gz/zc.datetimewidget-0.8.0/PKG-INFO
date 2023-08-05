@@ -1,0 +1,402 @@
+Metadata-Version: 1.1
+Name: zc.datetimewidget
+Version: 0.8.0
+Summary: Javascript-based widgets for date and datetime fields.
+Home-page: http://pypi.python.org/pypi/zc.datetimewidget
+Author: Zope Corporation and Contributors
+Author-email: zope-dev@zope.org
+License: ZPL 2.1
+Description: There are two types of widgets provided by this package, a date widget
+        and a datetime widget.
+        
+        
+        .. contents::
+        
+        =========================
+        Datetime and Date Widgets
+        =========================
+        
+        There are two types of widgets provided by this package, a date widget
+        and a datetime widget.
+        
+        Date Widget
+        -----------
+        
+        The date widget only handles datetime.date objects, which are not
+        timezone aware. We use the demo package here to have a content class.
+        
+            >>> from zope import component
+            >>> from datetime import datetime, date
+            >>> from zc.datetimewidget import datetimewidget
+            >>> from zc.datetimewidget.demo.content import DemoContent
+            >>> from zc.datetimewidget.demo.interfaces import IDemoContent
+            >>> from zope.publisher.browser import TestRequest, BrowserLanguages
+            >>> component.provideAdapter(BrowserLanguages)
+            >>> request = TestRequest(HTTP_ACCEPT_LANGUAGE='en-US')
+            >>> field = IDemoContent['startDate']
+            >>> widget = datetimewidget.DateWidget(field,request)
+            >>> widget._toFormValue(None)
+            u''
+        
+        Now let us convert a real date.
+        
+            >>> d = date(2006,5,1)
+            >>> formValue = widget._toFormValue(d)
+            >>> formValue
+            '2006-05-01'
+        
+            >>> parsedValue = widget._toFieldValue(formValue)
+            >>> parsedValue
+            datetime.date(2006, 5, 1)
+        
+        The widget handles the same date notations as zope's default datewidget.
+        
+            >>> widget._toFieldValue('2006/12/31')
+            datetime.date(2006, 12, 31)
+        
+        Datetime Widget
+        ---------------
+        
+        Datetimes are always stored timezone aware, and by default the utc
+        timezone is used.
+        
+        In order to handle timezones correctly the zope instance has to
+        provide an adapter from IBrowserRequest to ITZInfo. It is up to the
+        instance what kind of implementation it uses. For this test, we just
+        use the implementation of the demo.timezone module which always
+        returns Europe/Vienna as timezone.
+        
+        The field's missing value results in an empty string.
+        
+            >>> import pytz
+            >>> from zc.datetimewidget.demo import timezone
+            >>> component.provideAdapter(timezone.tzinfo)
+            >>> tz = pytz.timezone('Europe/Vienna')
+            >>> request = TestRequest(HTTP_ACCEPT_LANGUAGE='en-US')
+            >>> field = IDemoContent['startDatetime']
+            >>> widget = datetimewidget.DatetimeWidget(field,request)
+        
+            >>> widget._toFormValue(None)
+            u''
+        
+        Now let us convert a real datetime.
+        
+            >>> dt = datetime(2006,5,1,12,tzinfo=pytz.utc)
+            >>> formValue = widget._toFormValue(dt)
+            >>> formValue
+            '2006-05-01 14:00:00'
+            >>> parsedValue = widget._toFieldValue(formValue)
+            >>> parsedValue
+            datetime.datetime(2006, 5, 1, 12, 0, tzinfo=<UTC>)
+        
+        
+        The datetime might also be an naive one (without time zone) but it
+        gets saved with UTC timezone information.
+        
+            >>> naive_dt = datetime(2006,5,1,12)
+            >>> formValue = widget._toFormValue(naive_dt)
+            >>> formValue
+            '2006-05-01 12:00:00'
+            >>> parsedValue = widget._toFieldValue(formValue)
+            >>> parsedValue
+            datetime.datetime(2006, 5, 1, 10, 0, tzinfo=<UTC>)
+        
+        
+        While the widget tries to parse dates in the form '%Y-%m-%d %H:%M:%S'
+        first, it will fall through to the locale-specific parsing of the core
+        datetimewidget.
+        
+            >>> widget._toFieldValue('May 1, 2006 2:00:00 PM')
+            datetime.datetime(2006, 5, 1, 12, 0, tzinfo=<UTC>)
+        
+        
+        
+        ===============
+        Calendar Widget
+        ===============
+        
+        
+        Configuration
+        -------------
+        
+            >>> from zope.interface.verify import verifyObject
+            >>> from zc.datetimewidget.datetimewidget import (
+            ...     CalendarWidgetConfiguration, ICalendarWidgetConfiguration)
+        
+        Let's create a standard configuration object:
+        
+            >>> conf = CalendarWidgetConfiguration('field.x')
+            >>> verifyObject(ICalendarWidgetConfiguration, conf)
+            True
+        
+        Fields have their default values:
+        
+            >>> conf.daFormat
+            u'%Y/%m/%d'
+            >>> conf.singleClick
+            True
+            >>> print conf.flat
+            None
+        
+        We can customize some attributes during instantiation:
+        
+            >>> import datetime
+            >>> conf = CalendarWidgetConfiguration('x', date=datetime.date(2006, 8, 25))
+            >>> conf.date
+            datetime.date(2006, 8, 25)
+        
+        
+        Dumping JavaScript
+        ------------------
+        
+        Configuration can be dumped as JavaScript.  First an empty configuration:
+        
+            >>> print CalendarWidgetConfiguration('field.x').dumpJS()
+            Calendar.setup({
+            <BLANKLINE>
+            });
+        
+        Now let's add a few customizations:
+        
+            >>> conf = CalendarWidgetConfiguration('x', daFormat=u'%m-%d',
+            ...     inputField='inp', eventName=None, date=conf.date)
+            >>> print conf.dumpJS()
+            Calendar.setup({
+              inputField: 'inp',
+              eventName: null,
+              daFormat: '%m-%d',
+              date: new Date(2006, 7, 25)
+            });
+        
+        Invalid arguments are not accepted:
+        
+            >>> conf = CalendarWidgetConfiguration('x', foo='bar')
+            Traceback (most recent call last):
+                ...
+            ValueError: unknown arguments: foo
+        
+        
+        Date set widget
+        ---------------
+        
+            >>> from zc.datetimewidget.datetimewidget import DateSetWidget
+            >>> from zope.schema import Set
+            >>> from zope.publisher.browser import TestRequest
+        
+            >>> class Context(object):
+            ...     somedates = set()
+            >>> context = Context()
+        
+            >>> request = TestRequest()
+            >>> field = Set(__name__='somedates')
+            >>> field.set(context, set([datetime.date(2006, 12, 6),
+            ...                         datetime.date(2006, 12, 7)]))
+            >>> field = field.bind(context)
+            >>> widget = DateSetWidget(field, object(), request)
+        
+            >>> print widget() # doctest: +REPORT_NDIFF
+            <BLANKLINE>
+            <input class="textType" id="field.somedates" name="field.somedates" size="30" type="text" value=""  />
+            <input type="button" value="..." id="field.somedates_trigger">
+            <script type="text/javascript">
+            <BLANKLINE>
+              var multi_field_somedates = [new Date(2006, 11, 6), new Date(2006, 11, 7)];
+              Calendar.setup({
+              inputField: 'field.somedates',
+              button: 'field.somedates_trigger',
+              ifFormat: '%Y-%m-%d',
+              onClose: getMultipleDateClosedHandler("field.somedates", multi_field_somedates),
+              multiple: multi_field_somedates
+            });
+            <BLANKLINE>
+            </script>
+            <BLANKLINE>
+        
+            >>> print widget.hidden() # doctest: +REPORT_NDIFF
+            <input class="hiddenType" id="field.somedates" name="field.somedates" type="hidden" value=""  />
+            <input type="button" value="..." id="field.somedates_trigger">
+            <script type="text/javascript">
+            <BLANKLINE>
+              var multi_field_somedates = [new Date(2006, 11, 6), new Date(2006, 11, 7)];
+              Calendar.setup({
+              inputField: 'field.somedates',
+              button: 'field.somedates_trigger',
+              ifFormat: '%Y-%m-%d',
+              onClose: getMultipleDateClosedHandler("field.somedates", multi_field_somedates),
+              multiple: multi_field_somedates
+            });
+            <BLANKLINE>
+            </script>
+        
+        
+        
+        ====================
+        Datetime Widget Demo
+        ====================
+        
+        This demo packe provides a simple content class which uses the
+        zc.datetimewidget
+        
+            >>> from zope.testbrowser.testing import Browser
+            >>> browser = Browser()
+            >>> browser.handleErrors = False
+            >>> browser.addHeader('Authorization', 'Basic mgr:mgrpw')
+            >>> browser.open('http://localhost/@@contents.html')
+        
+        It can be added by clicking on the "Datetimewidget Demo" link in the
+        add menu. And giving it a name.
+        
+            >>> link = browser.getLink('Datetimewidget Demo')
+            >>> link.click()
+            >>> nameCtrl = browser.getControl(name='new_value')
+            >>> nameCtrl.value = 'mydemo'
+            >>> applyCtrl = browser.getControl('Apply')
+            >>> applyCtrl.click()
+            >>> link = browser.getLink('mydemo')
+            >>> link.click()
+            >>> browser.url
+            'http://localhost/mydemo/@@edit.html'
+        
+        We can fill in the values
+        
+            >>> browser.getControl('Start Date').value = '2006-11-15'
+            >>> browser.getControl('End Date').value = '2006-11-16'
+            >>> browser.getControl('Start Datetime').value = '2006-11-15T07:49:31Z'
+            >>> browser.getControl('End Datetime').value = '2006-11-16T19:46:00Z'
+            >>> browser.getControl('Several dates').value = '2006-11-20 2006-11-21 2006-11-22'
+            >>> browser.getControl('Change').click()
+        
+        And they will be saved:
+        
+            >>> 'Required input is missing' in browser.contents
+            False
+        
+            >>> '2006-11-15' in browser.contents
+            True
+            >>> '2006-11-16' in browser.contents
+            True
+            >>> '07:49' in browser.contents
+            True
+            >>> '19:46' in browser.contents
+            True
+            >>> '2006-11-20 2006-11-21 2006-11-22' in browser.contents
+            True
+        
+        If we do not fill some fields, we get missing value errors
+        
+            >>> browser.getControl('Start Date').value = ''
+            >>> browser.getControl('Change').click()
+            >>> 'Required input is missing' in browser.contents
+            True
+        
+        Let's step back:
+        
+            >>> browser.getControl('Start Date').value = '2006-11-15'
+            >>> browser.getControl('Change').click()
+            >>> 'Required input is missing' in browser.contents
+            False
+        
+        Now let's try not filling a date set field:
+        
+            >>> browser.getControl('Several dates').value = ''
+            >>> browser.getControl('Change').click()
+            >>> 'Required input is missing' in browser.contents
+            True
+        
+        
+        
+        =======
+        CHANGES
+        =======
+        
+        0.8.0 (2016-01-12)
+        ------------------
+        
+        - Get rid of the ``zope.app.form`` dependency by using ``zope.formlib``
+          >= 4.0.
+        
+        
+        0.7.0 (2011-06-07)
+        ------------------
+        
+        - Fix tests using a newer zope.publisher that requires zope.login.
+        - Fix tests by not using deprecated ``zope.app.securitypolicy``
+        - Remove test dependency ``zope.app.server`` and ``zope.app.authentication``.
+          Use ``zope.password`` instead.
+        - No longer using deprecated ``zope.testing.doctestunit``. Use python's
+          build-in ``doctest`` instead.
+        
+        
+        0.6.4 (2009-10-20)
+        ------------------
+        
+        - Make Calendar pop-up and drag behavior more consistent across
+          browser modes in IE.
+        
+        
+        0.6.3 (2009-08-24)
+        ------------------
+        
+        - Fixed handling of naive datetime objects, they no longer result in
+          an exception but are displayed unchanged. When they get saved again
+          they are saved with UTC timezone like all other ones.
+        
+        - Added `datetimewidget.txt` doctest to ``long_description`` to show
+          up on pypi home page.
+        
+        - Fixed home page name in `setup.py`.
+        
+        - Added coverage analysis tools to buildout.
+        
+        - Removed deprecated zpkg and zcml slugs.
+        
+        
+        0.6.2 (2009-05-20)
+        ------------------
+        
+        - Using `++resource++` instead of `@@/` to load resources.
+        
+        - Renaming "lang" directory (``ZPublisher`` gets confused because of a
+          view with the same name exists in ``zope.traversing.namespace``).
+        
+          See `gocept.datetimewidget`_ for more details on how to use
+          zc.datetimewidget with zope2.
+        
+        .. _`gocept.datetimewidget` : http://pypi.python.org/pypi/gocept.datetimewidget
+        
+        0.6.1 (2008-05-29)
+        ------------------
+        
+        - Unchanged from 0.5.2, but released with a new version number thanks to a
+          package with an 0.6.1dev-rBFN revision found in the wild.
+        
+        0.5.2 (2007-11-03)
+        ------------------
+        
+        - Improve package data.
+        
+        - Developed proper package dependencies.
+        
+        - Merged functional tests into ``tests.py``.
+        
+        0.5.1 (2006-06-15)
+        ------------------
+        
+        - Include license and copyright headers.
+        
+        0.5.0 (2006-05-24)
+        ------------------
+        
+        - Initial release.
+        
+Keywords: zope3 date datetime widget javascript
+Platform: UNKNOWN
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: Environment :: Web Environment
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: Zope Public License
+Classifier: Programming Language :: Python
+Classifier: Natural Language :: English
+Classifier: Operating System :: OS Independent
+Classifier: Topic :: Internet :: WWW/HTTP
+Classifier: Framework :: Zope3
