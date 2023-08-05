@@ -1,0 +1,40 @@
+# TEST_TYPE options:
+#   arithmetic
+#   content
+#   status (exit code)
+
+# MATCH_CRITERIA for arithmetic and status tests:
+#   eq
+#   ge
+#   gt
+#   le
+#   lt
+#   ne
+
+# MATCH_CRITERIA for content tests:
+#   contains
+#   does_not_contain
+#   matches
+#   does_not_match
+#   null
+#   not_null
+
+# STATUS indicates whether the event is active:
+#   enabled
+#   disabled
+#   triggered (this will be set by triggerd upon a trigger event)
+
+# TRIGGER_CUSTOM is used to indicate a shell command
+
+# TRIGGER_NAMED is used to indicate the name of a trigger template
+# stored in ~/.config/scripts/triggerd/triggers.conf
+
+# Here is a sample event file that triggers when */tmp* is greater than or equal to 10M in size:
+
+COMMAND=du -ms /tmp | cut -f1
+EVENT_NAME=Size Check
+MATCH_CONTENT=10
+MATCH_CRITERIA=ge
+STATUS=enabled
+TEST_TYPE=arithmetic
+TRIGGER_CUSTOM=notify-send --urgency=critical "$EVENT_NAME" "/tmp is >= 10M in size!"
