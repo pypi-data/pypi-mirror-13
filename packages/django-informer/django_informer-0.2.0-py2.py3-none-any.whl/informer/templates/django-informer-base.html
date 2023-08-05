@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en" data-ng-app="informer">
+    <head>
+        {% load staticfiles %}
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="a pluggable app to monitoring third party services.">
+        <meta name="keywords" content="Python, Django, Web Development, Monitoring">
+        <meta name="author" content="Rodrigo Braga">
+
+        <link rel="shortcut icon" href="{% static "django_informer/assets/images/favicon.ico" %}" />
+
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=RobotoDraft:300,400,500,700,400italic" />
+        <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
+
+        <link rel="stylesheet" type="text/css" href="{% static "django_informer/node_modules/angular-material/angular-material.min.css" %}" />
+
+        <title>Informer &middot; a pluggable app to monitoring your own infrastructure and third party services.</title>
+    </head>
+    <body>
+        {% block content %}{% endblock %}
+
+        <div layout="row" layout-align="center end">
+            <a href="https://github.com/rodrigobraga/informer">
+                <md-tooltip>get more info about Informer</md-tooltip>
+                <i class="material-icons">code</i>
+            </a>
+        </div>
+
+        <!-- Angular JS -->
+        <script src="{% static "django_informer/node_modules/angular/angular.min.js" %}"></script>
+        <script src="{% static "django_informer/node_modules/angular-resource/angular-resource.min.js" %}"></script>
+        <script src="{% static "django_informer/node_modules/angular-route/angular-route.min.js" %}"></script>
+        <script src="{% static "django_informer/node_modules/angular-animate/angular-animate.min.js" %}"></script>
+        <script src="{% static "django_informer/node_modules/angular-aria/angular-aria.min.js" %}"></script>
+        <script src="{% static "django_informer/node_modules/angular-messages/angular-messages.min.js" %}"></script>
+
+        <!-- Material -->
+        <script src="{% static "django_informer/node_modules/angular-material/angular-material.min.js" %}"></script>
+
+         <!-- Google Chart -->
+        <script type="text/javascript" src="https://www.google.com/jsapi/"></script>
+        <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+
+        <!-- Informer -->
+        <script src="{% static "django_informer/app/app.js" %}"></script>
+        <script src="{% static "django_informer/app/home/controller.js" %}"></script>
+        <script src="{% static "django_informer/app/checker/controller.js" %}"></script>
+        <script src="{% static "django_informer/app/checker/service.js" %}"></script>
+        <script src="{% static "django_informer/app/checker/directive.js" %}"></script>
+
+        <script>
+            (function () {
+                'use strict';
+
+                google.charts.load('current', {'packages':['corechart','line']});
+
+                var app = angular.module('informer.settings', []);
+
+                app.constant('CONFIGURATION', {
+                    'URL': '{{ URL }}',
+                    'INTERVAL': '{{ INTERVAL }}'
+                });
+            })();
+        </script>
+    </body>
+</html>
