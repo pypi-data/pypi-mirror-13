@@ -1,0 +1,253 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: package QueryableList</title>
+<meta charset="utf-8">
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong>QueryableList</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href="QueryableList.html">index</a><br></font></td></tr></table>
+    <p><tt>QueryableList&nbsp;-&nbsp;Add&nbsp;support&nbsp;for&nbsp;ORM-style&nbsp;filtering&nbsp;to&nbsp;any&nbsp;<a href="__builtin__.html#list">list</a>&nbsp;of&nbsp;items.<br>
+&nbsp;<br>
+&nbsp;<br>
+Use&nbsp;through&nbsp;one&nbsp;of&nbsp;the&nbsp;<a href="__builtin__.html#list">list</a>-type&nbsp;extending&nbsp;classes:<br>
+&nbsp;<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#QueryableListObjs">QueryableListObjs</a>&nbsp;-&nbsp;This&nbsp;assumes&nbsp;each&nbsp;item&nbsp;is&nbsp;an&nbsp;object&nbsp;[or&nbsp;implements&nbsp;__getattribute__].<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#QueryableListDicts">QueryableListDicts</a>&nbsp;-&nbsp;This&nbsp;assumes&nbsp;that&nbsp;each&nbsp;item&nbsp;is&nbsp;a&nbsp;dict&nbsp;[or&nbsp;implements&nbsp;__getitem__].<br>
+&nbsp;<br>
+&nbsp;<br>
+You&nbsp;can&nbsp;filter&nbsp;these&nbsp;objects&nbsp;by&nbsp;using&nbsp;the&nbsp;method&nbsp;"filterAnd"&nbsp;(or&nbsp;its&nbsp;alias,&nbsp;"filter"),&nbsp;or&nbsp;"filterOr".<br>
+&nbsp;<br>
+filterAnd&nbsp;returns&nbsp;a&nbsp;QueryableList&nbsp;where&nbsp;each&nbsp;item&nbsp;matches&nbsp;ALL&nbsp;of&nbsp;the&nbsp;provided&nbsp;criteria.<br>
+filterOr&nbsp;returns&nbsp;a&nbsp;QueryableList&nbsp;where&nbsp;each&nbsp;item&nbsp;matches&nbsp;ANY&nbsp;of&nbsp;the&nbsp;provided&nbsp;criteria.<br>
+&nbsp;<br>
+You&nbsp;specify&nbsp;the&nbsp;filter&nbsp;operations&nbsp;by&nbsp;passing&nbsp;arguments&nbsp;of&nbsp;$fieldName__$operation&nbsp;(e.x.&nbsp;results&nbsp;=&nbsp;objs.filter(name__ne='Tim')&nbsp;),&nbsp;where&nbsp;"$fieldName"&nbsp;matches&nbsp;the&nbsp;name&nbsp;of&nbsp;an&nbsp;attribute/key&nbsp;and&nbsp;"$operation"&nbsp;is&nbsp;one&nbsp;of&nbsp;the&nbsp;following:<br>
+&nbsp;<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;*&nbsp;eq&nbsp;-&nbsp;Test&nbsp;equality&nbsp;(&nbsp;=&nbsp;operator&nbsp;)<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;*&nbsp;ieq&nbsp;-&nbsp;Test&nbsp;equality,&nbsp;ignoring&nbsp;case&nbsp;(must&nbsp;be&nbsp;strings,&nbsp;or&nbsp;at&nbsp;least&nbsp;implement&nbsp;the&nbsp;.lower()&nbsp;method)<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;*&nbsp;ne&nbsp;&nbsp;-&nbsp;Test&nbsp;inequality&nbsp;(&nbsp;!=&nbsp;operator&nbsp;)<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;*&nbsp;ine&nbsp;-&nbsp;Test&nbsp;inequality,&nbsp;ignoring&nbsp;case&nbsp;(must&nbsp;be&nbsp;strings,&nbsp;or&nbsp;at&nbsp;least&nbsp;implement&nbsp;the&nbsp;.lower()&nbsp;method)<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;*&nbsp;lt&nbsp;&nbsp;-&nbsp;The&nbsp;item's&nbsp;field&nbsp;value&nbsp;must&nbsp;be&nbsp;less&nbsp;than&nbsp;the&nbsp;provided&nbsp;value<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;*&nbsp;lte&nbsp;-&nbsp;The&nbsp;item's&nbsp;field&nbsp;value&nbsp;must&nbsp;be&nbsp;less&nbsp;than&nbsp;or&nbsp;equal&nbsp;to&nbsp;the&nbsp;provided&nbsp;value<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;*&nbsp;gt&nbsp;&nbsp;-&nbsp;The&nbsp;item's&nbsp;field&nbsp;value&nbsp;must&nbsp;be&nbsp;greater&nbsp;than&nbsp;the&nbsp;provided&nbsp;value<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;*&nbsp;gte&nbsp;-&nbsp;The&nbsp;item's&nbsp;field&nbsp;value&nbsp;must&nbsp;be&nbsp;greater&nbsp;than&nbsp;or&nbsp;equal&nbsp;to&nbsp;the&nbsp;provided&nbsp;value<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;*&nbsp;isnull&nbsp;-&nbsp;Provided&nbsp;value&nbsp;must&nbsp;be&nbsp;True/False.&nbsp;If&nbsp;True,&nbsp;the&nbsp;item's&nbsp;field&nbsp;value&nbsp;must&nbsp;be&nbsp;None,&nbsp;otherwise&nbsp;it&nbsp;must&nbsp;not&nbsp;be&nbsp;None.<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;*&nbsp;is&nbsp;&nbsp;-&nbsp;Test&nbsp;identity&nbsp;equality&nbsp;(&nbsp;is&nbsp;operator&nbsp;)<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;*&nbsp;isnot&nbsp;-&nbsp;Test&nbsp;identity&nbsp;inequality&nbsp;(&nbsp;is&nbsp;not&nbsp;operator&nbsp;)<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;*&nbsp;in&nbsp;-&nbsp;Test&nbsp;that&nbsp;the&nbsp;item's&nbsp;field&nbsp;value&nbsp;is&nbsp;contained&nbsp;in&nbsp;the&nbsp;provided&nbsp;<a href="__builtin__.html#list">list</a>&nbsp;of&nbsp;items<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;*&nbsp;notin&nbsp;-&nbsp;Test&nbsp;that&nbsp;the&nbsp;item's&nbsp;field&nbsp;value&nbsp;is&nbsp;not&nbsp;contained&nbsp;in&nbsp;the&nbsp;provided&nbsp;<a href="__builtin__.html#list">list</a>&nbsp;of&nbsp;items<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;*&nbsp;contains&nbsp;-&nbsp;Test&nbsp;that&nbsp;the&nbsp;item's&nbsp;field&nbsp;value&nbsp;contains&nbsp;the&nbsp;provided&nbsp;value&nbsp;(&nbsp;using&nbsp;"in"&nbsp;)<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;*&nbsp;notcontains&nbsp;-&nbsp;Test&nbsp;that&nbsp;the&nbsp;item's&nbsp;field&nbsp;value&nbsp;does&nbsp;not&nbsp;contain&nbsp;the&nbsp;provided&nbsp;value&nbsp;(&nbsp;using&nbsp;"not&nbsp;in"&nbsp;)<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;*&nbsp;containsAny&nbsp;-&nbsp;Test&nbsp;that&nbsp;the&nbsp;item's&nbsp;field&nbsp;value&nbsp;contains&nbsp;any&nbsp;of&nbsp;the&nbsp;items&nbsp;in&nbsp;the&nbsp;provided&nbsp;<a href="__builtin__.html#list">list</a>&nbsp;(&nbsp;using&nbsp;"in"&nbsp;)<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;*&nbsp;notcontainsAny&nbsp;-&nbsp;Test&nbsp;that&nbsp;the&nbsp;item's&nbsp;field&nbsp;value&nbsp;does&nbsp;not&nbsp;contain&nbsp;any&nbsp;of&nbsp;the&nbsp;items&nbsp;in&nbsp;the&nbsp;provided&nbsp;<a href="__builtin__.html#list">list</a>&nbsp;(&nbsp;using&nbsp;"not&nbsp;in"&nbsp;)</tt></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Package Contents</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="QueryableList.Base.html">Base</a><br>
+</td><td width="25%" valign=top></td><td width="25%" valign=top></td><td width="25%" valign=top></td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ee77aa">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Classes</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#ee77aa"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl>
+<dt><font face="helvetica, arial"><a href="__builtin__.html#list">__builtin__.list</a>(<a href="__builtin__.html#object">__builtin__.object</a>)
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="QueryableList.Base.html#QueryableListBase">QueryableList.Base.QueryableListBase</a>
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="QueryableList.html#QueryableListDicts">QueryableListDicts</a>
+</font></dt><dt><font face="helvetica, arial"><a href="QueryableList.html#QueryableListObjs">QueryableListObjs</a>
+</font></dt></dl>
+</dd>
+</dl>
+</dd>
+</dl>
+ <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="QueryableListBase">class <strong>QueryableListBase</strong></a>(<a href="__builtin__.html#list">__builtin__.list</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt><a href="#QueryableListBase">QueryableListBase</a>&nbsp;-&nbsp;The&nbsp;base&nbsp;implementation&nbsp;of&nbsp;a&nbsp;QueryableList.&nbsp;<br>
+&nbsp;<br>
+Any&nbsp;implementing&nbsp;classes&nbsp;should&nbsp;only&nbsp;have&nbsp;to&nbsp;implement&nbsp;the&nbsp;"_get_item_value(item,&nbsp;fieldName)"&nbsp;method,&nbsp;to&nbsp;return&nbsp;the&nbsp;value&nbsp;of&nbsp;a&nbsp;given&nbsp;field&nbsp;on&nbsp;an&nbsp;item.<br>
+&nbsp;<br>
+You&nbsp;cannot&nbsp;use&nbsp;this&nbsp;directly,&nbsp;instead&nbsp;use&nbsp;one&nbsp;of&nbsp;the&nbsp;implementing&nbsp;classes&nbsp;(like&nbsp;<a href="#QueryableListDicts">QueryableListDicts</a>&nbsp;or&nbsp;<a href="#QueryableListObjs">QueryableListObjs</a>),&nbsp;or&nbsp;your&nbsp;own&nbsp;implementing&nbsp;class.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="QueryableList.Base.html#QueryableListBase">QueryableListBase</a></dd>
+<dd><a href="__builtin__.html#list">__builtin__.list</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Methods defined here:<br>
+<dl><dt><a name="QueryableListBase-filter"><strong>filter</strong></a> = <a href="#QueryableListBase-filterAnd">filterAnd</a>(self, **kwargs)</dt></dl>
+
+<dl><dt><a name="QueryableListBase-filterAnd"><strong>filterAnd</strong></a>(self, **kwargs)</dt><dd><tt>filter/filterAnd&nbsp;-&nbsp;Performs&nbsp;a&nbsp;filter&nbsp;and&nbsp;returns&nbsp;a&nbsp;QueryableList&nbsp;object&nbsp;of&nbsp;the&nbsp;same&nbsp;type.<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;All&nbsp;the&nbsp;provided&nbsp;filters&nbsp;must&nbsp;match&nbsp;for&nbsp;the&nbsp;item&nbsp;to&nbsp;be&nbsp;returned.<br>
+&nbsp;<br>
+@params&nbsp;are&nbsp;in&nbsp;the&nbsp;format&nbsp;of&nbsp;fieldName__operation=value&nbsp;&nbsp;where&nbsp;fieldName&nbsp;is&nbsp;the&nbsp;name&nbsp;of&nbsp;the&nbsp;field&nbsp;on&nbsp;any&nbsp;given&nbsp;item,&nbsp;"operation"&nbsp;is&nbsp;one&nbsp;of&nbsp;the&nbsp;given&nbsp;operations&nbsp;(@see&nbsp;main&nbsp;documentation)&nbsp;(e.x.&nbsp;eq,&nbsp;ne,&nbsp;isnull),&nbsp;and&nbsp;value&nbsp;is&nbsp;what&nbsp;is&nbsp;used&nbsp;in&nbsp;the&nbsp;operation.<br>
+&nbsp;<br>
+@return&nbsp;-&nbsp;A&nbsp;QueryableList&nbsp;object&nbsp;of&nbsp;the&nbsp;same&nbsp;type,&nbsp;with&nbsp;only&nbsp;the&nbsp;matching&nbsp;objects&nbsp;returned.</tt></dd></dl>
+
+<dl><dt><a name="QueryableListBase-filterOr"><strong>filterOr</strong></a>(self, **kwargs)</dt><dd><tt>filterOr&nbsp;-&nbsp;Performs&nbsp;a&nbsp;filter&nbsp;and&nbsp;returns&nbsp;a&nbsp;QueryableList&nbsp;object&nbsp;of&nbsp;the&nbsp;same&nbsp;type.<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Anythe&nbsp;provided&nbsp;filters&nbsp;can&nbsp;match&nbsp;for&nbsp;the&nbsp;item&nbsp;to&nbsp;be&nbsp;returned.<br>
+&nbsp;<br>
+@params&nbsp;are&nbsp;in&nbsp;the&nbsp;format&nbsp;of&nbsp;fieldName__operation=value&nbsp;&nbsp;where&nbsp;fieldName&nbsp;is&nbsp;the&nbsp;name&nbsp;of&nbsp;the&nbsp;field&nbsp;on&nbsp;any&nbsp;given&nbsp;item,&nbsp;"operation"&nbsp;is&nbsp;one&nbsp;of&nbsp;the&nbsp;given&nbsp;operations&nbsp;(@see&nbsp;main&nbsp;documentation)&nbsp;(e.x.&nbsp;eq,&nbsp;ne,&nbsp;isnull),&nbsp;and&nbsp;value&nbsp;is&nbsp;what&nbsp;is&nbsp;used&nbsp;in&nbsp;the&nbsp;operation.<br>
+&nbsp;<br>
+@return&nbsp;-&nbsp;A&nbsp;QueryableList&nbsp;object&nbsp;of&nbsp;the&nbsp;same&nbsp;type,&nbsp;with&nbsp;only&nbsp;the&nbsp;matching&nbsp;objects&nbsp;returned.</tt></dd></dl>
+
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<hr>
+
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="QueryableListDicts">class <strong>QueryableListDicts</strong></a>(<a href="QueryableList.Base.html#QueryableListBase">QueryableList.Base.QueryableListBase</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt><a href="#QueryableListDicts">QueryableListDicts</a>&nbsp;-&nbsp;QueryableList&nbsp;where&nbsp;each&nbsp;item&nbsp;is&nbsp;or&nbsp;extends&nbsp;dict&nbsp;(or&nbsp;implements&nbsp;__getitem__)<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="QueryableList.html#QueryableListDicts">QueryableListDicts</a></dd>
+<dd><a href="QueryableList.Base.html#QueryableListBase">QueryableList.Base.QueryableListBase</a></dd>
+<dd><a href="__builtin__.html#list">__builtin__.list</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Methods inherited from <a href="QueryableList.Base.html#QueryableListBase">QueryableList.Base.QueryableListBase</a>:<br>
+<dl><dt><a name="QueryableListDicts-filter"><strong>filter</strong></a> = filterAnd(self, **kwargs)</dt><dd><tt>filter/filterAnd&nbsp;-&nbsp;Performs&nbsp;a&nbsp;filter&nbsp;and&nbsp;returns&nbsp;a&nbsp;QueryableList&nbsp;object&nbsp;of&nbsp;the&nbsp;same&nbsp;type.<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;All&nbsp;the&nbsp;provided&nbsp;filters&nbsp;must&nbsp;match&nbsp;for&nbsp;the&nbsp;item&nbsp;to&nbsp;be&nbsp;returned.<br>
+&nbsp;<br>
+@params&nbsp;are&nbsp;in&nbsp;the&nbsp;format&nbsp;of&nbsp;fieldName__operation=value&nbsp;&nbsp;where&nbsp;fieldName&nbsp;is&nbsp;the&nbsp;name&nbsp;of&nbsp;the&nbsp;field&nbsp;on&nbsp;any&nbsp;given&nbsp;item,&nbsp;"operation"&nbsp;is&nbsp;one&nbsp;of&nbsp;the&nbsp;given&nbsp;operations&nbsp;(@see&nbsp;main&nbsp;documentation)&nbsp;(e.x.&nbsp;eq,&nbsp;ne,&nbsp;isnull),&nbsp;and&nbsp;value&nbsp;is&nbsp;what&nbsp;is&nbsp;used&nbsp;in&nbsp;the&nbsp;operation.<br>
+&nbsp;<br>
+@return&nbsp;-&nbsp;A&nbsp;QueryableList&nbsp;object&nbsp;of&nbsp;the&nbsp;same&nbsp;type,&nbsp;with&nbsp;only&nbsp;the&nbsp;matching&nbsp;objects&nbsp;returned.</tt></dd></dl>
+
+<dl><dt><a name="QueryableListDicts-filterAnd"><strong>filterAnd</strong></a>(self, **kwargs)</dt><dd><tt>filter/filterAnd&nbsp;-&nbsp;Performs&nbsp;a&nbsp;filter&nbsp;and&nbsp;returns&nbsp;a&nbsp;QueryableList&nbsp;object&nbsp;of&nbsp;the&nbsp;same&nbsp;type.<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;All&nbsp;the&nbsp;provided&nbsp;filters&nbsp;must&nbsp;match&nbsp;for&nbsp;the&nbsp;item&nbsp;to&nbsp;be&nbsp;returned.<br>
+&nbsp;<br>
+@params&nbsp;are&nbsp;in&nbsp;the&nbsp;format&nbsp;of&nbsp;fieldName__operation=value&nbsp;&nbsp;where&nbsp;fieldName&nbsp;is&nbsp;the&nbsp;name&nbsp;of&nbsp;the&nbsp;field&nbsp;on&nbsp;any&nbsp;given&nbsp;item,&nbsp;"operation"&nbsp;is&nbsp;one&nbsp;of&nbsp;the&nbsp;given&nbsp;operations&nbsp;(@see&nbsp;main&nbsp;documentation)&nbsp;(e.x.&nbsp;eq,&nbsp;ne,&nbsp;isnull),&nbsp;and&nbsp;value&nbsp;is&nbsp;what&nbsp;is&nbsp;used&nbsp;in&nbsp;the&nbsp;operation.<br>
+&nbsp;<br>
+@return&nbsp;-&nbsp;A&nbsp;QueryableList&nbsp;object&nbsp;of&nbsp;the&nbsp;same&nbsp;type,&nbsp;with&nbsp;only&nbsp;the&nbsp;matching&nbsp;objects&nbsp;returned.</tt></dd></dl>
+
+<dl><dt><a name="QueryableListDicts-filterOr"><strong>filterOr</strong></a>(self, **kwargs)</dt><dd><tt>filterOr&nbsp;-&nbsp;Performs&nbsp;a&nbsp;filter&nbsp;and&nbsp;returns&nbsp;a&nbsp;QueryableList&nbsp;object&nbsp;of&nbsp;the&nbsp;same&nbsp;type.<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Anythe&nbsp;provided&nbsp;filters&nbsp;can&nbsp;match&nbsp;for&nbsp;the&nbsp;item&nbsp;to&nbsp;be&nbsp;returned.<br>
+&nbsp;<br>
+@params&nbsp;are&nbsp;in&nbsp;the&nbsp;format&nbsp;of&nbsp;fieldName__operation=value&nbsp;&nbsp;where&nbsp;fieldName&nbsp;is&nbsp;the&nbsp;name&nbsp;of&nbsp;the&nbsp;field&nbsp;on&nbsp;any&nbsp;given&nbsp;item,&nbsp;"operation"&nbsp;is&nbsp;one&nbsp;of&nbsp;the&nbsp;given&nbsp;operations&nbsp;(@see&nbsp;main&nbsp;documentation)&nbsp;(e.x.&nbsp;eq,&nbsp;ne,&nbsp;isnull),&nbsp;and&nbsp;value&nbsp;is&nbsp;what&nbsp;is&nbsp;used&nbsp;in&nbsp;the&nbsp;operation.<br>
+&nbsp;<br>
+@return&nbsp;-&nbsp;A&nbsp;QueryableList&nbsp;object&nbsp;of&nbsp;the&nbsp;same&nbsp;type,&nbsp;with&nbsp;only&nbsp;the&nbsp;matching&nbsp;objects&nbsp;returned.</tt></dd></dl>
+
+<hr>
+Data descriptors inherited from <a href="QueryableList.Base.html#QueryableListBase">QueryableList.Base.QueryableListBase</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<hr>
+
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="QueryableListObjs">class <strong>QueryableListObjs</strong></a>(<a href="QueryableList.Base.html#QueryableListBase">QueryableList.Base.QueryableListBase</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt><a href="#QueryableListObjs">QueryableListObjs</a>&nbsp;-&nbsp;QueryableList&nbsp;where&nbsp;each&nbsp;item&nbsp;extends&nbsp;object&nbsp;(or&nbsp;implements&nbsp;__getattribute__)<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="QueryableList.html#QueryableListObjs">QueryableListObjs</a></dd>
+<dd><a href="QueryableList.Base.html#QueryableListBase">QueryableList.Base.QueryableListBase</a></dd>
+<dd><a href="__builtin__.html#list">__builtin__.list</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Methods inherited from <a href="QueryableList.Base.html#QueryableListBase">QueryableList.Base.QueryableListBase</a>:<br>
+<dl><dt><a name="QueryableListObjs-filter"><strong>filter</strong></a> = filterAnd(self, **kwargs)</dt><dd><tt>filter/filterAnd&nbsp;-&nbsp;Performs&nbsp;a&nbsp;filter&nbsp;and&nbsp;returns&nbsp;a&nbsp;QueryableList&nbsp;object&nbsp;of&nbsp;the&nbsp;same&nbsp;type.<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;All&nbsp;the&nbsp;provided&nbsp;filters&nbsp;must&nbsp;match&nbsp;for&nbsp;the&nbsp;item&nbsp;to&nbsp;be&nbsp;returned.<br>
+&nbsp;<br>
+@params&nbsp;are&nbsp;in&nbsp;the&nbsp;format&nbsp;of&nbsp;fieldName__operation=value&nbsp;&nbsp;where&nbsp;fieldName&nbsp;is&nbsp;the&nbsp;name&nbsp;of&nbsp;the&nbsp;field&nbsp;on&nbsp;any&nbsp;given&nbsp;item,&nbsp;"operation"&nbsp;is&nbsp;one&nbsp;of&nbsp;the&nbsp;given&nbsp;operations&nbsp;(@see&nbsp;main&nbsp;documentation)&nbsp;(e.x.&nbsp;eq,&nbsp;ne,&nbsp;isnull),&nbsp;and&nbsp;value&nbsp;is&nbsp;what&nbsp;is&nbsp;used&nbsp;in&nbsp;the&nbsp;operation.<br>
+&nbsp;<br>
+@return&nbsp;-&nbsp;A&nbsp;QueryableList&nbsp;object&nbsp;of&nbsp;the&nbsp;same&nbsp;type,&nbsp;with&nbsp;only&nbsp;the&nbsp;matching&nbsp;objects&nbsp;returned.</tt></dd></dl>
+
+<dl><dt><a name="QueryableListObjs-filterAnd"><strong>filterAnd</strong></a>(self, **kwargs)</dt><dd><tt>filter/filterAnd&nbsp;-&nbsp;Performs&nbsp;a&nbsp;filter&nbsp;and&nbsp;returns&nbsp;a&nbsp;QueryableList&nbsp;object&nbsp;of&nbsp;the&nbsp;same&nbsp;type.<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;All&nbsp;the&nbsp;provided&nbsp;filters&nbsp;must&nbsp;match&nbsp;for&nbsp;the&nbsp;item&nbsp;to&nbsp;be&nbsp;returned.<br>
+&nbsp;<br>
+@params&nbsp;are&nbsp;in&nbsp;the&nbsp;format&nbsp;of&nbsp;fieldName__operation=value&nbsp;&nbsp;where&nbsp;fieldName&nbsp;is&nbsp;the&nbsp;name&nbsp;of&nbsp;the&nbsp;field&nbsp;on&nbsp;any&nbsp;given&nbsp;item,&nbsp;"operation"&nbsp;is&nbsp;one&nbsp;of&nbsp;the&nbsp;given&nbsp;operations&nbsp;(@see&nbsp;main&nbsp;documentation)&nbsp;(e.x.&nbsp;eq,&nbsp;ne,&nbsp;isnull),&nbsp;and&nbsp;value&nbsp;is&nbsp;what&nbsp;is&nbsp;used&nbsp;in&nbsp;the&nbsp;operation.<br>
+&nbsp;<br>
+@return&nbsp;-&nbsp;A&nbsp;QueryableList&nbsp;object&nbsp;of&nbsp;the&nbsp;same&nbsp;type,&nbsp;with&nbsp;only&nbsp;the&nbsp;matching&nbsp;objects&nbsp;returned.</tt></dd></dl>
+
+<dl><dt><a name="QueryableListObjs-filterOr"><strong>filterOr</strong></a>(self, **kwargs)</dt><dd><tt>filterOr&nbsp;-&nbsp;Performs&nbsp;a&nbsp;filter&nbsp;and&nbsp;returns&nbsp;a&nbsp;QueryableList&nbsp;object&nbsp;of&nbsp;the&nbsp;same&nbsp;type.<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Anythe&nbsp;provided&nbsp;filters&nbsp;can&nbsp;match&nbsp;for&nbsp;the&nbsp;item&nbsp;to&nbsp;be&nbsp;returned.<br>
+&nbsp;<br>
+@params&nbsp;are&nbsp;in&nbsp;the&nbsp;format&nbsp;of&nbsp;fieldName__operation=value&nbsp;&nbsp;where&nbsp;fieldName&nbsp;is&nbsp;the&nbsp;name&nbsp;of&nbsp;the&nbsp;field&nbsp;on&nbsp;any&nbsp;given&nbsp;item,&nbsp;"operation"&nbsp;is&nbsp;one&nbsp;of&nbsp;the&nbsp;given&nbsp;operations&nbsp;(@see&nbsp;main&nbsp;documentation)&nbsp;(e.x.&nbsp;eq,&nbsp;ne,&nbsp;isnull),&nbsp;and&nbsp;value&nbsp;is&nbsp;what&nbsp;is&nbsp;used&nbsp;in&nbsp;the&nbsp;operation.<br>
+&nbsp;<br>
+@return&nbsp;-&nbsp;A&nbsp;QueryableList&nbsp;object&nbsp;of&nbsp;the&nbsp;same&nbsp;type,&nbsp;with&nbsp;only&nbsp;the&nbsp;matching&nbsp;objects&nbsp;returned.</tt></dd></dl>
+
+<hr>
+Data descriptors inherited from <a href="QueryableList.Base.html#QueryableListBase">QueryableList.Base.QueryableListBase</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<hr>
+
+</td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#55aa55">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Data</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#55aa55"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><strong>FILTER_TYPES</strong> = set(['contains', 'containsAny', 'eq', 'gt', 'gte', 'ieq', ...])<br>
+<strong>__all__</strong> = ('FILTER_TYPES', 'QueryableListObjs', 'QueryableListDicts', 'QueryableListBase')</td></tr></table>
+</body></html>
