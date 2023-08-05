@@ -1,0 +1,131 @@
+{
+  "Description" : "Cloud formation standard template for YAC db's",
+
+  "Parameters" : {
+    "DBInstanceClass" : {
+      "Description" : "Type of EC2 instance to launch",
+      "Type" : "String",
+      "AllowedValues": [
+        "db.m3.large",
+        "db.m3.xlarge"
+      ],
+      "Default" : "db.m3.large"
+    },
+    "DBPassword": {
+      "Description": "The password for the Ssysadmin DB user",
+      "Type": "String",
+      "NoEcho" : "true"
+    },     
+    "DBSize" : {
+      "Description" : "The size of the DB (in GB)",
+      "Type" : "String",
+      "Default" : "10"
+    },
+    "DBPort" : {
+      "Description" : "The port the DB accepts connections on",
+      "Type" : "String",
+      "Default" : "5432"
+    },   
+    "DBSysAdminUser" : {
+      "Description" : "The name of sysadmin user",
+      "Type" : "String",
+      "Default" : "mac_sysadmin"
+    },      
+    "DBSubnetGroup": {
+      "Description": "The DB subnet group to print the DB ito",
+      "Type":        "String"
+    },   
+    "DBSGName" : {
+      "Description" : "The name of the db security group",
+      "Type"        : "String"
+    },       
+    "BackupRetentionPeriod": {
+      "Description": "The depth of backups maintained, in days",
+      "Type":        "String",
+      "Default" : "5"
+    },
+    "DBHostName": {
+      "Description": "The name of the DB endpoint (i.e. DB hostname)",
+      "Type":        "String"
+    },    
+    "DBEngine" : {
+      "Description" : "The DB engine",
+      "Type" : "String",
+      "AllowedValues": [
+        "Postgres",
+        "MySQL"
+      ],      
+      "Default" : "Postgres"
+    },
+    "CreateDBFromThisSnapshot": {
+      "Description": "Create the DB instance from this snapshot. Defaults to null, which will result in an clean slate.",
+      "Type": "String",
+      "Default" : ""
+    }  
+  },
+  "Resources" : {
+    "AppDB" : {
+      "Type" : "AWS::RDS::DBInstance",
+      "Properties" : {
+        "VPCSecurityGroups": [{"Ref" : "AppDBSG"}],
+        "AllocatedStorage" : {"Ref" : "DBSize"},
+        "Engine" : {"Ref": "DBEngine"},
+        "StorageType": "gp2",
+        "BackupRetentionPeriod": {"Ref": "BackupRetentionPeriod"},
+        "PreferredBackupWindow": "00:00-00:30",
+        "MultiAZ": true,
+        "DBInstanceClass": {"Ref": "DBInstanceClass"},
+        "DBInstanceIdentifier": { "Ref" : "DBHostName" },
+        "MasterUsername" :     {"Ref" : "DBSysAdminUser"},
+        "MasterUserPassword" : { "Ref" : "DBPassword" },
+        "DBSnapshotIdentifier": {"Ref": "CreateDBFromThisSnapshot"},
+        "Tags" : [ 
+          {"Key": "Name", "Value" : { "Ref" : "DBHostName" } },
+          { "Key": "Owner", "Value": { "Ref": "Owner" } },
+          { "Key": "CostCenter", "Value": { "Ref": "CostCenter" } }          
+        ],
+        "DBSubnetGroupName": {"Ref" : "DBSubnetGroup"}
+      }
+    },
+    "AppDBSG" : {
+      "Type" : "AWS::EC2::SecurityGroup",
+      "Properties" : {
+        "GroupDescription" : "Enable admin access from domain to DBs",
+        "SecurityGroupIngress" : [
+          {
+            "IpProtocol" : "tcp",
+            "FromPort" : {"Ref" : "DBPort"},
+            "ToPort" : {"Ref" : "DBPort"},
+            "CidrIp" : {"Ref" : "CorporateCidr" }
+          }
+        ],
+        "VpcId": {"Ref" : "VpcId"},
+        "Tags" : [ 
+          { "Key": "Name", "Value" : {  "Ref": "DBSGName"}},
+          { "Key": "Owner", "Value": { "Ref": "Owner" } },
+          { "Key": "CostCenter", "Value": { "Ref": "CostCenter" } }
+        ]
+      }
+    }, 
+    "App2DBIngress" : {
+      "Type" : "AWS::EC2::SecurityGroupIngress",
+      "Properties" : {
+        "GroupId" : { "Fn::GetAtt": ["AppDBSG","GroupId"]},
+        "IpProtocol" : "tcp",
+        "ToPort" : {"Ref" : "DBPort"},
+        "FromPort" : {"Ref" : "DBPort"},
+        "SourceSecurityGroupId" : {"Fn::GetAtt": ["AppSG","GroupId"]}
+      }
+    },
+    "App2DBEgress" : {
+      "Type" : "AWS::EC2::SecurityGroupEgress",
+      "Properties" : {
+        "GroupId" : { "Fn::GetAtt": ["AppSG","GroupId"]},
+        "IpProtocol" : "tcp",
+        "ToPort" : {"Ref" : "DBPort"},
+        "FromPort" : {"Ref" : "DBPort"},
+        "DestinationSecurityGroupId" : {"Fn::GetAtt": ["AppDBSG","GroupId"]}
+      }
+    }
+  }
+}      
