@@ -1,0 +1,35 @@
+#!/usr/bin/env python
+# -*- coding:utf-8 -*-
+
+"""
+    phen system launcher
+"""
+
+import os
+import sys
+
+
+parts = os.path.realpath(__file__).split(os.path.sep)
+dev_path = os.path.sep.join(parts[:-2])
+
+# installed phen module probably resides in dist-packages
+# while the root development folder should be called phen
+if os.path.exists(dev_path + "/phen"):
+    # development environment
+    sys.path.append(dev_path)
+    try:
+        from IPython.core import ultratb
+        sys.excepthook = ultratb.FormattedTB(
+            mode='Verbose', color_scheme='Linux', call_pdb=1
+        )
+    except:
+        pass
+
+
+if "-b" in sys.argv or "--bypass-launcher" in sys.argv:
+    from phen.hub import run
+else:
+    from phen.launcher import run
+
+
+run()

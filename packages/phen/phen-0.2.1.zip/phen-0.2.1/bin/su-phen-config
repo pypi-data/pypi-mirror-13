@@ -1,0 +1,105 @@
+#!/usr/bin/env python
+# -*- coding:utf-8 -*-
+
+"""
+    system-wide phen configuration
+"""
+
+import os
+import pwd
+import sys
+import phen
+import subprocess
+
+from phen.hub import parse_command_line, process_config
+
+
+initd = "/etc/init.d/phen"
+src_phen = os.path.abspath(os.path.dirname(__file__) + "/phen")
+dest_phen = "/usr/bin/phen"
+items = 5
+
+
+def confirm(num, action):
+    print("\n[{}/{}] {}".format(num, items, action))
+    try:
+        raw_input("Ctrl+C to cancel, Enter to continue...")
+    except KeyboardInterrupt:
+        print("Canceled")
+        exit(1)
+
+
+def skip(num, action):
+    print("\n[{}/{} skipped] {}".format(num, items, action))
+
+
+if os.getuid():
+    print(
+        "su-phen-config must be launched as superuser, try:\n"
+        "sudo su-phen-config"
+    )
+    exit(1)
+
+
+print("Please confirm the following actions:")
+
+
+if not os.path.exists(dest_phen):
+    confirm(1, "Create symlink " + dest_phen)
+    os.symlink(src_phen, dest_phen)
+else:
+    skip(1, "Symlink {} exists".format(dest_phen))
+
+
+if not os.path.exists(initd):
+    confirm(2, "Installing init script: " + initd)
+    with open(os.path.join(phen.phen_path, "data/init.d.sh")) as in_:
+        with open(initd, "wt") as out:
+            out.write(in_.read())
+    os.chmod(initd, 0o755)
+    ans = raw_input("\nStart up at boot? (y/N)")
+    if ans[0].lower() == "y":
+        subprocess.check_call("update-rc.d phen defaults", shell=True)
+    else:
+        print("Execute 'update-rc.d phen defaults' if you change your mind")
+else:
+    skip(2, "Init script {} exists".format(initd))
+
+
+user = raw_input(
+    "\nPhen's process should be run as what user? [phen] "
+) or "phen"
+try:
+    pwd.getpwnam(user)
+    skip(3, "System user {} exists".format(user))
+except:
+    confirm(3, "Creating system user " + user)
+    subprocess.check_call(
+        "adduser --system --group --no-create-home " + user,
+        shell=True
+    )
+
+
+sys.argv += ["--user", user, "--group", user, "--save"]
+defaults, opts = parse_command_line()
+cfgfile = opts["--cfg-file"] or defaults["cfg-file"]
+
+if not os.path.exists(cfgfile):
+    confirm(4, "Creating configuration file " + cfgfile)
+    os.makedirs(os.path.dirname(cfgfile), 0o700)
+    process_config(defaults, opts)
+else:
+    skip(4, "Configuration file {} exists".format(cfgfile))
+
+cmd = "phen -b -vv -i shell -i p2pnet -l stderr"
+confirm(
+    5,
+    "Starting a phen shell to initialize this device\n"
+    "Command: " + cmd
+)
+subprocess.check_call(cmd, shell=True)
+
+print(
+    "\nNow you may edit the configuration file {}\n"
+    "to specify what plugins should be launched at startup\n".format(cfgfile)
+)
