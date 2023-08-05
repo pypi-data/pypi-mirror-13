@@ -1,0 +1,27 @@
+<!--StacksImageList 2-up Grid-->
+
+<div class="stacks-module list-2up stacks-image stacks-image-list-2up grid">
+    {% if context.display_title %}<h2 class="module-title">{{ context.display_title }}</h2>{% endif %}
+    {% for image in context.images %}
+    {% if forloop.first or forloop.counter0|divisibleby:'2' %}
+    <div class="media-row grid-row">
+    {% endif %}
+        <div class="grid-2up grid-block
+            {% if forloop.first or forloop.counter0|divisibleby:'2' %}first-in-row{% endif %} {% if forloop.counter|divisibleby:'2' %}last-in-row{% endif %}">
+            <div class="image-container">
+                <img class="lazy" data-original="{{ image.image.2up_thumb }}" alt="{{ image.display_title }}"/>
+                {% if image.attribution %}
+                    <p class="attribution">{{ image.attribution }}</p>
+                {% endif %}
+            </div>
+            {% if image.optional_content.raw_text %}
+            <div class="text-container">
+                {{ image.optional_content.as_html }}
+            </div>
+            {% endif %}
+        </div>
+    {% if forloop.last or forloop.counter|divisibleby:'2' %}
+    </div>
+    {% endif %}
+    {% endfor %}
+</div>
