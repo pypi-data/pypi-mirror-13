@@ -1,0 +1,460 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>pyscaffold.cli &mdash; PyScaffold 2.5.2.post0.dev2+g85f669b.dirty documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../../_static/logo.ico"/>
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="PyScaffold 2.5.2.post0.dev2+g85f669b.dirty documentation" href="../../index.html"/>
+        <link rel="up" title="Module code" href="../index.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> PyScaffold
+          
+
+          
+            
+            <img src="../../_static/sidebar.png" class="logo" />
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                2.5.2.post0.dev2+g85f669b.dirty
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../features.html">Features</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../configuration.html">Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../contrib.html">Contributions &amp; Help</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../authors.html">Authors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../changes.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/modules.html">Module Reference</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../../index.html">PyScaffold</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../../index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+      
+    <li>pyscaffold.cli</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for pyscaffold.cli</h1><div class="highlight"><pre>
+<span class="c"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Command-Line-Interface of PyScaffold</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">absolute_import</span><span class="p">,</span> <span class="n">print_function</span>
+
+<span class="kn">import</span> <span class="nn">argparse</span>
+<span class="kn">import</span> <span class="nn">os.path</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">date</span>
+
+<span class="kn">import</span> <span class="nn">pyscaffold</span>
+
+<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">info</span><span class="p">,</span> <span class="n">repo</span><span class="p">,</span> <span class="n">shell</span><span class="p">,</span> <span class="n">structure</span><span class="p">,</span> <span class="n">templates</span><span class="p">,</span> <span class="n">utils</span>
+
+<span class="n">__author__</span> <span class="o">=</span> <span class="s">&quot;Florian Wilhelm&quot;</span>
+<span class="n">__copyright__</span> <span class="o">=</span> <span class="s">&quot;Blue Yonder&quot;</span>
+<span class="n">__license__</span> <span class="o">=</span> <span class="s">&quot;new BSD&quot;</span>
+
+
+<div class="viewcode-block" id="parse_args"><a class="viewcode-back" href="../../api/pyscaffold.html#pyscaffold.cli.parse_args">[docs]</a><span class="k">def</span> <span class="nf">parse_args</span><span class="p">(</span><span class="n">args</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Parse command line parameters</span>
+
+<span class="sd">    :param args: command line parameters as list of strings</span>
+<span class="sd">    :return: command line parameters as dictionary</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span>
+        <span class="n">description</span><span class="o">=</span><span class="s">&quot;PyScaffold is a tool for easily putting up the scaffold &quot;</span>
+                    <span class="s">&quot;of a Python project.&quot;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s">&quot;project&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s">&quot;project name&quot;</span><span class="p">,</span>
+        <span class="n">metavar</span><span class="o">=</span><span class="s">&quot;PROJECT&quot;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s">&quot;-p&quot;</span><span class="p">,</span>
+        <span class="s">&quot;--package&quot;</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s">&quot;package&quot;</span><span class="p">,</span>
+        <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s">&quot;package name (default: project name)&quot;</span><span class="p">,</span>
+        <span class="n">metavar</span><span class="o">=</span><span class="s">&quot;NAME&quot;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s">&quot;-d&quot;</span><span class="p">,</span>
+        <span class="s">&quot;--description&quot;</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s">&quot;description&quot;</span><span class="p">,</span>
+        <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s">&quot;package description (default: &#39;&#39;)&quot;</span><span class="p">,</span>
+        <span class="n">metavar</span><span class="o">=</span><span class="s">&quot;TEXT&quot;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s">&quot;-u&quot;</span><span class="p">,</span>
+        <span class="s">&quot;--url&quot;</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s">&quot;url&quot;</span><span class="p">,</span>
+        <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s">&quot;package url (default: &#39;&#39;)&quot;</span><span class="p">,</span>
+        <span class="n">metavar</span><span class="o">=</span><span class="s">&quot;URL&quot;</span><span class="p">)</span>
+    <span class="n">license_choices</span> <span class="o">=</span> <span class="n">templates</span><span class="o">.</span><span class="n">licenses</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s">&quot;-l&quot;</span><span class="p">,</span>
+        <span class="s">&quot;--license&quot;</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s">&quot;license&quot;</span><span class="p">,</span>
+        <span class="n">choices</span><span class="o">=</span><span class="n">license_choices</span><span class="p">,</span>
+        <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="s">&quot;none&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s">&quot;package license from {choices} (default: {default})&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">choices</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">license_choices</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="s">&quot;No license&quot;</span><span class="p">),</span>
+        <span class="n">metavar</span><span class="o">=</span><span class="s">&quot;LICENSE&quot;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s">&quot;-f&quot;</span><span class="p">,</span>
+        <span class="s">&quot;--force&quot;</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s">&quot;force&quot;</span><span class="p">,</span>
+        <span class="n">action</span><span class="o">=</span><span class="s">&quot;store_true&quot;</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s">&quot;force overwriting an existing directory&quot;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s">&quot;-U&quot;</span><span class="p">,</span>
+        <span class="s">&quot;--update&quot;</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s">&quot;update&quot;</span><span class="p">,</span>
+        <span class="n">action</span><span class="o">=</span><span class="s">&quot;store_true&quot;</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s">&quot;update an existing project by replacing the most important files&quot;</span>
+             <span class="s">&quot; like setup.py etc. Use additionally --force to &quot;</span>
+             <span class="s">&quot;replace all scaffold files.&quot;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s">&quot;--with-namespace&quot;</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s">&quot;namespace&quot;</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="s">&quot;&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s">&quot;put your project inside a namespace package&quot;</span><span class="p">,</span>
+        <span class="n">metavar</span><span class="o">=</span><span class="s">&quot;NS1[.NS2]&quot;</span><span class="p">)</span>
+    <span class="n">group</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">add_mutually_exclusive_group</span><span class="p">()</span>
+    <span class="n">group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s">&quot;--with-cookiecutter&quot;</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s">&quot;cookiecutter_template&quot;</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="s">&quot;&quot;</span><span class="p">,</span>
+        <span class="n">metavar</span><span class="o">=</span><span class="s">&quot;TEMPLATE&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s">&quot;additionally apply a cookiecutter template&quot;</span><span class="p">)</span>
+    <span class="n">group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s">&quot;--with-django&quot;</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s">&quot;django&quot;</span><span class="p">,</span>
+        <span class="n">action</span><span class="o">=</span><span class="s">&quot;store_true&quot;</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s">&quot;generate Django project files&quot;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s">&quot;--with-travis&quot;</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s">&quot;travis&quot;</span><span class="p">,</span>
+        <span class="n">action</span><span class="o">=</span><span class="s">&quot;store_true&quot;</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s">&quot;generate Travis configuration files&quot;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s">&quot;--with-pre-commit&quot;</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s">&quot;pre_commit&quot;</span><span class="p">,</span>
+        <span class="n">action</span><span class="o">=</span><span class="s">&quot;store_true&quot;</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s">&quot;generate pre-commit configuration file&quot;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s">&quot;--with-tox&quot;</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s">&quot;tox&quot;</span><span class="p">,</span>
+        <span class="n">action</span><span class="o">=</span><span class="s">&quot;store_true&quot;</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s">&quot;generate Tox configuration file&quot;</span><span class="p">)</span>
+
+    <span class="n">version</span> <span class="o">=</span> <span class="n">pyscaffold</span><span class="o">.</span><span class="n">__version__</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;-v&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;--version&#39;</span><span class="p">,</span>
+                        <span class="n">action</span><span class="o">=</span><span class="s">&#39;version&#39;</span><span class="p">,</span>
+                        <span class="n">version</span><span class="o">=</span><span class="s">&#39;PyScaffold {ver}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ver</span><span class="o">=</span><span class="n">version</span><span class="p">))</span>
+    <span class="n">opts</span> <span class="o">=</span> <span class="nb">vars</span><span class="p">(</span><span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">(</span><span class="n">args</span><span class="p">))</span>
+    <span class="c"># Strip (back)slash when added accidentally during update</span>
+    <span class="n">opts</span><span class="p">[</span><span class="s">&#39;project&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">opts</span><span class="p">[</span><span class="s">&#39;project&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">sep</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">opts</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">}</span>
+
+</div>
+<div class="viewcode-block" id="get_default_opts"><a class="viewcode-back" href="../../api/pyscaffold.html#pyscaffold.cli.get_default_opts">[docs]</a><span class="k">def</span> <span class="nf">get_default_opts</span><span class="p">(</span><span class="n">project_name</span><span class="p">,</span> <span class="o">**</span><span class="n">aux_opts</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Creates default options using auxiliary options as keyword argument</span>
+
+<span class="sd">    Use this function if you want to use PyScaffold from another application</span>
+<span class="sd">    in order to generate an option dictionary that can than be passed to</span>
+<span class="sd">    :obj:`create_project`.</span>
+
+<span class="sd">    :param project_name: name of the project</span>
+<span class="sd">    :param aux_opts: auxiliary options as keyword parameters</span>
+<span class="sd">    :return: options with default values set as dictionary</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c"># Merge the default options generated by argparse</span>
+    <span class="n">opts</span> <span class="o">=</span> <span class="n">parse_args</span><span class="p">([</span><span class="n">project_name</span><span class="p">])</span>
+    <span class="c"># Remove inadvertent double definition of project_name</span>
+    <span class="n">aux_opts</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">&#39;project&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+    <span class="n">opts</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">aux_opts</span><span class="p">)</span>
+    <span class="n">opts</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s">&#39;package&#39;</span><span class="p">,</span> <span class="n">utils</span><span class="o">.</span><span class="n">make_valid_identifier</span><span class="p">(</span><span class="n">opts</span><span class="p">[</span><span class="s">&#39;project&#39;</span><span class="p">]))</span>
+    <span class="n">opts</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s">&#39;author&#39;</span><span class="p">,</span> <span class="n">info</span><span class="o">.</span><span class="n">username</span><span class="p">())</span>
+    <span class="n">opts</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s">&#39;email&#39;</span><span class="p">,</span> <span class="n">info</span><span class="o">.</span><span class="n">email</span><span class="p">())</span>
+    <span class="n">opts</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s">&#39;release_date&#39;</span><span class="p">,</span> <span class="n">date</span><span class="o">.</span><span class="n">today</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s">&#39;%Y-%m-</span><span class="si">%d</span><span class="s">&#39;</span><span class="p">))</span>
+    <span class="n">opts</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s">&#39;year&#39;</span><span class="p">,</span> <span class="n">date</span><span class="o">.</span><span class="n">today</span><span class="p">()</span><span class="o">.</span><span class="n">year</span><span class="p">)</span>
+    <span class="n">opts</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s">&#39;license&#39;</span><span class="p">,</span> <span class="s">&#39;none&#39;</span><span class="p">)</span>
+    <span class="n">opts</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s">&#39;description&#39;</span><span class="p">,</span> <span class="s">&#39;Add a short description here!&#39;</span><span class="p">)</span>
+    <span class="n">opts</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s">&#39;url&#39;</span><span class="p">,</span> <span class="s">&#39;http://...&#39;</span><span class="p">)</span>
+    <span class="n">opts</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s">&#39;version&#39;</span><span class="p">,</span> <span class="n">pyscaffold</span><span class="o">.</span><span class="n">__version__</span><span class="p">)</span>
+    <span class="n">opts</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s">&#39;title&#39;</span><span class="p">,</span>
+                    <span class="s">&#39;=&#39;</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="n">opts</span><span class="p">[</span><span class="s">&#39;project&#39;</span><span class="p">])</span> <span class="o">+</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">+</span> <span class="n">opts</span><span class="p">[</span><span class="s">&#39;project&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">+</span>
+                    <span class="s">&#39;=&#39;</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="n">opts</span><span class="p">[</span><span class="s">&#39;project&#39;</span><span class="p">]))</span>
+    <span class="n">classifiers</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;Development Status :: 4 - Beta&#39;</span><span class="p">,</span>
+                   <span class="s">&#39;Programming Language :: Python&#39;</span><span class="p">]</span>
+    <span class="n">opts</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s">&#39;classifiers&#39;</span><span class="p">,</span> <span class="n">utils</span><span class="o">.</span><span class="n">list2str</span><span class="p">(</span>
+        <span class="n">classifiers</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">14</span><span class="p">,</span> <span class="n">brackets</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">quotes</span><span class="o">=</span><span class="bp">False</span><span class="p">))</span>
+    <span class="n">opts</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s">&#39;url&#39;</span><span class="p">,</span> <span class="s">&#39;http://...&#39;</span><span class="p">)</span>
+    <span class="c"># Initialize empty list of all requirements</span>
+    <span class="n">opts</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s">&#39;requirements&#39;</span><span class="p">,</span> <span class="nb">list</span><span class="p">())</span>
+    <span class="n">opts</span><span class="p">[</span><span class="s">&#39;namespace&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">prepare_namespace</span><span class="p">(</span><span class="n">opts</span><span class="p">[</span><span class="s">&#39;namespace&#39;</span><span class="p">])</span>
+    <span class="k">if</span> <span class="n">opts</span><span class="p">[</span><span class="s">&#39;namespace&#39;</span><span class="p">]:</span>
+        <span class="n">opts</span><span class="p">[</span><span class="s">&#39;root_pkg&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">opts</span><span class="p">[</span><span class="s">&#39;namespace&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">opts</span><span class="p">[</span><span class="s">&#39;namespace_pkg&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&quot;.&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">opts</span><span class="p">[</span><span class="s">&#39;namespace&#39;</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>
+                                          <span class="n">opts</span><span class="p">[</span><span class="s">&#39;package&#39;</span><span class="p">]])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">opts</span><span class="p">[</span><span class="s">&#39;root_pkg&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">opts</span><span class="p">[</span><span class="s">&#39;package&#39;</span><span class="p">]</span>
+        <span class="n">opts</span><span class="p">[</span><span class="s">&#39;namespace_pkg&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">opts</span><span class="p">[</span><span class="s">&#39;package&#39;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">opts</span><span class="p">[</span><span class="s">&#39;update&#39;</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">project_name</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                <span class="s">&quot;Project {project} does not exist and thus cannot be &quot;</span>
+                <span class="s">&quot;updated!&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">project</span><span class="o">=</span><span class="n">project_name</span><span class="p">))</span>
+        <span class="n">opts</span> <span class="o">=</span> <span class="n">info</span><span class="o">.</span><span class="n">project</span><span class="p">(</span><span class="n">opts</span><span class="p">)</span>
+        <span class="c"># Reset project name since the one from setup.cfg might be different</span>
+        <span class="n">opts</span><span class="p">[</span><span class="s">&#39;project&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">project_name</span>
+    <span class="k">if</span> <span class="n">opts</span><span class="p">[</span><span class="s">&#39;django&#39;</span><span class="p">]:</span>
+        <span class="n">opts</span><span class="p">[</span><span class="s">&#39;force&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="n">opts</span><span class="p">[</span><span class="s">&#39;package&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">opts</span><span class="p">[</span><span class="s">&#39;project&#39;</span><span class="p">]</span>  <span class="c"># since this is required by Django</span>
+        <span class="n">opts</span><span class="p">[</span><span class="s">&#39;requirements&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s">&#39;django&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">opts</span><span class="p">[</span><span class="s">&#39;cookiecutter_template&#39;</span><span class="p">]:</span>
+        <span class="n">opts</span><span class="p">[</span><span class="s">&#39;force&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">True</span>
+    <span class="k">return</span> <span class="n">opts</span>
+
+</div>
+<div class="viewcode-block" id="create_project"><a class="viewcode-back" href="../../api/pyscaffold.html#pyscaffold.cli.create_project">[docs]</a><span class="k">def</span> <span class="nf">create_project</span><span class="p">(</span><span class="n">opts</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create the project&#39;s directory structure</span>
+
+<span class="sd">    :param opts: options as dictionary</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">opts</span><span class="p">[</span><span class="s">&#39;django&#39;</span><span class="p">]:</span>
+        <span class="n">structure</span><span class="o">.</span><span class="n">create_django_proj</span><span class="p">(</span><span class="n">opts</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">opts</span><span class="p">[</span><span class="s">&#39;cookiecutter_template&#39;</span><span class="p">]:</span>
+        <span class="n">structure</span><span class="o">.</span><span class="n">create_cookiecutter</span><span class="p">(</span><span class="n">opts</span><span class="p">)</span>
+    <span class="n">proj_struct</span> <span class="o">=</span> <span class="n">structure</span><span class="o">.</span><span class="n">make_structure</span><span class="p">(</span><span class="n">opts</span><span class="p">)</span>
+    <span class="n">structure</span><span class="o">.</span><span class="n">create_structure</span><span class="p">(</span><span class="n">proj_struct</span><span class="p">,</span>
+                               <span class="n">update</span><span class="o">=</span><span class="n">opts</span><span class="p">[</span><span class="s">&#39;update&#39;</span><span class="p">]</span> <span class="ow">or</span> <span class="n">opts</span><span class="p">[</span><span class="s">&#39;force&#39;</span><span class="p">])</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">opts</span><span class="p">[</span><span class="s">&#39;update&#39;</span><span class="p">]</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">repo</span><span class="o">.</span><span class="n">is_git_repo</span><span class="p">(</span><span class="n">opts</span><span class="p">[</span><span class="s">&#39;project&#39;</span><span class="p">]):</span>
+        <span class="n">repo</span><span class="o">.</span><span class="n">init_commit_repo</span><span class="p">(</span><span class="n">opts</span><span class="p">[</span><span class="s">&#39;project&#39;</span><span class="p">],</span> <span class="n">proj_struct</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="make_sanity_checks"><a class="viewcode-back" href="../../api/pyscaffold.html#pyscaffold.cli.make_sanity_checks">[docs]</a><span class="k">def</span> <span class="nf">make_sanity_checks</span><span class="p">(</span><span class="n">opts</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Perform some sanity checks, e.g., if git is installed.</span>
+
+<span class="sd">    :param opts: options as dictionary</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">info</span><span class="o">.</span><span class="n">is_git_installed</span><span class="p">():</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s">&quot;Make sure git is installed and working.&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">info</span><span class="o">.</span><span class="n">is_git_configured</span><span class="p">():</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+            <span class="s">&#39;Make sure git is configured. Run:</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">+</span>
+            <span class="s">&#39;  git config --global user.email &quot;you@example.com&quot;</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">+</span>
+            <span class="s">&#39;  git config --global user.name &quot;Your Name&quot;</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">+</span>
+            <span class="s">&quot;to set your account&#39;s default identity.&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">opts</span><span class="p">[</span><span class="s">&#39;project&#39;</span><span class="p">]):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">opts</span><span class="p">[</span><span class="s">&#39;update&#39;</span><span class="p">]</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">opts</span><span class="p">[</span><span class="s">&#39;force&#39;</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                <span class="s">&quot;Directory {dir} already exists! Use --update to update an &quot;</span>
+                <span class="s">&quot;existing project or --force to overwrite an existing &quot;</span>
+                <span class="s">&quot;directory.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">dir</span><span class="o">=</span><span class="n">opts</span><span class="p">[</span><span class="s">&#39;project&#39;</span><span class="p">]))</span>
+
+</div>
+<div class="viewcode-block" id="main"><a class="viewcode-back" href="../../api/pyscaffold.html#pyscaffold.cli.main">[docs]</a><span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="n">args</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    PyScaffold is a tool for putting up the scaffold of a Python project.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">utils</span><span class="o">.</span><span class="n">check_setuptools_version</span><span class="p">()</span>
+    <span class="n">opts</span> <span class="o">=</span> <span class="n">parse_args</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+    <span class="n">make_sanity_checks</span><span class="p">(</span><span class="n">opts</span><span class="p">)</span>
+    <span class="n">opts</span> <span class="o">=</span> <span class="n">get_default_opts</span><span class="p">(</span><span class="n">opts</span><span class="p">[</span><span class="s">&#39;project&#39;</span><span class="p">],</span> <span class="o">**</span><span class="n">opts</span><span class="p">)</span>
+    <span class="n">create_project</span><span class="p">(</span><span class="n">opts</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">opts</span><span class="p">[</span><span class="s">&#39;update&#39;</span><span class="p">]</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">opts</span><span class="p">[</span><span class="s">&#39;force&#39;</span><span class="p">]:</span>
+        <span class="n">note</span> <span class="o">=</span> <span class="s">&quot;Update accomplished!</span><span class="se">\n</span><span class="s">&quot;</span> \
+               <span class="s">&quot;Please check if your setup.cfg still complies with:</span><span class="se">\n</span><span class="s">&quot;</span> \
+               <span class="s">&quot;http://pyscaffold.readthedocs.org/en/v{}/configuration.html&quot;</span>
+        <span class="k">print</span><span class="p">(</span><span class="n">note</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">pyscaffold</span><span class="o">.</span><span class="n">__version__</span><span class="p">))</span>
+
+</div>
+<span class="nd">@shell.called_process_error2exit_decorator</span>
+<span class="nd">@utils.exceptions2exit</span><span class="p">([</span><span class="ne">RuntimeError</span><span class="p">])</span>
+<div class="viewcode-block" id="run"><a class="viewcode-back" href="../../api/pyscaffold.html#pyscaffold.cli.run">[docs]</a><span class="k">def</span> <span class="nf">run</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Entry point for setup.py</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">main</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+</div>
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">main</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2014, Blue Yonder.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'2.5.2.post0.dev2+g85f669b.dirty',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

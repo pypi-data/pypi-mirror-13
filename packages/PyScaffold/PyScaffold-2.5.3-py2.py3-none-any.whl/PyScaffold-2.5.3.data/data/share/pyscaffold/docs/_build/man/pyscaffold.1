@@ -1,0 +1,2134 @@
+.\" Man page generated from reStructuredText.
+.
+.TH "PYSCAFFOLD" "1" "January 11, 2016" "2.5.2.post0.dev2+g85f669b.dirty" "PyScaffold"
+.SH NAME
+pyscaffold \- PyScaffold 2.5.2.post0.dev2+g85f669b.dirty
+.
+.nr rst2man-indent-level 0
+.
+.de1 rstReportMargin
+\\$1 \\n[an-margin]
+level \\n[rst2man-indent-level]
+level margin: \\n[rst2man-indent\\n[rst2man-indent-level]]
+-
+\\n[rst2man-indent0]
+\\n[rst2man-indent1]
+\\n[rst2man-indent2]
+..
+.de1 INDENT
+.\" .rstReportMargin pre:
+. RS \\$1
+. nr rst2man-indent\\n[rst2man-indent-level] \\n[an-margin]
+. nr rst2man-indent-level +1
+.\" .rstReportMargin post:
+..
+.de UNINDENT
+. RE
+.\" indent \\n[an-margin]
+.\" old: \\n[rst2man-indent\\n[rst2man-indent-level]]
+.nr rst2man-indent-level -1
+.\" new: \\n[rst2man-indent\\n[rst2man-indent-level]]
+.in \\n[rst2man-indent\\n[rst2man-indent-level]]u
+..
+[image: PyScaffold logo]
+[image]
+.nf
+
+.fi
+.sp
+.sp
+PyScaffold helps you to easily setup a new Python project, it is as easy as:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+putup my_project
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+This will create a new folder \fBmy_project\fP containing a perfect \fIproject
+template\fP with everything you need for some serious coding.
+.sp
+Type \fBputup \-h\fP to learn about more configuration options. PyScaffold assumes
+that you have \fI\%Git\fP installed and set up on your PC,
+meaning at least your name and email configured.
+The project template in \fBmy_project\fP provides you with a lot of
+features\&. PyScaffold is compatible with Python 2.7, 3.4 and
+3.5.
+.SH FEATURES
+.sp
+PyScaffold comes with a lot of elaborated features and configuration defaults
+to make the most common tasks in developing, maintaining and distributing your
+own Python package as easy as possible.
+.SS Configuration & Packaging
+.sp
+All configuration can be done in \fBsetup.cfg\fP like changing the description,
+url, classifiers and even console scripts of your project with the help of
+\fI\%pbr\fP\&. That means in most
+cases it is not necessary to tamper with \fBsetup.py\fP\&. The syntax of
+\fBsetup.cfg\fP is pretty much self\-explanatory and well commented, check out
+this  example or \fI\%pbr\(aqs usage manual\fP\&.
+.sp
+In order to build a source, binary or wheel distribution, just run
+\fBpython setup.py sdist\fP, \fBpython setup.py bdist\fP or
+\fBpython setup.py bdist_wheel\fP\&.
+Namespace Packages
+.sp
+Optionally, \fI\%namespace packages\fP
+can be used, if you are planning to distribute a larger package as a collection
+of smaller ones. For example, use:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+putup my_project \-\-package my_package \-\-with\-namespace com.my_domain
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+to define \fBmy_package\fP inside the namespace \fBcom.my_domain\fP in java\-style.
+Package and Files Data
+.sp
+Additional data, e.g. images and text files, inside your package can be
+configured under the \fB[files]\fP section in \fBsetup.cfg\fP\&. It is not necessary
+to have a \fBMANIFEST.in\fP file for this to work.
+To read this data in your code, use:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+from pkgutil import get_data
+data = get_data(\(aqmy_package\(aq, \(aqpath/to/my/data.txt\(aq)
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+\fBNOTE:\fP
+.INDENT 0.0
+.INDENT 3.5
+Make sure that all files you specify in \fB[files]\fP have been added to
+the repository!
+.UNINDENT
+.UNINDENT
+.SS Complete Git Integration
+.sp
+Your project is already an initialised Git repository and \fBsetup.py\fP uses
+the information of tags to infer the version of your project with the help of
+\fI\%setuptools_scm\fP\&.
+To use this feature you need to tag with the format \fBMAJOR.MINOR[.PATCH]\fP
+, e.g. \fB0.0.1\fP or \fB0.1\fP\&.
+Run \fBpython setup.py \-\-version\fP to retrieve the current \fI\%PEP440\fP\-compliant version. This version
+will be used when building a package and is also accessible through
+\fBmy_project.__version__\fP\&.
+.sp
+Unleash the power of Git by using its \fI\%pre\-commit hooks\fP\&. This feature is available through the
+\fB\-\-with\-pre\-commit\fP flag. After your project\(aqs scaffold was generated, make
+sure pre\-commit is installed, e.g. \fBpip install pre\-commit\fP, then just run
+\fBpre\-commit install\fP\&.
+.sp
+It goes unsaid that also a default \fB\&.gitignore\fP file is provided that is well
+adjusted for Python projects and the most common tools.
+.SS Sphinx Documentation
+.sp
+Build the documentation with \fBpython setup.py docs\fP and run doctests with
+\fBpython setup.py doctest\fP\&. Start editing the file \fBdocs/index.rst\fP to
+extend the documentation. The documentation also works with \fI\%Read the Docs\fP\&.
+.sp
+The \fI\%Numpy or Google\fP
+documentation is activated by default but make sure Sphinx 1.3 or above is
+installed.
+.SS Unittest & Coverage
+.sp
+Run \fBpython setup.py test\fP to run all unittests defined in the subfolder
+\fBtests\fP with the help of \fI\%py.test\fP and
+\fI\%pytest\-runner\fP\&. Some sane
+default flags for py.test are already defined in the \fB[pytest]\fP section of
+\fBsetup.cfg\fP\&. The py.test plugin
+\fI\%pytest\-cov\fP is used to automatically
+generate a coverage report. It is also possible to provide additional
+parameters and flags on the commandline, e.g., type:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+python setup.py test \-\-addopts \-h
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+to show the help of py.test.
+JUnit and Coverage HTML/XML
+.sp
+For usage with a continuous integration software JUnit and Coverage XML output
+can be activated in \fBsetup.cfg\fP\&. Use the flag \fB\-\-with\-travis\fP to generate
+templates of the \fI\%Travis\fP configuration files
+\fB\&.travis.yml\fP and \fBtests/travis_install.sh\fP which even features the
+coverage and stats system \fI\%Coveralls\fP\&.
+In order to use the virtualenv management and test tool \fI\%Tox\fP the flag \fB\-\-with\-tox\fP can be specified.
+Managing test environments with tox
+.sp
+Run \fBtox\fP to generate test virtual environments for various python
+environments defined in the generated \fBtox.ini\fP\&. Testing and building
+\fIsdists\fP for python 2.7 and python 3.4 is just as simple with tox as:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+tox \-e py27,py34
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+Environments for tests with the the static code analyzers pyflakes and pep8
+which are bundled in \fI\%flake8\fP are included
+as well. Run it explicitly with:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+tox \-e flake8
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+With tox, you can use the \fB\-\-recreate\fP flag to force tox to create new
+environments. By default, PyScaffold\(aqs tox configuration will execute tests for
+a variety of python versions. If an environment is not available on the system
+the tests are skipped gracefully. You can relay on the \fI\%tox documentation\fP for detailed configuration options.
+.SS Management of Requirements & Licenses
+.sp
+Add the requirements of your project to \fBrequirements.txt\fP and
+\fBtest\-requirements.txt\fP which will be automatically used by \fBsetup.py\fP\&.
+This also allows you to easily customize a plain virtual environment with:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+pip install \-r requirements.txt \-r test\-requirements.txt
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+Only absolutely necessary requirements of your project shoulbe be stated in
+\fBrequirements.txt\fP while the requirements only used for development and
+especially for running the unittests should go into \fBtest\-requirements.txt\fP\&.
+.sp
+Since PyScaffold uses pbr it is also possible to define \fI\%requirements depending
+on your Python version\fP\&. Use the environment
+variable \fBPBR_REQUIREMENTS_FILES\fP to define a comma\-separated list of
+requirement files if you want to use non\-default names and locations.
+.sp
+All licenses from \fI\%choosealicense.com\fP can be
+easily selected with the help of the \fB\-\-license\fP flag.
+.SS Django & Cookiecutter
+.sp
+Create a \fI\%Django project\fP with the flag
+\fB\-\-with\-django\fP which is equivalent to
+\fBdjango\-admin.py startproject my_project\fP enhanced by PyScaffold\(aqs features.
+.sp
+With the help of \fI\%Cookiecutter\fP it
+is possible to customize your project setup. Just use the flag
+\fB\-\-with\-cookiecutter TEMPLATE\fP to use a cookiecutter template which will be
+refined by PyScaffold afterwards.
+.SS Easy Updating
+.sp
+Keep your project\(aqs scaffold up\-to\-date by applying
+\fBputput \-\-update my_project\fP when a new version of PyScaffold was released.
+An update will only overwrite files that are not often altered by users like
+setup.py. To update all files use \fB\-\-update \-\-force\fP\&.
+An existing project that was not setup with PyScaffold can be converted with
+\fBputup \-\-force existing_project\fP\&. The force option is completely safe to use
+since the git repository of the existing project is not touched!
+Also check out if configuration options in
+\fBsetup.cfg\fP have changed.
+.sp
+\fBNOTE:\fP
+.INDENT 0.0
+.INDENT 3.5
+If you are updating from a PyScaffold version before 2.0, you must
+manually remove the files \fBversioneer.py\fP and \fBMANIFEST.in\fP\&. If you
+are updating from a version prior to 2.2, you must remove
+\fB${PACKAGE}/_version.py\fP\&.
+.UNINDENT
+.UNINDENT
+.SH INSTALLATION
+.SS Requirements
+.sp
+The installation of PyScaffold requires:
+.INDENT 0.0
+.IP \(bu 2
+\fI\%setuptools\fP
+.IP \(bu 2
+\fI\%six\fP
+.UNINDENT
+.sp
+\fBNOTE:\fP
+.INDENT 0.0
+.INDENT 3.5
+It is recommended to use \fI\%virtualenv\fP
+and \fI\%pip\fP for Python package management.
+Make sure \fIpip\fP, \fIsix\fP and \fIsetuptools\fP are up to date:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+pip install \-\-upgrade pip setuptools six
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.UNINDENT
+.UNINDENT
+.sp
+Additionally, if you want to create a Django project or want to use
+cookiecutter:
+.INDENT 0.0
+.IP \(bu 2
+\fI\%Django\fP
+.IP \(bu 2
+\fI\%cookiecutter\fP
+.UNINDENT
+.sp
+\fBNOTE:\fP
+.INDENT 0.0
+.INDENT 3.5
+In most cases only Django needs to be installed manually since PyScaffold
+will download and install its requirements automatically when using
+\fBpip\fP\&. One exception might be \fIsetuptools\fP if you are not using a current
+version of \fI\%Virtual Environments\fP as development environment.
+In case you are using the system installation of Python from your Linux
+distribution make sure \fIsetuptools\fP is installed.
+To install it on Debian or Ubuntu:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+sudo apt\-get install python\-setuptools
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+In case of Redhat or Fedora:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+sudo yum install python\-setuptools
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.UNINDENT
+.UNINDENT
+.SS Installation
+.sp
+If you have \fBpip\fP installed, then simply type:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+pip install \-\-upgrade pyscaffold
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+to get the lastest stable version. The most recent development version can be
+installed with:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+pip install \-\-pre \-\-upgrade pyscaffold
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+Using \fBpip\fP also has the advantage that all requirements are automatically
+installed.
+.sp
+If you want to install PyScaffold with all features like Django and
+cookiecutter support, run:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+pip install \-\-upgrade pyscaffold[ALL]
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.SS Additional Requirements
+.sp
+If you run commands like \fBpython setup.py test\fP and \fBpython setup.py docs\fP
+within your project, some additional requirements like py.test will be
+installed automatically as \fIegg\fP\-files inside the \fB\&.eggs\fP folder. This is
+quite comfortable but can be confusing because these packages won\(aqt be
+available to other packages inside your virtual environment. In order to avoid
+this just install following packages inside your virtual environment before you
+run \fIsetup.py\fP commands like \fIdoc\fP and \fItest\fP:
+.INDENT 0.0
+.IP \(bu 2
+\fI\%Sphinx\fP
+.IP \(bu 2
+\fI\%py.test\fP
+.IP \(bu 2
+\fI\%pytest\-cov\fP
+.UNINDENT
+.SH CONFIGURATION
+.sp
+Projects set up with PyScaffold feature an easy package configuration with
+\fBsetup.cfg\fP\&. Check out the example below as well as \fI\%pbr\(aqs usage manual\fP\&.
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+[metadata]
+name = my_project
+summary = A test project that was set up with PyScaffold
+author = Florian Wilhelm
+author\-email = Florian.Wilhelm@blue\-yonder.com
+license = new BSD
+home\-page = http://...
+description\-file = README.rst
+# Add here all kinds of additional classifiers as defined under
+# https://pypi.python.org/pypi?%3Aaction=list_classifiers
+classifiers = Development Status :: 5 \- Production/Stable,
+              Topic :: Utilities,
+              Programming Language :: Python,
+              Programming Language :: Python :: 2,
+              Programming Language :: Python :: 2.7,
+              Programming Language :: Python :: 3,
+              Programming Language :: Python :: 3.4,
+              Programming Language :: Python :: 3.5,
+              Environment :: Console,
+              Intended Audience :: Developers,
+              License :: OSI Approved :: BSD License,
+              Operating System :: POSIX :: Linux,
+              Operating System :: Unix,
+              Operating System :: MacOS,
+              Operating System :: Microsoft :: Windows
+
+[entry_points]
+# Add here console scripts like:
+console_scripts =
+    run_my_project = my_project.cli:run
+# as well as other entry_points.
+
+[files]
+# Add here \(aqdata_files\(aq, \(aqpackages\(aq or \(aqnamespace_packages\(aq.
+# Additional data files are defined as key value pairs of source and target:
+packages =
+    my_project
+data_files =
+    share/my_project/docs = docs/*
+
+[extras]
+# Add here additional requirements for extra features, like:
+# PDF =
+#    ReportLab>=1.2
+#    RXP
+ALL =
+    django
+    cookiecutter
+
+[test]
+# py.test options when running \(gapython setup.py test\(ga
+addopts = tests
+
+[pytest]
+# Options for py.test:
+# Specify command line options as you would do when invoking py.test directly.
+# e.g. \-\-cov\-report html (or xml) for html/xml output or \-\-junitxml junit.xml
+# in order to write a coverage file that can be read by Jenkins.
+addopts =
+    \-\-cov my_project \-\-cov\-report term\-missing
+    \-\-verbose
+
+[aliases]
+docs = build_sphinx
+
+[bdist_wheel]
+# Use this option if your package is pure\-python
+universal = 1
+
+[build_sphinx]
+# Options for Sphinx build
+source_dir = docs
+build_dir = docs/_build
+
+[pbr]
+# Let pbr run sphinx\-apidoc
+autodoc_tree_index_modules = True
+# autodoc_tree_excludes = ...
+# Let pbr itself generate the apidoc
+# autodoc_index_modules = True
+# autodoc_exclude_modules = ...
+# Convert warnings to errors
+# warnerrors = True
+
+[devpi:upload]
+# Options for the devpi: PyPI server and packaging tool
+# VCS export must be deactivated since we are using setuptools\-scm
+no\-vcs = 1
+formats = bdist_wheel
+
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.SH CONTRIBUTING
+.sp
+PyScaffold is developed by \fI\%Blue Yonder\fP
+developers to help automating and standardizing the process of project setups.
+You are very welcome to join in our effort if you would like to contribute.
+.SS Chat
+.sp
+Join our \fI\%chat\fP to get in direct
+contact with the developers of PyScaffold.
+.SS Bug Reports
+.sp
+If you experience bugs or in general issues with PyScaffold, please file a bug
+report to our \fI\%Bug Tracker\fP\&.
+.SS Code
+.sp
+If you would like to contribute to PyScaffold, fork the \fI\%main repository\fP on GitHub with the help of
+\fI\%Git\fP, then submit a “pull request” (PR):
+.INDENT 0.0
+.IP 1. 3
+\fI\%Create an account\fP on GitHub if you do
+not already have one.
+.IP 2. 3
+Fork the project repository: click on the \fIFork\fP button near the top of the
+page. This creates a copy of the code under your account on the GitHub server.
+.IP 3. 3
+Clone this copy to your local disk:
+.INDENT 3.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+git clone git@github.com:YourLogin/pyscaffold.git
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.IP 4. 3
+Run \fBpython setup.py egg_info\fP after a fresh checkout. This will generate
+some critically needed files.
+.IP 5. 3
+Create a branch to hold your changes:
+.INDENT 3.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+git checkout \-b my\-feature
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+and start making changes. Never work on the master branch!
+.IP 6. 3
+Start your work on this branch. When you’re done editing, do:
+.INDENT 3.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+git add modified_files
+git commit
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+to record your changes in Git, then push them to GitHub with:
+.INDENT 3.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+git push \-u origin my\-feature
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.IP 7. 3
+Go to the web page of your PyScaffold fork, and click
+"Create pull request" to send your changes to the maintainers for review.
+Find more detailed information \fI\%here\fP\&.
+.UNINDENT
+.SH LICENSE
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+Copyright (c) 2014, Blue Yonder GmbH.
+All rights reserved.
+
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+  a. Redistributions of source code must retain the above copyright notice,
+     this list of conditions and the following disclaimer.
+  b. Redistributions in binary form must reproduce the above copyright
+     notice, this list of conditions and the following disclaimer in the
+     documentation and/or other materials provided with the distribution.
+  c. Neither the name of the PyScaffold developers nor the names of
+     its contributors may be used to endorse or promote products
+     derived from this software without specific prior written
+     permission.
+
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ARE DISCLAIMED. IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE FOR
+ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
+DAMAGE.
+
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.SH DEVELOPERS
+.INDENT 0.0
+.IP \(bu 2
+Florian Wilhelm <\fI\%Florian.Wilhelm@gmail.com\fP>
+.IP \(bu 2
+Felix Wick <\fI\%Felix.Wick@blue\-yonder.com\fP>
+.IP \(bu 2
+Holger Peters <\fI\%Holger.Peters@blue\-yonder.com\fP>
+.IP \(bu 2
+Uwe Korn <\fI\%Uwe.Korn@blue\-yonder.com\fP>
+.IP \(bu 2
+Patrick Mühlbauer <\fI\%Patrick.Muehlbauer@blue\-yonder.com\fP>
+.IP \(bu 2
+Florian Rathgeber <\fI\%florian.rathgeber@gmail.com\fP>
+.IP \(bu 2
+Eva Schmücker <\fI\%email@evaschmuecker.de\fP>
+.UNINDENT
+.SH RELEASE NOTES
+.SS Version 2.5.2, 2016\-01\-02
+.INDENT 0.0
+.IP \(bu 2
+Fix \fBis_git_installed\fP
+.UNINDENT
+.SS Version 2.5.1, 2016\-01\-01
+.INDENT 0.0
+.IP \(bu 2
+Fix: Do some sanity checks first before gathering default options
+.IP \(bu 2
+Updated setuptools_scm to version 1.10.0
+.UNINDENT
+.SS Version 2.5, 2015\-12\-09
+.INDENT 0.0
+.IP \(bu 2
+Usage of \fBtest\-requirements.txt\fP instead of \fBtests_require\fP in
+\fBsetup.py\fP, issue #71
+.IP \(bu 2
+Removed \fB\-\-with\-numpydoc\fP flag since this is now included by default with
+\fBsphinx.ext.napoleon\fP in Sphinx 1.3 and above
+.IP \(bu 2
+Added small template for unittest
+.IP \(bu 2
+Fix for the example skeleton file when using namespace packages
+.IP \(bu 2
+Fix typo in devpi:upload section, issue #82
+.IP \(bu 2
+Include \fBpbr\fP and \fBsetuptools_scm\fP in PyScaffold to avoid dependency
+problems, issue #71 and #72
+.IP \(bu 2
+Cool logo was designed by Eva Schmücker, issue #66
+.UNINDENT
+.SS Version 2.4.4, 2015\-10\-29
+.INDENT 0.0
+.IP \(bu 2
+Fix problem with bad upload of version 2.4.3 to PyPI, issue #80
+.UNINDENT
+.SS Version 2.4.3, 2015\-10\-27
+.INDENT 0.0
+.IP \(bu 2
+Fix problem with version numbering if setup.py is not in the root directory, issue #76
+.UNINDENT
+.SS Version 2.4.2, 2015\-09\-16
+.INDENT 0.0
+.IP \(bu 2
+Fix version conflicts due to too tight pinning, issue #69
+.UNINDENT
+.SS Version 2.4.1, 2015\-09\-09
+.INDENT 0.0
+.IP \(bu 2
+Fix installation with additional requirements \fBpyscaffold[ALL]\fP
+.IP \(bu 2
+Updated pbr version to 1.7
+.UNINDENT
+.SS Version 2.4, 2015\-09\-02
+.INDENT 0.0
+.IP \(bu 2
+Allow different py.test options when invoking with \fBpy.test\fP or
+\fBpython setup.py test\fP
+.IP \(bu 2
+Check if Sphinx is needed and add it to \fIsetup_requires\fP
+.IP \(bu 2
+Updated pre\-commit plugins
+.IP \(bu 2
+Replaced pytest\-runner by an improved version
+.IP \(bu 2
+Let pbr do \fBsphinx\-apidoc\fP, removed from \fBconf.py\fP, issue #65
+.UNINDENT
+.sp
+\fBNOTE:\fP
+.INDENT 0.0
+.INDENT 3.5
+Due to the switch to a modified pytest\-runner version it is necessary
+to update \fBsetup.cfg\fP\&. Please check the example\&.
+.UNINDENT
+.UNINDENT
+.SS Version 2.3, 2015\-08\-26
+.INDENT 0.0
+.IP \(bu 2
+Format of setup.cfg changed due to usage of pbr, issue #59
+.IP \(bu 2
+Much cleaner setup.py due to usage of pbr, issue #59
+.IP \(bu 2
+PyScaffold can be easily called from another script, issue #58
+.IP \(bu 2
+Internally dictionaries instead of namespace objects are used for options, issue #57
+.IP \(bu 2
+Added a section for devpi in setup.cfg, issue #62
+.UNINDENT
+.sp
+\fBNOTE:\fP
+.INDENT 0.0
+.INDENT 3.5
+Due to the switch to \fI\%pbr\fP, it
+is necessary to update \fBsetup.cfg\fP according to the new syntax.
+.UNINDENT
+.UNINDENT
+.SS Version 2.2.1, 2015\-06\-18
+.INDENT 0.0
+.IP \(bu 2
+FIX: Removed putup console script in setup.cfg template
+.UNINDENT
+.SS Version 2.2, 2015\-06\-01
+.INDENT 0.0
+.IP \(bu 2
+Allow recursive inclusion of data files in setup.cfg, issue #49
+.IP \(bu 2
+Replaced hand\-written PyTest runner by \fI\%pytest\-runner\fP, issue #47
+.IP \(bu 2
+Improved default README.rst, issue #51
+.IP \(bu 2
+Use tests/conftest.py instead of tests/__init__.py, issue #52
+.IP \(bu 2
+Use setuptools_scm for versioning, issue #43
+.IP \(bu 2
+Require setuptools>=9.0, issue #56
+.IP \(bu 2
+Do not create skeleton.py during an update, issue #55
+.UNINDENT
+.sp
+\fBNOTE:\fP
+.INDENT 0.0
+.INDENT 3.5
+Due to the switch to \fIsetuptools_scm\fP the following changes apply:
+.INDENT 0.0
+.IP \(bu 2
+use \fBpython setup.py \-\-version\fP instead of \fBpython setup.py version\fP
+.IP \(bu 2
+\fBgit archive\fP can no longer be used for packaging (and was never meant for it anyway)
+.IP \(bu 2
+initial tag \fBv0.0\fP is no longer necessary and thus not created in new projects
+.IP \(bu 2
+tags do no longer need to start with \fIv\fP
+.UNINDENT
+.UNINDENT
+.UNINDENT
+.SS Version 2.1, 2015\-04\-16
+.INDENT 0.0
+.IP \(bu 2
+Use alabaster as default Sphinx theme
+.IP \(bu 2
+Parameter data_files is now a section in setup.cfg
+.IP \(bu 2
+Allow definition of extras_require in setup.cfg
+.IP \(bu 2
+Added a CHANGES.rst file for logging changes
+.IP \(bu 2
+Added support for cookiecutter
+.IP \(bu 2
+FIX: Handle an empty Git repository if necessary
+.UNINDENT
+.SS Version 2.0.4, 2015\-03\-17
+.INDENT 0.0
+.IP \(bu 2
+Typo and wrong Sphinx usage in the RTD documentation
+.UNINDENT
+.SS Version 2.0.3, 2015\-03\-17
+.INDENT 0.0
+.IP \(bu 2
+FIX: Removed misleading \fIinclude_package_data\fP option in setup.cfg
+.IP \(bu 2
+Allow selection of a proprietary license
+.IP \(bu 2
+Updated some documentations
+.IP \(bu 2
+Added \-U as short parameter for \-\-update
+.UNINDENT
+.SS Version 2.0.2, 2015\-03\-04
+.INDENT 0.0
+.IP \(bu 2
+FIX: Version retrieval with setup.py install
+.IP \(bu 2
+argparse example for version retrieval in skeleton.py
+.IP \(bu 2
+FIX: import my_package should be quiet (verbose=False)
+.UNINDENT
+.SS Version 2.0.1, 2015\-02\-27
+.INDENT 0.0
+.IP \(bu 2
+FIX: Installation bug under Windows 7
+.UNINDENT
+.SS Version 2.0, 2015\-02\-25
+.INDENT 0.0
+.IP \(bu 2
+Split configuration and logic into setup.cfg and setup.py
+.IP \(bu 2
+Removed .pre from version string (newer PEP 440)
+.IP \(bu 2
+FIX: Sphinx now works if package name does not equal project name
+.IP \(bu 2
+Allow namespace packages with \-\-with\-namespace
+.IP \(bu 2
+Added a skeleton.py as a console_script template
+.IP \(bu 2
+Set \fIv0.0\fP as initial tag to support PEP440 version inference
+.IP \(bu 2
+Integration of the Versioneer functionality into setup.py
+.IP \(bu 2
+Usage of \fIdata_files\fP configuration instead of \fIMANIFEST.in\fP
+.IP \(bu 2
+Allow configuration of \fIpackage_data\fP in \fIsetup.cfg\fP
+.IP \(bu 2
+Link from Sphinx docs to AUTHORS.rst
+.UNINDENT
+.SS Version 1.4, 2014\-12\-16
+.INDENT 0.0
+.IP \(bu 2
+Added numpydoc flag \-\-with\-numpydoc
+.IP \(bu 2
+Fix: Add django to requirements if \-\-with\-django
+.IP \(bu 2
+Fix: Don\(aqt overwrite index.rst during update
+.UNINDENT
+.SS Version 1.3.2, 2014\-12\-02
+.INDENT 0.0
+.IP \(bu 2
+Fix: path of Travis install script
+.UNINDENT
+.SS Version 1.3.1, 2014\-11\-24
+.INDENT 0.0
+.IP \(bu 2
+Fix: \-\-with\-tox tuple bug #28
+.UNINDENT
+.SS Version 1.3, 2014\-11\-17
+.INDENT 0.0
+.IP \(bu 2
+Support for Tox (\fI\%https://tox.readthedocs.org/\fP)
+.IP \(bu 2
+flake8: exclude some files
+.IP \(bu 2
+Usage of UTF8 as file encoding
+.IP \(bu 2
+Fix: create non\-existent files during update
+.IP \(bu 2
+Fix: unit tests on MacOS
+.IP \(bu 2
+Fix: unit tests on Windows
+.IP \(bu 2
+Fix: Correct version when doing setup.py install
+.UNINDENT
+.SS Version 1.2, 2014\-10\-13
+.INDENT 0.0
+.IP \(bu 2
+Support pre\-commit hooks (\fI\%http://pre\-commit.com/\fP)
+.UNINDENT
+.SS Version 1.1, 2014\-09\-29
+.INDENT 0.0
+.IP \(bu 2
+Changed COPYING to LICENSE
+.IP \(bu 2
+Support for all licenses from \fI\%http://choosealicense.com/\fP
+.IP \(bu 2
+Fix: Allow update of license again
+.IP \(bu 2
+Update to Versioneer 0.12
+.UNINDENT
+.SS Version 1.0, 2014\-09\-05
+.INDENT 0.0
+.IP \(bu 2
+Fix when overwritten project has a git repository
+.IP \(bu 2
+Documentation updates
+.IP \(bu 2
+License section in Sphinx
+.IP \(bu 2
+Django project support with \-\-with\-django flag
+.IP \(bu 2
+Travis project support with \-\-with\-travis flag
+.IP \(bu 2
+Replaced sh with own implementation
+.IP \(bu 2
+Fix: new \fIgit describe\fP version to PEP440 conversion
+.IP \(bu 2
+conf.py improvements
+.IP \(bu 2
+Added source code documentation
+.IP \(bu 2
+Fix: Some Python 2/3 compatibility issues
+.IP \(bu 2
+Support for Windows
+.IP \(bu 2
+Dropped Python 2.6 support
+.IP \(bu 2
+Some classifier updates
+.UNINDENT
+.SS Version 0.9, 2014\-07\-27
+.INDENT 0.0
+.IP \(bu 2
+Documentation updates due to RTD
+.IP \(bu 2
+Added a \-\-force flag
+.IP \(bu 2
+Some cleanups in setup.py
+.UNINDENT
+.SS Version 0.8, 2014\-07\-25
+.INDENT 0.0
+.IP \(bu 2
+Update to Versioneer 0.10
+.IP \(bu 2
+Moved sphinx\-apidoc from setup.py to conf.py
+.IP \(bu 2
+Better support for \fImake html\fP
+.UNINDENT
+.SS Version 0.7, 2014\-06\-05
+.INDENT 0.0
+.IP \(bu 2
+Added Python 3.4 tests and support
+.IP \(bu 2
+Flag \-\-update updates only some files now
+.IP \(bu 2
+Usage of setup_requires instead of six code
+.UNINDENT
+.SS Version 0.6.1, 2014\-05\-15
+.INDENT 0.0
+.IP \(bu 2
+Fix: Removed six dependency in setup.py
+.UNINDENT
+.SS Version 0.6, 2014\-05\-14
+.INDENT 0.0
+.IP \(bu 2
+Better usage of six
+.IP \(bu 2
+Return non\-zero exit status when doctests fail
+.IP \(bu 2
+Updated README
+.IP \(bu 2
+Fixes in Sphinx Makefile
+.UNINDENT
+.SS Version 0.5, 2014\-05\-02
+.INDENT 0.0
+.IP \(bu 2
+Simplified some Travis tests
+.IP \(bu 2
+Nicer output in case of errors
+.IP \(bu 2
+Updated PyScaffold\(aqs own setup.py
+.IP \(bu 2
+Added \-\-junit_xml and \-\-coverage_xml/html option
+.IP \(bu 2
+Updated .gitignore file
+.UNINDENT
+.SS Version 0.4.1, 2014\-04\-27
+.INDENT 0.0
+.IP \(bu 2
+Problem fixed with pytest\-cov installation
+.UNINDENT
+.SS Version 0.4, 2014\-04\-23
+.INDENT 0.0
+.IP \(bu 2
+PEP8 and PyFlakes fixes
+.IP \(bu 2
+Added \-\-version flag
+.IP \(bu 2
+Small fixes and cleanups
+.UNINDENT
+.SS Version 0.3, 2014\-04\-18
+.INDENT 0.0
+.IP \(bu 2
+PEP8 fixes
+.IP \(bu 2
+More documentation
+.IP \(bu 2
+Added update feature
+.IP \(bu 2
+Fixes in setup.py
+.UNINDENT
+.SS Version 0.2, 2014\-04\-15
+.INDENT 0.0
+.IP \(bu 2
+Checks when creating the project
+.IP \(bu 2
+Fixes in COPYING
+.IP \(bu 2
+Usage of sh instead of GitPython
+.IP \(bu 2
+PEP8 fixes
+.IP \(bu 2
+Python 3 compatibility
+.IP \(bu 2
+Coverage with Coverall.io
+.IP \(bu 2
+Some more unittests
+.UNINDENT
+.SS Version 0.1.2, 2014\-04\-10
+.INDENT 0.0
+.IP \(bu 2
+Bugfix in Manifest.in
+.IP \(bu 2
+Python 2.6 problems fixed
+.UNINDENT
+.SS Version 0.1.1, 2014\-04\-10
+.INDENT 0.0
+.IP \(bu 2
+Unittesting with Travis
+.IP \(bu 2
+Switch to string.Template
+.IP \(bu 2
+Minor bugfixes
+.UNINDENT
+.SS Version 0.1, 2014\-04\-03
+.INDENT 0.0
+.IP \(bu 2
+First release
+.UNINDENT
+.SH MODULES
+.SS pyscaffold package
+.SS Subpackages
+.SS pyscaffold.contrib package
+.SS Module contents
+.sp
+Contribution packages used by PyScaffold
+.sp
+All packages inside \fBcontrib\fP are external packages that come with their
+own licences and are not part of the PyScaffold sourcecode itself.
+The reason for shipping these dependencies directly is to avoid problems in
+the resolution of \fBsetup_requires\fP dependencies that occurred more often than
+not, see issues #71 and #72.
+.sp
+All contribution packages were added with the help of \fBgit subtree\fP (git
+version 1.7.11 and above):
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+git subtree add \-\-prefix pyscaffold/contrib/setuptools_scm \-\-squash     https://github.com/pypa/setuptools_scm.git v1.8.0
+
+git subtree add \-\-prefix pyscaffold/contrib/pbr \-\-squash     https://github.com/openstack\-dev/pbr.git 1.8.1
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+Upating works with:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+git subtree pull \-\-prefix pyscaffold/contrib/setuptools_scm     https://github.com/pypa/setuptools_scm.git NEW_TAG \-\-squash
+
+git subtree pull \-\-prefix pyscaffold/contrib/pbr     https://github.com/openstack\-dev/pbr.git NEW_TAG \-\-squash
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+Using \fBsubtree\fP instead of git\(aqs \fBsubmodule\fP had several advantages.
+.INDENT 0.0
+.TP
+.B pyscaffold.contrib.add_dir_to_syspath(*args, **kwds)
+Contextmanager to temporarily prepend a path the \fI\%sys.path\fP
+.INDENT 7.0
+.TP
+.B Parameters
+\fBpath\fP \-\- path as string
+.UNINDENT
+.UNINDENT
+.INDENT 0.0
+.TP
+.B pyscaffold.contrib.import_mod(module, path)
+Imports a module from a directory path
+.INDENT 7.0
+.TP
+.B Parameters
+.INDENT 7.0
+.IP \(bu 2
+\fBmodule\fP \-\- module name as string
+.IP \(bu 2
+\fBpath\fP \-\- path as string
+.UNINDENT
+.TP
+.B Returns
+module
+.UNINDENT
+.UNINDENT
+.SS pyscaffold.templates package
+.SS Module contents
+.sp
+Templates for all files of a project\(aqs scaffold
+.INDENT 0.0
+.TP
+.B pyscaffold.templates.authors(opts)
+Template of AUTHORS.rst
+.INDENT 7.0
+.TP
+.B Parameters
+\fBopts\fP \-\- mapping parameters as dictionary
+.TP
+.B Returns
+file content as string
+.UNINDENT
+.UNINDENT
+.INDENT 0.0
+.TP
+.B pyscaffold.templates.changes(opts)
+Template of CHANGES.rst
+.INDENT 7.0
+.TP
+.B Parameters
+\fBopts\fP \-\- mapping parameters as dictionary
+.TP
+.B Returns
+file content as string
+.UNINDENT
+.UNINDENT
+.INDENT 0.0
+.TP
+.B pyscaffold.templates.conftest_py(opts)
+Template of conftest.py
+.INDENT 7.0
+.TP
+.B Parameters
+\fBopts\fP \-\- mapping parameters as dictionary
+.TP
+.B Returns
+file content as string
+.UNINDENT
+.UNINDENT
+.INDENT 0.0
+.TP
+.B pyscaffold.templates.coveragerc(opts)
+Template of .coveragerc
+.INDENT 7.0
+.TP
+.B Parameters
+\fBopts\fP \-\- mapping parameters as dictionary
+.TP
+.B Returns
+file content as string
+.UNINDENT
+.UNINDENT
+.INDENT 0.0
+.TP
+.B pyscaffold.templates.get_template(name)
+Retrieve the template by name
+.INDENT 7.0
+.TP
+.B Parameters
+\fBname\fP \-\- name of template
+.TP
+.B Returns
+template as \fI\%string.Template\fP
+.UNINDENT
+.UNINDENT
+.INDENT 0.0
+.TP
+.B pyscaffold.templates.gitignore(opts)
+Template of .gitignore
+.INDENT 7.0
+.TP
+.B Parameters
+\fBopts\fP \-\- mapping parameters as dictionary
+.TP
+.B Returns
+file content as string
+.UNINDENT
+.UNINDENT
+.INDENT 0.0
+.TP
+.B pyscaffold.templates.gitignore_empty(opts)
+Template of empty .gitignore
+.INDENT 7.0
+.TP
+.B Parameters
+\fBopts\fP \-\- mapping parameters as dictionary
+.TP
+.B Returns
+file content as string
+.UNINDENT
+.UNINDENT
+.INDENT 0.0
+.TP
+.B pyscaffold.templates.init(opts)
+Template of __init__.py
+.INDENT 7.0
+.TP
+.B Parameters
+\fBopts\fP \-\- mapping parameters as dictionary
+.TP
+.B Returns
+file content as string
+.UNINDENT
+.UNINDENT
+.INDENT 0.0
+.TP
+.B pyscaffold.templates.license(opts)
+Template of LICENSE.txt
+.INDENT 7.0
+.TP
+.B Parameters
+\fBopts\fP \-\- mapping parameters as dictionary
+.TP
+.B Returns
+file content as string
+.UNINDENT
+.UNINDENT
+.INDENT 0.0
+.TP
+.B pyscaffold.templates.namespace(opts)
+Template of __init__.py defining a namespace package
+.INDENT 7.0
+.TP
+.B Parameters
+\fBopts\fP \-\- mapping parameters as dictionary
+.TP
+.B Returns
+file content as string
+.UNINDENT
+.UNINDENT
+.INDENT 0.0
+.TP
+.B pyscaffold.templates.pre_commit_config(opts)
+Template of .pre\-commit\-config.yaml
+.INDENT 7.0
+.TP
+.B Parameters
+\fBopts\fP \-\- mapping parameters as dictionary
+.TP
+.B Returns
+file content as string
+.UNINDENT
+.UNINDENT
+.INDENT 0.0
+.TP
+.B pyscaffold.templates.readme(opts)
+Template of README.rst
+.INDENT 7.0
+.TP
+.B Parameters
+\fBopts\fP \-\- mapping parameters as dictionary
+.TP
+.B Returns
+file content as string
+.UNINDENT
+.UNINDENT
+.INDENT 0.0
+.TP
+.B pyscaffold.templates.requirements(opts)
+Template of requirements.txt
+.INDENT 7.0
+.TP
+.B Parameters
+\fBopts\fP \-\- mapping parameters as dictionary
+.TP
+.B Returns
+file content as string
+.UNINDENT
+.UNINDENT
+.INDENT 0.0
+.TP
+.B pyscaffold.templates.setup_cfg(opts)
+Template of setup.cfg
+.INDENT 7.0
+.TP
+.B Parameters
+\fBopts\fP \-\- mapping parameters as dictionary
+.TP
+.B Returns
+file content as string
+.UNINDENT
+.UNINDENT
+.INDENT 0.0
+.TP
+.B pyscaffold.templates.setup_py(opts)
+Template of setup.py
+.INDENT 7.0
+.TP
+.B Parameters
+\fBopts\fP \-\- mapping parameters as dictionary
+.TP
+.B Returns
+file content as string
+.UNINDENT
+.UNINDENT
+.INDENT 0.0
+.TP
+.B pyscaffold.templates.skeleton(opts)
+Template of skeleton.py defining a basic console script
+.INDENT 7.0
+.TP
+.B Parameters
+\fBopts\fP \-\- mapping parameters as dictionary
+.TP
+.B Returns
+file content as string
+.UNINDENT
+.UNINDENT
+.INDENT 0.0
+.TP
+.B pyscaffold.templates.sphinx_authors(opts)
+Template of authors.rst
+.INDENT 7.0
+.TP
+.B Parameters
+\fBopts\fP \-\- mapping parameters as dictionary
+.TP
+.B Returns
+file content as string
+.UNINDENT
+.UNINDENT
+.INDENT 0.0
+.TP
+.B pyscaffold.templates.sphinx_changes(opts)
+Template of changes.rst
+.INDENT 7.0
+.TP
+.B Parameters
+\fBopts\fP \-\- mapping parameters as dictionary
+.TP
+.B Returns
+file content as string
+.UNINDENT
+.UNINDENT
+.INDENT 0.0
+.TP
+.B pyscaffold.templates.sphinx_conf(opts)
+Template of conf.py
+.INDENT 7.0
+.TP
+.B Parameters
+\fBopts\fP \-\- mapping parameters as dictionary
+.TP
+.B Returns
+file content as string
+.UNINDENT
+.UNINDENT
+.INDENT 0.0
+.TP
+.B pyscaffold.templates.sphinx_index(opts)
+Template of index.rst
+.INDENT 7.0
+.TP
+.B Parameters
+\fBopts\fP \-\- mapping parameters as dictionary
+.TP
+.B Returns
+file content as string
+.UNINDENT
+.UNINDENT
+.INDENT 0.0
+.TP
+.B pyscaffold.templates.sphinx_license(opts)
+Template of license.rst
+.INDENT 7.0
+.TP
+.B Parameters
+\fBopts\fP \-\- mapping parameters as dictionary
+.TP
+.B Returns
+file content as string
+.UNINDENT
+.UNINDENT
+.INDENT 0.0
+.TP
+.B pyscaffold.templates.sphinx_makefile(opts)
+Template of Sphinx\(aqs Makefile
+.INDENT 7.0
+.TP
+.B Parameters
+\fBopts\fP \-\- mapping parameters as dictionary
+.TP
+.B Returns
+file content as string
+.UNINDENT
+.UNINDENT
+.INDENT 0.0
+.TP
+.B pyscaffold.templates.test_requirements(opts)
+Template of test\-requirements.txt
+.INDENT 7.0
+.TP
+.B Parameters
+\fBopts\fP \-\- mapping parameters as dictionary
+.TP
+.B Returns
+file content as string
+.UNINDENT
+.UNINDENT
+.INDENT 0.0
+.TP
+.B pyscaffold.templates.test_skeleton(opts)
+Template of unittest for skeleton.py
+.INDENT 7.0
+.TP
+.B Parameters
+\fBopts\fP \-\- mapping parameters as dictionary
+.TP
+.B Returns
+file content as string
+.UNINDENT
+.UNINDENT
+.INDENT 0.0
+.TP
+.B pyscaffold.templates.tox(opts)
+Template of tox.ini
+.INDENT 7.0
+.TP
+.B Parameters
+\fBopts\fP \-\- mapping parameters as dictionary
+.TP
+.B Returns
+file content as string
+.UNINDENT
+.UNINDENT
+.INDENT 0.0
+.TP
+.B pyscaffold.templates.travis(opts)
+Template of .travis.yml
+.INDENT 7.0
+.TP
+.B Parameters
+\fBopts\fP \-\- mapping parameters as dictionary
+.TP
+.B Returns
+file content as string
+.UNINDENT
+.UNINDENT
+.INDENT 0.0
+.TP
+.B pyscaffold.templates.travis_install(opts)
+Template of travis_install.sh
+.INDENT 7.0
+.TP
+.B Parameters
+\fBopts\fP \-\- mapping parameters as dictionary
+.TP
+.B Returns
+file content as string
+.UNINDENT
+.UNINDENT
+.SS Submodules
+.SS pyscaffold.cli module
+.sp
+Command\-Line\-Interface of PyScaffold
+.INDENT 0.0
+.TP
+.B pyscaffold.cli.create_project(opts)
+Create the project\(aqs directory structure
+.INDENT 7.0
+.TP
+.B Parameters
+\fBopts\fP \-\- options as dictionary
+.UNINDENT
+.UNINDENT
+.INDENT 0.0
+.TP
+.B pyscaffold.cli.get_default_opts(project_name, **aux_opts)
+Creates default options using auxiliary options as keyword argument
+.sp
+Use this function if you want to use PyScaffold from another application
+in order to generate an option dictionary that can than be passed to
+\fI\%create_project\fP\&.
+.INDENT 7.0
+.TP
+.B Parameters
+.INDENT 7.0
+.IP \(bu 2
+\fBproject_name\fP \-\- name of the project
+.IP \(bu 2
+\fBaux_opts\fP \-\- auxiliary options as keyword parameters
+.UNINDENT
+.TP
+.B Returns
+options with default values set as dictionary
+.UNINDENT
+.UNINDENT
+.INDENT 0.0
+.TP
+.B pyscaffold.cli.main(args)
+PyScaffold is a tool for putting up the scaffold of a Python project.
+.UNINDENT
+.INDENT 0.0
+.TP
+.B pyscaffold.cli.make_sanity_checks(opts)
+Perform some sanity checks, e.g., if git is installed.
+.INDENT 7.0
+.TP
+.B Parameters
+\fBopts\fP \-\- options as dictionary
+.UNINDENT
+.UNINDENT
+.INDENT 0.0
+.TP
+.B pyscaffold.cli.parse_args(args)
+Parse command line parameters
+.INDENT 7.0
+.TP
+.B Parameters
+\fBargs\fP \-\- command line parameters as list of strings
+.TP
+.B Returns
+command line parameters as dictionary
+.UNINDENT
+.UNINDENT
+.INDENT 0.0
+.TP
+.B pyscaffold.cli.run(*args, **kwargs)
+Entry point for setup.py
+.UNINDENT
+.SS pyscaffold.info module
+.sp
+Provide general information about the system, user etc.
+.INDENT 0.0
+.TP
+.B pyscaffold.info.email()
+Retrieve the user\(aqs email
+.INDENT 7.0
+.TP
+.B Returns
+user\(aqs email as string
+.UNINDENT
+.UNINDENT
+.INDENT 0.0
+.TP
+.B pyscaffold.info.is_git_configured()
+Check if user.name and user.email is set globally in git
+.INDENT 7.0
+.TP
+.B Returns
+boolean
+.UNINDENT
+.UNINDENT
+.INDENT 0.0
+.TP
+.B pyscaffold.info.is_git_installed()
+Check if git is installed
+.INDENT 7.0
+.TP
+.B Returns
+boolean
+.UNINDENT
+.UNINDENT
+.INDENT 0.0
+.TP
+.B pyscaffold.info.project(opts)
+Update user options with the options of an existing PyScaffold project
+.INDENT 7.0
+.TP
+.B Parameters
+\fBopts\fP \-\- options as dictionary
+.TP
+.B Returns
+options with updated values as dictionary
+.UNINDENT
+.UNINDENT
+.INDENT 0.0
+.TP
+.B pyscaffold.info.username()
+Retrieve the user\(aqs name
+.INDENT 7.0
+.TP
+.B Returns
+user\(aqs name as string
+.UNINDENT
+.UNINDENT
+.SS pyscaffold.integration module
+.sp
+Integration part for hooking into distutils/setuptools
+.sp
+Rationale:
+The \fBuse_pyscaffold\fP keyword is unknown to setuptools\(aq setup(...) command,
+therefore the \fBentry_points\fP are checked for a function to handle this
+keyword which is \fBpyscaffold_keyword\fP below. This is where we hook into
+setuptools and apply the magic of setuptools_scm and pbr.
+.INDENT 0.0
+.TP
+.B pyscaffold.integration.build_cmd_docs()
+Return Sphinx\(aqs BuildDoc if available otherwise a dummy command
+.INDENT 7.0
+.TP
+.B Returns
+command as \fI\%Command\fP
+.UNINDENT
+.UNINDENT
+.INDENT 0.0
+.TP
+.B pyscaffold.integration.deactivate_pbr_authors_changelog()
+Deactivate automatic generation of AUTHORS and ChangeLog file
+.sp
+This is an automatism of pbr and we rather keep track of our own
+AUTHORS.rst and CHANGES.rst files.
+.UNINDENT
+.INDENT 0.0
+.TP
+.B pyscaffold.integration.local_version2str(version)
+Create the local part of a PEP440 version string
+.INDENT 7.0
+.TP
+.B Parameters
+\fBversion\fP \-\- version object as \fBsetuptools_scm.version.ScmVersion\fP
+.TP
+.B Returns
+local version string
+.UNINDENT
+.UNINDENT
+.INDENT 0.0
+.TP
+.B pyscaffold.integration.pyscaffold_keyword(dist, keyword, value)
+Handles the \fIuse_pyscaffold\fP keyword of the setup(...) command
+.INDENT 7.0
+.TP
+.B Parameters
+.INDENT 7.0
+.IP \(bu 2
+\fBdist\fP \-\- distribution object as \fBsetuptools.dist\fP
+.IP \(bu 2
+\fBkeyword\fP \-\- keyword argument = \(aquse_pyscaffold\(aq
+.IP \(bu 2
+\fBvalue\fP \-\- value of the keyword argument
+.UNINDENT
+.UNINDENT
+.UNINDENT
+.INDENT 0.0
+.TP
+.B pyscaffold.integration.version2str(version)
+Creates a PEP440 version string
+.INDENT 7.0
+.TP
+.B Parameters
+\fBversion\fP \-\- version object as \fBsetuptools_scm.version.ScmVersion\fP
+.TP
+.B Returns
+version string
+.UNINDENT
+.UNINDENT
+.SS pyscaffold.pytest_runner module
+.sp
+This module provides a test runner for setup.py copied over from
+\fI\%https://bitbucket.org/pytest\-dev/pytest\-runner/\fP
+in order to make some improvements.
+.sp
+Follow the discussion under:
+\fI\%https://bitbucket.org/pytest\-dev/pytest\-runner/issues/7/support\-all\-pytest\-commands\fP
+.sp
+This file is MIT licensed:
+.sp
+Copyright (c) 2011 Jason R. Coombs <\fI\%jaraco@jaraco.com\fP>
+.sp
+Permission is hereby granted, free of charge, to any person obtaining a copy of
+this software and associated documentation files (the "Software"), to deal in
+the Software without restriction, including without limitation the rights to
+use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
+of the Software, and to permit persons to whom the Software is furnished to do
+so, subject to the following conditions:
+.sp
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+.sp
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+.INDENT 0.0
+.TP
+.B class pyscaffold.pytest_runner.PyTest(dist, **kw)
+Bases: \fBsetuptools.command.test.test\fP
+.INDENT 7.0
+.TP
+.B finalize_options()
+.UNINDENT
+.INDENT 7.0
+.TP
+.B initialize_options()
+.UNINDENT
+.INDENT 7.0
+.TP
+.B static marker_passes(marker)
+Given an environment marker, return True if the marker is valid
+and matches this environment.
+.UNINDENT
+.INDENT 7.0
+.TP
+.B run()
+Override run to ensure requirements are available in this session (but
+don\(aqt install them anywhere).
+.UNINDENT
+.INDENT 7.0
+.TP
+.B run_tests()
+.UNINDENT
+.INDENT 7.0
+.TP
+.B user_options = [(\(aqextras\(aq, None, \(aqInstall (all) setuptools extras when running tests\(aq), (\(aqindex\-url=\(aq, None, \(aqSpecify an index url from which to retrieve dependencies\(aq), (\(aqallow\-hosts=\(aq, None, \(aqWhitelist of comma\-separated hosts to allow when retrieving dependencies\(aq), (\(aqaddopts=\(aq, \(aqa\(aq, \(aqAdditional options to be passed verbatim to the pytest runner\(aq)]
+.UNINDENT
+.UNINDENT
+.SS pyscaffold.repo module
+.sp
+Functionality for working with a git repository
+.INDENT 0.0
+.TP
+.B pyscaffold.repo.add_tag(project, tag_name, message=None)
+Add an (annotated) tag to the git repository.
+.INDENT 7.0
+.TP
+.B Parameters
+.INDENT 7.0
+.IP \(bu 2
+\fBproject\fP \-\- path to the project as string
+.IP \(bu 2
+\fBtag_name\fP \-\- name of the tag as string
+.IP \(bu 2
+\fBmessage\fP \-\- optional tag message as string
+.UNINDENT
+.UNINDENT
+.UNINDENT
+.INDENT 0.0
+.TP
+.B pyscaffold.repo.get_git_root()
+Return the path to the top\-level of the git repository.
+.INDENT 7.0
+.TP
+.B Returns
+top\-level path as string or None
+.UNINDENT
+.UNINDENT
+.INDENT 0.0
+.TP
+.B pyscaffold.repo.git_tree_add(struct, prefix=\(aq\(aq)
+Adds recursively a directory structure to git
+.INDENT 7.0
+.TP
+.B Parameters
+.INDENT 7.0
+.IP \(bu 2
+\fBstruct\fP \-\- directory structure as dictionary of dictionaries
+.IP \(bu 2
+\fBprefix\fP \-\- prefix for the given directory structure as string
+.UNINDENT
+.UNINDENT
+.UNINDENT
+.INDENT 0.0
+.TP
+.B pyscaffold.repo.init_commit_repo(project, struct)
+Initialize a git repository
+.INDENT 7.0
+.TP
+.B Parameters
+.INDENT 7.0
+.IP \(bu 2
+\fBproject\fP \-\- path to the project as string
+.IP \(bu 2
+\fBstruct\fP \-\- directory structure as dictionary of dictionaries
+.UNINDENT
+.UNINDENT
+.UNINDENT
+.INDENT 0.0
+.TP
+.B pyscaffold.repo.is_git_repo(folder)
+Check if a folder is a git repository
+.INDENT 7.0
+.TP
+.B Parameters
+\fBfolder\fP \-\- path as string
+.UNINDENT
+.UNINDENT
+.SS pyscaffold.shell module
+.sp
+Shell commands like git, django\-admin.py etc.
+.INDENT 0.0
+.TP
+.B class pyscaffold.shell.ShellCommand(command, shell=True, cwd=None)
+Bases: \fI\%object\fP
+.sp
+Shell command that can be called with flags like git(\(aqadd\(aq, \(aqfile\(aq)
+.INDENT 7.0
+.TP
+.B Parameters
+.INDENT 7.0
+.IP \(bu 2
+\fBcommand\fP \-\- command to handle
+.IP \(bu 2
+\fBshell\fP \-\- run the command in the shell
+.IP \(bu 2
+\fBcwd\fP \-\- current working dir to run the command
+.UNINDENT
+.UNINDENT
+.UNINDENT
+.INDENT 0.0
+.TP
+.B pyscaffold.shell.called_process_error2exit_decorator(func)
+Decorator to convert given CalledProcessError to an exit message
+.sp
+This avoids displaying nasty stack traces to end\-users
+.UNINDENT
+.INDENT 0.0
+.TP
+.B pyscaffold.shell.django_admin = <pyscaffold.shell.ShellCommand object>
+Command for django\-admin.py
+.UNINDENT
+.INDENT 0.0
+.TP
+.B pyscaffold.shell.get_git_cmd(**args)
+Retrieve the git shell command depending on the current platform
+.sp
+All additional parameters are passed to \fI\%ShellCommand\fP
+.UNINDENT
+.INDENT 0.0
+.TP
+.B pyscaffold.shell.git = <pyscaffold.shell.ShellCommand object>
+Command for git
+.UNINDENT
+.SS pyscaffold.structure module
+.sp
+Functionality to generate and work with the directory structure of a project
+.INDENT 0.0
+.TP
+.B class pyscaffold.structure.FileOp
+Bases: \fI\%object\fP
+.sp
+Namespace for file operations during an update
+.INDENT 7.0
+.IP \(bu 2
+\fINO_OVERWRITE\fP: Do not overwrite an existing file during update
+.IP \(bu 2
+\fINO_CREATE\fP: Do not create the file during an update
+.UNINDENT
+.INDENT 7.0
+.TP
+.B NO_CREATE = 1
+.UNINDENT
+.INDENT 7.0
+.TP
+.B NO_OVERWRITE = 0
+.UNINDENT
+.UNINDENT
+.INDENT 0.0
+.TP
+.B pyscaffold.structure.add_namespace(opts, struct)
+Prepend the namespace to a given file structure
+.INDENT 7.0
+.TP
+.B Parameters
+.INDENT 7.0
+.IP \(bu 2
+\fBopts\fP \-\- options as dictionary
+.IP \(bu 2
+\fBstruct\fP \-\- directory structure as dictionary of dictionaries
+.UNINDENT
+.TP
+.B Returns
+directory structure as dictionary of dictionaries
+.UNINDENT
+.UNINDENT
+.INDENT 0.0
+.TP
+.B pyscaffold.structure.apply_update_rules(rules, struct, prefix=None)
+Apply update rules using \fI\%FileOp\fP to a directory structure
+.INDENT 7.0
+.TP
+.B Parameters
+.INDENT 7.0
+.IP \(bu 2
+\fBrules\fP \-\- directory structure as dictionary of dictionaries with
+\fI\%FileOp\fP keys. The structure will be modified.
+.IP \(bu 2
+\fBstruct\fP \-\- directory structure as dictionary of dictionaries
+.IP \(bu 2
+\fBprefix\fP \-\- prefix path for the structure
+.UNINDENT
+.TP
+.B Returns
+directory structure with keys removed according to the rules
+.UNINDENT
+.UNINDENT
+.INDENT 0.0
+.TP
+.B pyscaffold.structure.create_cookiecutter(opts)
+Create a cookie cutter template
+.INDENT 7.0
+.TP
+.B Parameters
+\fBopts\fP \-\- options as dictionary
+.UNINDENT
+.UNINDENT
+.INDENT 0.0
+.TP
+.B pyscaffold.structure.create_django_proj(opts)
+Creates a standard Django project with django\-admin.py
+.INDENT 7.0
+.TP
+.B Parameters
+\fBopts\fP \-\- options as dictionary
+.UNINDENT
+.UNINDENT
+.INDENT 0.0
+.TP
+.B pyscaffold.structure.create_structure(struct, prefix=None, update=False)
+Manifests a directory structure in the filesystem
+.INDENT 7.0
+.TP
+.B Parameters
+.INDENT 7.0
+.IP \(bu 2
+\fBstruct\fP \-\- directory structure as dictionary of dictionaries
+.IP \(bu 2
+\fBprefix\fP \-\- prefix path for the structure
+.IP \(bu 2
+\fBupdate\fP \-\- update an existing directory structure as boolean
+.UNINDENT
+.UNINDENT
+.UNINDENT
+.INDENT 0.0
+.TP
+.B pyscaffold.structure.make_structure(opts)
+Creates the project structure as dictionary of dictionaries
+.INDENT 7.0
+.TP
+.B Parameters
+\fBopts\fP \-\- options as dictionary
+.TP
+.B Returns
+structure as dictionary of dictionaries
+.UNINDENT
+.UNINDENT
+.SS pyscaffold.utils module
+.sp
+Miscellaneous utilities and tools
+.INDENT 0.0
+.TP
+.B pyscaffold.utils.best_fit_license(txt)
+Finds proper license name for the license defined in txt
+.INDENT 7.0
+.TP
+.B Parameters
+\fBtxt\fP \-\- license name as string
+.TP
+.B Returns
+license name as string
+.UNINDENT
+.UNINDENT
+.INDENT 0.0
+.TP
+.B pyscaffold.utils.chdir(*args, **kwds)
+Contextmanager to change into a directory
+.INDENT 7.0
+.TP
+.B Parameters
+\fBpath\fP \-\- path to change into as string
+.UNINDENT
+.UNINDENT
+.INDENT 0.0
+.TP
+.B pyscaffold.utils.check_setuptools_version()
+Checks that setuptools has all necessary capabilities for setuptools_scm
+.UNINDENT
+.INDENT 0.0
+.TP
+.B pyscaffold.utils.exceptions2exit(exception_list)
+Decorator to convert given exceptions to exit messages
+.sp
+This avoids displaying nasty stack traces to end\-users
+.INDENT 7.0
+.TP
+.B Parameters
+\fBexception_list\fP \-\- list of exceptions to convert
+.UNINDENT
+.UNINDENT
+.INDENT 0.0
+.TP
+.B pyscaffold.utils.get_files(pattern)
+Retrieve all files in the current directory by a pattern.
+Use ** as greedy wildcard and * as non\-greedy wildcard.
+.INDENT 7.0
+.TP
+.B Parameters
+\fBpattern\fP \-\- The pattern as used by \fBdistutils.filelist.Filelist\fP
+.UNINDENT
+.UNINDENT
+.INDENT 0.0
+.TP
+.B pyscaffold.utils.is_valid_identifier(string)
+Check if string is a valid package name
+.INDENT 7.0
+.TP
+.B Parameters
+\fBstring\fP \-\- package name as string
+.TP
+.B Returns
+boolean
+.UNINDENT
+.UNINDENT
+.INDENT 0.0
+.TP
+.B pyscaffold.utils.levenshtein(s1, s2)
+Calculate the Levenshtein distance between two strings
+.INDENT 7.0
+.TP
+.B Parameters
+.INDENT 7.0
+.IP \(bu 2
+\fBs1\fP \-\- first string
+.IP \(bu 2
+\fBs2\fP \-\- second string
+.UNINDENT
+.TP
+.B Returns
+distance between s1 and s2 as integer
+.UNINDENT
+.UNINDENT
+.INDENT 0.0
+.TP
+.B pyscaffold.utils.list2str(lst, indent=0, brackets=True, quotes=True)
+Generate a Python syntax list string with an indention
+.INDENT 7.0
+.TP
+.B Parameters
+.INDENT 7.0
+.IP \(bu 2
+\fBlst\fP \-\- list
+.IP \(bu 2
+\fBindent\fP \-\- indention as integer
+.IP \(bu 2
+\fBbrackets\fP \-\- surround the list expression by brackets as boolean
+.IP \(bu 2
+\fBquotes\fP \-\- surround each item with quotes
+.UNINDENT
+.TP
+.B Returns
+string
+.UNINDENT
+.UNINDENT
+.INDENT 0.0
+.TP
+.B pyscaffold.utils.make_valid_identifier(string)
+Try to make a valid package name identifier from a string
+.INDENT 7.0
+.TP
+.B Parameters
+\fBstring\fP \-\- invalid package name as string
+.TP
+.B Returns
+valid package name as string or \fBRuntimeError\fP
+.UNINDENT
+.UNINDENT
+.INDENT 0.0
+.TP
+.B pyscaffold.utils.prepare_namespace(namespace_str)
+Check the validity of namespace_str and split it up into a list
+.INDENT 7.0
+.TP
+.B Parameters
+\fBnamespace_str\fP \-\- namespace as string, e.g. "com.blue_yonder"
+.TP
+.B Returns
+list of namespaces, e.g. ["com", "com.blue_yonder"]
+.UNINDENT
+.UNINDENT
+.INDENT 0.0
+.TP
+.B pyscaffold.utils.utf8_decode(string)
+Decode a Python 2 str object to unicode for compatibility with Python 3
+.INDENT 7.0
+.TP
+.B Parameters
+\fBstring\fP \-\- Python 2 str object or Python 3 str object
+.TP
+.B Returns
+Python 2 unicode object or Python 3 str object
+.UNINDENT
+.UNINDENT
+.INDENT 0.0
+.TP
+.B pyscaffold.utils.utf8_encode(string)
+Encode a Python 2 unicode object to str for compatibility with Python 3
+.INDENT 7.0
+.TP
+.B Parameters
+\fBstring\fP \-\- Python 2 unicode object or Python 3 str object
+.TP
+.B Returns
+Python 2 str object or Python 3 str object
+.UNINDENT
+.UNINDENT
+.SS Module contents
+.INDENT 0.0
+.IP \(bu 2
+genindex
+.IP \(bu 2
+modindex
+.IP \(bu 2
+search
+.UNINDENT
+.SH COPYRIGHT
+2014, Blue Yonder
+.\" Generated by docutils manpage writer.
+.

@@ -1,0 +1,292 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>pyscaffold.repo &mdash; PyScaffold 2.5.2.post0.dev2+g85f669b.dirty documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../../_static/logo.ico"/>
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="PyScaffold 2.5.2.post0.dev2+g85f669b.dirty documentation" href="../../index.html"/>
+        <link rel="up" title="Module code" href="../index.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> PyScaffold
+          
+
+          
+            
+            <img src="../../_static/sidebar.png" class="logo" />
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                2.5.2.post0.dev2+g85f669b.dirty
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../features.html">Features</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../configuration.html">Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../contrib.html">Contributions &amp; Help</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../authors.html">Authors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../changes.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/modules.html">Module Reference</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../../index.html">PyScaffold</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../../index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+      
+    <li>pyscaffold.repo</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for pyscaffold.repo</h1><div class="highlight"><pre>
+<span class="c"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Functionality for working with a git repository</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">absolute_import</span><span class="p">,</span> <span class="n">print_function</span>
+
+<span class="kn">from</span> <span class="nn">os.path</span> <span class="kn">import</span> <span class="n">join</span> <span class="k">as</span> <span class="n">join_path</span>
+<span class="kn">from</span> <span class="nn">subprocess</span> <span class="kn">import</span> <span class="n">CalledProcessError</span>
+
+<span class="kn">from</span> <span class="nn">six</span> <span class="kn">import</span> <span class="n">string_types</span>
+
+<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">utils</span>
+<span class="kn">from</span> <span class="nn">.shell</span> <span class="kn">import</span> <span class="n">git</span>
+
+<span class="n">__author__</span> <span class="o">=</span> <span class="s">&quot;Florian Wilhelm&quot;</span>
+<span class="n">__copyright__</span> <span class="o">=</span> <span class="s">&quot;Blue Yonder&quot;</span>
+<span class="n">__license__</span> <span class="o">=</span> <span class="s">&quot;new BSD&quot;</span>
+
+
+<div class="viewcode-block" id="git_tree_add"><a class="viewcode-back" href="../../api/pyscaffold.html#pyscaffold.repo.git_tree_add">[docs]</a><span class="k">def</span> <span class="nf">git_tree_add</span><span class="p">(</span><span class="n">struct</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="s">&quot;&quot;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Adds recursively a directory structure to git</span>
+
+<span class="sd">    :param struct: directory structure as dictionary of dictionaries</span>
+<span class="sd">    :param prefix: prefix for the given directory structure as string</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">content</span> <span class="ow">in</span> <span class="n">struct</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">content</span><span class="p">,</span> <span class="n">string_types</span><span class="p">):</span>
+            <span class="n">git</span><span class="p">(</span><span class="s">&#39;add&#39;</span><span class="p">,</span> <span class="n">join_path</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="n">name</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">content</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="n">git_tree_add</span><span class="p">(</span><span class="n">struct</span><span class="p">[</span><span class="n">name</span><span class="p">],</span> <span class="n">prefix</span><span class="o">=</span><span class="n">join_path</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="n">name</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="n">content</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">git</span><span class="p">(</span><span class="s">&#39;add&#39;</span><span class="p">,</span> <span class="n">join_path</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="n">name</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s">&quot;Don&#39;t know what to do with content type &quot;</span>
+                               <span class="s">&quot;{type}.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="nb">type</span><span class="p">(</span><span class="n">content</span><span class="p">)))</span>
+
+</div>
+<div class="viewcode-block" id="add_tag"><a class="viewcode-back" href="../../api/pyscaffold.html#pyscaffold.repo.add_tag">[docs]</a><span class="k">def</span> <span class="nf">add_tag</span><span class="p">(</span><span class="n">project</span><span class="p">,</span> <span class="n">tag_name</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Add an (annotated) tag to the git repository.</span>
+
+<span class="sd">    :param project: path to the project as string</span>
+<span class="sd">    :param tag_name: name of the tag as string</span>
+<span class="sd">    :param message: optional tag message as string</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">with</span> <span class="n">utils</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="n">project</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">message</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">git</span><span class="p">(</span><span class="s">&#39;tag&#39;</span><span class="p">,</span> <span class="n">tag_name</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">git</span><span class="p">(</span><span class="s">&#39;tag&#39;</span><span class="p">,</span> <span class="s">&#39;-a&#39;</span><span class="p">,</span> <span class="n">tag_name</span><span class="p">,</span> <span class="s">&#39;-m&#39;</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="init_commit_repo"><a class="viewcode-back" href="../../api/pyscaffold.html#pyscaffold.repo.init_commit_repo">[docs]</a><span class="k">def</span> <span class="nf">init_commit_repo</span><span class="p">(</span><span class="n">project</span><span class="p">,</span> <span class="n">struct</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Initialize a git repository</span>
+
+<span class="sd">    :param project: path to the project as string</span>
+<span class="sd">    :param struct: directory structure as dictionary of dictionaries</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">with</span> <span class="n">utils</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="n">project</span><span class="p">):</span>
+        <span class="n">git</span><span class="p">(</span><span class="s">&#39;init&#39;</span><span class="p">)</span>
+        <span class="n">git_tree_add</span><span class="p">(</span><span class="n">struct</span><span class="p">[</span><span class="n">project</span><span class="p">])</span>
+        <span class="n">git</span><span class="p">(</span><span class="s">&#39;commit&#39;</span><span class="p">,</span> <span class="s">&#39;-m&#39;</span><span class="p">,</span> <span class="s">&#39;Initial commit&#39;</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="is_git_repo"><a class="viewcode-back" href="../../api/pyscaffold.html#pyscaffold.repo.is_git_repo">[docs]</a><span class="k">def</span> <span class="nf">is_git_repo</span><span class="p">(</span><span class="n">folder</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Check if a folder is a git repository</span>
+
+<span class="sd">    :param folder: path as string</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">with</span> <span class="n">utils</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="n">folder</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">git</span><span class="p">(</span><span class="s">&#39;rev-parse&#39;</span><span class="p">,</span> <span class="s">&#39;--git-dir&#39;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">CalledProcessError</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">False</span>
+        <span class="k">return</span> <span class="bp">True</span>
+
+</div>
+<div class="viewcode-block" id="get_git_root"><a class="viewcode-back" href="../../api/pyscaffold.html#pyscaffold.repo.get_git_root">[docs]</a><span class="k">def</span> <span class="nf">get_git_root</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return the path to the top-level of the git repository.</span>
+
+<span class="sd">    :return: top-level path as string or None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">next</span><span class="p">(</span><span class="n">git</span><span class="p">(</span><span class="s">&#39;rev-parse&#39;</span><span class="p">,</span> <span class="s">&#39;--show-toplevel&#39;</span><span class="p">))</span>
+    <span class="k">except</span> <span class="n">CalledProcessError</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">None</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2014, Blue Yonder.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'2.5.2.post0.dev2+g85f669b.dirty',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

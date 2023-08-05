@@ -1,0 +1,353 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>pyscaffold.pytest_runner &mdash; PyScaffold 2.5.2.post0.dev2+g85f669b.dirty documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../../_static/logo.ico"/>
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="PyScaffold 2.5.2.post0.dev2+g85f669b.dirty documentation" href="../../index.html"/>
+        <link rel="up" title="Module code" href="../index.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> PyScaffold
+          
+
+          
+            
+            <img src="../../_static/sidebar.png" class="logo" />
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                2.5.2.post0.dev2+g85f669b.dirty
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../features.html">Features</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../configuration.html">Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../contrib.html">Contributions &amp; Help</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../authors.html">Authors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../changes.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/modules.html">Module Reference</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../../index.html">PyScaffold</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../../index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+      
+    <li>pyscaffold.pytest_runner</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for pyscaffold.pytest_runner</h1><div class="highlight"><pre>
+<span class="c"># -*- coding: utf-8 -*-</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This module provides a test runner for setup.py copied over from</span>
+<span class="sd">https://bitbucket.org/pytest-dev/pytest-runner/</span>
+<span class="sd">in order to make some improvements.</span>
+
+<span class="sd">Follow the discussion under:</span>
+<span class="sd">https://bitbucket.org/pytest-dev/pytest-runner/issues/7/support-all-pytest-commands</span>
+
+<span class="sd">This file is MIT licensed:</span>
+
+<span class="sd">Copyright (c) 2011 Jason R. Coombs &lt;jaraco@jaraco.com&gt;</span>
+
+<span class="sd">Permission is hereby granted, free of charge, to any person obtaining a copy of</span>
+<span class="sd">this software and associated documentation files (the &quot;Software&quot;), to deal in</span>
+<span class="sd">the Software without restriction, including without limitation the rights to</span>
+<span class="sd">use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies</span>
+<span class="sd">of the Software, and to permit persons to whom the Software is furnished to do</span>
+<span class="sd">so, subject to the following conditions:</span>
+
+<span class="sd">The above copyright notice and this permission notice shall be included in all</span>
+<span class="sd">copies or substantial portions of the Software.</span>
+
+<span class="sd">THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR</span>
+<span class="sd">IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,</span>
+<span class="sd">FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE</span>
+<span class="sd">AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER</span>
+<span class="sd">LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,</span>
+<span class="sd">OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE</span>
+<span class="sd">SOFTWARE.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">division</span><span class="p">,</span> <span class="n">print_function</span><span class="p">,</span> <span class="n">absolute_import</span>
+
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">shlex</span>
+
+<span class="kn">import</span> <span class="nn">pkg_resources</span>
+<span class="kn">from</span> <span class="nn">setuptools.command.test</span> <span class="kn">import</span> <span class="n">test</span> <span class="k">as</span> <span class="n">TestCommand</span>
+
+<span class="n">__author__</span> <span class="o">=</span> <span class="s">&quot;Jason R. Coombs, Florian Wilhelm&quot;</span>
+<span class="n">__copyright__</span> <span class="o">=</span> <span class="s">&quot;Jason R. Coombs&quot;</span>
+<span class="n">__license__</span> <span class="o">=</span> <span class="s">&quot;MIT&quot;</span>
+
+
+<div class="viewcode-block" id="PyTest"><a class="viewcode-back" href="../../api/pyscaffold.html#pyscaffold.pytest_runner.PyTest">[docs]</a><span class="k">class</span> <span class="nc">PyTest</span><span class="p">(</span><span class="n">TestCommand</span><span class="p">):</span>
+    <span class="n">user_options</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="p">(</span><span class="s">&#39;extras&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="s">&quot;Install (all) setuptools extras when running tests&quot;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s">&#39;index-url=&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="s">&quot;Specify an index url from which to retrieve &quot;</span>
+            <span class="s">&quot;dependencies&quot;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s">&#39;allow-hosts=&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="s">&quot;Whitelist of comma-separated hosts to allow &quot;</span>
+            <span class="s">&quot;when retrieving dependencies&quot;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s">&#39;addopts=&#39;</span><span class="p">,</span> <span class="s">&#39;a&#39;</span><span class="p">,</span> <span class="s">&quot;Additional options to be passed verbatim to the &quot;</span>
+            <span class="s">&quot;pytest runner&quot;</span><span class="p">)</span>
+    <span class="p">]</span>
+
+<div class="viewcode-block" id="PyTest.initialize_options"><a class="viewcode-back" href="../../api/pyscaffold.html#pyscaffold.pytest_runner.PyTest.initialize_options">[docs]</a>    <span class="k">def</span> <span class="nf">initialize_options</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">TestCommand</span><span class="o">.</span><span class="n">initialize_options</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">extras</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">index_url</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">allow_hosts</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">addopts</span> <span class="o">=</span> <span class="p">[]</span>
+</div>
+<div class="viewcode-block" id="PyTest.finalize_options"><a class="viewcode-back" href="../../api/pyscaffold.html#pyscaffold.pytest_runner.PyTest.finalize_options">[docs]</a>    <span class="k">def</span> <span class="nf">finalize_options</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">addopts</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">addopts</span> <span class="o">=</span> <span class="n">shlex</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">addopts</span><span class="p">)</span>
+</div>
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="PyTest.marker_passes"><a class="viewcode-back" href="../../api/pyscaffold.html#pyscaffold.pytest_runner.PyTest.marker_passes">[docs]</a>    <span class="k">def</span> <span class="nf">marker_passes</span><span class="p">(</span><span class="n">marker</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Given an environment marker, return True if the marker is valid</span>
+<span class="sd">        and matches this environment.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="n">marker</span>
+            <span class="ow">and</span> <span class="ow">not</span> <span class="n">pkg_resources</span><span class="o">.</span><span class="n">invalid_marker</span><span class="p">(</span><span class="n">marker</span><span class="p">)</span>
+            <span class="ow">and</span> <span class="n">pkg_resources</span><span class="o">.</span><span class="n">evaluate_marker</span><span class="p">(</span><span class="n">marker</span><span class="p">)</span>
+        <span class="p">)</span>
+</div>
+<div class="viewcode-block" id="PyTest.run"><a class="viewcode-back" href="../../api/pyscaffold.html#pyscaffold.pytest_runner.PyTest.run">[docs]</a>    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Override run to ensure requirements are available in this session (but</span>
+<span class="sd">        don&#39;t install them anywhere).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_build_egg_fetcher</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">distribution</span><span class="o">.</span><span class="n">install_requires</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">distribution</span><span class="o">.</span><span class="n">fetch_build_eggs</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">distribution</span><span class="o">.</span><span class="n">install_requires</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">distribution</span><span class="o">.</span><span class="n">tests_require</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">distribution</span><span class="o">.</span><span class="n">fetch_build_eggs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">distribution</span><span class="o">.</span><span class="n">tests_require</span><span class="p">)</span>
+        <span class="n">extras_require</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">distribution</span><span class="o">.</span><span class="n">extras_require</span> <span class="ow">or</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">spec</span><span class="p">,</span> <span class="n">reqs</span> <span class="ow">in</span> <span class="n">extras_require</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">name</span><span class="p">,</span> <span class="n">sep</span><span class="p">,</span> <span class="n">marker</span> <span class="o">=</span> <span class="n">spec</span><span class="o">.</span><span class="n">partition</span><span class="p">(</span><span class="s">&#39;:&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">marker</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">marker_passes</span><span class="p">(</span><span class="n">marker</span><span class="p">):</span>
+                <span class="k">continue</span>
+            <span class="c"># always include unnamed extras</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">name</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">extras</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">distribution</span><span class="o">.</span><span class="n">fetch_build_eggs</span><span class="p">(</span><span class="n">reqs</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">dry_run</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">announce</span><span class="p">(</span><span class="s">&#39;skipping tests (dry run)&#39;</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">with_project_on_sys_path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">run_tests</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">result_code</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">SystemExit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">result_code</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">result_code</span>
+</div>
+    <span class="k">def</span> <span class="nf">_build_egg_fetcher</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Build an egg fetcher that respects index_url and allow_hosts&quot;&quot;&quot;</span>
+        <span class="c"># modified from setuptools.dist:Distribution.fetch_build_egg</span>
+        <span class="kn">from</span> <span class="nn">setuptools.command.easy_install</span> <span class="kn">import</span> <span class="n">easy_install</span>
+        <span class="n">main_dist</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">distribution</span>
+        <span class="c"># construct a fake distribution to store the args for easy_install</span>
+        <span class="n">dist</span> <span class="o">=</span> <span class="n">main_dist</span><span class="o">.</span><span class="n">__class__</span><span class="p">({</span><span class="s">&#39;script_args&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s">&#39;easy_install&#39;</span><span class="p">]})</span>
+        <span class="n">dist</span><span class="o">.</span><span class="n">parse_config_files</span><span class="p">()</span>
+        <span class="n">opts</span> <span class="o">=</span> <span class="n">dist</span><span class="o">.</span><span class="n">get_option_dict</span><span class="p">(</span><span class="s">&#39;easy_install&#39;</span><span class="p">)</span>
+        <span class="n">keep</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="s">&#39;find_links&#39;</span><span class="p">,</span> <span class="s">&#39;site_dirs&#39;</span><span class="p">,</span> <span class="s">&#39;index_url&#39;</span><span class="p">,</span> <span class="s">&#39;optimize&#39;</span><span class="p">,</span>
+            <span class="s">&#39;site_dirs&#39;</span><span class="p">,</span> <span class="s">&#39;allow_hosts&#39;</span>
+        <span class="p">)</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">opts</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">keep</span><span class="p">:</span>
+                <span class="k">del</span> <span class="n">opts</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>   <span class="c"># don&#39;t use any other settings</span>
+        <span class="k">if</span> <span class="n">main_dist</span><span class="o">.</span><span class="n">dependency_links</span><span class="p">:</span>
+            <span class="n">links</span> <span class="o">=</span> <span class="n">main_dist</span><span class="o">.</span><span class="n">dependency_links</span><span class="p">[:]</span>
+            <span class="k">if</span> <span class="s">&#39;find_links&#39;</span> <span class="ow">in</span> <span class="n">opts</span><span class="p">:</span>
+                <span class="n">links</span> <span class="o">=</span> <span class="n">opts</span><span class="p">[</span><span class="s">&#39;find_links&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">()</span> <span class="o">+</span> <span class="n">links</span>
+            <span class="n">opts</span><span class="p">[</span><span class="s">&#39;find_links&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="s">&#39;setup&#39;</span><span class="p">,</span> <span class="n">links</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">allow_hosts</span><span class="p">:</span>
+            <span class="n">opts</span><span class="p">[</span><span class="s">&#39;allow_hosts&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="s">&#39;test&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">allow_hosts</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">index_url</span><span class="p">:</span>
+            <span class="n">opts</span><span class="p">[</span><span class="s">&#39;index_url&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="s">&#39;test&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">index_url</span><span class="p">)</span>
+        <span class="n">install_dir_func</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">dist</span><span class="p">,</span> <span class="s">&#39;get_egg_cache_dir&#39;</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">)</span>
+        <span class="n">install_dir</span> <span class="o">=</span> <span class="n">install_dir_func</span><span class="p">()</span>
+        <span class="n">cmd</span> <span class="o">=</span> <span class="n">easy_install</span><span class="p">(</span>
+            <span class="n">dist</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">[</span><span class="s">&quot;x&quot;</span><span class="p">],</span> <span class="n">install_dir</span><span class="o">=</span><span class="n">install_dir</span><span class="p">,</span> <span class="n">exclude_scripts</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+            <span class="n">always_copy</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">build_directory</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">editable</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+            <span class="n">upgrade</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">multi_version</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">no_report</span><span class="o">=</span><span class="bp">True</span>
+        <span class="p">)</span>
+        <span class="n">cmd</span><span class="o">.</span><span class="n">ensure_finalized</span><span class="p">()</span>
+        <span class="n">main_dist</span><span class="o">.</span><span class="n">_egg_fetcher</span> <span class="o">=</span> <span class="n">cmd</span>
+
+<div class="viewcode-block" id="PyTest.run_tests"><a class="viewcode-back" href="../../api/pyscaffold.html#pyscaffold.pytest_runner.PyTest.run_tests">[docs]</a>    <span class="k">def</span> <span class="nf">run_tests</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">import</span> <span class="nn">pytest</span>
+        <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s">&quot;PyTest is not installed, run: &quot;</span>
+                               <span class="s">&quot;pip install pytest pytest-cov&quot;</span><span class="p">)</span>
+        <span class="n">errno</span> <span class="o">=</span> <span class="n">pytest</span><span class="o">.</span><span class="n">main</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">addopts</span><span class="p">)</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="n">errno</span><span class="p">)</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2014, Blue Yonder.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'2.5.2.post0.dev2+g85f669b.dirty',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

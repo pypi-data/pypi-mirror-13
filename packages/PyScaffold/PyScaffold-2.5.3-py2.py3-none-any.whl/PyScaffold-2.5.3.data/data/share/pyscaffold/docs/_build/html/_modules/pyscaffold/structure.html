@@ -1,0 +1,410 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>pyscaffold.structure &mdash; PyScaffold 2.5.2.post0.dev2+g85f669b.dirty documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../../_static/logo.ico"/>
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="PyScaffold 2.5.2.post0.dev2+g85f669b.dirty documentation" href="../../index.html"/>
+        <link rel="up" title="Module code" href="../index.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> PyScaffold
+          
+
+          
+            
+            <img src="../../_static/sidebar.png" class="logo" />
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                2.5.2.post0.dev2+g85f669b.dirty
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../features.html">Features</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../configuration.html">Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../contrib.html">Contributions &amp; Help</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../authors.html">Authors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../changes.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/modules.html">Module Reference</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../../index.html">PyScaffold</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../../index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+      
+    <li>pyscaffold.structure</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for pyscaffold.structure</h1><div class="highlight"><pre>
+<span class="c"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Functionality to generate and work with the directory structure of a project</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">absolute_import</span><span class="p">,</span> <span class="n">print_function</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">os.path</span> <span class="kn">import</span> <span class="n">join</span> <span class="k">as</span> <span class="n">join_path</span>
+
+<span class="kn">from</span> <span class="nn">six</span> <span class="kn">import</span> <span class="n">string_types</span>
+
+<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">shell</span><span class="p">,</span> <span class="n">templates</span><span class="p">,</span> <span class="n">utils</span>
+
+<span class="n">__author__</span> <span class="o">=</span> <span class="s">&quot;Florian Wilhelm&quot;</span>
+<span class="n">__copyright__</span> <span class="o">=</span> <span class="s">&quot;Blue Yonder&quot;</span>
+<span class="n">__license__</span> <span class="o">=</span> <span class="s">&quot;new BSD&quot;</span>
+
+
+<div class="viewcode-block" id="FileOp"><a class="viewcode-back" href="../../api/pyscaffold.html#pyscaffold.structure.FileOp">[docs]</a><span class="k">class</span> <span class="nc">FileOp</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Namespace for file operations during an update</span>
+
+<span class="sd">    - *NO_OVERWRITE*: Do not overwrite an existing file during update</span>
+<span class="sd">    - *NO_CREATE*: Do not create the file during an update</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">NO_OVERWRITE</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">NO_CREATE</span> <span class="o">=</span> <span class="mi">1</span>
+
+</div>
+<div class="viewcode-block" id="add_namespace"><a class="viewcode-back" href="../../api/pyscaffold.html#pyscaffold.structure.add_namespace">[docs]</a><span class="k">def</span> <span class="nf">add_namespace</span><span class="p">(</span><span class="n">opts</span><span class="p">,</span> <span class="n">struct</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Prepend the namespace to a given file structure</span>
+
+<span class="sd">    :param opts: options as dictionary</span>
+<span class="sd">    :param struct: directory structure as dictionary of dictionaries</span>
+<span class="sd">    :return: directory structure as dictionary of dictionaries</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">opts</span><span class="p">[</span><span class="s">&#39;namespace&#39;</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="n">struct</span>
+    <span class="n">namespace</span> <span class="o">=</span> <span class="n">opts</span><span class="p">[</span><span class="s">&#39;namespace&#39;</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;.&#39;</span><span class="p">)</span>
+    <span class="n">base_struct</span> <span class="o">=</span> <span class="n">struct</span>
+    <span class="n">pkg_struct</span> <span class="o">=</span> <span class="n">struct</span><span class="p">[</span><span class="n">opts</span><span class="p">[</span><span class="s">&#39;project&#39;</span><span class="p">]][</span><span class="n">opts</span><span class="p">[</span><span class="s">&#39;package&#39;</span><span class="p">]]</span>
+    <span class="n">struct</span> <span class="o">=</span> <span class="n">base_struct</span><span class="p">[</span><span class="n">opts</span><span class="p">[</span><span class="s">&#39;project&#39;</span><span class="p">]]</span>
+    <span class="k">del</span> <span class="n">struct</span><span class="p">[</span><span class="n">opts</span><span class="p">[</span><span class="s">&#39;package&#39;</span><span class="p">]]</span>
+    <span class="k">for</span> <span class="n">sub_package</span> <span class="ow">in</span> <span class="n">namespace</span><span class="p">:</span>
+        <span class="n">struct</span><span class="p">[</span><span class="n">sub_package</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;__init__.py&#39;</span><span class="p">:</span> <span class="n">templates</span><span class="o">.</span><span class="n">namespace</span><span class="p">(</span><span class="n">opts</span><span class="p">)}</span>
+        <span class="n">struct</span> <span class="o">=</span> <span class="n">struct</span><span class="p">[</span><span class="n">sub_package</span><span class="p">]</span>
+    <span class="n">struct</span><span class="p">[</span><span class="n">opts</span><span class="p">[</span><span class="s">&#39;package&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="n">pkg_struct</span>
+    <span class="k">return</span> <span class="n">base_struct</span>
+
+</div>
+<div class="viewcode-block" id="make_structure"><a class="viewcode-back" href="../../api/pyscaffold.html#pyscaffold.structure.make_structure">[docs]</a><span class="k">def</span> <span class="nf">make_structure</span><span class="p">(</span><span class="n">opts</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Creates the project structure as dictionary of dictionaries</span>
+
+<span class="sd">    :param opts: options as dictionary</span>
+<span class="sd">    :return: structure as dictionary of dictionaries</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">struct</span> <span class="o">=</span> <span class="p">{</span><span class="n">opts</span><span class="p">[</span><span class="s">&#39;project&#39;</span><span class="p">]:</span> <span class="p">{</span>
+        <span class="s">&#39;.gitignore&#39;</span><span class="p">:</span> <span class="n">templates</span><span class="o">.</span><span class="n">gitignore</span><span class="p">(</span><span class="n">opts</span><span class="p">),</span>
+        <span class="n">opts</span><span class="p">[</span><span class="s">&#39;package&#39;</span><span class="p">]:</span> <span class="p">{</span><span class="s">&#39;__init__.py&#39;</span><span class="p">:</span> <span class="n">templates</span><span class="o">.</span><span class="n">init</span><span class="p">(</span><span class="n">opts</span><span class="p">),</span>
+                          <span class="s">&#39;skeleton.py&#39;</span><span class="p">:</span> <span class="n">templates</span><span class="o">.</span><span class="n">skeleton</span><span class="p">(</span><span class="n">opts</span><span class="p">)},</span>
+        <span class="s">&#39;tests&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;conftest.py&#39;</span><span class="p">:</span> <span class="n">templates</span><span class="o">.</span><span class="n">conftest_py</span><span class="p">(</span><span class="n">opts</span><span class="p">),</span>
+                  <span class="s">&#39;test_skeleton.py&#39;</span><span class="p">:</span> <span class="n">templates</span><span class="o">.</span><span class="n">test_skeleton</span><span class="p">(</span><span class="n">opts</span><span class="p">)},</span>
+        <span class="s">&#39;docs&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;conf.py&#39;</span><span class="p">:</span> <span class="n">templates</span><span class="o">.</span><span class="n">sphinx_conf</span><span class="p">(</span><span class="n">opts</span><span class="p">),</span>
+                 <span class="s">&#39;authors.rst&#39;</span><span class="p">:</span> <span class="n">templates</span><span class="o">.</span><span class="n">sphinx_authors</span><span class="p">(</span><span class="n">opts</span><span class="p">),</span>
+                 <span class="s">&#39;index.rst&#39;</span><span class="p">:</span> <span class="n">templates</span><span class="o">.</span><span class="n">sphinx_index</span><span class="p">(</span><span class="n">opts</span><span class="p">),</span>
+                 <span class="s">&#39;license.rst&#39;</span><span class="p">:</span> <span class="n">templates</span><span class="o">.</span><span class="n">sphinx_license</span><span class="p">(</span><span class="n">opts</span><span class="p">),</span>
+                 <span class="s">&#39;changes.rst&#39;</span><span class="p">:</span> <span class="n">templates</span><span class="o">.</span><span class="n">sphinx_changes</span><span class="p">(</span><span class="n">opts</span><span class="p">),</span>
+                 <span class="s">&#39;Makefile&#39;</span><span class="p">:</span> <span class="n">templates</span><span class="o">.</span><span class="n">sphinx_makefile</span><span class="p">(</span><span class="n">opts</span><span class="p">),</span>
+                 <span class="s">&#39;_static&#39;</span><span class="p">:</span> <span class="p">{</span>
+                     <span class="s">&#39;.gitignore&#39;</span><span class="p">:</span> <span class="n">templates</span><span class="o">.</span><span class="n">gitignore_empty</span><span class="p">(</span><span class="n">opts</span><span class="p">)}},</span>
+        <span class="s">&#39;README.rst&#39;</span><span class="p">:</span> <span class="n">templates</span><span class="o">.</span><span class="n">readme</span><span class="p">(</span><span class="n">opts</span><span class="p">),</span>
+        <span class="s">&#39;AUTHORS.rst&#39;</span><span class="p">:</span> <span class="n">templates</span><span class="o">.</span><span class="n">authors</span><span class="p">(</span><span class="n">opts</span><span class="p">),</span>
+        <span class="s">&#39;LICENSE.txt&#39;</span><span class="p">:</span> <span class="n">templates</span><span class="o">.</span><span class="n">license</span><span class="p">(</span><span class="n">opts</span><span class="p">),</span>
+        <span class="s">&#39;CHANGES.rst&#39;</span><span class="p">:</span> <span class="n">templates</span><span class="o">.</span><span class="n">changes</span><span class="p">(</span><span class="n">opts</span><span class="p">),</span>
+        <span class="s">&#39;setup.py&#39;</span><span class="p">:</span> <span class="n">templates</span><span class="o">.</span><span class="n">setup_py</span><span class="p">(</span><span class="n">opts</span><span class="p">),</span>
+        <span class="s">&#39;setup.cfg&#39;</span><span class="p">:</span> <span class="n">templates</span><span class="o">.</span><span class="n">setup_cfg</span><span class="p">(</span><span class="n">opts</span><span class="p">),</span>
+        <span class="s">&#39;requirements.txt&#39;</span><span class="p">:</span> <span class="n">templates</span><span class="o">.</span><span class="n">requirements</span><span class="p">(</span><span class="n">opts</span><span class="p">),</span>
+        <span class="s">&#39;test-requirements.txt&#39;</span><span class="p">:</span> <span class="n">templates</span><span class="o">.</span><span class="n">test_requirements</span><span class="p">(</span><span class="n">opts</span><span class="p">),</span>
+        <span class="s">&#39;.coveragerc&#39;</span><span class="p">:</span> <span class="n">templates</span><span class="o">.</span><span class="n">coveragerc</span><span class="p">(</span><span class="n">opts</span><span class="p">)}}</span>
+    <span class="n">proj_dir</span> <span class="o">=</span> <span class="n">struct</span><span class="p">[</span><span class="n">opts</span><span class="p">[</span><span class="s">&#39;project&#39;</span><span class="p">]]</span>
+    <span class="k">if</span> <span class="n">opts</span><span class="p">[</span><span class="s">&#39;travis&#39;</span><span class="p">]:</span>
+        <span class="n">proj_dir</span><span class="p">[</span><span class="s">&#39;.travis.yml&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">templates</span><span class="o">.</span><span class="n">travis</span><span class="p">(</span><span class="n">opts</span><span class="p">)</span>
+        <span class="n">proj_dir</span><span class="p">[</span><span class="s">&#39;tests&#39;</span><span class="p">][</span><span class="s">&#39;travis_install.sh&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">templates</span><span class="o">.</span><span class="n">travis_install</span><span class="p">(</span><span class="n">opts</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">opts</span><span class="p">[</span><span class="s">&#39;pre_commit&#39;</span><span class="p">]:</span>
+        <span class="n">proj_dir</span><span class="p">[</span><span class="s">&#39;.pre-commit-config.yaml&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">templates</span><span class="o">.</span><span class="n">pre_commit_config</span><span class="p">(</span><span class="n">opts</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">opts</span><span class="p">[</span><span class="s">&#39;tox&#39;</span><span class="p">]:</span>
+        <span class="n">proj_dir</span><span class="p">[</span><span class="s">&#39;tox.ini&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">templates</span><span class="o">.</span><span class="n">tox</span><span class="p">(</span><span class="n">opts</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">opts</span><span class="p">[</span><span class="s">&#39;update&#39;</span><span class="p">]</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">opts</span><span class="p">[</span><span class="s">&#39;force&#39;</span><span class="p">]:</span>
+        <span class="c"># Do not overwrite following files</span>
+        <span class="n">rules</span> <span class="o">=</span> <span class="p">{</span><span class="n">opts</span><span class="p">[</span><span class="s">&#39;project&#39;</span><span class="p">]:</span> <span class="p">{</span>
+            <span class="s">&#39;.gitignore&#39;</span><span class="p">:</span> <span class="n">FileOp</span><span class="o">.</span><span class="n">NO_OVERWRITE</span><span class="p">,</span>
+            <span class="s">&#39;.gitattributes&#39;</span><span class="p">:</span> <span class="n">FileOp</span><span class="o">.</span><span class="n">NO_OVERWRITE</span><span class="p">,</span>
+            <span class="s">&#39;setup.cfg&#39;</span><span class="p">:</span> <span class="n">FileOp</span><span class="o">.</span><span class="n">NO_OVERWRITE</span><span class="p">,</span>
+            <span class="s">&#39;README.rst&#39;</span><span class="p">:</span> <span class="n">FileOp</span><span class="o">.</span><span class="n">NO_OVERWRITE</span><span class="p">,</span>
+            <span class="s">&#39;CHANGES.rst&#39;</span><span class="p">:</span> <span class="n">FileOp</span><span class="o">.</span><span class="n">NO_OVERWRITE</span><span class="p">,</span>
+            <span class="s">&#39;LICENSE.txt&#39;</span><span class="p">:</span> <span class="n">FileOp</span><span class="o">.</span><span class="n">NO_OVERWRITE</span><span class="p">,</span>
+            <span class="s">&#39;AUTHORS.rst&#39;</span><span class="p">:</span> <span class="n">FileOp</span><span class="o">.</span><span class="n">NO_OVERWRITE</span><span class="p">,</span>
+            <span class="s">&#39;requirements.txt&#39;</span><span class="p">:</span> <span class="n">FileOp</span><span class="o">.</span><span class="n">NO_OVERWRITE</span><span class="p">,</span>
+            <span class="s">&#39;test-requirements.txt&#39;</span><span class="p">:</span> <span class="n">FileOp</span><span class="o">.</span><span class="n">NO_OVERWRITE</span><span class="p">,</span>
+            <span class="s">&#39;.travis.yml&#39;</span><span class="p">:</span> <span class="n">FileOp</span><span class="o">.</span><span class="n">NO_OVERWRITE</span><span class="p">,</span>
+            <span class="s">&#39;.coveragerc&#39;</span><span class="p">:</span> <span class="n">FileOp</span><span class="o">.</span><span class="n">NO_OVERWRITE</span><span class="p">,</span>
+            <span class="s">&#39;.pre-commit-config.yaml&#39;</span><span class="p">:</span> <span class="n">FileOp</span><span class="o">.</span><span class="n">NO_OVERWRITE</span><span class="p">,</span>
+            <span class="s">&#39;tox.ini&#39;</span><span class="p">:</span> <span class="n">FileOp</span><span class="o">.</span><span class="n">NO_OVERWRITE</span><span class="p">,</span>
+            <span class="n">opts</span><span class="p">[</span><span class="s">&#39;package&#39;</span><span class="p">]:</span> <span class="p">{</span><span class="s">&#39;skeleton.py&#39;</span><span class="p">:</span> <span class="n">FileOp</span><span class="o">.</span><span class="n">NO_CREATE</span><span class="p">},</span>
+            <span class="s">&#39;tests&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;conftest.py&#39;</span><span class="p">:</span> <span class="n">FileOp</span><span class="o">.</span><span class="n">NO_OVERWRITE</span><span class="p">,</span>
+                      <span class="s">&#39;travis_install.sh&#39;</span><span class="p">:</span> <span class="n">FileOp</span><span class="o">.</span><span class="n">NO_OVERWRITE</span><span class="p">,</span>
+                      <span class="s">&#39;test_skeleton.py&#39;</span><span class="p">:</span> <span class="n">FileOp</span><span class="o">.</span><span class="n">NO_CREATE</span><span class="p">},</span>
+            <span class="s">&#39;docs&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;index.rst&#39;</span><span class="p">:</span> <span class="n">FileOp</span><span class="o">.</span><span class="n">NO_OVERWRITE</span><span class="p">}</span>
+        <span class="p">}}</span>
+        <span class="n">struct</span> <span class="o">=</span> <span class="n">apply_update_rules</span><span class="p">(</span><span class="n">rules</span><span class="p">,</span> <span class="n">struct</span><span class="p">)</span>
+    <span class="n">struct</span> <span class="o">=</span> <span class="n">add_namespace</span><span class="p">(</span><span class="n">opts</span><span class="p">,</span> <span class="n">struct</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">struct</span>
+
+</div>
+<div class="viewcode-block" id="create_structure"><a class="viewcode-back" href="../../api/pyscaffold.html#pyscaffold.structure.create_structure">[docs]</a><span class="k">def</span> <span class="nf">create_structure</span><span class="p">(</span><span class="n">struct</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">update</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Manifests a directory structure in the filesystem</span>
+
+<span class="sd">    :param struct: directory structure as dictionary of dictionaries</span>
+<span class="sd">    :param prefix: prefix path for the structure</span>
+<span class="sd">    :param update: update an existing directory structure as boolean</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">prefix</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">prefix</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">content</span> <span class="ow">in</span> <span class="n">struct</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">content</span><span class="p">,</span> <span class="n">string_types</span><span class="p">):</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">join_path</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="n">name</span><span class="p">),</span> <span class="s">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fh</span><span class="p">:</span>
+                <span class="n">fh</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">utils</span><span class="o">.</span><span class="n">utf8_encode</span><span class="p">(</span><span class="n">content</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">content</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">join_path</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="n">name</span><span class="p">))</span>
+            <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">update</span><span class="p">:</span>
+                    <span class="k">raise</span>
+            <span class="n">create_structure</span><span class="p">(</span><span class="n">struct</span><span class="p">[</span><span class="n">name</span><span class="p">],</span>
+                             <span class="n">prefix</span><span class="o">=</span><span class="n">join_path</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="n">name</span><span class="p">),</span>
+                             <span class="n">update</span><span class="o">=</span><span class="n">update</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">content</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s">&quot;Don&#39;t know what to do with content type &quot;</span>
+                               <span class="s">&quot;{type}.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="nb">type</span><span class="p">(</span><span class="n">content</span><span class="p">)))</span>
+
+</div>
+<div class="viewcode-block" id="create_django_proj"><a class="viewcode-back" href="../../api/pyscaffold.html#pyscaffold.structure.create_django_proj">[docs]</a><span class="k">def</span> <span class="nf">create_django_proj</span><span class="p">(</span><span class="n">opts</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Creates a standard Django project with django-admin.py</span>
+
+<span class="sd">    :param opts: options as dictionary</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">shell</span><span class="o">.</span><span class="n">django_admin</span><span class="p">(</span><span class="s">&#39;--version&#39;</span><span class="p">)</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s">&quot;django-admin.py is not installed, &quot;</span>
+                           <span class="s">&quot;run: pip install django&quot;</span><span class="p">)</span>
+    <span class="n">shell</span><span class="o">.</span><span class="n">django_admin</span><span class="p">(</span><span class="s">&#39;startproject&#39;</span><span class="p">,</span> <span class="n">opts</span><span class="p">[</span><span class="s">&#39;project&#39;</span><span class="p">])</span>
+
+</div>
+<div class="viewcode-block" id="create_cookiecutter"><a class="viewcode-back" href="../../api/pyscaffold.html#pyscaffold.structure.create_cookiecutter">[docs]</a><span class="k">def</span> <span class="nf">create_cookiecutter</span><span class="p">(</span><span class="n">opts</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create a cookie cutter template</span>
+
+<span class="sd">    :param opts: options as dictionary</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">from</span> <span class="nn">cookiecutter.main</span> <span class="kn">import</span> <span class="n">cookiecutter</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s">&quot;cookiecutter is not installed, &quot;</span>
+                           <span class="s">&quot;run: pip install cookiecutter&quot;</span><span class="p">)</span>
+    <span class="n">extra_context</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">full_name</span><span class="o">=</span><span class="n">opts</span><span class="p">[</span><span class="s">&#39;author&#39;</span><span class="p">],</span>
+                         <span class="n">email</span><span class="o">=</span><span class="n">opts</span><span class="p">[</span><span class="s">&#39;email&#39;</span><span class="p">],</span>
+                         <span class="n">project_name</span><span class="o">=</span><span class="n">opts</span><span class="p">[</span><span class="s">&#39;project&#39;</span><span class="p">],</span>
+                         <span class="n">repo_name</span><span class="o">=</span><span class="n">opts</span><span class="p">[</span><span class="s">&#39;package&#39;</span><span class="p">],</span>
+                         <span class="n">project_short_description</span><span class="o">=</span><span class="n">opts</span><span class="p">[</span><span class="s">&#39;description&#39;</span><span class="p">],</span>
+                         <span class="n">release_date</span><span class="o">=</span><span class="n">opts</span><span class="p">[</span><span class="s">&#39;release_date&#39;</span><span class="p">],</span>
+                         <span class="n">version</span><span class="o">=</span><span class="s">&#39;unknown&#39;</span><span class="p">,</span>  <span class="c"># will be replaced later</span>
+                         <span class="n">year</span><span class="o">=</span><span class="n">opts</span><span class="p">[</span><span class="s">&#39;year&#39;</span><span class="p">])</span>
+
+    <span class="n">cookiecutter</span><span class="p">(</span><span class="n">opts</span><span class="p">[</span><span class="s">&#39;cookiecutter_template&#39;</span><span class="p">],</span>
+                 <span class="n">no_input</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+                 <span class="n">extra_context</span><span class="o">=</span><span class="n">extra_context</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="apply_update_rules"><a class="viewcode-back" href="../../api/pyscaffold.html#pyscaffold.structure.apply_update_rules">[docs]</a><span class="k">def</span> <span class="nf">apply_update_rules</span><span class="p">(</span><span class="n">rules</span><span class="p">,</span> <span class="n">struct</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Apply update rules using :obj:`~.FileOp` to a directory structure</span>
+
+<span class="sd">    :param rules: directory structure as dictionary of dictionaries with</span>
+<span class="sd">        :obj:`~.FileOp` keys. The structure will be modified.</span>
+<span class="sd">    :param struct: directory structure as dictionary of dictionaries</span>
+<span class="sd">    :param prefix: prefix path for the structure</span>
+<span class="sd">    :return: directory structure with keys removed according to the rules</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">prefix</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">prefix</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">rules</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="n">apply_update_rules</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">struct</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">join_path</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="n">k</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">path</span> <span class="o">=</span> <span class="n">join_path</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">v</span> <span class="o">==</span> <span class="n">FileOp</span><span class="o">.</span><span class="n">NO_OVERWRITE</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+                <span class="n">struct</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">v</span> <span class="o">==</span> <span class="n">FileOp</span><span class="o">.</span><span class="n">NO_CREATE</span><span class="p">:</span>
+                <span class="n">struct</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">struct</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2014, Blue Yonder.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'2.5.2.post0.dev2+g85f669b.dirty',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

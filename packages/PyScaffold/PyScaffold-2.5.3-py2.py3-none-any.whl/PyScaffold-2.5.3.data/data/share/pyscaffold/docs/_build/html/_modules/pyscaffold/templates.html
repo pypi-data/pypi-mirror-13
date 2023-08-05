@@ -1,0 +1,533 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>pyscaffold.templates &mdash; PyScaffold 2.5.2.post0.dev2+g85f669b.dirty documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../../_static/logo.ico"/>
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="PyScaffold 2.5.2.post0.dev2+g85f669b.dirty documentation" href="../../index.html"/>
+        <link rel="up" title="Module code" href="../index.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> PyScaffold
+          
+
+          
+            
+            <img src="../../_static/sidebar.png" class="logo" />
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                2.5.2.post0.dev2+g85f669b.dirty
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../features.html">Features</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../configuration.html">Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../contrib.html">Contributions &amp; Help</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../authors.html">Authors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../changes.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/modules.html">Module Reference</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../../index.html">PyScaffold</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../../index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+      
+    <li>pyscaffold.templates</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for pyscaffold.templates</h1><div class="highlight"><pre>
+<span class="c"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Templates for all files of a project&#39;s scaffold</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">absolute_import</span><span class="p">,</span> <span class="n">print_function</span>
+
+<span class="kn">import</span> <span class="nn">os.path</span>
+<span class="kn">import</span> <span class="nn">string</span>
+<span class="kn">from</span> <span class="nn">pkgutil</span> <span class="kn">import</span> <span class="n">get_data</span>
+
+<span class="n">__author__</span> <span class="o">=</span> <span class="s">&quot;Florian Wilhelm&quot;</span>
+<span class="n">__copyright__</span> <span class="o">=</span> <span class="s">&quot;Blue Yonder&quot;</span>
+<span class="n">__license__</span> <span class="o">=</span> <span class="s">&quot;new BSD&quot;</span>
+
+<span class="n">licenses</span> <span class="o">=</span> <span class="p">{</span><span class="s">&quot;affero&quot;</span><span class="p">:</span> <span class="s">&quot;license_affero_3.0&quot;</span><span class="p">,</span>
+            <span class="s">&quot;apache&quot;</span><span class="p">:</span> <span class="s">&quot;license_apache&quot;</span><span class="p">,</span>
+            <span class="s">&quot;artistic&quot;</span><span class="p">:</span> <span class="s">&quot;license_artistic_2.0&quot;</span><span class="p">,</span>
+            <span class="s">&quot;cc0&quot;</span><span class="p">:</span> <span class="s">&quot;license_cc0_1.0&quot;</span><span class="p">,</span>
+            <span class="s">&quot;eclipse&quot;</span><span class="p">:</span> <span class="s">&quot;license_eclipse_1.0&quot;</span><span class="p">,</span>
+            <span class="s">&quot;gpl2&quot;</span><span class="p">:</span> <span class="s">&quot;license_gpl_2.0&quot;</span><span class="p">,</span>
+            <span class="s">&quot;gpl3&quot;</span><span class="p">:</span> <span class="s">&quot;license_gpl_3.0&quot;</span><span class="p">,</span>
+            <span class="s">&quot;isc&quot;</span><span class="p">:</span> <span class="s">&quot;license_isc&quot;</span><span class="p">,</span>
+            <span class="s">&quot;lgpl2&quot;</span><span class="p">:</span> <span class="s">&quot;license_lgpl_2.1&quot;</span><span class="p">,</span>
+            <span class="s">&quot;lgpl3&quot;</span><span class="p">:</span> <span class="s">&quot;license_lgpl_3.0&quot;</span><span class="p">,</span>
+            <span class="s">&quot;mit&quot;</span><span class="p">:</span> <span class="s">&quot;license_mit&quot;</span><span class="p">,</span>
+            <span class="s">&quot;mozilla&quot;</span><span class="p">:</span> <span class="s">&quot;license_mozilla&quot;</span><span class="p">,</span>
+            <span class="s">&quot;new-bsd&quot;</span><span class="p">:</span> <span class="s">&quot;license_new_bsd&quot;</span><span class="p">,</span>
+            <span class="s">&quot;none&quot;</span><span class="p">:</span> <span class="s">&quot;license_none&quot;</span><span class="p">,</span>
+            <span class="s">&quot;proprietary&quot;</span><span class="p">:</span> <span class="s">&quot;license_none&quot;</span><span class="p">,</span>
+            <span class="s">&quot;public-domain&quot;</span><span class="p">:</span> <span class="s">&quot;license_public_domain&quot;</span><span class="p">,</span>
+            <span class="s">&quot;simple-bsd&quot;</span><span class="p">:</span> <span class="s">&quot;license_simplified_bsd&quot;</span><span class="p">}</span>
+
+
+<div class="viewcode-block" id="get_template"><a class="viewcode-back" href="../../api/pyscaffold.templates.html#pyscaffold.templates.get_template">[docs]</a><span class="k">def</span> <span class="nf">get_template</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Retrieve the template by name</span>
+
+<span class="sd">    :param name: name of template</span>
+<span class="sd">    :return: template as :obj:`string.Template`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">pkg_name</span> <span class="o">=</span> <span class="n">__name__</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&quot;.&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">file_name</span> <span class="o">=</span> <span class="s">&quot;{name}.template&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">get_data</span><span class="p">(</span><span class="n">pkg_name</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s">&quot;templates&quot;</span><span class="p">,</span> <span class="n">file_name</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">string</span><span class="o">.</span><span class="n">Template</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="n">encoding</span><span class="o">=</span><span class="s">&#39;utf8&#39;</span><span class="p">))</span>
+
+</div>
+<div class="viewcode-block" id="setup_py"><a class="viewcode-back" href="../../api/pyscaffold.templates.html#pyscaffold.templates.setup_py">[docs]</a><span class="k">def</span> <span class="nf">setup_py</span><span class="p">(</span><span class="n">opts</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Template of setup.py</span>
+
+<span class="sd">    :param opts: mapping parameters as dictionary</span>
+<span class="sd">    :return: file content as string</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">template</span> <span class="o">=</span> <span class="n">get_template</span><span class="p">(</span><span class="s">&quot;setup_py&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">template</span><span class="o">.</span><span class="n">safe_substitute</span><span class="p">(</span><span class="n">opts</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="setup_cfg"><a class="viewcode-back" href="../../api/pyscaffold.templates.html#pyscaffold.templates.setup_cfg">[docs]</a><span class="k">def</span> <span class="nf">setup_cfg</span><span class="p">(</span><span class="n">opts</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Template of setup.cfg</span>
+
+<span class="sd">    :param opts: mapping parameters as dictionary</span>
+<span class="sd">    :return: file content as string</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">template</span> <span class="o">=</span> <span class="n">get_template</span><span class="p">(</span><span class="s">&quot;setup_cfg&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">template</span><span class="o">.</span><span class="n">substitute</span><span class="p">(</span><span class="n">opts</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="gitignore"><a class="viewcode-back" href="../../api/pyscaffold.templates.html#pyscaffold.templates.gitignore">[docs]</a><span class="k">def</span> <span class="nf">gitignore</span><span class="p">(</span><span class="n">opts</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Template of .gitignore</span>
+
+<span class="sd">    :param opts: mapping parameters as dictionary</span>
+<span class="sd">    :return: file content as string</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">template</span> <span class="o">=</span> <span class="n">get_template</span><span class="p">(</span><span class="s">&quot;gitignore&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">template</span><span class="o">.</span><span class="n">substitute</span><span class="p">(</span><span class="n">opts</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="gitignore_empty"><a class="viewcode-back" href="../../api/pyscaffold.templates.html#pyscaffold.templates.gitignore_empty">[docs]</a><span class="k">def</span> <span class="nf">gitignore_empty</span><span class="p">(</span><span class="n">opts</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Template of empty .gitignore</span>
+
+<span class="sd">    :param opts: mapping parameters as dictionary</span>
+<span class="sd">    :return: file content as string</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">template</span> <span class="o">=</span> <span class="n">get_template</span><span class="p">(</span><span class="s">&quot;gitignore_empty&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">template</span><span class="o">.</span><span class="n">substitute</span><span class="p">(</span><span class="n">opts</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="sphinx_conf"><a class="viewcode-back" href="../../api/pyscaffold.templates.html#pyscaffold.templates.sphinx_conf">[docs]</a><span class="k">def</span> <span class="nf">sphinx_conf</span><span class="p">(</span><span class="n">opts</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Template of conf.py</span>
+
+<span class="sd">    :param opts: mapping parameters as dictionary</span>
+<span class="sd">    :return: file content as string</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">template</span> <span class="o">=</span> <span class="n">get_template</span><span class="p">(</span><span class="s">&quot;sphinx_conf&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">template</span><span class="o">.</span><span class="n">substitute</span><span class="p">(</span><span class="n">opts</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="sphinx_index"><a class="viewcode-back" href="../../api/pyscaffold.templates.html#pyscaffold.templates.sphinx_index">[docs]</a><span class="k">def</span> <span class="nf">sphinx_index</span><span class="p">(</span><span class="n">opts</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Template of index.rst</span>
+
+<span class="sd">    :param opts: mapping parameters as dictionary</span>
+<span class="sd">    :return: file content as string</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">template</span> <span class="o">=</span> <span class="n">get_template</span><span class="p">(</span><span class="s">&quot;sphinx_index&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">template</span><span class="o">.</span><span class="n">substitute</span><span class="p">(</span><span class="n">opts</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="sphinx_license"><a class="viewcode-back" href="../../api/pyscaffold.templates.html#pyscaffold.templates.sphinx_license">[docs]</a><span class="k">def</span> <span class="nf">sphinx_license</span><span class="p">(</span><span class="n">opts</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Template of license.rst</span>
+
+<span class="sd">    :param opts: mapping parameters as dictionary</span>
+<span class="sd">    :return: file content as string</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">template</span> <span class="o">=</span> <span class="n">get_template</span><span class="p">(</span><span class="s">&quot;sphinx_license&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">template</span><span class="o">.</span><span class="n">substitute</span><span class="p">(</span><span class="n">opts</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="sphinx_authors"><a class="viewcode-back" href="../../api/pyscaffold.templates.html#pyscaffold.templates.sphinx_authors">[docs]</a><span class="k">def</span> <span class="nf">sphinx_authors</span><span class="p">(</span><span class="n">opts</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Template of authors.rst</span>
+
+<span class="sd">    :param opts: mapping parameters as dictionary</span>
+<span class="sd">    :return: file content as string</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">template</span> <span class="o">=</span> <span class="n">get_template</span><span class="p">(</span><span class="s">&quot;sphinx_authors&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">template</span><span class="o">.</span><span class="n">substitute</span><span class="p">(</span><span class="n">opts</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="sphinx_changes"><a class="viewcode-back" href="../../api/pyscaffold.templates.html#pyscaffold.templates.sphinx_changes">[docs]</a><span class="k">def</span> <span class="nf">sphinx_changes</span><span class="p">(</span><span class="n">opts</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Template of changes.rst</span>
+
+<span class="sd">    :param opts: mapping parameters as dictionary</span>
+<span class="sd">    :return: file content as string</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">template</span> <span class="o">=</span> <span class="n">get_template</span><span class="p">(</span><span class="s">&quot;sphinx_changes&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">template</span><span class="o">.</span><span class="n">substitute</span><span class="p">(</span><span class="n">opts</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="sphinx_makefile"><a class="viewcode-back" href="../../api/pyscaffold.templates.html#pyscaffold.templates.sphinx_makefile">[docs]</a><span class="k">def</span> <span class="nf">sphinx_makefile</span><span class="p">(</span><span class="n">opts</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Template of Sphinx&#39;s Makefile</span>
+
+<span class="sd">    :param opts: mapping parameters as dictionary</span>
+<span class="sd">    :return: file content as string</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">template</span> <span class="o">=</span> <span class="n">get_template</span><span class="p">(</span><span class="s">&quot;sphinx_makefile&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">template</span><span class="o">.</span><span class="n">safe_substitute</span><span class="p">(</span><span class="n">opts</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="readme"><a class="viewcode-back" href="../../api/pyscaffold.templates.html#pyscaffold.templates.readme">[docs]</a><span class="k">def</span> <span class="nf">readme</span><span class="p">(</span><span class="n">opts</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Template of README.rst</span>
+
+<span class="sd">    :param opts: mapping parameters as dictionary</span>
+<span class="sd">    :return: file content as string</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">template</span> <span class="o">=</span> <span class="n">get_template</span><span class="p">(</span><span class="s">&quot;readme&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">template</span><span class="o">.</span><span class="n">substitute</span><span class="p">(</span><span class="n">opts</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="authors"><a class="viewcode-back" href="../../api/pyscaffold.templates.html#pyscaffold.templates.authors">[docs]</a><span class="k">def</span> <span class="nf">authors</span><span class="p">(</span><span class="n">opts</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Template of AUTHORS.rst</span>
+
+<span class="sd">    :param opts: mapping parameters as dictionary</span>
+<span class="sd">    :return: file content as string</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">template</span> <span class="o">=</span> <span class="n">get_template</span><span class="p">(</span><span class="s">&quot;authors&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">template</span><span class="o">.</span><span class="n">substitute</span><span class="p">(</span><span class="n">opts</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="requirements"><a class="viewcode-back" href="../../api/pyscaffold.templates.html#pyscaffold.templates.requirements">[docs]</a><span class="k">def</span> <span class="nf">requirements</span><span class="p">(</span><span class="n">opts</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Template of requirements.txt</span>
+
+<span class="sd">    :param opts: mapping parameters as dictionary</span>
+<span class="sd">    :return: file content as string</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">template</span> <span class="o">=</span> <span class="n">get_template</span><span class="p">(</span><span class="s">&quot;requirements&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">template</span><span class="o">.</span><span class="n">substitute</span><span class="p">(</span>
+        <span class="n">requirements_str</span><span class="o">=</span><span class="s">&#39;,</span><span class="se">\n</span><span class="s">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">opts</span><span class="p">[</span><span class="s">&#39;requirements&#39;</span><span class="p">]),</span> <span class="o">**</span><span class="n">opts</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="test_requirements"><a class="viewcode-back" href="../../api/pyscaffold.templates.html#pyscaffold.templates.test_requirements">[docs]</a><span class="k">def</span> <span class="nf">test_requirements</span><span class="p">(</span><span class="n">opts</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Template of test-requirements.txt</span>
+
+<span class="sd">    :param opts: mapping parameters as dictionary</span>
+<span class="sd">    :return: file content as string</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">template</span> <span class="o">=</span> <span class="n">get_template</span><span class="p">(</span><span class="s">&quot;test_requirements&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">template</span><span class="o">.</span><span class="n">substitute</span><span class="p">(</span><span class="n">opts</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="license"><a class="viewcode-back" href="../../api/pyscaffold.templates.html#pyscaffold.templates.license">[docs]</a><span class="k">def</span> <span class="nf">license</span><span class="p">(</span><span class="n">opts</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Template of LICENSE.txt</span>
+
+<span class="sd">    :param opts: mapping parameters as dictionary</span>
+<span class="sd">    :return: file content as string</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">template</span> <span class="o">=</span> <span class="n">get_template</span><span class="p">(</span><span class="n">licenses</span><span class="p">[</span><span class="n">opts</span><span class="p">[</span><span class="s">&#39;license&#39;</span><span class="p">]])</span>
+    <span class="k">return</span> <span class="n">template</span><span class="o">.</span><span class="n">substitute</span><span class="p">(</span><span class="n">opts</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="init"><a class="viewcode-back" href="../../api/pyscaffold.templates.html#pyscaffold.templates.init">[docs]</a><span class="k">def</span> <span class="nf">init</span><span class="p">(</span><span class="n">opts</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Template of __init__.py</span>
+
+<span class="sd">    :param opts: mapping parameters as dictionary</span>
+<span class="sd">    :return: file content as string</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">template</span> <span class="o">=</span> <span class="n">get_template</span><span class="p">(</span><span class="s">&quot;__init__&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">template</span><span class="o">.</span><span class="n">substitute</span><span class="p">(</span><span class="n">opts</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="coveragerc"><a class="viewcode-back" href="../../api/pyscaffold.templates.html#pyscaffold.templates.coveragerc">[docs]</a><span class="k">def</span> <span class="nf">coveragerc</span><span class="p">(</span><span class="n">opts</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Template of .coveragerc</span>
+
+<span class="sd">    :param opts: mapping parameters as dictionary</span>
+<span class="sd">    :return: file content as string</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">template</span> <span class="o">=</span> <span class="n">get_template</span><span class="p">(</span><span class="s">&quot;coveragerc&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">template</span><span class="o">.</span><span class="n">substitute</span><span class="p">(</span><span class="n">opts</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="tox"><a class="viewcode-back" href="../../api/pyscaffold.templates.html#pyscaffold.templates.tox">[docs]</a><span class="k">def</span> <span class="nf">tox</span><span class="p">(</span><span class="n">opts</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Template of tox.ini</span>
+
+<span class="sd">    :param opts: mapping parameters as dictionary</span>
+<span class="sd">    :return: file content as string</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">template</span> <span class="o">=</span> <span class="n">get_template</span><span class="p">(</span><span class="s">&quot;tox_ini&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">template</span><span class="o">.</span><span class="n">substitute</span><span class="p">(</span><span class="n">opts</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="travis"><a class="viewcode-back" href="../../api/pyscaffold.templates.html#pyscaffold.templates.travis">[docs]</a><span class="k">def</span> <span class="nf">travis</span><span class="p">(</span><span class="n">opts</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Template of .travis.yml</span>
+
+<span class="sd">    :param opts: mapping parameters as dictionary</span>
+<span class="sd">    :return: file content as string</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">template</span> <span class="o">=</span> <span class="n">get_template</span><span class="p">(</span><span class="s">&quot;travis&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">template</span><span class="o">.</span><span class="n">safe_substitute</span><span class="p">(</span><span class="n">opts</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="travis_install"><a class="viewcode-back" href="../../api/pyscaffold.templates.html#pyscaffold.templates.travis_install">[docs]</a><span class="k">def</span> <span class="nf">travis_install</span><span class="p">(</span><span class="n">opts</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Template of travis_install.sh</span>
+
+<span class="sd">    :param opts: mapping parameters as dictionary</span>
+<span class="sd">    :return: file content as string</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">template</span> <span class="o">=</span> <span class="n">get_template</span><span class="p">(</span><span class="s">&quot;travis_install&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">template</span><span class="o">.</span><span class="n">safe_substitute</span><span class="p">(</span><span class="n">opts</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="pre_commit_config"><a class="viewcode-back" href="../../api/pyscaffold.templates.html#pyscaffold.templates.pre_commit_config">[docs]</a><span class="k">def</span> <span class="nf">pre_commit_config</span><span class="p">(</span><span class="n">opts</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Template of .pre-commit-config.yaml</span>
+
+<span class="sd">    :param opts: mapping parameters as dictionary</span>
+<span class="sd">    :return: file content as string</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">template</span> <span class="o">=</span> <span class="n">get_template</span><span class="p">(</span><span class="s">&quot;pre-commit-config&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">template</span><span class="o">.</span><span class="n">safe_substitute</span><span class="p">(</span><span class="n">opts</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="namespace"><a class="viewcode-back" href="../../api/pyscaffold.templates.html#pyscaffold.templates.namespace">[docs]</a><span class="k">def</span> <span class="nf">namespace</span><span class="p">(</span><span class="n">opts</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Template of __init__.py defining a namespace package</span>
+
+<span class="sd">    :param opts: mapping parameters as dictionary</span>
+<span class="sd">    :return: file content as string</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">template</span> <span class="o">=</span> <span class="n">get_template</span><span class="p">(</span><span class="s">&quot;namespace&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">template</span><span class="o">.</span><span class="n">substitute</span><span class="p">(</span><span class="n">opts</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="skeleton"><a class="viewcode-back" href="../../api/pyscaffold.templates.html#pyscaffold.templates.skeleton">[docs]</a><span class="k">def</span> <span class="nf">skeleton</span><span class="p">(</span><span class="n">opts</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Template of skeleton.py defining a basic console script</span>
+
+<span class="sd">    :param opts: mapping parameters as dictionary</span>
+<span class="sd">    :return: file content as string</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">template</span> <span class="o">=</span> <span class="n">get_template</span><span class="p">(</span><span class="s">&quot;skeleton&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">template</span><span class="o">.</span><span class="n">substitute</span><span class="p">(</span><span class="n">opts</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="test_skeleton"><a class="viewcode-back" href="../../api/pyscaffold.templates.html#pyscaffold.templates.test_skeleton">[docs]</a><span class="k">def</span> <span class="nf">test_skeleton</span><span class="p">(</span><span class="n">opts</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Template of unittest for skeleton.py</span>
+
+<span class="sd">    :param opts: mapping parameters as dictionary</span>
+<span class="sd">    :return: file content as string</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">template</span> <span class="o">=</span> <span class="n">get_template</span><span class="p">(</span><span class="s">&quot;test_skeleton&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">template</span><span class="o">.</span><span class="n">substitute</span><span class="p">(</span><span class="n">opts</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="changes"><a class="viewcode-back" href="../../api/pyscaffold.templates.html#pyscaffold.templates.changes">[docs]</a><span class="k">def</span> <span class="nf">changes</span><span class="p">(</span><span class="n">opts</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Template of CHANGES.rst</span>
+
+<span class="sd">    :param opts: mapping parameters as dictionary</span>
+<span class="sd">    :return: file content as string</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">template</span> <span class="o">=</span> <span class="n">get_template</span><span class="p">(</span><span class="s">&quot;changes&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">template</span><span class="o">.</span><span class="n">substitute</span><span class="p">(</span><span class="n">opts</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="conftest_py"><a class="viewcode-back" href="../../api/pyscaffold.templates.html#pyscaffold.templates.conftest_py">[docs]</a><span class="k">def</span> <span class="nf">conftest_py</span><span class="p">(</span><span class="n">opts</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Template of conftest.py</span>
+
+<span class="sd">    :param opts: mapping parameters as dictionary</span>
+<span class="sd">    :return: file content as string</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">template</span> <span class="o">=</span> <span class="n">get_template</span><span class="p">(</span><span class="s">&quot;conftest_py&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">template</span><span class="o">.</span><span class="n">substitute</span><span class="p">(</span><span class="n">opts</span><span class="p">)</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2014, Blue Yonder.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'2.5.2.post0.dev2+g85f669b.dirty',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

@@ -1,0 +1,413 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>pyscaffold.utils &mdash; PyScaffold 2.5.2.post0.dev2+g85f669b.dirty documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../../_static/logo.ico"/>
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="PyScaffold 2.5.2.post0.dev2+g85f669b.dirty documentation" href="../../index.html"/>
+        <link rel="up" title="Module code" href="../index.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> PyScaffold
+          
+
+          
+            
+            <img src="../../_static/sidebar.png" class="logo" />
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                2.5.2.post0.dev2+g85f669b.dirty
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../features.html">Features</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../configuration.html">Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../contrib.html">Contributions &amp; Help</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../authors.html">Authors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../changes.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/modules.html">Module Reference</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../../index.html">PyScaffold</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../../index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+      
+    <li>pyscaffold.utils</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for pyscaffold.utils</h1><div class="highlight"><pre>
+<span class="c"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Miscellaneous utilities and tools</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">absolute_import</span><span class="p">,</span> <span class="n">print_function</span>
+
+<span class="kn">import</span> <span class="nn">functools</span>
+<span class="kn">import</span> <span class="nn">keyword</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">from</span> <span class="nn">contextlib</span> <span class="kn">import</span> <span class="n">contextmanager</span>
+<span class="kn">from</span> <span class="nn">operator</span> <span class="kn">import</span> <span class="n">itemgetter</span>
+<span class="kn">from</span> <span class="nn">distutils.filelist</span> <span class="kn">import</span> <span class="n">FileList</span>
+
+<span class="kn">from</span> <span class="nn">six</span> <span class="kn">import</span> <span class="n">PY2</span>
+
+<span class="kn">from</span> <span class="nn">.templates</span> <span class="kn">import</span> <span class="n">licenses</span>
+
+
+<span class="nd">@contextmanager</span>
+<div class="viewcode-block" id="chdir"><a class="viewcode-back" href="../../api/pyscaffold.html#pyscaffold.utils.chdir">[docs]</a><span class="k">def</span> <span class="nf">chdir</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Contextmanager to change into a directory</span>
+
+<span class="sd">    :param path: path to change into as string</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">curr_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">yield</span>
+    <span class="k">finally</span><span class="p">:</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="n">curr_dir</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="is_valid_identifier"><a class="viewcode-back" href="../../api/pyscaffold.html#pyscaffold.utils.is_valid_identifier">[docs]</a><span class="k">def</span> <span class="nf">is_valid_identifier</span><span class="p">(</span><span class="n">string</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Check if string is a valid package name</span>
+
+<span class="sd">    :param string: package name as string</span>
+<span class="sd">    :return: boolean</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s">&quot;[_A-Za-z][_a-zA-Z0-9]*$&quot;</span><span class="p">,</span> <span class="n">string</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">False</span>
+    <span class="k">if</span> <span class="n">keyword</span><span class="o">.</span><span class="n">iskeyword</span><span class="p">(</span><span class="n">string</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">False</span>
+    <span class="k">return</span> <span class="bp">True</span>
+
+</div>
+<div class="viewcode-block" id="make_valid_identifier"><a class="viewcode-back" href="../../api/pyscaffold.html#pyscaffold.utils.make_valid_identifier">[docs]</a><span class="k">def</span> <span class="nf">make_valid_identifier</span><span class="p">(</span><span class="n">string</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Try to make a valid package name identifier from a string</span>
+
+<span class="sd">    :param string: invalid package name as string</span>
+<span class="sd">    :return: valid package name as string or :obj:`RuntimeError`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">string</span> <span class="o">=</span> <span class="n">string</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+    <span class="n">string</span> <span class="o">=</span> <span class="n">string</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&quot;-&quot;</span><span class="p">,</span> <span class="s">&quot;_&quot;</span><span class="p">)</span>
+    <span class="n">string</span> <span class="o">=</span> <span class="n">string</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&quot; &quot;</span><span class="p">,</span> <span class="s">&quot;_&quot;</span><span class="p">)</span>
+    <span class="n">string</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="s">&#39;[^_a-zA-Z0-9]&#39;</span><span class="p">,</span> <span class="s">&#39;&#39;</span><span class="p">,</span> <span class="n">string</span><span class="p">)</span>
+    <span class="n">string</span> <span class="o">=</span> <span class="n">string</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">is_valid_identifier</span><span class="p">(</span><span class="n">string</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">string</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s">&quot;String cannot be converted to a valid identifier.&quot;</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="list2str"><a class="viewcode-back" href="../../api/pyscaffold.html#pyscaffold.utils.list2str">[docs]</a><span class="k">def</span> <span class="nf">list2str</span><span class="p">(</span><span class="n">lst</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">brackets</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">quotes</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generate a Python syntax list string with an indention</span>
+
+<span class="sd">    :param lst: list</span>
+<span class="sd">    :param indent: indention as integer</span>
+<span class="sd">    :param brackets: surround the list expression by brackets as boolean</span>
+<span class="sd">    :param quotes: surround each item with quotes</span>
+<span class="sd">    :return: string</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">quotes</span><span class="p">:</span>
+        <span class="n">lst_str</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">lst</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">brackets</span><span class="p">:</span>
+            <span class="n">lst_str</span> <span class="o">=</span> <span class="n">lst_str</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">lst_str</span> <span class="o">=</span> <span class="s">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">lst</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">brackets</span><span class="p">:</span>
+            <span class="n">lst_str</span> <span class="o">=</span> <span class="s">&#39;[&#39;</span> <span class="o">+</span> <span class="n">lst_str</span> <span class="o">+</span> <span class="s">&#39;]&#39;</span>
+    <span class="n">lb</span> <span class="o">=</span> <span class="s">&#39;,</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">+</span> <span class="n">indent</span><span class="o">*</span><span class="s">&#39; &#39;</span>
+    <span class="k">return</span> <span class="n">lst_str</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&#39;, &#39;</span><span class="p">,</span> <span class="n">lb</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="exceptions2exit"><a class="viewcode-back" href="../../api/pyscaffold.html#pyscaffold.utils.exceptions2exit">[docs]</a><span class="k">def</span> <span class="nf">exceptions2exit</span><span class="p">(</span><span class="n">exception_list</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Decorator to convert given exceptions to exit messages</span>
+
+<span class="sd">    This avoids displaying nasty stack traces to end-users</span>
+
+<span class="sd">    :param exception_list: list of exceptions to convert</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">exceptions2exit_decorator</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+        <span class="nd">@functools.wraps</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+        <span class="k">def</span> <span class="nf">func_wrapper</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="k">except</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">exception_list</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="k">print</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+                <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">func_wrapper</span>
+    <span class="k">return</span> <span class="n">exceptions2exit_decorator</span>
+
+
+<span class="c"># from http://en.wikibooks.org/, Creative Commons Attribution-ShareAlike 3.0</span></div>
+<div class="viewcode-block" id="levenshtein"><a class="viewcode-back" href="../../api/pyscaffold.html#pyscaffold.utils.levenshtein">[docs]</a><span class="k">def</span> <span class="nf">levenshtein</span><span class="p">(</span><span class="n">s1</span><span class="p">,</span> <span class="n">s2</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate the Levenshtein distance between two strings</span>
+
+<span class="sd">    :param s1: first string</span>
+<span class="sd">    :param s2: second string</span>
+<span class="sd">    :return: distance between s1 and s2 as integer</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">s1</span><span class="p">)</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">s2</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">levenshtein</span><span class="p">(</span><span class="n">s2</span><span class="p">,</span> <span class="n">s1</span><span class="p">)</span>
+
+    <span class="c"># len(s1) &gt;= len(s2)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">s2</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">s1</span><span class="p">)</span>
+
+    <span class="n">previous_row</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">s2</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">c1</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">s1</span><span class="p">):</span>
+        <span class="n">current_row</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">c2</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">s2</span><span class="p">):</span>
+            <span class="n">insertions</span> <span class="o">=</span> <span class="n">previous_row</span><span class="p">[</span><span class="n">j</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
+            <span class="n">deletions</span> <span class="o">=</span> <span class="n">current_row</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
+            <span class="n">substitutions</span> <span class="o">=</span> <span class="n">previous_row</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="n">c1</span> <span class="o">!=</span> <span class="n">c2</span><span class="p">)</span>
+            <span class="n">current_row</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">insertions</span><span class="p">,</span> <span class="n">deletions</span><span class="p">,</span> <span class="n">substitutions</span><span class="p">))</span>
+        <span class="n">previous_row</span> <span class="o">=</span> <span class="n">current_row</span>
+
+    <span class="k">return</span> <span class="n">previous_row</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+</div>
+<div class="viewcode-block" id="best_fit_license"><a class="viewcode-back" href="../../api/pyscaffold.html#pyscaffold.utils.best_fit_license">[docs]</a><span class="k">def</span> <span class="nf">best_fit_license</span><span class="p">(</span><span class="n">txt</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Finds proper license name for the license defined in txt</span>
+
+<span class="sd">    :param txt: license name as string</span>
+<span class="sd">    :return: license name as string</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">ratings</span> <span class="o">=</span> <span class="p">{</span><span class="n">lic</span><span class="p">:</span> <span class="n">levenshtein</span><span class="p">(</span><span class="n">txt</span><span class="p">,</span> <span class="n">lic</span><span class="o">.</span><span class="n">lower</span><span class="p">())</span> <span class="k">for</span> <span class="n">lic</span> <span class="ow">in</span> <span class="n">licenses</span><span class="p">}</span>
+    <span class="k">return</span> <span class="nb">min</span><span class="p">(</span><span class="n">ratings</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span> <span class="n">key</span><span class="o">=</span><span class="n">itemgetter</span><span class="p">(</span><span class="mi">1</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span>
+
+</div>
+<div class="viewcode-block" id="utf8_encode"><a class="viewcode-back" href="../../api/pyscaffold.html#pyscaffold.utils.utf8_encode">[docs]</a><span class="k">def</span> <span class="nf">utf8_encode</span><span class="p">(</span><span class="n">string</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Encode a Python 2 unicode object to str for compatibility with Python 3</span>
+
+<span class="sd">    :param string: Python 2 unicode object or Python 3 str object</span>
+<span class="sd">    :return: Python 2 str object or Python 3 str object</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">string</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="n">encoding</span><span class="o">=</span><span class="s">&#39;utf8&#39;</span><span class="p">)</span> <span class="k">if</span> <span class="n">PY2</span> <span class="k">else</span> <span class="n">string</span>
+
+</div>
+<div class="viewcode-block" id="utf8_decode"><a class="viewcode-back" href="../../api/pyscaffold.html#pyscaffold.utils.utf8_decode">[docs]</a><span class="k">def</span> <span class="nf">utf8_decode</span><span class="p">(</span><span class="n">string</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Decode a Python 2 str object to unicode for compatibility with Python 3</span>
+
+<span class="sd">    :param string: Python 2 str object or Python 3 str object</span>
+<span class="sd">    :return: Python 2 unicode object or Python 3 str object</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">string</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="n">encoding</span><span class="o">=</span><span class="s">&#39;utf8&#39;</span><span class="p">)</span> <span class="k">if</span> <span class="n">PY2</span> <span class="k">else</span> <span class="n">string</span>
+
+</div>
+<div class="viewcode-block" id="get_files"><a class="viewcode-back" href="../../api/pyscaffold.html#pyscaffold.utils.get_files">[docs]</a><span class="k">def</span> <span class="nf">get_files</span><span class="p">(</span><span class="n">pattern</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Retrieve all files in the current directory by a pattern.</span>
+<span class="sd">    Use ** as greedy wildcard and * as non-greedy wildcard.</span>
+
+<span class="sd">    :param pattern: The pattern as used by :obj:`distutils.filelist.Filelist`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">filelist</span> <span class="o">=</span> <span class="n">FileList</span><span class="p">()</span>
+    <span class="k">if</span> <span class="s">&#39;**&#39;</span> <span class="ow">in</span> <span class="n">pattern</span><span class="p">:</span>
+        <span class="n">pattern</span> <span class="o">=</span> <span class="n">pattern</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&#39;**&#39;</span><span class="p">,</span> <span class="s">&#39;*&#39;</span><span class="p">)</span>
+        <span class="n">anchor</span> <span class="o">=</span> <span class="bp">False</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">anchor</span> <span class="o">=</span> <span class="bp">True</span>
+    <span class="n">filelist</span><span class="o">.</span><span class="n">include_pattern</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="n">anchor</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">filelist</span><span class="o">.</span><span class="n">files</span>
+
+</div>
+<div class="viewcode-block" id="prepare_namespace"><a class="viewcode-back" href="../../api/pyscaffold.html#pyscaffold.utils.prepare_namespace">[docs]</a><span class="k">def</span> <span class="nf">prepare_namespace</span><span class="p">(</span><span class="n">namespace_str</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Check the validity of namespace_str and split it up into a list</span>
+
+<span class="sd">    :param namespace_str: namespace as string, e.g. &quot;com.blue_yonder&quot;</span>
+<span class="sd">    :return: list of namespaces, e.g. [&quot;com&quot;, &quot;com.blue_yonder&quot;]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">namespaces</span> <span class="o">=</span> <span class="n">namespace_str</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;.&#39;</span><span class="p">)</span> <span class="k">if</span> <span class="n">namespace_str</span> <span class="k">else</span> <span class="nb">list</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">namespace</span> <span class="ow">in</span> <span class="n">namespaces</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">is_valid_identifier</span><span class="p">(</span><span class="n">namespace</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                <span class="s">&quot;{} is not a valid namespace package.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">namespace</span><span class="p">))</span>
+    <span class="k">return</span> <span class="p">[</span><span class="s">&#39;.&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">namespaces</span><span class="p">[:</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">namespaces</span><span class="p">))]</span>
+
+</div>
+<div class="viewcode-block" id="check_setuptools_version"><a class="viewcode-back" href="../../api/pyscaffold.html#pyscaffold.utils.check_setuptools_version">[docs]</a><span class="k">def</span> <span class="nf">check_setuptools_version</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Checks that setuptools has all necessary capabilities for setuptools_scm</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">from</span> <span class="nn">pkg_resources</span> <span class="kn">import</span> <span class="n">parse_version</span><span class="p">,</span> <span class="n">SetuptoolsVersion</span>  <span class="c"># noqa</span>
+    <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+            <span class="s">&quot;ERROR: Your setuptools version is too old (&lt;12).</span><span class="se">\n</span><span class="s">&quot;</span>
+            <span class="s">&quot;Use `pip install -U setuptools` to upgrade.&quot;</span><span class="p">)</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2014, Blue Yonder.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'2.5.2.post0.dev2+g85f669b.dirty',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
