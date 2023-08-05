@@ -1,0 +1,1246 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>autologging &mdash; Autologging 1.0.1 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+      <link rel="search" type="application/opensearchdescription+xml" title="Search within Autologging 1.0.1 documentation" href="../_static/opensearch.xml"/>
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="Autologging 1.0.1 documentation" href="../index.html"/>
+        <link rel="up" title="Module code" href="index.html"/> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> Autologging
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul>
+<li class="toctree-l1"><a class="reference internal" href="../intro.html">Introduction to Autologging</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../autologging.html">The <code class="docutils literal"><span class="pre">autologging</span></code> API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples.html">Examples of using <code class="docutils literal"><span class="pre">autologging</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="../internals.html">How does <code class="docutils literal"><span class="pre">autologging</span></code> work?</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../index.html">Autologging</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="index.html">Module code</a> &raquo;</li>
+      
+    <li>autologging</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for autologging</h1><div class="highlight"><pre>
+<span class="c"># -*- coding: utf-8 -*-</span>
+
+<span class="c"># Copyright (c) 2013-2016 Matthew Zipay &lt;mattz@ninthtest.net&gt;</span>
+<span class="c">#</span>
+<span class="c"># Permission is hereby granted, free of charge, to any person obtaining a copy</span>
+<span class="c"># of this software and associated documentation files (the &quot;Software&quot;), to deal</span>
+<span class="c"># in the Software without restriction, including without limitation the rights</span>
+<span class="c"># to use, copy, modify, merge, publish, distribute, sublicense, and/or sell</span>
+<span class="c"># copies of the Software, and to permit persons to whom the Software is</span>
+<span class="c"># furnished to do so, subject to the following conditions:</span>
+<span class="c">#</span>
+<span class="c"># The above copyright notice and this permission notice shall be included in</span>
+<span class="c"># all copies or substantial portions of the Software.</span>
+<span class="c">#</span>
+<span class="c"># THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR</span>
+<span class="c"># IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,</span>
+<span class="c"># FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE</span>
+<span class="c"># AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER</span>
+<span class="c"># LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,</span>
+<span class="c"># OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE</span>
+<span class="c"># SOFTWARE.</span>
+
+<span class="n">__author__</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="s">&quot;Matthew Zipay &lt;mattz@ninthtest.net&gt;, &quot;</span>
+    <span class="s">&quot;Simon Knopp &lt;simon.knopp@pg.canterbury.ac.nz&gt;&quot;</span><span class="p">)</span>
+<span class="n">__version__</span> <span class="o">=</span> <span class="s">&quot;1.0.1&quot;</span>
+
+<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span><span class="p">,</span> <span class="n">wraps</span>
+<span class="kn">from</span> <span class="nn">inspect</span> <span class="kn">import</span> <span class="n">isclass</span><span class="p">,</span> <span class="n">isroutine</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">from</span> <span class="nn">types</span> <span class="kn">import</span> <span class="n">FunctionType</span><span class="p">,</span> <span class="n">MethodType</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s">&quot;TRACE&quot;</span><span class="p">,</span>
+    <span class="s">&quot;logged&quot;</span><span class="p">,</span>
+    <span class="s">&quot;traced&quot;</span><span class="p">,</span>
+<span class="p">]</span>
+
+<span class="c">#: A custom tracing log level, lower in severity than :attr:`logging.DEBUG`.</span>
+<span class="n">TRACE</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">logging</span><span class="o">.</span><span class="n">addLevelName</span><span class="p">(</span><span class="n">TRACE</span><span class="p">,</span> <span class="s">&quot;TRACE&quot;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="logged"><a class="viewcode-back" href="../autologging.html#autologging.logged">[docs]</a><span class="k">def</span> <span class="nf">logged</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Add a logger member to a decorated class or function.</span>
+
+<span class="sd">    :param obj: the class or function object being decorated, or an</span>
+<span class="sd">                optional :class:`logging.Logger` object to be used as</span>
+<span class="sd">                the parent logger (instead of the default module-named</span>
+<span class="sd">                logger)</span>
+<span class="sd">    :return: *obj* if *obj* is a class or function; otherwise, if *obj*</span>
+<span class="sd">             is a logger, returns a lambda decorator that will in turn</span>
+<span class="sd">             set the logger attribute and return *obj*</span>
+
+<span class="sd">    If *obj* is a :obj:`class`, then ``obj.__log`` will have the logger</span>
+<span class="sd">    name &quot;&lt;module-name&gt;.&lt;class-name&gt;&quot;:</span>
+
+<span class="sd">    &gt;&gt;&gt; import sys</span>
+<span class="sd">    &gt;&gt;&gt; logging.basicConfig(</span>
+<span class="sd">    ...     level=logging.DEBUG, stream=sys.stdout,</span>
+<span class="sd">    ...     format=&quot;%(levelname)s:%(name)s:%(funcName)s:%(message)s&quot;)</span>
+<span class="sd">    &gt;&gt;&gt; @logged</span>
+<span class="sd">    ... class Sample:</span>
+<span class="sd">    ...</span>
+<span class="sd">    ...     def test(self):</span>
+<span class="sd">    ...         self.__log.debug(&quot;This is a test.&quot;)</span>
+<span class="sd">    ...</span>
+<span class="sd">    &gt;&gt;&gt; Sample().test()</span>
+<span class="sd">    DEBUG:autologging.Sample:test:This is a test.</span>
+
+<span class="sd">    .. note::</span>
+<span class="sd">       Autologging will prefer to use the class&#39;s ``__qualname__`` when</span>
+<span class="sd">       it is available (Python 3.3+). Otherwise, the class&#39;s</span>
+<span class="sd">       ``__name__`` is used. For example::</span>
+
+<span class="sd">          class Outer:</span>
+
+<span class="sd">             @logged</span>
+<span class="sd">             class Nested: pass</span>
+
+<span class="sd">       Under Python 3.3+, ``Nested.__log`` will have the name</span>
+<span class="sd">       &quot;autologging.Outer.Nested&quot;, while under Python 2.7 or 3.2, the</span>
+<span class="sd">       logger name will be &quot;autologging.Nested&quot;.</span>
+
+<span class="sd">    .. versionchanged:: 0.4.0</span>
+<span class="sd">       Functions decorated with ``@logged`` use a *single* underscore</span>
+<span class="sd">       in the logger variable name (e.g. ``my_function._log``) rather</span>
+<span class="sd">       than a double underscore.</span>
+
+<span class="sd">    If *obj* is a function, then ``obj._log`` will have the logger name</span>
+<span class="sd">    &quot;&lt;module-name&gt;&quot;:</span>
+
+<span class="sd">    &gt;&gt;&gt; import sys</span>
+<span class="sd">    &gt;&gt;&gt; logging.basicConfig(</span>
+<span class="sd">    ...     level=logging.DEBUG, stream=sys.stdout,</span>
+<span class="sd">    ...     format=&quot;%(levelname)s:%(name)s:%(funcName)s:%(message)s&quot;)</span>
+<span class="sd">    &gt;&gt;&gt; @logged</span>
+<span class="sd">    ... def test():</span>
+<span class="sd">    ...     test._log.debug(&quot;This is a test.&quot;)</span>
+<span class="sd">    ...</span>
+<span class="sd">    &gt;&gt;&gt; test()</span>
+<span class="sd">    DEBUG:autologging:test:This is a test.</span>
+
+<span class="sd">    .. note::</span>
+<span class="sd">       Within a logged function, the ``_log`` attribute must be</span>
+<span class="sd">       qualified by the function name.</span>
+
+<span class="sd">    If *obj* is a :class:`logging.Logger` object, then that logger is</span>
+<span class="sd">    used as the parent logger (instead of the default module-named</span>
+<span class="sd">    logger):</span>
+
+<span class="sd">    &gt;&gt;&gt; import sys</span>
+<span class="sd">    &gt;&gt;&gt; logging.basicConfig(</span>
+<span class="sd">    ...     level=logging.DEBUG, stream=sys.stdout,</span>
+<span class="sd">    ...     format=&quot;%(levelname)s:%(name)s:%(funcName)s:%(message)s&quot;)</span>
+<span class="sd">    &gt;&gt;&gt; @logged(logging.getLogger(&quot;test.parent&quot;))</span>
+<span class="sd">    ... class Sample:</span>
+<span class="sd">    ...     def test(self):</span>
+<span class="sd">    ...         self.__log.debug(&quot;This is a test.&quot;)</span>
+<span class="sd">    ...</span>
+<span class="sd">    &gt;&gt;&gt; Sample().test()</span>
+<span class="sd">    DEBUG:test.parent.Sample:test:This is a test.</span>
+
+<span class="sd">    Again, functions are similar:</span>
+
+<span class="sd">    &gt;&gt;&gt; import sys</span>
+<span class="sd">    &gt;&gt;&gt; logging.basicConfig(</span>
+<span class="sd">    ...     level=logging.DEBUG, stream=sys.stdout,</span>
+<span class="sd">    ...     format=&quot;%(levelname)s:%(name)s:%(funcName)s:%(message)s&quot;)</span>
+<span class="sd">    &gt;&gt;&gt; @logged(logging.getLogger(&quot;test.parent&quot;))</span>
+<span class="sd">    ... def test():</span>
+<span class="sd">    ...     test._log.debug(&quot;This is a test.&quot;)</span>
+<span class="sd">    ...</span>
+<span class="sd">    &gt;&gt;&gt; test()</span>
+<span class="sd">    DEBUG:test.parent:test:This is a test.</span>
+
+<span class="sd">    .. note::</span>
+<span class="sd">       For classes, the logger member is made &quot;private&quot; (i.e. ``__log``</span>
+<span class="sd">       with double underscore) to ensure that log messages that include</span>
+<span class="sd">       the *%(name)s* format placeholder are written with the correct</span>
+<span class="sd">       name.</span>
+
+<span class="sd">       Consider a subclass of a ``@logged``-decorated parent class. If</span>
+<span class="sd">       the subclass were **not** decorated with ``@logged`` and could</span>
+<span class="sd">       access the parent&#39;s logger member directly to make logging</span>
+<span class="sd">       calls, those log messages would display the name of the</span>
+<span class="sd">       parent class, not the subclass.</span>
+
+<span class="sd">       Therefore, subclasses of a ``@logged``-decorated parent class</span>
+<span class="sd">       that wish to use a provided ``self.__log`` object must themselves</span>
+<span class="sd">       be decorated with ``@logged``.</span>
+
+<span class="sd">    .. warning::</span>
+<span class="sd">       Although the ``@logged`` and ``@traced`` decorators will &quot;do the</span>
+<span class="sd">       right thing&quot; regardless of the order in which they are applied to</span>
+<span class="sd">       the same function, it is recommended that ``@logged`` always be</span>
+<span class="sd">       used as the innermost decorator::</span>
+
+<span class="sd">          @traced</span>
+<span class="sd">          @logged</span>
+<span class="sd">          def my_function():</span>
+<span class="sd">              my_function._log.info(&quot;message&quot;)</span>
+
+<span class="sd">       This is because ``@logged`` simply sets the ``_log`` attribute</span>
+<span class="sd">       and then returns the original function, making it &quot;safe&quot; to use</span>
+<span class="sd">       in combination with any other decorator.</span>
+
+<span class="sd">    .. note::</span>
+<span class="sd">       Both `Jython &lt;http://www.jython.org/&gt;`_ and</span>
+<span class="sd">       `IronPython &lt;http://ironpython.net/&gt;`_ report an &quot;internal&quot; class</span>
+<span class="sd">       name using its mangled form, which will be reflected in the</span>
+<span class="sd">       default logger name.</span>
+
+<span class="sd">       For example, in the sample code below, both Jython and IronPython</span>
+<span class="sd">       will use the default logger name &quot;autologging._Outer__Nested&quot;</span>
+<span class="sd">       (whereas CPython/PyPy/Stackless would use &quot;autologging.__Nested&quot;</span>
+<span class="sd">       under Python 2 or &quot;autologging.Outer.__Nested&quot; under Python 3.3+)</span>
+<span class="sd">       ::</span>
+
+<span class="sd">          class Outer:</span>
+<span class="sd">             @logged</span>
+<span class="sd">             class __Nested:</span>
+<span class="sd">                pass</span>
+
+<span class="sd">    .. warning::</span>
+<span class="sd">       `IronPython &lt;http://ironpython.net/&gt;`_ does not fully support</span>
+<span class="sd">       frames (even with the -X:FullFrames option), so you are likely to</span>
+<span class="sd">       see things like misreported line numbers and &quot;&lt;unknown file&gt;&quot; in</span>
+<span class="sd">       log records emitted when running under IronPython.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">logging</span><span class="o">.</span><span class="n">Logger</span><span class="p">):</span> <span class="c"># `@logged(logger)&#39;</span>
+        <span class="k">return</span> <span class="k">lambda</span> <span class="n">class_or_fn</span><span class="p">:</span> <span class="n">_add_logger_to</span><span class="p">(</span>
+            <span class="n">class_or_fn</span><span class="p">,</span>
+            <span class="n">logger_name</span><span class="o">=</span><span class="n">_generate_logger_name</span><span class="p">(</span>
+                <span class="n">class_or_fn</span><span class="p">,</span> <span class="n">parent_name</span><span class="o">=</span><span class="n">obj</span><span class="o">.</span><span class="n">name</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span> <span class="c"># `@logged&#39;</span>
+        <span class="k">return</span> <span class="n">_add_logger_to</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="traced"><a class="viewcode-back" href="../autologging.html#autologging.traced">[docs]</a><span class="k">def</span> <span class="nf">traced</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Add call and return tracing to an unbound function or to the</span>
+<span class="sd">    methods of a class.</span>
+
+<span class="sd">    The arguments to ``traced`` differ depending on whether it is being</span>
+<span class="sd">    used to trace an unbound function or the methods of a class:</span>
+
+<span class="sd">    .. rubric:: Trace an unbound function using the default logger</span>
+
+<span class="sd">    :param func: the unbound function to be traced</span>
+
+<span class="sd">    By default, a logger named for the function&#39;s module is used:</span>
+
+<span class="sd">    &gt;&gt;&gt; import sys</span>
+<span class="sd">    &gt;&gt;&gt; logging.basicConfig(</span>
+<span class="sd">    ...     level=TRACE, stream=sys.stdout,</span>
+<span class="sd">    ...     format=&quot;%(levelname)s:%(name)s:%(funcName)s:%(message)s&quot;)</span>
+<span class="sd">    &gt;&gt;&gt; @traced</span>
+<span class="sd">    ... def func(x, y):</span>
+<span class="sd">    ...     return x + y</span>
+<span class="sd">    ...</span>
+<span class="sd">    &gt;&gt;&gt; func(7, 9)</span>
+<span class="sd">    TRACE:autologging:func:CALL *(7, 9) **{}</span>
+<span class="sd">    TRACE:autologging:func:RETURN 16</span>
+<span class="sd">    16</span>
+
+<span class="sd">    .. rubric:: Trace an unbound function using a named logger</span>
+
+<span class="sd">    :param logging.Logger logger: the parent logger used to trace the\</span>
+<span class="sd">                                  unbound function</span>
+
+<span class="sd">    &gt;&gt;&gt; import sys</span>
+<span class="sd">    &gt;&gt;&gt; logging.basicConfig(</span>
+<span class="sd">    ...     level=TRACE, stream=sys.stdout,</span>
+<span class="sd">    ...     format=&quot;%(levelname)s:%(name)s:%(funcName)s:%(message)s&quot;)</span>
+<span class="sd">    &gt;&gt;&gt; @traced(logging.getLogger(&quot;my.channel&quot;))</span>
+<span class="sd">    ... def func(x, y):</span>
+<span class="sd">    ...     return x + y</span>
+<span class="sd">    ...</span>
+<span class="sd">    &gt;&gt;&gt; func(7, 9)</span>
+<span class="sd">    TRACE:my.channel:func:CALL *(7, 9) **{}</span>
+<span class="sd">    TRACE:my.channel:func:RETURN 16</span>
+<span class="sd">    16</span>
+
+<span class="sd">    .. rubric:: Trace default methods using the default logger</span>
+
+<span class="sd">    :param class_: the class whose methods will be traced</span>
+
+<span class="sd">    By default, all &quot;public&quot;, &quot;_nonpublic&quot;, and &quot;__internal&quot; methods, as</span>
+<span class="sd">    well as the special &quot;__init__&quot; method, will be traced. Tracing log</span>
+<span class="sd">    entries will be written to a logger named for the module and class:</span>
+
+<span class="sd">    &gt;&gt;&gt; import sys</span>
+<span class="sd">    &gt;&gt;&gt; logging.basicConfig(</span>
+<span class="sd">    ...     level=TRACE, stream=sys.stdout,</span>
+<span class="sd">    ...     format=&quot;%(levelname)s:%(name)s:%(funcName)s:%(message)s&quot;)</span>
+<span class="sd">    &gt;&gt;&gt; @traced</span>
+<span class="sd">    ... class Class:</span>
+<span class="sd">    ...     def __init__(self, x):</span>
+<span class="sd">    ...         self._x = x</span>
+<span class="sd">    ...     def public(self, y):</span>
+<span class="sd">    ...         return self._x + y</span>
+<span class="sd">    ...     def _nonpublic(self, y):</span>
+<span class="sd">    ...         return self._x - y</span>
+<span class="sd">    ...     def __internal(self, y=2):</span>
+<span class="sd">    ...         return self._x ** y</span>
+<span class="sd">    ...     def __repr__(self):</span>
+<span class="sd">    ...         return &quot;Class(%r)&quot; % self._x</span>
+<span class="sd">    ...</span>
+<span class="sd">    &gt;&gt;&gt; obj = Class(7)</span>
+<span class="sd">    TRACE:autologging.Class:__init__:CALL *(7,) **{}</span>
+<span class="sd">    &gt;&gt;&gt; obj.public(9)</span>
+<span class="sd">    TRACE:autologging.Class:public:CALL *(9,) **{}</span>
+<span class="sd">    TRACE:autologging.Class:public:RETURN 16</span>
+<span class="sd">    16</span>
+<span class="sd">    &gt;&gt;&gt; obj._nonpublic(5)</span>
+<span class="sd">    TRACE:autologging.Class:_nonpublic:CALL *(5,) **{}</span>
+<span class="sd">    TRACE:autologging.Class:_nonpublic:RETURN 2</span>
+<span class="sd">    2</span>
+<span class="sd">    &gt;&gt;&gt; obj._Class__internal(y=3)</span>
+<span class="sd">    TRACE:autologging.Class:__internal:CALL *() **{&#39;y&#39;: 3}</span>
+<span class="sd">    TRACE:autologging.Class:__internal:RETURN 343</span>
+<span class="sd">    343</span>
+<span class="sd">    &gt;&gt;&gt; repr(obj) # not traced by default</span>
+<span class="sd">    &#39;Class(7)&#39;</span>
+
+<span class="sd">    .. note::</span>
+<span class="sd">       When the runtime Python version is &gt;= 3.3, the *qualified* class</span>
+<span class="sd">       name will be used to name the tracing logger (i.e. a nested class</span>
+<span class="sd">       will write tracing log entries to a logger named</span>
+<span class="sd">       &quot;module.Parent.Nested&quot;).</span>
+
+<span class="sd">    .. rubric:: Trace default methods using a named logger</span>
+
+<span class="sd">    :param logging.Logger logger: the parent logger used to trace the</span>
+<span class="sd">                                  methods of the class</span>
+
+<span class="sd">    By default, all &quot;public&quot;, &quot;_nonpublic&quot;, and &quot;__internal&quot; methods, as</span>
+<span class="sd">    well as the special &quot;__init__&quot; method, will be traced. Tracing log</span>
+<span class="sd">    entries will be written to the specified logger:</span>
+
+<span class="sd">    &gt;&gt;&gt; import sys</span>
+<span class="sd">    &gt;&gt;&gt; logging.basicConfig(</span>
+<span class="sd">    ...     level=TRACE, stream=sys.stdout,</span>
+<span class="sd">    ...     format=&quot;%(levelname)s:%(name)s:%(funcName)s:%(message)s&quot;)</span>
+<span class="sd">    &gt;&gt;&gt; @traced(logging.getLogger(&quot;my.channel&quot;))</span>
+<span class="sd">    ... class Class:</span>
+<span class="sd">    ...     def __init__(self, x):</span>
+<span class="sd">    ...         self._x = x</span>
+<span class="sd">    ...     def public(self, y):</span>
+<span class="sd">    ...         return self._x + y</span>
+<span class="sd">    ...     def _nonpublic(self, y):</span>
+<span class="sd">    ...         return self._x - y</span>
+<span class="sd">    ...     def __internal(self, y=2):</span>
+<span class="sd">    ...         return self._x ** y</span>
+<span class="sd">    ...     def __repr__(self):</span>
+<span class="sd">    ...         return &quot;Class(%r)&quot; % self._x</span>
+<span class="sd">    ...</span>
+<span class="sd">    &gt;&gt;&gt; obj = Class(7)</span>
+<span class="sd">    TRACE:my.channel.Class:__init__:CALL *(7,) **{}</span>
+<span class="sd">    &gt;&gt;&gt; obj.public(9)</span>
+<span class="sd">    TRACE:my.channel.Class:public:CALL *(9,) **{}</span>
+<span class="sd">    TRACE:my.channel.Class:public:RETURN 16</span>
+<span class="sd">    16</span>
+<span class="sd">    &gt;&gt;&gt; obj._nonpublic(5)</span>
+<span class="sd">    TRACE:my.channel.Class:_nonpublic:CALL *(5,) **{}</span>
+<span class="sd">    TRACE:my.channel.Class:_nonpublic:RETURN 2</span>
+<span class="sd">    2</span>
+<span class="sd">    &gt;&gt;&gt; obj._Class__internal(y=3)</span>
+<span class="sd">    TRACE:my.channel.Class:__internal:CALL *() **{&#39;y&#39;: 3}</span>
+<span class="sd">    TRACE:my.channel.Class:__internal:RETURN 343</span>
+<span class="sd">    343</span>
+<span class="sd">    &gt;&gt;&gt; repr(obj) # not traced by default</span>
+<span class="sd">    &#39;Class(7)&#39;</span>
+
+<span class="sd">    .. rubric:: Trace specified methods using the default logger</span>
+
+<span class="sd">    :param tuple method_names: the names of the methods that will be</span>
+<span class="sd">                               traced</span>
+
+<span class="sd">    Tracing log entries will be written to a logger named for the</span>
+<span class="sd">    module and class:</span>
+
+<span class="sd">    &gt;&gt;&gt; import sys</span>
+<span class="sd">    &gt;&gt;&gt; logging.basicConfig(</span>
+<span class="sd">    ...     level=TRACE, stream=sys.stdout,</span>
+<span class="sd">    ...     format=&quot;%(levelname)s:%(name)s:%(funcName)s:%(message)s&quot;)</span>
+<span class="sd">    &gt;&gt;&gt; @traced(&quot;public&quot;, &quot;__internal&quot;)</span>
+<span class="sd">    ... class Class:</span>
+<span class="sd">    ...     def __init__(self, x):</span>
+<span class="sd">    ...         self._x = x</span>
+<span class="sd">    ...     def public(self, y):</span>
+<span class="sd">    ...         return self._x + y</span>
+<span class="sd">    ...     def _nonpublic(self, y):</span>
+<span class="sd">    ...         return self._x - y</span>
+<span class="sd">    ...     def __internal(self, y=2):</span>
+<span class="sd">    ...         return self._x ** y</span>
+<span class="sd">    ...     def __repr__(self):</span>
+<span class="sd">    ...         return &quot;Class(%r)&quot; % self._x</span>
+<span class="sd">    ...</span>
+<span class="sd">    &gt;&gt;&gt; obj = Class(7)</span>
+<span class="sd">    &gt;&gt;&gt; obj.public(9)</span>
+<span class="sd">    TRACE:autologging.Class:public:CALL *(9,) **{}</span>
+<span class="sd">    TRACE:autologging.Class:public:RETURN 16</span>
+<span class="sd">    16</span>
+<span class="sd">    &gt;&gt;&gt; obj._nonpublic(5)</span>
+<span class="sd">    2</span>
+<span class="sd">    &gt;&gt;&gt; obj._Class__internal(y=3)</span>
+<span class="sd">    TRACE:autologging.Class:__internal:CALL *() **{&#39;y&#39;: 3}</span>
+<span class="sd">    TRACE:autologging.Class:__internal:RETURN 343</span>
+<span class="sd">    343</span>
+<span class="sd">    &gt;&gt;&gt; repr(obj)</span>
+<span class="sd">    &#39;Class(7)&#39;</span>
+
+<span class="sd">    .. warning::</span>
+<span class="sd">       When method names are specified explicitly via *args*,</span>
+<span class="sd">       Autologging ensures that each method is actually defined in</span>
+<span class="sd">       the body of the class being traced. (This means that inherited</span>
+<span class="sd">       methods that are not overridden are **never** traced, even if</span>
+<span class="sd">       they are named explicitly in *args*.)</span>
+
+<span class="sd">       If a defintion for any named method is not found in the class</span>
+<span class="sd">       body, either because the method is inherited or because the</span>
+<span class="sd">       name is misspelled, Autologging will issue a :exc:`UserWarning`.</span>
+
+<span class="sd">       If you wish to trace a method from a super class, you have two</span>
+<span class="sd">       options:</span>
+
+<span class="sd">       1. Use ``traced`` to decorate the super class.</span>
+<span class="sd">       2. Override the method and trace it in the subclass.</span>
+
+<span class="sd">    .. note::</span>
+<span class="sd">       When the runtime Python version is &gt;= 3.3, the *qualified* class</span>
+<span class="sd">       name will be used to name the tracig logger (i.e. a nested class</span>
+<span class="sd">       will write tracing log entries to a logger named</span>
+<span class="sd">       &quot;module.Parent.Nested&quot;).</span>
+
+<span class="sd">    .. rubric:: Trace specified methods using a named logger</span>
+
+<span class="sd">    :param logging.Logger logger: the parent logger used to trace the</span>
+<span class="sd">                                  methods of the class</span>
+<span class="sd">    :param tuple method_names: the names of the methods that will be</span>
+<span class="sd">                               traced</span>
+
+<span class="sd">    &gt;&gt;&gt; import sys</span>
+<span class="sd">    &gt;&gt;&gt; logging.basicConfig(</span>
+<span class="sd">    ...     level=TRACE, stream=sys.stdout,</span>
+<span class="sd">    ...     format=&quot;%(levelname)s:%(name)s:%(funcName)s:%(message)s&quot;)</span>
+<span class="sd">    &gt;&gt;&gt; @traced(logging.getLogger(&quot;my.channel&quot;), &quot;public&quot;, &quot;__internal&quot;)</span>
+<span class="sd">    ... class Class:</span>
+<span class="sd">    ...     def __init__(self, x):</span>
+<span class="sd">    ...         self._x = x</span>
+<span class="sd">    ...     def public(self, y):</span>
+<span class="sd">    ...         return self._x + y</span>
+<span class="sd">    ...     def _nonpublic(self, y):</span>
+<span class="sd">    ...         return self._x - y</span>
+<span class="sd">    ...     def __internal(self, y=2):</span>
+<span class="sd">    ...         return self._x ** y</span>
+<span class="sd">    ...     def __repr__(self):</span>
+<span class="sd">    ...         return &quot;Class(%r)&quot; % self._x</span>
+<span class="sd">    ...</span>
+<span class="sd">    &gt;&gt;&gt; obj = Class(7)</span>
+<span class="sd">    &gt;&gt;&gt; obj.public(9)</span>
+<span class="sd">    TRACE:my.channel.Class:public:CALL *(9,) **{}</span>
+<span class="sd">    TRACE:my.channel.Class:public:RETURN 16</span>
+<span class="sd">    16</span>
+<span class="sd">    &gt;&gt;&gt; obj._nonpublic(5)</span>
+<span class="sd">    2</span>
+<span class="sd">    &gt;&gt;&gt; obj._Class__internal(y=3)</span>
+<span class="sd">    TRACE:my.channel.Class:__internal:CALL *() **{&#39;y&#39;: 3}</span>
+<span class="sd">    TRACE:my.channel.Class:__internal:RETURN 343</span>
+<span class="sd">    343</span>
+<span class="sd">    &gt;&gt;&gt; repr(obj) # not traced by default</span>
+<span class="sd">    &#39;Class(7)&#39;</span>
+
+<span class="sd">    .. warning::</span>
+<span class="sd">       When method names are specified explicitly via *args*,</span>
+<span class="sd">       Autologging ensures that each method is actually defined in</span>
+<span class="sd">       the body of the class being traced. (This means that inherited</span>
+<span class="sd">       methods that are not overridden are **never** traced, even if</span>
+<span class="sd">       they are named explicitly in *args*.)</span>
+
+<span class="sd">       If a defintion for any named method is not found in the class</span>
+<span class="sd">       body, either because the method is inherited or because the</span>
+<span class="sd">       name is misspelled, Autologging will issue a :exc:`UserWarning`.</span>
+
+<span class="sd">       If you wish to trace a method from a super class, you have two</span>
+<span class="sd">       options:</span>
+
+<span class="sd">       1. Use ``traced`` to decorate the super class.</span>
+<span class="sd">       2. Override the method and trace it in the subclass.</span>
+
+<span class="sd">    .. note::</span>
+<span class="sd">       When tracing a class, if the default (class-named) logger is</span>
+<span class="sd">       used **and** the runtime Python version is &gt;= 3.3, then the</span>
+<span class="sd">       *qualified* class name will be used to name the tracig logger</span>
+<span class="sd">       (i.e. a nested class will write tracing log entries to a logger</span>
+<span class="sd">       named &quot;module.Parent.Nested&quot;).</span>
+
+<span class="sd">    .. note::</span>
+<span class="sd">       If method names are specified when decorating a function, a</span>
+<span class="sd">       :exc:`UserWarning` is issued, but the methods names are ignored</span>
+<span class="sd">       and the function is traced as though the method names had not</span>
+<span class="sd">       been specified.</span>
+
+<span class="sd">    .. note::</span>
+<span class="sd">       Both `Jython &lt;http://www.jython.org/&gt;`_ and</span>
+<span class="sd">       `IronPython &lt;http://ironpython.net/&gt;`_ report an &quot;internal&quot; class</span>
+<span class="sd">       name using its mangled form, which will be reflected in the</span>
+<span class="sd">       default tracing logger name.</span>
+
+<span class="sd">       For example, in the sample code below, both Jython and IronPython</span>
+<span class="sd">       will use the default tracing logger name</span>
+<span class="sd">       &quot;autologging._Outer__Nested&quot; (whereas CPython/PyPy/Stackless</span>
+<span class="sd">       would use &quot;autologging.__Nested&quot; under Python 2 or</span>
+<span class="sd">       &quot;autologging.Outer.__Nested&quot; under Python 3.3+)::</span>
+
+<span class="sd">          class Outer:</span>
+<span class="sd">             @traced</span>
+<span class="sd">             class __Nested:</span>
+<span class="sd">                pass</span>
+
+<span class="sd">    .. warning::</span>
+<span class="sd">       Neither `Jython &lt;http://www.jython.org/&gt;`_ nor</span>
+<span class="sd">       `IronPython &lt;http://ironpython.net/&gt;`_ currently implement the</span>
+<span class="sd">       ``function.__code__.co_lnotab`` attribute, so the last line</span>
+<span class="sd">       number of a function cannot be determined by Autologging.</span>
+<span class="sd">       As a result, the line number reported in tracing RETURN log</span>
+<span class="sd">       records will actually be the line number on which the function is</span>
+<span class="sd">       defined.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">obj</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">args</span> <span class="k">else</span> <span class="bp">None</span>
+    <span class="k">if</span> <span class="n">obj</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="c"># treat `@traced()&#39; as equivalent to `@traced&#39;</span>
+        <span class="k">return</span> <span class="n">traced</span>
+
+    <span class="k">if</span> <span class="n">isclass</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span> <span class="c"># `@traced&#39; class</span>
+        <span class="k">return</span> <span class="n">_install_traceable_methods</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">isroutine</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span> <span class="c"># `@traced&#39; function</span>
+        <span class="k">return</span> <span class="n">_make_traceable_function</span><span class="p">(</span>
+            <span class="n">obj</span><span class="p">,</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">_generate_logger_name</span><span class="p">(</span><span class="n">obj</span><span class="p">)))</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">logging</span><span class="o">.</span><span class="n">Logger</span><span class="p">):</span>
+        <span class="c"># may be decorating a class OR a function</span>
+        <span class="n">method_names</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+
+        <span class="k">def</span> <span class="nf">traced_decorator</span><span class="p">(</span><span class="n">class_or_fn</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">isclass</span><span class="p">(</span><span class="n">class_or_fn</span><span class="p">):</span>
+                <span class="c"># `@traced(logger)&#39; or `@traced(logger, &quot;method_name1&quot;, ..)&#39; class</span>
+                <span class="k">return</span> <span class="n">_install_traceable_methods</span><span class="p">(</span>
+                    <span class="n">class_or_fn</span><span class="p">,</span> <span class="o">*</span><span class="n">method_names</span><span class="p">,</span>
+                    <span class="n">logger</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span>
+                        <span class="n">_generate_logger_name</span><span class="p">(</span>
+                            <span class="n">class_or_fn</span><span class="p">,</span> <span class="n">parent_name</span><span class="o">=</span><span class="n">obj</span><span class="o">.</span><span class="n">name</span><span class="p">)))</span>
+            <span class="k">else</span><span class="p">:</span> <span class="c"># `@traced(logger)&#39; function</span>
+                <span class="k">if</span> <span class="n">method_names</span><span class="p">:</span>
+                    <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                        <span class="s">&quot;ignoring method names for @traced function </span><span class="si">%s</span><span class="s">.</span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span>
+                            <span class="p">(</span><span class="n">class_or_fn</span><span class="o">.</span><span class="n">__module__</span><span class="p">,</span> <span class="n">class_or_fn</span><span class="o">.</span><span class="n">__name__</span><span class="p">))</span>
+                <span class="k">return</span> <span class="n">_make_traceable_function</span><span class="p">(</span><span class="n">class_or_fn</span><span class="p">,</span> <span class="n">obj</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">traced_decorator</span>
+    <span class="k">else</span><span class="p">:</span> <span class="c"># `@traced(&quot;method_name1&quot;, ..)&#39; class</span>
+        <span class="n">method_names</span> <span class="o">=</span> <span class="n">args</span><span class="p">[:]</span>
+        <span class="k">return</span> <span class="k">lambda</span> <span class="n">class_</span><span class="p">:</span> <span class="n">_install_traceable_methods</span><span class="p">(</span><span class="n">class_</span><span class="p">,</span> <span class="o">*</span><span class="n">method_names</span><span class="p">)</span></div>
+
+
+<span class="k">def</span> <span class="nf">_generate_logger_name</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">parent_name</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Generate the logger name (channel) for a class or function.</span>
+
+<span class="sd">    :param obj: a class or function</span>
+<span class="sd">    :keyword str parent_name: the name of *obj*&#39;s parent logger</span>
+<span class="sd">    :rtype: str</span>
+
+<span class="sd">    If *parent_name* is not specified, the default is to use *obj*&#39;s</span>
+<span class="sd">    module name.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">parent_logger_name</span> <span class="o">=</span> <span class="n">parent_name</span> <span class="k">if</span> <span class="n">parent_name</span> <span class="k">else</span> <span class="n">obj</span><span class="o">.</span><span class="n">__module__</span>
+    <span class="k">return</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s">.</span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span>
+            <span class="n">parent_logger_name</span><span class="p">,</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s">&quot;__qualname__&quot;</span><span class="p">,</span> <span class="n">obj</span><span class="o">.</span><span class="n">__name__</span><span class="p">))</span> \
+        <span class="k">if</span> <span class="n">isclass</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span> <span class="k">else</span> <span class="n">parent_logger_name</span>
+
+
+<span class="k">def</span> <span class="nf">_add_logger_to</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">logger_name</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Set a :class:`logging.Logger` member on *obj*.</span>
+
+<span class="sd">    :param obj: a class or function object</span>
+<span class="sd">    :keyword str logger_name: the name (channel) of the logger for *obj*</span>
+<span class="sd">    :return: *obj*</span>
+
+<span class="sd">    If *obj* is a class, the member will be named &quot;__log&quot;. If *obj* is a</span>
+<span class="sd">    function, the member will be named &quot;_log&quot;.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span>
+        <span class="n">logger_name</span> <span class="k">if</span> <span class="n">logger_name</span> <span class="k">else</span> <span class="n">_generate_logger_name</span><span class="p">(</span><span class="n">obj</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="n">isclass</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
+        <span class="nb">setattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">_mangle_name</span><span class="p">(</span><span class="s">&quot;__log&quot;</span><span class="p">,</span> <span class="n">obj</span><span class="o">.</span><span class="n">__name__</span><span class="p">),</span> <span class="n">logger</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span> <span class="c"># function</span>
+        <span class="n">obj</span><span class="o">.</span><span class="n">_log</span> <span class="o">=</span> <span class="n">logger</span>
+
+    <span class="k">return</span> <span class="n">obj</span>
+
+
+<span class="k">def</span> <span class="nf">_make_traceable_function</span><span class="p">(</span><span class="n">function</span><span class="p">,</span> <span class="n">logger</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Return a tracing proxy function for *function*.</span>
+
+<span class="sd">    :param function: an unbound, module-level (or nested) function</span>
+<span class="sd">    :param logging.Logger logger: the logger for tracing messages</span>
+<span class="sd">    :return: a proxy function that wraps *function* to provide the call</span>
+<span class="sd">             and return tracing</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">log_delegator</span> <span class="o">=</span> <span class="n">_TracingLoggerDelegator</span><span class="p">(</span><span class="n">logger</span><span class="p">,</span> <span class="n">function</span><span class="p">)</span>
+
+    <span class="nd">@wraps</span><span class="p">(</span><span class="n">function</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">autologging_traced_function_proxy</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">keywords</span><span class="p">):</span>
+        <span class="c"># don&#39;t access from closure (IronPython does not manage</span>
+        <span class="c"># co_freevars/__closure__ correctly)</span>
+        <span class="n">log_delegator</span> <span class="o">=</span> <span class="n">autologging_traced_function_proxy</span><span class="o">.</span><span class="n">_trace_log_delegator</span>
+        <span class="k">if</span> <span class="n">log_delegator</span><span class="o">.</span><span class="n">isEnabledFor</span><span class="p">(</span><span class="n">TRACE</span><span class="p">):</span>
+            <span class="n">log_delegator</span><span class="o">.</span><span class="n">trace_call</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">keywords</span><span class="p">)</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">function</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">keywords</span><span class="p">)</span>
+            <span class="n">log_delegator</span><span class="o">.</span><span class="n">trace_return</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">value</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">function</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">keywords</span><span class="p">)</span>
+
+    <span class="c"># NOT a logging.Logger subclass, but does implement read-only properties</span>
+    <span class="c"># and methods that mimic the public logging.Logger interface</span>
+    <span class="n">autologging_traced_function_proxy</span><span class="o">.</span><span class="n">_trace_log_delegator</span> <span class="o">=</span> <span class="n">log_delegator</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">autologging_traced_function_proxy</span><span class="p">,</span> <span class="s">&quot;__wrapped__&quot;</span><span class="p">):</span>
+        <span class="c"># __wrapped__ is only set by functools.wraps() in Python 3.2+</span>
+        <span class="n">autologging_traced_function_proxy</span><span class="o">.</span><span class="n">__wrapped__</span> <span class="o">=</span> <span class="n">function</span>
+
+    <span class="n">autologging_traced_function_proxy</span><span class="o">.</span><span class="n">__autologging_traced__</span> <span class="o">=</span> <span class="bp">True</span>
+
+    <span class="k">return</span> <span class="n">autologging_traced_function_proxy</span>
+
+
+<span class="c"># can&#39;t use option=&lt;default&gt; keywords with *args in Python 2.7 (see PEP-3102)</span>
+<span class="k">def</span> <span class="nf">_install_traceable_methods</span><span class="p">(</span><span class="n">class_</span><span class="p">,</span> <span class="o">*</span><span class="n">method_names</span><span class="p">,</span> <span class="o">**</span><span class="n">keywords</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Substitute tracing proxy methods for the methods named in</span>
+<span class="sd">    *method_names* in *class_*&#39;s ``__dict__``.</span>
+
+<span class="sd">    :param class_: a class being traced</span>
+<span class="sd">    :param tuple method_names: the names of the methods to be traced</span>
+<span class="sd">    :keyword logging.Logger logger: the logger to use for tracing</span>
+
+<span class="sd">    If *method_names* is empty, all &quot;public&quot;, &quot;_nonpublic&quot;, and</span>
+<span class="sd">    &quot;__internal&quot; methods, as well as the special &quot;__init__&quot; method, will</span>
+<span class="sd">    be traced by default.</span>
+
+<span class="sd">    If *logger* is unspecified, a default logger will be used to log</span>
+<span class="sd">    tracing messages.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">logger</span> <span class="o">=</span> <span class="n">keywords</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+        <span class="s">&quot;logger&quot;</span><span class="p">,</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">_generate_logger_name</span><span class="p">(</span><span class="n">class_</span><span class="p">)))</span>
+
+    <span class="k">if</span> <span class="n">method_names</span><span class="p">:</span>
+        <span class="n">traceable_method_names</span> <span class="o">=</span> <span class="n">_get_traceable_method_names</span><span class="p">(</span>
+            <span class="n">method_names</span><span class="p">,</span> <span class="n">class_</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">traceable_method_names</span> <span class="o">=</span> <span class="n">_get_default_traceable_method_names</span><span class="p">(</span><span class="n">class_</span><span class="p">)</span>
+
+    <span class="c"># replace each named method with a tracing proxy method</span>
+    <span class="k">for</span> <span class="n">method_name</span> <span class="ow">in</span> <span class="n">traceable_method_names</span><span class="p">:</span>
+        <span class="n">descriptor</span> <span class="o">=</span> <span class="n">class_</span><span class="o">.</span><span class="n">__dict__</span><span class="p">[</span><span class="n">method_name</span><span class="p">]</span>
+        <span class="n">descriptor_type</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="n">descriptor</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">descriptor_type</span> <span class="ow">is</span> <span class="n">FunctionType</span><span class="p">:</span>
+            <span class="n">make_traceable_method</span> <span class="o">=</span> <span class="n">_make_traceable_instancemethod</span>
+        <span class="k">elif</span> <span class="n">descriptor_type</span> <span class="ow">is</span> <span class="nb">classmethod</span><span class="p">:</span>
+            <span class="n">make_traceable_method</span> <span class="o">=</span> <span class="n">_make_traceable_classmethod</span>
+        <span class="k">elif</span> <span class="n">descriptor_type</span> <span class="ow">is</span> <span class="nb">staticmethod</span><span class="p">:</span>
+            <span class="n">make_traceable_method</span> <span class="o">=</span> <span class="n">_make_traceable_staticmethod</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c"># should be unreachable, but issue a warning just in case</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&quot;tracing not supported for </span><span class="si">%r</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">descriptor_type</span><span class="p">)</span>
+            <span class="k">continue</span>
+
+        <span class="n">tracing_proxy_descriptor</span> <span class="o">=</span> <span class="n">make_traceable_method</span><span class="p">(</span>
+            <span class="n">class_</span><span class="p">,</span> <span class="n">descriptor</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
+
+        <span class="c"># class_.__dict__ is a mappingproxy; direct assignment not supported</span>
+        <span class="nb">setattr</span><span class="p">(</span><span class="n">class_</span><span class="p">,</span> <span class="n">method_name</span><span class="p">,</span> <span class="n">tracing_proxy_descriptor</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">class_</span>
+
+
+<span class="k">def</span> <span class="nf">_get_traceable_method_names</span><span class="p">(</span><span class="n">method_names</span><span class="p">,</span> <span class="n">class_</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Filter (and possibly mangle) *method_names* so that only method</span>
+<span class="sd">    names actually defined as methods in *cls_dict* remain.</span>
+
+<span class="sd">    :param method_names: a sequence of names that should identify</span>
+<span class="sd">                         methods defined in *class_*</span>
+<span class="sd">    :param class_: the class being traced</span>
+<span class="sd">    :return: a sequence of names identifying methods that are defined in</span>
+<span class="sd">             *class_* that will be traced</span>
+<span class="sd">    :rtype: list</span>
+
+<span class="sd">    .. warning::</span>
+<span class="sd">       A :exc:`UserWarning` is issued if any method name specified in</span>
+<span class="sd">       *method_names* is not actually defined in *class_*.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">traceable_method_names</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">method_names</span><span class="p">:</span>
+        <span class="n">mname</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">name</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">_is_internal_name</span><span class="p">(</span><span class="n">name</span><span class="p">)</span> <span class="k">else</span>
+            <span class="n">_mangle_name</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">class_</span><span class="o">.</span><span class="n">__name__</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="n">isroutine</span><span class="p">(</span><span class="n">class_</span><span class="o">.</span><span class="n">__dict__</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">mname</span><span class="p">)):</span>
+            <span class="n">traceable_method_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mname</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                <span class="s">&quot;</span><span class="si">%r</span><span class="s"> does not identify a method defined in </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span>
+                    <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">class_</span><span class="o">.</span><span class="n">__name__</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">traceable_method_names</span>
+
+
+<span class="k">def</span> <span class="nf">_get_default_traceable_method_names</span><span class="p">(</span><span class="n">class_</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Return all names in *cls_dict* that identify methods.</span>
+
+<span class="sd">    :param class_: the class being traced</span>
+<span class="sd">    :return: a sequence of names identifying methods of *class_* that</span>
+<span class="sd">             will be traced</span>
+<span class="sd">    :rtype: list</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">default_traceable_method_names</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">for</span> <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">member</span><span class="p">)</span> <span class="ow">in</span> <span class="n">class_</span><span class="o">.</span><span class="n">__dict__</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">isroutine</span><span class="p">(</span><span class="n">member</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span>
+                <span class="ow">not</span> <span class="n">_is_special_name</span><span class="p">(</span><span class="n">name</span><span class="p">)</span> <span class="ow">or</span>
+                <span class="n">name</span> <span class="o">==</span> <span class="s">&quot;__init__&quot;</span><span class="p">):</span>
+            <span class="n">default_traceable_method_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">default_traceable_method_names</span>
+
+
+<span class="k">def</span> <span class="nf">_is_internal_name</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Determine whether or not *name* is an &quot;__internal&quot; name.</span>
+
+<span class="sd">    :param str name: a name defined in a class ``__dict__``</span>
+<span class="sd">    :return: ``True`` if *name* is an &quot;__internal&quot; name, else ``False``</span>
+<span class="sd">    :rtype: bool</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&quot;__&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">name</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s">&quot;__&quot;</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_mangle_name</span><span class="p">(</span><span class="n">internal_name</span><span class="p">,</span> <span class="n">class_name</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Transform *name* (which is assumed to be an &quot;__internal&quot; name)</span>
+<span class="sd">    into a &quot;_ClassName__internal&quot; name.</span>
+
+<span class="sd">    :param str internal_name: the assumed-to-be-&quot;__internal&quot; member name</span>
+<span class="sd">    :param str class_name: the name of the class where *name* is defined</span>
+<span class="sd">    :return: the transformed &quot;_ClassName__internal&quot; name</span>
+<span class="sd">    :rtype: str</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="s">&quot;_</span><span class="si">%s%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">class_name</span><span class="o">.</span><span class="n">lstrip</span><span class="p">(</span><span class="s">&#39;_&#39;</span><span class="p">),</span> <span class="n">internal_name</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_is_special_name</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Determine whether or not *name* is a &quot;__special__&quot; name.</span>
+
+<span class="sd">    :param str name: a name defined in a class ``__dict__``</span>
+<span class="sd">    :return: ``True`` if *name* is a &quot;__special__&quot; name, else ``False``</span>
+<span class="sd">    :rtype: bool</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&quot;__&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">name</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s">&quot;__&quot;</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_make_traceable_instancemethod</span><span class="p">(</span><span class="n">class_</span><span class="p">,</span> <span class="n">method_descriptor</span><span class="p">,</span> <span class="n">logger</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Create a method descriptor that returns the tracing proxy</span>
+<span class="sd">    function for the instance method described by *method_descriptor*.</span>
+
+<span class="sd">    :param class_: the class that owns *method_descriptor*</span>
+<span class="sd">    :param method_descriptor: the method descriptor of the instance</span>
+<span class="sd">                              method being traced (i.e. the function)</span>
+<span class="sd">    :param logging.Logger logger: the logger that will be used for</span>
+<span class="sd">                                  tracing call and return messages</span>
+<span class="sd">    :return: a method descriptor that returns the tracing proxy function</span>
+
+<span class="sd">    When *logger* is not enabled for the :attr:`autologging.TRACE`</span>
+<span class="sd">    level, the tracing proxy function will delegate directly to the</span>
+<span class="sd">    original instance method.</span>
+
+<span class="sd">    The original unbound function is available from the proxy</span>
+<span class="sd">    descriptor&#39;s ``__func__.__wrapped__`` attribute.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c"># functions have a __get__ method; they can act as descriptors</span>
+    <span class="n">function</span> <span class="o">=</span> <span class="n">method_descriptor</span>
+
+    <span class="n">log_delegator</span> <span class="o">=</span> <span class="n">_TracingLoggerDelegator</span><span class="p">(</span><span class="n">logger</span><span class="p">,</span> <span class="n">function</span><span class="p">)</span>
+
+    <span class="nd">@wraps</span><span class="p">(</span><span class="n">function</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">autologging_traced_instancemethod_proxy</span><span class="p">(</span><span class="n">f_self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">keywords</span><span class="p">):</span>
+        <span class="n">method</span> <span class="o">=</span> <span class="n">method_descriptor</span><span class="o">.</span><span class="n">__get__</span><span class="p">(</span><span class="n">f_self</span><span class="p">,</span> <span class="n">f_self</span><span class="o">.</span><span class="n">__class__</span><span class="p">)</span>
+        <span class="c"># don&#39;t access from closure (IronPython does not manage</span>
+        <span class="c"># co_freevars/__closure__ correctly)</span>
+        <span class="n">log_delegator</span> <span class="o">=</span> \
+            <span class="n">autologging_traced_instancemethod_proxy</span><span class="o">.</span><span class="n">_trace_log_delegator</span>
+        <span class="k">if</span> <span class="n">log_delegator</span><span class="o">.</span><span class="n">isEnabledFor</span><span class="p">(</span><span class="n">TRACE</span><span class="p">):</span>
+            <span class="n">log_delegator</span><span class="o">.</span><span class="n">trace_call</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">keywords</span><span class="p">)</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">method</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">keywords</span><span class="p">)</span>
+            <span class="n">log_delegator</span><span class="o">.</span><span class="n">trace_return</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">value</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">method</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">keywords</span><span class="p">)</span>
+
+    <span class="c"># NOT a logging.Logger subclass, but does implement read-only properties</span>
+    <span class="c"># and methods that mimic the public logging.Logger interface</span>
+    <span class="n">autologging_traced_instancemethod_proxy</span><span class="o">.</span><span class="n">_trace_log_delegator</span> <span class="o">=</span> \
+        <span class="n">log_delegator</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">autologging_traced_instancemethod_proxy</span><span class="p">,</span> <span class="s">&quot;__wrapped__&quot;</span><span class="p">):</span>
+        <span class="c"># __wrapped__ is only set by functools.wraps() in Python 3.2+</span>
+        <span class="n">autologging_traced_instancemethod_proxy</span><span class="o">.</span><span class="n">__wrapped__</span> <span class="o">=</span> <span class="n">function</span>
+
+    <span class="n">autologging_traced_instancemethod_proxy</span><span class="o">.</span><span class="n">__autologging_traced__</span> <span class="o">=</span> <span class="bp">True</span>
+
+    <span class="k">return</span> <span class="n">autologging_traced_instancemethod_proxy</span>
+
+
+<span class="k">def</span> <span class="nf">_make_traceable_classmethod</span><span class="p">(</span><span class="n">class_</span><span class="p">,</span> <span class="n">method_descriptor</span><span class="p">,</span> <span class="n">logger</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Create a method descriptor that returns the tracing proxy</span>
+<span class="sd">    function for the class method described by *method_descriptor*.</span>
+
+<span class="sd">    :param class_: the class that owns *method_descriptor*</span>
+<span class="sd">    :param method_descriptor: the method descriptor of the instance</span>
+<span class="sd">                              method being traced</span>
+<span class="sd">    :param logging.Logger logger: the logger that will be used for</span>
+<span class="sd">                                  tracing call and return messages</span>
+<span class="sd">    :return: a method descriptor that returns the tracing proxy function</span>
+
+<span class="sd">    When *logger* is not enabled for the :attr:`autologging.TRACE`</span>
+<span class="sd">    level, the tracing proxy function will delegate directly to the</span>
+<span class="sd">    original class method.</span>
+
+<span class="sd">    The original class method is available from the proxy descriptor&#39;s</span>
+<span class="sd">    ``__func__.__wrapped__`` attribute.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">function</span> <span class="o">=</span> <span class="n">method_descriptor</span><span class="o">.</span><span class="n">__func__</span>
+
+    <span class="n">log_delegator</span> <span class="o">=</span> <span class="n">_TracingLoggerDelegator</span><span class="p">(</span><span class="n">logger</span><span class="p">,</span> <span class="n">function</span><span class="p">)</span>
+
+    <span class="nd">@wraps</span><span class="p">(</span><span class="n">function</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">autologging_traced_classmethod_proxy</span><span class="p">(</span><span class="n">f_cls</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">keywords</span><span class="p">):</span>
+        <span class="n">method</span> <span class="o">=</span> <span class="n">method_descriptor</span><span class="o">.</span><span class="n">__get__</span><span class="p">(</span><span class="bp">None</span><span class="p">,</span> <span class="n">f_cls</span><span class="p">)</span>
+        <span class="c"># don&#39;t access from closure (IronPython does not manage</span>
+        <span class="c"># co_freevars/__closure__ correctly)</span>
+        <span class="n">log_delegator</span> <span class="o">=</span> \
+            <span class="n">autologging_traced_classmethod_proxy</span><span class="o">.</span><span class="n">_trace_log_delegator</span>
+        <span class="k">if</span> <span class="n">log_delegator</span><span class="o">.</span><span class="n">isEnabledFor</span><span class="p">(</span><span class="n">TRACE</span><span class="p">):</span>
+            <span class="n">log_delegator</span><span class="o">.</span><span class="n">trace_call</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">keywords</span><span class="p">)</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">method</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">keywords</span><span class="p">)</span>
+            <span class="n">log_delegator</span><span class="o">.</span><span class="n">trace_return</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">value</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">method</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">keywords</span><span class="p">)</span>
+
+    <span class="c"># NOT a logging.Logger subclass, but does implement read-only properties</span>
+    <span class="c"># and methods that mimic the public logging.Logger interface</span>
+    <span class="n">autologging_traced_classmethod_proxy</span><span class="o">.</span><span class="n">_trace_log_delegator</span> <span class="o">=</span> <span class="n">log_delegator</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">autologging_traced_classmethod_proxy</span><span class="p">,</span> <span class="s">&quot;__wrapped__&quot;</span><span class="p">):</span>
+        <span class="c"># __wrapped__ is only set by functools.wraps() in Python 3.2+</span>
+        <span class="n">autologging_traced_classmethod_proxy</span><span class="o">.</span><span class="n">__wrapped__</span> <span class="o">=</span> <span class="n">function</span>
+
+    <span class="n">autologging_traced_classmethod_proxy</span><span class="o">.</span><span class="n">__autologging_traced__</span> <span class="o">=</span> <span class="bp">True</span>
+
+    <span class="k">return</span> <span class="nb">classmethod</span><span class="p">(</span><span class="n">autologging_traced_classmethod_proxy</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_make_traceable_staticmethod</span><span class="p">(</span><span class="n">class_</span><span class="p">,</span> <span class="n">method_descriptor</span><span class="p">,</span> <span class="n">logger</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Create a method descriptor that returns the tracing proxy</span>
+<span class="sd">    function for the class method described by *method_descriptor*.</span>
+
+<span class="sd">    :param class_: the class that owns *method_descriptor*</span>
+<span class="sd">    :param method_descriptor: the method descriptor of the instance</span>
+<span class="sd">                              method being traced</span>
+<span class="sd">    :param logging.Logger logger: the logger that will be used for</span>
+<span class="sd">                                  tracing call and return messages</span>
+<span class="sd">    :return: a method descriptor that returns the tracing proxy function</span>
+
+<span class="sd">    When *logger* is not enabled for the :attr:`autologging.TRACE`</span>
+<span class="sd">    level, the tracing proxy function will delegate directly to the</span>
+<span class="sd">    original class method.</span>
+
+<span class="sd">    The original class method is available from the proxy descriptor&#39;s</span>
+<span class="sd">    ``__func__.__wrapped__`` attribute.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">function</span> <span class="o">=</span> <span class="n">method_descriptor</span><span class="o">.</span><span class="n">__func__</span>
+
+    <span class="n">log_delegator</span> <span class="o">=</span> <span class="n">_TracingLoggerDelegator</span><span class="p">(</span><span class="n">logger</span><span class="p">,</span> <span class="n">function</span><span class="p">)</span>
+
+    <span class="nd">@wraps</span><span class="p">(</span><span class="n">function</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">autologging_traced_staticmethod_proxy</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">keywords</span><span class="p">):</span>
+        <span class="c"># don&#39;t access from closure (IronPython does not manage</span>
+        <span class="c"># co_freevars/__closure__ correctly)</span>
+        <span class="n">log_delegator</span> <span class="o">=</span> \
+            <span class="n">autologging_traced_staticmethod_proxy</span><span class="o">.</span><span class="n">_trace_log_delegator</span>
+        <span class="k">if</span> <span class="n">log_delegator</span><span class="o">.</span><span class="n">isEnabledFor</span><span class="p">(</span><span class="n">TRACE</span><span class="p">):</span>
+            <span class="n">log_delegator</span><span class="o">.</span><span class="n">trace_call</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">keywords</span><span class="p">)</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">function</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">keywords</span><span class="p">)</span>
+            <span class="n">log_delegator</span><span class="o">.</span><span class="n">trace_return</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">value</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">function</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">keywords</span><span class="p">)</span>
+
+    <span class="c"># NOT a logging.Logger subclass, but does implement read-only properties</span>
+    <span class="c"># and methods that mimic the public logging.Logger interface</span>
+    <span class="n">autologging_traced_staticmethod_proxy</span><span class="o">.</span><span class="n">_trace_log_delegator</span> <span class="o">=</span> <span class="n">log_delegator</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">autologging_traced_staticmethod_proxy</span><span class="p">,</span> <span class="s">&quot;__wrapped__&quot;</span><span class="p">):</span>
+        <span class="c"># __wrapped__ is only set by functools.wraps() in Python 3.2+</span>
+        <span class="n">autologging_traced_staticmethod_proxy</span><span class="o">.</span><span class="n">__wrapped__</span> <span class="o">=</span> <span class="n">function</span>
+
+    <span class="n">autologging_traced_staticmethod_proxy</span><span class="o">.</span><span class="n">__autologging_traced__</span> <span class="o">=</span> <span class="bp">True</span>
+
+    <span class="k">return</span> <span class="nb">staticmethod</span><span class="p">(</span><span class="n">autologging_traced_staticmethod_proxy</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">_TracingLoggerDelegator</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Build CALL/RETURN log records and delegate logging to a specified</span>
+<span class="sd">    tracing logger.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_find_last_line_number</span><span class="p">(</span><span class="n">f_code</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return the last line number of a function.</span>
+
+<span class="sd">        :param types.CodeType f_code: the bytecode object for a</span>
+<span class="sd">                                      function, as obtained from</span>
+<span class="sd">                                      ``function.__code__``</span>
+<span class="sd">        :return: the last physical line number of the function</span>
+<span class="sd">        :rtype: int</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">last_line_number</span> <span class="o">=</span> <span class="n">f_code</span><span class="o">.</span><span class="n">co_firstlineno</span>
+
+        <span class="c"># Jython and IronPython do not have co_lnotab</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">f_code</span><span class="p">,</span> <span class="s">&quot;co_lnotab&quot;</span><span class="p">):</span>
+            <span class="c"># co_lnotab is a sequence of 2-byte offsets</span>
+            <span class="c"># (address offset, line number offset), each relative to the</span>
+            <span class="c"># previous; we only care about the line number offsets here, so</span>
+            <span class="c"># start at index 1 and increment by 2</span>
+            <span class="n">i</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="k">while</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">f_code</span><span class="o">.</span><span class="n">co_lnotab</span><span class="p">):</span>
+                <span class="c"># co_lnotab is bytes in Python 3, but str in Python 2</span>
+                <span class="n">last_line_number</span> <span class="o">+=</span> <span class="p">(</span>
+                    <span class="n">f_code</span><span class="o">.</span><span class="n">co_lnotab</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">version_info</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="mi">3</span>
+                    <span class="k">else</span> <span class="nb">ord</span><span class="p">(</span><span class="n">f_code</span><span class="o">.</span><span class="n">co_lnotab</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
+                <span class="n">i</span> <span class="o">+=</span> <span class="mi">2</span>
+
+        <span class="k">return</span> <span class="n">last_line_number</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logger</span><span class="p">,</span> <span class="n">function</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param logging.Logger logger: the tracing logger</span>
+<span class="sd">        :param function: the function being traced</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span> <span class="o">=</span> <span class="n">logger</span>
+
+        <span class="n">f_code</span> <span class="o">=</span> <span class="n">function</span><span class="o">.</span><span class="n">__code__</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_f_filename</span> <span class="o">=</span> <span class="n">f_code</span><span class="o">.</span><span class="n">co_filename</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_f_firstlineno</span> <span class="o">=</span> <span class="n">f_code</span><span class="o">.</span><span class="n">co_firstlineno</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_f_lastlineno</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_find_last_line_number</span><span class="p">(</span><span class="n">f_code</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_f_name</span> <span class="o">=</span> <span class="n">function</span><span class="o">.</span><span class="n">__name__</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;The name (channel) used by the tracing logger.</span>
+
+<span class="sd">        :rtype: str</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">name</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">propagate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Whether or not the tracing logger propagates to its parent.</span>
+
+<span class="sd">        :rtype: bool</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">propagate</span>
+
+    <span class="k">def</span> <span class="nf">isEnabledFor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">level</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Whether or not the tracing logger is enabled for *level*.</span>
+
+<span class="sd">        :param int level: the logging level being queried</span>
+<span class="sd">        :rtype: bool</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">isEnabledFor</span><span class="p">(</span><span class="n">level</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">getEffectiveLevel</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return the effective level for the tracing logger.</span>
+
+<span class="sd">        :rtype: int</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">getEffectiveLevel</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">hasHandlers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Whether or not any handlers are registered for the tracing</span>
+<span class="sd">        logger.</span>
+
+<span class="sd">        :rtype: bool</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c"># adapted from Python 3.5 logging module</span>
+        <span class="n">c</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span>
+        <span class="n">rv</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="k">while</span> <span class="n">c</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">handlers</span><span class="p">:</span>
+                <span class="n">rv</span> <span class="o">=</span> <span class="bp">True</span> 
+                <span class="k">break</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">c</span><span class="o">.</span><span class="n">propagate</span><span class="p">:</span>
+                <span class="k">break</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">c</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">parent</span>
+        <span class="k">return</span> <span class="n">rv</span>
+
+    <span class="k">def</span> <span class="nf">trace_call</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">f_args</span><span class="p">,</span> <span class="n">f_keywords</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Emit a CALL log record for the traced function.</span>
+
+<span class="sd">        :param tuple f_args: the positional arguments that were passed</span>
+<span class="sd">                             when the traced function was called</span>
+<span class="sd">        :param dict f_keywords: the keyword arguments that were passed</span>
+<span class="sd">                                when the traced function was called</span>
+
+<span class="sd">        .. warning::</span>
+<span class="sd">           This method does **not** perform a level check, and delegates</span>
+<span class="sd">           *directly* to :meth:`logging.Logger.handle`. The caller is</span>
+<span class="sd">           expected to perform the level check prior to calling this</span>
+<span class="sd">           method.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">call_record</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">LogRecord</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>      <span class="c"># name</span>
+            <span class="n">TRACE</span><span class="p">,</span>                  <span class="c"># level</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_f_filename</span><span class="p">,</span>       <span class="c"># pathname</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_f_firstlineno</span><span class="p">,</span>    <span class="c"># lineno</span>
+            <span class="s">&quot;CALL *</span><span class="si">%r</span><span class="s"> **</span><span class="si">%r</span><span class="s">&quot;</span><span class="p">,</span>        <span class="c"># msg</span>
+            <span class="p">(</span><span class="n">f_args</span><span class="p">,</span> <span class="n">f_keywords</span><span class="p">),</span>   <span class="c"># args</span>
+            <span class="bp">None</span><span class="p">,</span>                   <span class="c"># exc_info</span>
+            <span class="n">func</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_f_name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">call_record</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">trace_return</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">f_return</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Emit a RETURN log record for the traced function.</span>
+
+<span class="sd">        :param f_return: the value returned by the traced function when</span>
+<span class="sd">                         it was called</span>
+
+<span class="sd">        .. warning::</span>
+<span class="sd">           This method does **not** perform a level check, and delegates</span>
+<span class="sd">           *directly* to :meth:`logging.Logger.handle`. The caller is</span>
+<span class="sd">           expected to perform the level check prior to calling this</span>
+<span class="sd">           method.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">return_record</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">LogRecord</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>  <span class="c"># name</span>
+            <span class="n">TRACE</span><span class="p">,</span>              <span class="c"># level</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_f_filename</span><span class="p">,</span>   <span class="c"># pathname</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_f_lastlineno</span><span class="p">,</span> <span class="c"># lineno</span>
+            <span class="s">&quot;RETURN </span><span class="si">%r</span><span class="s">&quot;</span><span class="p">,</span>        <span class="c"># msg</span>
+            <span class="p">(</span><span class="n">f_return</span><span class="p">,),</span>        <span class="c"># args</span>
+            <span class="bp">None</span><span class="p">,</span>               <span class="c"># exc_info</span>
+            <span class="n">func</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_f_name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">return_record</span><span class="p">)</span>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2013-2016, Matthew Zipay.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'1.0.1',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
