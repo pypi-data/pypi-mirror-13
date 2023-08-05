@@ -1,0 +1,24 @@
+sudo: false
+
+language: python
+
+services:
+  - postgresql
+  - mysql
+
+python:
+  - "3.4"
+  - "3.5"
+
+before_install:
+  - psql -c "create database asphalttest" -U postgres
+  - mysql -e "create database asphalttest"
+
+install: pip install tox-travis coveralls
+
+script: tox
+
+after_success: coveralls
+
+notifications:
+  irc: "chat.freenode.net#asphalt"
