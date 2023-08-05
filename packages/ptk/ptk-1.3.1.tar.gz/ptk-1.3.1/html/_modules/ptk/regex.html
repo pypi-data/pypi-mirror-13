@@ -1,0 +1,633 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>ptk.regex &mdash; ptk 1.3.1 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '1.3.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="ptk 1.3.1 documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for ptk.regex</h1><div class="highlight"><pre>
+<span class="c"># -*- coding: UTF-8 -*-</span>
+
+<span class="c"># (c) Jérôme Laheurte 2015</span>
+<span class="c"># See LICENSE.txt</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Simple regular expression engine used by ProgressiveParser.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">six</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">collections</span>
+
+<span class="c">#===============================================================================</span>
+<span class="c"># Regex objects</span>
+
+<span class="k">class</span> <span class="nc">_State</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">pass</span>
+
+
+<span class="k">class</span> <span class="nc">DeadState</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Raised when the FSA reaches a dead state</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+
+<span class="k">class</span> <span class="nc">RegularExpression</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Regular expression object (non-deterministic FSA)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_transitions</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span> <span class="c"># of (startState, class/None, endState)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_startState</span> <span class="o">=</span> <span class="n">_State</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_finalState</span> <span class="o">=</span> <span class="n">_State</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_currentState</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_startStates</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">clone</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns a clone of this object. Used by concat() and union()</span>
+<span class="sd">        so that if you pass several times the same expression states</span>
+<span class="sd">        don&#39;t get all mixed up...</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c"># pylint: disable=W0212</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">RegularExpression</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">startState</span><span class="p">,</span> <span class="n">trans</span><span class="p">,</span> <span class="n">endState</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transitions</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">startState</span> <span class="ow">is</span> <span class="bp">self</span><span class="o">.</span><span class="n">_startState</span><span class="p">:</span>
+                <span class="n">startState</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">_startState</span>
+            <span class="k">if</span> <span class="n">startState</span> <span class="ow">is</span> <span class="bp">self</span><span class="o">.</span><span class="n">_finalState</span><span class="p">:</span>
+                <span class="n">startState</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">_finalState</span>
+            <span class="k">if</span> <span class="n">endState</span> <span class="ow">is</span> <span class="bp">self</span><span class="o">.</span><span class="n">_startState</span><span class="p">:</span>
+                <span class="n">endState</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">_startState</span>
+            <span class="k">if</span> <span class="n">endState</span> <span class="ow">is</span> <span class="bp">self</span><span class="o">.</span><span class="n">_finalState</span><span class="p">:</span>
+                <span class="n">endState</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">_finalState</span>
+            <span class="n">result</span><span class="o">.</span><span class="n">_transitions</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">startState</span><span class="p">,</span> <span class="n">trans</span><span class="p">,</span> <span class="n">endState</span><span class="p">))</span>
+        <span class="n">result</span><span class="o">.</span><span class="n">_startStates</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="n">state</span> <span class="k">for</span> <span class="n">state</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">_transitions</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">result</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">fromClass</span><span class="p">(</span><span class="n">klass</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Builds a regular expression from a CharacterClass instance</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c"># pylint: disable=W0212</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">RegularExpression</span><span class="p">()</span>
+        <span class="n">result</span><span class="o">.</span><span class="n">_transitions</span> <span class="o">=</span> <span class="p">[(</span><span class="n">result</span><span class="o">.</span><span class="n">_startState</span><span class="p">,</span> <span class="n">klass</span><span class="p">,</span> <span class="n">result</span><span class="o">.</span><span class="n">_finalState</span><span class="p">)]</span>
+        <span class="n">result</span><span class="o">.</span><span class="n">_startStates</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="n">state</span> <span class="k">for</span> <span class="n">state</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">_transitions</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">result</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">concat</span><span class="p">(</span><span class="o">*</span><span class="n">rxs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Builds the concatenation of several RegularExpression instances</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c"># pylint: disable=W0212</span>
+        <span class="n">rxs</span> <span class="o">=</span> <span class="p">[</span><span class="n">rx</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span> <span class="k">for</span> <span class="n">rx</span> <span class="ow">in</span> <span class="n">rxs</span><span class="p">]</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">RegularExpression</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">rxs</span><span class="p">:</span>
+            <span class="n">result</span><span class="o">.</span><span class="n">_startState</span> <span class="o">=</span> <span class="n">rxs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">_startState</span>
+            <span class="n">result</span><span class="o">.</span><span class="n">_transitions</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">rxs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">_transitions</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">rx1</span><span class="p">,</span> <span class="n">rx2</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">rxs</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">rxs</span><span class="p">[</span><span class="mi">1</span><span class="p">:]):</span>
+                <span class="k">for</span> <span class="n">startState</span><span class="p">,</span> <span class="n">trans</span><span class="p">,</span> <span class="n">endState</span> <span class="ow">in</span> <span class="n">rx2</span><span class="o">.</span><span class="n">_transitions</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">startState</span> <span class="ow">is</span> <span class="n">rx2</span><span class="o">.</span><span class="n">_startState</span><span class="p">:</span>
+                        <span class="n">startState</span> <span class="o">=</span> <span class="n">rx1</span><span class="o">.</span><span class="n">_finalState</span>
+                    <span class="k">if</span> <span class="n">endState</span> <span class="ow">is</span> <span class="n">rx2</span><span class="o">.</span><span class="n">_startState</span><span class="p">:</span>
+                        <span class="n">endState</span> <span class="o">=</span> <span class="n">rx1</span><span class="o">.</span><span class="n">_finalState</span>
+                    <span class="n">result</span><span class="o">.</span><span class="n">_transitions</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">startState</span><span class="p">,</span> <span class="n">trans</span><span class="p">,</span> <span class="n">endState</span><span class="p">))</span>
+            <span class="n">result</span><span class="o">.</span><span class="n">_finalState</span> <span class="o">=</span> <span class="n">rxs</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">_finalState</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">result</span><span class="o">.</span><span class="n">_transitions</span> <span class="o">=</span> <span class="p">[(</span><span class="n">result</span><span class="o">.</span><span class="n">_startState</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="n">result</span><span class="o">.</span><span class="n">_finalState</span><span class="p">)]</span>
+        <span class="n">result</span><span class="o">.</span><span class="n">_startStates</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="n">state</span> <span class="k">for</span> <span class="n">state</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">_transitions</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">result</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">union</span><span class="p">(</span><span class="o">*</span><span class="n">rxs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Builds the union of several RegularExpression instances</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c"># pylint: disable=W0212</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">RegularExpression</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">rx</span> <span class="ow">in</span> <span class="p">[</span><span class="n">rx</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span> <span class="k">for</span> <span class="n">rx</span> <span class="ow">in</span> <span class="n">rxs</span><span class="p">]:</span>
+            <span class="n">result</span><span class="o">.</span><span class="n">_transitions</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">rx</span><span class="o">.</span><span class="n">_transitions</span><span class="p">)</span>
+            <span class="n">result</span><span class="o">.</span><span class="n">_transitions</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">result</span><span class="o">.</span><span class="n">_startState</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="n">rx</span><span class="o">.</span><span class="n">_startState</span><span class="p">))</span>
+            <span class="n">result</span><span class="o">.</span><span class="n">_transitions</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">rx</span><span class="o">.</span><span class="n">_finalState</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="n">result</span><span class="o">.</span><span class="n">_finalState</span><span class="p">))</span>
+        <span class="n">result</span><span class="o">.</span><span class="n">_startStates</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="n">state</span> <span class="k">for</span> <span class="n">state</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">_transitions</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">result</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">kleene</span><span class="p">(</span><span class="n">rx</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Kleene closure</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c"># pylint: disable=W0212</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">RegularExpression</span><span class="p">()</span>
+        <span class="n">result</span><span class="o">.</span><span class="n">_transitions</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">rx</span><span class="o">.</span><span class="n">_transitions</span><span class="p">)</span>
+        <span class="n">result</span><span class="o">.</span><span class="n">_transitions</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">result</span><span class="o">.</span><span class="n">_startState</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="n">result</span><span class="o">.</span><span class="n">_finalState</span><span class="p">))</span>
+        <span class="n">result</span><span class="o">.</span><span class="n">_transitions</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">rx</span><span class="o">.</span><span class="n">_finalState</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="n">rx</span><span class="o">.</span><span class="n">_startState</span><span class="p">))</span>
+        <span class="n">result</span><span class="o">.</span><span class="n">_transitions</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">result</span><span class="o">.</span><span class="n">_startState</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="n">rx</span><span class="o">.</span><span class="n">_startState</span><span class="p">))</span>
+        <span class="n">result</span><span class="o">.</span><span class="n">_transitions</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">rx</span><span class="o">.</span><span class="n">_finalState</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="n">result</span><span class="o">.</span><span class="n">_finalState</span><span class="p">))</span>
+        <span class="n">result</span><span class="o">.</span><span class="n">_startStates</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="n">state</span> <span class="k">for</span> <span class="n">state</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">_transitions</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">result</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">exponent</span><span class="p">(</span><span class="n">rx</span><span class="p">,</span> <span class="n">minCount</span><span class="p">,</span> <span class="n">maxCount</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Arbitrary exponent</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">maxCount</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">RegularExpression</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span>
+                <span class="n">RegularExpression</span><span class="o">.</span><span class="n">exponent</span><span class="p">(</span><span class="n">rx</span><span class="p">,</span> <span class="n">minCount</span><span class="p">,</span> <span class="n">minCount</span><span class="p">),</span>
+                <span class="n">RegularExpression</span><span class="o">.</span><span class="n">kleene</span><span class="p">(</span><span class="n">rx</span><span class="p">)</span>
+                <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">RegularExpression</span><span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="o">*</span><span class="nb">tuple</span><span class="p">(</span>
+                <span class="p">[</span><span class="n">RegularExpression</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="o">*</span><span class="nb">tuple</span><span class="p">([</span><span class="n">rx</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">count</span><span class="p">)]))</span> <span class="k">for</span> <span class="n">count</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">minCount</span><span class="p">,</span> <span class="n">maxCount</span><span class="o">+</span><span class="mi">1</span><span class="p">)]))</span>
+
+    <span class="c"># Matching</span>
+
+    <span class="k">def</span> <span class="nf">_epsilonClose</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">states</span><span class="p">):</span>
+        <span class="n">newStates</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">states</span><span class="p">)</span> <span class="c"># Copy</span>
+        <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+            <span class="n">added</span> <span class="o">=</span> <span class="bp">False</span>
+            <span class="k">for</span> <span class="n">state</span> <span class="ow">in</span> <span class="nb">set</span><span class="p">(</span><span class="n">newStates</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">startState</span><span class="p">,</span> <span class="n">trans</span><span class="p">,</span> <span class="n">endState</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transitions</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">startState</span> <span class="o">==</span> <span class="n">state</span> <span class="ow">and</span> <span class="n">trans</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">and</span> <span class="n">endState</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">newStates</span><span class="p">:</span>
+                        <span class="n">newStates</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">endState</span><span class="p">)</span>
+                        <span class="n">added</span> <span class="o">=</span> <span class="bp">True</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">added</span><span class="p">:</span>
+                <span class="k">break</span>
+        <span class="k">return</span> <span class="n">newStates</span>
+
+    <span class="k">def</span> <span class="nf">_closure</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">states</span><span class="p">,</span> <span class="n">char</span><span class="p">):</span>
+        <span class="n">newStates</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">startState</span><span class="p">,</span> <span class="n">trans</span><span class="p">,</span> <span class="n">endState</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transitions</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">trans</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="ow">and</span> <span class="n">startState</span> <span class="ow">in</span> <span class="n">states</span> <span class="ow">and</span> <span class="n">char</span> <span class="ow">in</span> <span class="n">trans</span><span class="p">:</span>
+                <span class="n">newStates</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">endState</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">newStates</span>
+
+    <span class="k">def</span> <span class="nf">start</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Resets the internal state to the start state</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_currentState</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_epsilonClose</span><span class="p">(</span><span class="nb">set</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">_startState</span><span class="p">]))</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span> <span class="nf">feed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">char</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Advance the state according to char</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_currentState</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_epsilonClose</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_closure</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_currentState</span><span class="p">,</span> <span class="n">char</span><span class="p">))</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_currentState</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">DeadState</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_finalState</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_currentState</span>
+
+    <span class="k">def</span> <span class="nf">isDeadEnd</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Checks if the current state is a dead end, i.e. if there are no outgoing transitions from it</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_currentState</span> <span class="ow">and</span> <span class="nb">all</span><span class="p">([</span><span class="n">state</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_startStates</span> <span class="k">for</span> <span class="n">state</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_currentState</span><span class="p">])</span>
+
+    <span class="k">def</span> <span class="nf">match</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">string</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Match a whole string</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">six</span><span class="o">.</span><span class="n">PY3</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">string</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">):</span>
+            <span class="n">string</span> <span class="o">=</span> <span class="p">[</span><span class="nb">chr</span><span class="p">(</span><span class="n">c</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s">&#39;ascii&#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">string</span><span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">char</span> <span class="ow">in</span> <span class="n">string</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">feed</span><span class="p">(</span><span class="n">char</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_finalState</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_currentState</span>
+        <span class="k">except</span> <span class="n">DeadState</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">False</span>
+
+<span class="c">#===============================================================================</span>
+<span class="c"># Lexing</span>
+
+<span class="k">class</span> <span class="nc">TokenizeError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Tokenization error in a regular expression&quot;&quot;&quot;</span>
+
+
+<span class="k">class</span> <span class="nc">BackslashAtEndOfInputError</span><span class="p">(</span><span class="n">TokenizeError</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Escape character at end of input&quot;&quot;&quot;</span>
+
+
+<span class="k">class</span> <span class="nc">UnterminatedClassError</span><span class="p">(</span><span class="n">TokenizeError</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Character class not ended&quot;&quot;&quot;</span>
+
+
+<span class="k">class</span> <span class="nc">InvalidClassError</span><span class="p">(</span><span class="n">TokenizeError</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Invalid class, e.g. z-a&quot;&quot;&quot;</span>
+
+
+<span class="k">class</span> <span class="nc">InvalidExponentError</span><span class="p">(</span><span class="n">TokenizeError</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Invalid exponent value&quot;&quot;&quot;</span>
+
+
+<span class="k">class</span> <span class="nc">CharacterClass</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span> <span class="c"># pylint: disable=R0903</span>
+    <span class="sd">&quot;&quot;&quot;Base class for character classes&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__contains__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">char</span><span class="p">):</span> <span class="c"># pragma: no cover</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+
+<span class="k">class</span> <span class="nc">AnyCharacterClass</span><span class="p">(</span><span class="n">CharacterClass</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;The .&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__contains__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">char</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">char</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="n">six</span><span class="o">.</span><span class="n">u</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">),</span> <span class="n">six</span><span class="o">.</span><span class="n">b</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)]</span>
+
+    <span class="k">def</span> <span class="nf">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">AnyCharacterClass</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">RegexCharacterClass</span><span class="p">(</span><span class="n">CharacterClass</span><span class="p">):</span> <span class="c"># pylint: disable=R0903</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Use an actual regex; for character classes</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">_cache</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pattern</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">pattern</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">flags</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="k">if</span> <span class="n">six</span><span class="o">.</span><span class="n">PY2</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="nb">unicode</span><span class="p">):</span> <span class="c"># pylint: disable=E0602</span>
+                    <span class="n">flags</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">UNICODE</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">[</span><span class="n">pattern</span><span class="p">]</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="n">flags</span><span class="p">)</span>
+            <span class="k">except</span> <span class="n">re</span><span class="o">.</span><span class="n">error</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">InvalidClassError</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">exc</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_rx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">[</span><span class="n">pattern</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span> <span class="c"># pragma: no cover</span>
+        <span class="k">return</span> <span class="bp">self</span> <span class="ow">is</span> <span class="n">other</span> <span class="c"># Because of cache</span>
+
+    <span class="k">def</span> <span class="nf">__contains__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">char</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rx</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">char</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span>
+
+
+<span class="k">class</span> <span class="nc">LitteralCharacterClass</span><span class="p">(</span><span class="n">CharacterClass</span><span class="p">):</span> <span class="c"># pylint: disable=R0903</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Single char</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">char</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_char</span> <span class="o">=</span> <span class="n">char</span>
+
+    <span class="k">def</span> <span class="nf">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_char</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_char</span> <span class="c"># pylint: disable=W0212</span>
+
+    <span class="k">def</span> <span class="nf">__contains__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">char</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">char</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">_char</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_char</span><span class="p">)</span>
+
+
+<span class="n">ExponentToken</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">namedtuple</span><span class="p">(</span><span class="s">&#39;ExponentToken&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s">&#39;minCount&#39;</span><span class="p">,</span> <span class="s">&#39;maxCount&#39;</span><span class="p">])</span>
+
+
+<span class="k">class</span> <span class="nc">RegexTokenizer</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span> <span class="c"># pylint: disable=R0903</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Tokenization of regular expressions. Actually, this does a bit</span>
+<span class="sd">    more than plain tokenization; it also handles special cases for</span>
+<span class="sd">    character classes and exponentiation.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">TOK_CLASS</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">TOK_EXPONENT</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="n">TOK_LPAREN</span> <span class="o">=</span> <span class="mi">3</span>
+    <span class="n">TOK_RPAREN</span> <span class="o">=</span> <span class="mi">4</span>
+    <span class="n">TOK_UNION</span> <span class="o">=</span> <span class="mi">5</span>
+
+    <span class="n">Token</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">namedtuple</span><span class="p">(</span><span class="s">&#39;Token&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s">&#39;type&#39;</span><span class="p">,</span> <span class="s">&#39;value&#39;</span><span class="p">])</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">regex</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">six</span><span class="o">.</span><span class="n">PY3</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">regex</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_stack</span> <span class="o">=</span> <span class="p">[</span><span class="nb">chr</span><span class="p">(</span><span class="n">c</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s">&#39;ascii&#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="n">regex</span><span class="p">)]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_stack</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">reversed</span><span class="p">(</span><span class="n">regex</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_state</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_currentClass</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_exponentValue</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_startExponent</span> <span class="o">=</span> <span class="bp">None</span>
+
+        <span class="c"># Six.[ub] behaves badly with strings such as &#39;\\&#39;</span>
+        <span class="k">if</span> <span class="n">six</span><span class="o">.</span><span class="n">PY2</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ubackslash</span> <span class="o">=</span> <span class="s">&#39;</span><span class="se">\\</span><span class="s">&#39;</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s">&#39;ascii&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">bbackslash</span> <span class="o">=</span> <span class="s">&#39;</span><span class="se">\\</span><span class="s">&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ubackslash</span> <span class="o">=</span> <span class="s">&#39;</span><span class="se">\\</span><span class="s">&#39;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">bbackslash</span> <span class="o">=</span> <span class="s">&#39;</span><span class="se">\\</span><span class="s">&#39;</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s">&#39;ascii&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">tokens</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns a list of tokens for the regex passed to the</span>
+<span class="sd">        constructor. Items are 2-tuples (type, value) where &#39;type&#39; is</span>
+<span class="sd">        one of the TOK_* constants.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">tokenList</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+
+        <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stack</span><span class="p">:</span>
+            <span class="n">char</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stack</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+            <span class="n">state</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s">&#39;_state</span><span class="si">%d</span><span class="s">&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="p">)</span>
+            <span class="n">state</span> <span class="o">=</span> <span class="n">state</span><span class="p">(</span><span class="n">char</span><span class="p">,</span> <span class="n">tokenList</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_state</span> <span class="o">=</span> <span class="n">state</span> <span class="k">if</span> <span class="n">state</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">BackslashAtEndOfInputError</span><span class="p">(</span><span class="s">&#39;Backslash at end of string&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="mi">2</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span> <span class="o">&lt;=</span> <span class="mi">8</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">UnterminatedClassError</span><span class="p">(</span><span class="s">&#39;Unterminated character class&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="mi">9</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span> <span class="o">&lt;=</span> <span class="mi">12</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">InvalidExponentError</span><span class="p">(</span><span class="s">&#39;Unterminated {&#39;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">tokenList</span>
+
+    <span class="c"># &quot;Normal&quot; state</span>
+
+    <span class="k">def</span> <span class="nf">_state0</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">char</span><span class="p">,</span> <span class="n">tokenList</span><span class="p">):</span>
+        <span class="c"># Normal state</span>
+        <span class="k">if</span> <span class="n">char</span> <span class="ow">in</span> <span class="p">[</span><span class="n">six</span><span class="o">.</span><span class="n">u</span><span class="p">(</span><span class="s">&#39;*&#39;</span><span class="p">),</span> <span class="n">six</span><span class="o">.</span><span class="n">b</span><span class="p">(</span><span class="s">&#39;*&#39;</span><span class="p">)]:</span>
+            <span class="n">tokenList</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Token</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">TOK_EXPONENT</span><span class="p">,</span> <span class="n">ExponentToken</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">None</span><span class="p">)))</span>
+        <span class="k">elif</span> <span class="n">char</span> <span class="ow">in</span> <span class="p">[</span><span class="n">six</span><span class="o">.</span><span class="n">u</span><span class="p">(</span><span class="s">&#39;+&#39;</span><span class="p">),</span> <span class="n">six</span><span class="o">.</span><span class="n">b</span><span class="p">(</span><span class="s">&#39;+&#39;</span><span class="p">)]:</span>
+            <span class="n">tokenList</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Token</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">TOK_EXPONENT</span><span class="p">,</span> <span class="n">ExponentToken</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">None</span><span class="p">)))</span>
+        <span class="k">elif</span> <span class="n">char</span> <span class="ow">in</span> <span class="p">[</span><span class="n">six</span><span class="o">.</span><span class="n">u</span><span class="p">(</span><span class="s">&#39;.&#39;</span><span class="p">),</span> <span class="n">six</span><span class="o">.</span><span class="n">b</span><span class="p">(</span><span class="s">&#39;.&#39;</span><span class="p">)]:</span>
+            <span class="n">tokenList</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Token</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">TOK_CLASS</span><span class="p">,</span> <span class="n">AnyCharacterClass</span><span class="p">()))</span>
+        <span class="k">elif</span> <span class="n">char</span> <span class="ow">in</span> <span class="p">[</span><span class="n">six</span><span class="o">.</span><span class="n">u</span><span class="p">(</span><span class="s">&#39;(&#39;</span><span class="p">),</span> <span class="n">six</span><span class="o">.</span><span class="n">b</span><span class="p">(</span><span class="s">&#39;(&#39;</span><span class="p">)]:</span>
+            <span class="n">tokenList</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Token</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">TOK_LPAREN</span><span class="p">,</span> <span class="n">char</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="n">char</span> <span class="ow">in</span> <span class="p">[</span><span class="n">six</span><span class="o">.</span><span class="n">u</span><span class="p">(</span><span class="s">&#39;)&#39;</span><span class="p">),</span> <span class="n">six</span><span class="o">.</span><span class="n">b</span><span class="p">(</span><span class="s">&#39;)&#39;</span><span class="p">)]:</span>
+            <span class="n">tokenList</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Token</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">TOK_RPAREN</span><span class="p">,</span> <span class="n">char</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="n">char</span> <span class="ow">in</span> <span class="p">[</span><span class="n">six</span><span class="o">.</span><span class="n">u</span><span class="p">(</span><span class="s">&#39;|&#39;</span><span class="p">),</span> <span class="n">six</span><span class="o">.</span><span class="n">b</span><span class="p">(</span><span class="s">&#39;|&#39;</span><span class="p">)]:</span>
+            <span class="n">tokenList</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Token</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">TOK_UNION</span><span class="p">,</span> <span class="n">char</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="n">char</span> <span class="o">==</span> <span class="n">six</span><span class="o">.</span><span class="n">u</span><span class="p">(</span><span class="s">&#39;[&#39;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_currentClass</span> <span class="o">=</span> <span class="n">six</span><span class="o">.</span><span class="n">StringIO</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_currentClass</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">char</span><span class="p">)</span>
+            <span class="k">return</span> <span class="mi">2</span>
+        <span class="k">elif</span> <span class="n">char</span> <span class="o">==</span> <span class="n">six</span><span class="o">.</span><span class="n">b</span><span class="p">(</span><span class="s">&#39;[&#39;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_currentClass</span> <span class="o">=</span> <span class="n">six</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_currentClass</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">char</span><span class="p">)</span>
+            <span class="k">return</span> <span class="mi">2</span>
+        <span class="k">elif</span> <span class="n">char</span> <span class="ow">in</span> <span class="p">[</span><span class="n">six</span><span class="o">.</span><span class="n">u</span><span class="p">(</span><span class="s">&#39;{&#39;</span><span class="p">),</span> <span class="n">six</span><span class="o">.</span><span class="n">b</span><span class="p">(</span><span class="s">&#39;{&#39;</span><span class="p">)]:</span>
+            <span class="k">return</span> <span class="mi">9</span>
+        <span class="k">elif</span> <span class="n">char</span> <span class="ow">in</span> <span class="p">[</span><span class="n">six</span><span class="o">.</span><span class="n">u</span><span class="p">(</span><span class="s">&#39;]&#39;</span><span class="p">),</span> <span class="n">six</span><span class="o">.</span><span class="n">b</span><span class="p">(</span><span class="s">&#39;]&#39;</span><span class="p">),</span> <span class="n">six</span><span class="o">.</span><span class="n">u</span><span class="p">(</span><span class="s">&#39;}&#39;</span><span class="p">),</span> <span class="n">six</span><span class="o">.</span><span class="n">b</span><span class="p">(</span><span class="s">&#39;}&#39;</span><span class="p">)]:</span>
+            <span class="k">raise</span> <span class="n">TokenizeError</span><span class="p">(</span><span class="s">&#39;Unexpected token &quot;</span><span class="si">%s</span><span class="s">&quot;&#39;</span> <span class="o">%</span> <span class="n">char</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">char</span> <span class="ow">in</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">ubackslash</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">bbackslash</span><span class="p">]:</span>
+            <span class="k">return</span> <span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">tokenList</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Token</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">TOK_CLASS</span><span class="p">,</span> <span class="n">LitteralCharacterClass</span><span class="p">(</span><span class="n">char</span><span class="p">)))</span>
+
+    <span class="k">def</span> <span class="nf">_state1</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">char</span><span class="p">,</span> <span class="n">tokenList</span><span class="p">):</span>
+        <span class="c"># After a &quot;\&quot; in normal state</span>
+        <span class="k">if</span> <span class="n">char</span> <span class="ow">in</span> <span class="p">[</span><span class="n">six</span><span class="o">.</span><span class="n">u</span><span class="p">(</span><span class="s">&#39;d&#39;</span><span class="p">),</span> <span class="n">six</span><span class="o">.</span><span class="n">u</span><span class="p">(</span><span class="s">&#39;s&#39;</span><span class="p">),</span> <span class="n">six</span><span class="o">.</span><span class="n">u</span><span class="p">(</span><span class="s">&#39;w&#39;</span><span class="p">),</span> <span class="n">six</span><span class="o">.</span><span class="n">u</span><span class="p">(</span><span class="s">&#39;D&#39;</span><span class="p">),</span> <span class="n">six</span><span class="o">.</span><span class="n">u</span><span class="p">(</span><span class="s">&#39;S&#39;</span><span class="p">),</span> <span class="n">six</span><span class="o">.</span><span class="n">u</span><span class="p">(</span><span class="s">&#39;W&#39;</span><span class="p">)]:</span>
+            <span class="n">tokenList</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Token</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">TOK_CLASS</span><span class="p">,</span> <span class="n">RegexCharacterClass</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ubackslash</span> <span class="o">+</span> <span class="n">char</span><span class="p">)))</span>
+        <span class="k">elif</span> <span class="n">char</span> <span class="ow">in</span> <span class="p">[</span><span class="n">six</span><span class="o">.</span><span class="n">b</span><span class="p">(</span><span class="s">&#39;d&#39;</span><span class="p">),</span> <span class="n">six</span><span class="o">.</span><span class="n">b</span><span class="p">(</span><span class="s">&#39;s&#39;</span><span class="p">),</span> <span class="n">six</span><span class="o">.</span><span class="n">b</span><span class="p">(</span><span class="s">&#39;w&#39;</span><span class="p">),</span> <span class="n">six</span><span class="o">.</span><span class="n">b</span><span class="p">(</span><span class="s">&#39;D&#39;</span><span class="p">),</span> <span class="n">six</span><span class="o">.</span><span class="n">b</span><span class="p">(</span><span class="s">&#39;S&#39;</span><span class="p">),</span> <span class="n">six</span><span class="o">.</span><span class="n">b</span><span class="p">(</span><span class="s">&#39;W&#39;</span><span class="p">)]:</span>
+            <span class="n">tokenList</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Token</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">TOK_CLASS</span><span class="p">,</span> <span class="n">RegexCharacterClass</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bbackslash</span> <span class="o">+</span> <span class="n">char</span><span class="p">)))</span>
+        <span class="k">elif</span> <span class="n">char</span> <span class="o">==</span> <span class="n">six</span><span class="o">.</span><span class="n">u</span><span class="p">(</span><span class="s">&#39;n&#39;</span><span class="p">):</span>
+            <span class="n">tokenList</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Token</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">TOK_CLASS</span><span class="p">,</span> <span class="n">LitteralCharacterClass</span><span class="p">(</span><span class="n">six</span><span class="o">.</span><span class="n">u</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">))))</span>
+        <span class="k">elif</span> <span class="n">char</span> <span class="o">==</span> <span class="n">six</span><span class="o">.</span><span class="n">u</span><span class="p">(</span><span class="s">&#39;t&#39;</span><span class="p">):</span>
+            <span class="n">tokenList</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Token</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">TOK_CLASS</span><span class="p">,</span> <span class="n">LitteralCharacterClass</span><span class="p">(</span><span class="n">six</span><span class="o">.</span><span class="n">u</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\t</span><span class="s">&#39;</span><span class="p">))))</span>
+        <span class="k">elif</span> <span class="n">char</span> <span class="o">==</span> <span class="n">six</span><span class="o">.</span><span class="n">b</span><span class="p">(</span><span class="s">&#39;n&#39;</span><span class="p">):</span>
+            <span class="n">tokenList</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Token</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">TOK_CLASS</span><span class="p">,</span> <span class="n">LitteralCharacterClass</span><span class="p">(</span><span class="n">six</span><span class="o">.</span><span class="n">b</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">))))</span>
+        <span class="k">elif</span> <span class="n">char</span> <span class="o">==</span> <span class="n">six</span><span class="o">.</span><span class="n">b</span><span class="p">(</span><span class="s">&#39;t&#39;</span><span class="p">):</span>
+            <span class="n">tokenList</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Token</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">TOK_CLASS</span><span class="p">,</span> <span class="n">LitteralCharacterClass</span><span class="p">(</span><span class="n">six</span><span class="o">.</span><span class="n">b</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\t</span><span class="s">&#39;</span><span class="p">))))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">tokenList</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Token</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">TOK_CLASS</span><span class="p">,</span> <span class="n">LitteralCharacterClass</span><span class="p">(</span><span class="n">char</span><span class="p">)))</span>
+        <span class="k">return</span> <span class="mi">0</span>
+
+    <span class="c"># Character classes</span>
+
+    <span class="k">def</span> <span class="nf">_state2</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">char</span><span class="p">,</span> <span class="n">tokenList</span><span class="p">):</span>
+        <span class="c"># In character class</span>
+        <span class="k">if</span> <span class="n">char</span> <span class="ow">in</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">ubackslash</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">bbackslash</span><span class="p">]:</span>
+            <span class="k">return</span> <span class="mi">3</span>
+        <span class="k">if</span> <span class="n">char</span> <span class="ow">in</span> <span class="p">[</span><span class="n">six</span><span class="o">.</span><span class="n">u</span><span class="p">(</span><span class="s">&#39;]&#39;</span><span class="p">),</span> <span class="n">six</span><span class="o">.</span><span class="n">b</span><span class="p">(</span><span class="s">&#39;]&#39;</span><span class="p">)]:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_currentClass</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">char</span><span class="p">)</span>
+            <span class="n">tokenList</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Token</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">TOK_CLASS</span><span class="p">,</span> <span class="n">RegexCharacterClass</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_currentClass</span><span class="o">.</span><span class="n">getvalue</span><span class="p">())))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_currentClass</span> <span class="o">=</span> <span class="bp">None</span>
+            <span class="k">return</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_currentClass</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">char</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_state3</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">char</span><span class="p">,</span> <span class="n">tokenList</span><span class="p">):</span> <span class="c"># pylint: disable=W0613</span>
+        <span class="c"># After &quot;\&quot; in character class</span>
+        <span class="k">if</span> <span class="n">six</span><span class="o">.</span><span class="n">PY2</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">char</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_currentClass</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bbackslash</span> <span class="o">+</span> <span class="n">char</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_currentClass</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ubackslash</span> <span class="o">+</span> <span class="n">char</span><span class="p">)</span>
+        <span class="k">return</span> <span class="mi">2</span>
+
+    <span class="c"># Exponent</span>
+
+    <span class="k">def</span> <span class="nf">_state9</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">char</span><span class="p">,</span> <span class="n">tokenList</span><span class="p">):</span> <span class="c"># pylint: disable=W0613</span>
+        <span class="c"># Start of exponent</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">char</span><span class="o">.</span><span class="n">isdigit</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="n">InvalidExponentError</span><span class="p">(</span><span class="s">&#39;Exponent not starting with a number&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_exponentValue</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">char</span><span class="p">)</span>
+        <span class="k">return</span> <span class="mi">10</span>
+
+    <span class="k">def</span> <span class="nf">_state10</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">char</span><span class="p">,</span> <span class="n">tokenList</span><span class="p">):</span>
+        <span class="c"># In exponent, computing start value</span>
+        <span class="k">if</span> <span class="n">char</span> <span class="ow">in</span> <span class="p">[</span><span class="n">six</span><span class="o">.</span><span class="n">u</span><span class="p">(</span><span class="s">&#39;-&#39;</span><span class="p">),</span> <span class="n">six</span><span class="o">.</span><span class="n">b</span><span class="p">(</span><span class="s">&#39;-&#39;</span><span class="p">)]:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_startExponent</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_exponentValue</span>
+            <span class="k">return</span> <span class="mi">11</span>
+        <span class="k">elif</span> <span class="n">char</span> <span class="ow">in</span> <span class="p">[</span><span class="n">six</span><span class="o">.</span><span class="n">u</span><span class="p">(</span><span class="s">&#39;}&#39;</span><span class="p">),</span> <span class="n">six</span><span class="o">.</span><span class="n">b</span><span class="p">(</span><span class="s">&#39;}&#39;</span><span class="p">)]:</span>
+            <span class="n">tokenList</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Token</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">TOK_EXPONENT</span><span class="p">,</span> <span class="n">ExponentToken</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_exponentValue</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_exponentValue</span><span class="p">)))</span>
+            <span class="k">return</span> <span class="mi">0</span>
+        <span class="k">elif</span> <span class="n">char</span><span class="o">.</span><span class="n">isdigit</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_exponentValue</span> <span class="o">*=</span> <span class="mi">10</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_exponentValue</span> <span class="o">+=</span> <span class="nb">int</span><span class="p">(</span><span class="n">char</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">InvalidExponentError</span><span class="p">(</span><span class="s">&#39;Invalid character &quot;</span><span class="si">%s</span><span class="s">&quot;&#39;</span> <span class="o">%</span> <span class="n">char</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_state11</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">char</span><span class="p">,</span> <span class="n">tokenList</span><span class="p">):</span> <span class="c"># pylint: disable=W0613</span>
+        <span class="c"># In exponent, expecting second term of interval</span>
+        <span class="k">if</span> <span class="n">char</span> <span class="ow">in</span> <span class="p">[</span><span class="n">six</span><span class="o">.</span><span class="n">u</span><span class="p">(</span><span class="s">&#39;}&#39;</span><span class="p">),</span> <span class="n">six</span><span class="o">.</span><span class="n">b</span><span class="p">(</span><span class="s">&#39;}&#39;</span><span class="p">)]:</span>
+            <span class="k">raise</span> <span class="n">InvalidExponentError</span><span class="p">(</span><span class="s">&#39;Missing range end&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">char</span><span class="o">.</span><span class="n">isdigit</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="n">InvalidExponentError</span><span class="p">(</span><span class="s">&#39;Invalid character &quot;</span><span class="si">%s</span><span class="s">&quot;&#39;</span> <span class="o">%</span> <span class="n">char</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_exponentValue</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">char</span><span class="p">)</span>
+        <span class="k">return</span> <span class="mi">12</span>
+
+    <span class="k">def</span> <span class="nf">_state12</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">char</span><span class="p">,</span> <span class="n">tokenList</span><span class="p">):</span>
+        <span class="c"># In exponent, computing end value</span>
+        <span class="k">if</span> <span class="n">char</span> <span class="ow">in</span> <span class="p">[</span><span class="n">six</span><span class="o">.</span><span class="n">u</span><span class="p">(</span><span class="s">&#39;}&#39;</span><span class="p">),</span> <span class="n">six</span><span class="o">.</span><span class="n">b</span><span class="p">(</span><span class="s">&#39;}&#39;</span><span class="p">)]:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_startExponent</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_exponentValue</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">InvalidExponentError</span><span class="p">(</span><span class="s">&#39;Invalid exponent range </span><span class="si">%d</span><span class="s">-</span><span class="si">%d</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_startExponent</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_exponentValue</span><span class="p">))</span>
+            <span class="n">tokenList</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Token</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">TOK_EXPONENT</span><span class="p">,</span> <span class="n">ExponentToken</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_startExponent</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_exponentValue</span><span class="p">)))</span>
+            <span class="k">return</span> <span class="mi">0</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">char</span><span class="o">.</span><span class="n">isdigit</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="n">InvalidExponentError</span><span class="p">(</span><span class="s">&#39;Invalid character &quot;</span><span class="si">%s</span><span class="s">&quot;&#39;</span> <span class="o">%</span> <span class="n">char</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_exponentValue</span> <span class="o">*=</span> <span class="mi">10</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_exponentValue</span> <span class="o">+=</span> <span class="nb">int</span><span class="p">(</span><span class="n">char</span><span class="p">)</span>
+
+<span class="c">#===============================================================================</span>
+<span class="c"># Parsing</span>
+
+<span class="k">class</span> <span class="nc">RegexParseError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Regular expression parse error</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+
+<span class="k">class</span> <span class="nc">RegexParser</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Actual parsing of regular expression strings</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">parse</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tokens</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Well, duh</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">tokens</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">tokens</span><span class="p">)</span>
+        <span class="n">expr</span><span class="p">,</span> <span class="n">pos</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parse_E1</span><span class="p">(</span><span class="n">tokens</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">tokens</span><span class="p">)</span> <span class="o">!=</span> <span class="n">pos</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">RegexParseError</span><span class="p">(</span><span class="s">&#39;Unexpected token &quot;</span><span class="si">%s</span><span class="s">&quot;&#39;</span> <span class="o">%</span> <span class="n">tokens</span><span class="p">[</span><span class="n">pos</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">expr</span>
+
+    <span class="k">def</span> <span class="nf">_parse_E1</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tokens</span><span class="p">,</span> <span class="n">pos</span><span class="p">):</span>
+        <span class="n">expr</span><span class="p">,</span> <span class="n">pos</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parse_E2</span><span class="p">(</span><span class="n">tokens</span><span class="p">,</span> <span class="n">pos</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parse_R1</span><span class="p">(</span><span class="n">expr</span><span class="p">,</span> <span class="n">tokens</span><span class="p">,</span> <span class="n">pos</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_parse_R1</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">left</span><span class="p">,</span> <span class="n">tokens</span><span class="p">,</span> <span class="n">pos</span><span class="p">):</span>
+        <span class="k">while</span> <span class="n">pos</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">tokens</span><span class="p">)</span> <span class="ow">and</span> <span class="n">tokens</span><span class="p">[</span><span class="n">pos</span><span class="p">]</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">RegexTokenizer</span><span class="o">.</span><span class="n">TOK_UNION</span><span class="p">:</span>
+            <span class="n">expr</span><span class="p">,</span> <span class="n">pos</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parse_E2</span><span class="p">(</span><span class="n">tokens</span><span class="p">,</span> <span class="n">pos</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">left</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="n">left</span><span class="p">,</span> <span class="n">expr</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">left</span><span class="p">,</span> <span class="n">pos</span>
+
+    <span class="k">def</span> <span class="nf">_parse_E2</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tokens</span><span class="p">,</span> <span class="n">pos</span><span class="p">):</span>
+        <span class="n">expr</span><span class="p">,</span> <span class="n">pos</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parse_E3</span><span class="p">(</span><span class="n">tokens</span><span class="p">,</span> <span class="n">pos</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parse_R2</span><span class="p">(</span><span class="n">expr</span><span class="p">,</span> <span class="n">tokens</span><span class="p">,</span> <span class="n">pos</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_parse_R2</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">left</span><span class="p">,</span> <span class="n">tokens</span><span class="p">,</span> <span class="n">pos</span><span class="p">):</span>
+        <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">tempExpr</span><span class="p">,</span> <span class="n">tempPos</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parse_E3</span><span class="p">(</span><span class="n">tokens</span><span class="p">,</span> <span class="n">pos</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_parse_R2</span><span class="p">(</span><span class="n">tempExpr</span><span class="p">,</span> <span class="n">tokens</span><span class="p">,</span> <span class="n">tempPos</span><span class="p">)</span>
+            <span class="k">except</span> <span class="n">RegexParseError</span><span class="p">:</span>
+                <span class="k">break</span>
+            <span class="n">expr</span><span class="p">,</span> <span class="n">pos</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parse_E3</span><span class="p">(</span><span class="n">tokens</span><span class="p">,</span> <span class="n">pos</span><span class="p">)</span>
+            <span class="n">left</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">left</span><span class="p">,</span> <span class="n">expr</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">left</span><span class="p">,</span> <span class="n">pos</span>
+
+    <span class="k">def</span> <span class="nf">_parse_E3</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tokens</span><span class="p">,</span> <span class="n">pos</span><span class="p">):</span>
+        <span class="n">expr</span><span class="p">,</span> <span class="n">pos</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parse_E</span><span class="p">(</span><span class="n">tokens</span><span class="p">,</span> <span class="n">pos</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parse_R3</span><span class="p">(</span><span class="n">expr</span><span class="p">,</span> <span class="n">tokens</span><span class="p">,</span> <span class="n">pos</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_parse_R3</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">left</span><span class="p">,</span> <span class="n">tokens</span><span class="p">,</span> <span class="n">pos</span><span class="p">):</span>
+        <span class="k">while</span> <span class="n">pos</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">tokens</span><span class="p">)</span> <span class="ow">and</span> <span class="n">tokens</span><span class="p">[</span><span class="n">pos</span><span class="p">]</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">RegexTokenizer</span><span class="o">.</span><span class="n">TOK_EXPONENT</span><span class="p">:</span>
+            <span class="n">left</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exponent</span><span class="p">(</span><span class="n">left</span><span class="p">,</span> <span class="n">tokens</span><span class="p">[</span><span class="n">pos</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+            <span class="n">pos</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">return</span> <span class="n">left</span><span class="p">,</span> <span class="n">pos</span>
+
+    <span class="k">def</span> <span class="nf">_parse_E</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tokens</span><span class="p">,</span> <span class="n">pos</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">pos</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">tokens</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">RegexParseError</span><span class="p">(</span><span class="s">&#39;Expected &quot;(&quot; or letter&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">tokens</span><span class="p">[</span><span class="n">pos</span><span class="p">]</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">RegexTokenizer</span><span class="o">.</span><span class="n">TOK_LPAREN</span><span class="p">:</span>
+            <span class="n">expr</span><span class="p">,</span> <span class="n">pos</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parse_E1</span><span class="p">(</span><span class="n">tokens</span><span class="p">,</span> <span class="n">pos</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">pos</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">tokens</span><span class="p">)</span> <span class="ow">or</span> <span class="n">tokens</span><span class="p">[</span><span class="n">pos</span><span class="p">]</span><span class="o">.</span><span class="n">type</span> <span class="o">!=</span> <span class="n">RegexTokenizer</span><span class="o">.</span><span class="n">TOK_RPAREN</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">RegexParseError</span><span class="p">(</span><span class="s">&#39;Missing &quot;)&quot;&#39;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">expr</span><span class="p">,</span> <span class="n">pos</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="k">elif</span> <span class="n">tokens</span><span class="p">[</span><span class="n">pos</span><span class="p">]</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">RegexTokenizer</span><span class="o">.</span><span class="n">TOK_CLASS</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">klass</span><span class="p">(</span><span class="n">tokens</span><span class="p">[</span><span class="n">pos</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="p">),</span> <span class="n">pos</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="k">raise</span> <span class="n">RegexParseError</span><span class="p">(</span><span class="s">&#39;Unexpected token &quot;</span><span class="si">%s</span><span class="s">&quot;&#39;</span> <span class="o">%</span> <span class="n">tokens</span><span class="p">[</span><span class="n">pos</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+
+    <span class="c"># Delegate</span>
+
+    <span class="k">def</span> <span class="nf">union</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rx1</span><span class="p">,</span> <span class="n">rx2</span><span class="p">):</span> <span class="c"># pylint: disable=C0111,R0201</span>
+        <span class="k">return</span> <span class="n">RegularExpression</span><span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="n">rx1</span><span class="p">,</span> <span class="n">rx2</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">concat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rx1</span><span class="p">,</span> <span class="n">rx2</span><span class="p">):</span> <span class="c"># pylint: disable=C0111,R0201</span>
+        <span class="k">return</span> <span class="n">RegularExpression</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">rx1</span><span class="p">,</span> <span class="n">rx2</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">exponent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rx</span><span class="p">,</span> <span class="n">exp</span><span class="p">):</span> <span class="c"># pylint: disable=C0111,R0201</span>
+        <span class="k">return</span> <span class="n">RegularExpression</span><span class="o">.</span><span class="n">exponent</span><span class="p">(</span><span class="n">rx</span><span class="p">,</span> <span class="n">exp</span><span class="o">.</span><span class="n">minCount</span><span class="p">,</span> <span class="n">exp</span><span class="o">.</span><span class="n">maxCount</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">klass</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">charClass</span><span class="p">):</span> <span class="c"># pylint: disable=C0111,R0201</span>
+        <span class="k">return</span> <span class="n">RegularExpression</span><span class="o">.</span><span class="n">fromClass</span><span class="p">(</span><span class="n">charClass</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">buildRegex</span><span class="p">(</span><span class="n">rx</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Shortcut to build a RegularExpression object from a string</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">RegexParser</span><span class="p">()</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">RegexTokenizer</span><span class="p">(</span><span class="n">rx</span><span class="p">)</span><span class="o">.</span><span class="n">tokens</span><span class="p">())</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2015, Jérôme Laheurte.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.7</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

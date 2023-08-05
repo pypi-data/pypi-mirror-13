@@ -1,0 +1,784 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>ptk.parser &mdash; ptk 1.3.1 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '1.3.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="ptk 1.3.1 documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for ptk.parser</h1><div class="highlight"><pre>
+<span class="c"># -*- coding: UTF-8 -*-</span>
+
+<span class="c"># (c) Jérôme Laheurte 2015</span>
+<span class="c"># See LICENSE.txt</span>
+
+<span class="kn">import</span> <span class="nn">six</span>
+<span class="kn">import</span> <span class="nn">functools</span>
+<span class="kn">import</span> <span class="nn">collections</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">re</span>
+
+<span class="kn">from</span> <span class="nn">ptk.lexer</span> <span class="kn">import</span> <span class="n">ProgressiveLexer</span><span class="p">,</span> <span class="n">EOF</span><span class="p">,</span> <span class="n">token</span>
+<span class="kn">from</span> <span class="nn">ptk.grammar</span> <span class="kn">import</span> <span class="n">Grammar</span><span class="p">,</span> <span class="n">Production</span><span class="p">,</span> <span class="n">GrammarError</span>
+<span class="c"># production is only imported so that client code doesn&#39;t have to import it from grammar</span>
+<span class="kn">from</span> <span class="nn">ptk.grammar</span> <span class="kn">import</span> <span class="n">production</span> <span class="c"># pylint: disable=W0611</span>
+<span class="kn">from</span> <span class="nn">ptk.utils</span> <span class="kn">import</span> <span class="n">Singleton</span><span class="p">,</span> <span class="n">callbackByName</span>
+
+
+<div class="viewcode-block" id="ParseError"><a class="viewcode-back" href="../../parser.html#ptk.parser.ParseError">[docs]</a><span class="k">class</span> <span class="nc">ParseError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Syntax error when parsing.</span>
+
+<span class="sd">    :ivar token: The unexpected token.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">grammar</span><span class="p">,</span> <span class="n">tok</span><span class="p">,</span> <span class="n">state</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">token</span> <span class="o">=</span> <span class="n">tok</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">ParseError</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">six</span><span class="o">.</span><span class="n">u</span><span class="p">(</span><span class="s">&#39;Unexpected token &quot;</span><span class="si">%s</span><span class="s">&quot; in state &quot;</span><span class="si">%s</span><span class="s">&quot;&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="p">(</span><span class="n">tok</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">state</span><span class="p">)))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_expecting</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">terminal</span> <span class="ow">in</span> <span class="n">grammar</span><span class="o">.</span><span class="n">tokenTypes</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">grammar</span><span class="o">.</span><span class="n">__actions__</span><span class="o">.</span><span class="n">get</span><span class="p">((</span><span class="n">state</span><span class="p">,</span> <span class="n">terminal</span><span class="p">),</span> <span class="bp">None</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_expecting</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">terminal</span><span class="p">)</span>
+
+<div class="viewcode-block" id="ParseError.expecting"><a class="viewcode-back" href="../../parser.html#ptk.parser.ParseError.expecting">[docs]</a>    <span class="k">def</span> <span class="nf">expecting</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns a set of tokens types that would have been valid in input.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_expecting</span></div></div>
+
+
+<div class="viewcode-block" id="leftAssoc"><a class="viewcode-back" href="../../parser.html#ptk.parser.leftAssoc">[docs]</a><span class="k">def</span> <span class="nf">leftAssoc</span><span class="p">(</span><span class="o">*</span><span class="n">operators</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class decorator for left associative operators. Use this to</span>
+<span class="sd">    decorate your :py:class:`Parser` class. Operators passed as</span>
+<span class="sd">    argument are assumed to have the same priority. The later you</span>
+<span class="sd">    declare associativity, the higher the priority; so the following</span>
+<span class="sd">    code</span>
+
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">       @leftAssoc(&#39;+&#39;, &#39;-&#39;)</span>
+<span class="sd">       @leftAssoc(&#39;*&#39;, &#39;/&#39;)</span>
+<span class="sd">       class MyParser(LRParser):</span>
+<span class="sd">           # ...</span>
+
+<span class="sd">    declares &#39;+&#39; and &#39;-&#39; to be left associative, with the same</span>
+<span class="sd">    priority. &#39;*&#39; and &#39;/&#39; are also left associative, with a higher</span>
+<span class="sd">    priority than &#39;+&#39; and &#39;-&#39;.</span>
+
+<span class="sd">    See also the *priority* argument to :py:func:`production`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">_wrapper</span><span class="p">(</span><span class="n">cls</span><span class="p">):</span>
+        <span class="n">cls</span><span class="o">.</span><span class="n">__precedence__</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="p">(</span><span class="s">&#39;left&#39;</span><span class="p">,</span> <span class="nb">set</span><span class="p">(</span><span class="n">operators</span><span class="p">)))</span>
+        <span class="k">return</span> <span class="n">cls</span>
+    <span class="k">return</span> <span class="n">_wrapper</span></div>
+
+
+<div class="viewcode-block" id="rightAssoc"><a class="viewcode-back" href="../../parser.html#ptk.parser.rightAssoc">[docs]</a><span class="k">def</span> <span class="nf">rightAssoc</span><span class="p">(</span><span class="o">*</span><span class="n">operators</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class decorator for right associative operators. Same remarks as :py:func:`leftAssoc`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">_wrapper</span><span class="p">(</span><span class="n">cls</span><span class="p">):</span>
+        <span class="n">cls</span><span class="o">.</span><span class="n">__precedence__</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="p">(</span><span class="s">&#39;right&#39;</span><span class="p">,</span> <span class="nb">set</span><span class="p">(</span><span class="n">operators</span><span class="p">)))</span>
+        <span class="k">return</span> <span class="n">cls</span>
+    <span class="k">return</span> <span class="n">_wrapper</span></div>
+
+
+<div class="viewcode-block" id="nonAssoc"><a class="viewcode-back" href="../../parser.html#ptk.parser.nonAssoc">[docs]</a><span class="k">def</span> <span class="nf">nonAssoc</span><span class="p">(</span><span class="o">*</span><span class="n">operators</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class decorator for non associative operators. Same remarks as :py:func:`leftAssoc`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">_wrapper</span><span class="p">(</span><span class="n">cls</span><span class="p">):</span>
+        <span class="n">cls</span><span class="o">.</span><span class="n">__precedence__</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="p">(</span><span class="s">&#39;non&#39;</span><span class="p">,</span> <span class="nb">set</span><span class="p">(</span><span class="n">operators</span><span class="p">)))</span>
+        <span class="k">return</span> <span class="n">cls</span>
+    <span class="k">return</span> <span class="n">_wrapper</span></div>
+
+
+<span class="k">class</span> <span class="nc">_StartState</span><span class="p">(</span><span class="n">six</span><span class="o">.</span><span class="n">with_metaclass</span><span class="p">(</span><span class="n">Singleton</span><span class="p">,</span> <span class="nb">object</span><span class="p">)):</span>
+    <span class="n">__reprval__</span> <span class="o">=</span> <span class="n">six</span><span class="o">.</span><span class="n">u</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\u03A3</span><span class="s">&#39;</span><span class="p">)</span> <span class="k">if</span> <span class="n">six</span><span class="o">.</span><span class="n">PY3</span> <span class="k">else</span> <span class="n">six</span><span class="o">.</span><span class="n">u</span><span class="p">(</span><span class="s">&#39;(START)&#39;</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">_ResolveError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="k">pass</span>
+
+
+<span class="nd">@functools.total_ordering</span>
+<span class="k">class</span> <span class="nc">_Item</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prod</span><span class="p">,</span> <span class="n">dot</span><span class="p">,</span> <span class="n">terminal</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">production</span> <span class="o">=</span> <span class="n">prod</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dot</span> <span class="o">=</span> <span class="n">dot</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">terminal</span> <span class="o">=</span> <span class="n">terminal</span>
+
+    <span class="k">def</span> <span class="nf">shouldReduce</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns True if the dot is in last position</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dot</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">production</span><span class="o">.</span><span class="n">right</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">next</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns an item with the dot advanced one position</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">_Item</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">production</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dot</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">terminal</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">symbols</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">production</span><span class="o">.</span><span class="n">right</span><span class="p">)</span>
+        <span class="n">symbols</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dot</span><span class="p">,</span> <span class="n">six</span><span class="o">.</span><span class="n">u</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\u2022</span><span class="s">&#39;</span><span class="p">)</span> <span class="k">if</span> <span class="n">six</span><span class="o">.</span><span class="n">PY3</span> <span class="k">else</span> <span class="n">six</span><span class="o">.</span><span class="n">u</span><span class="p">(</span><span class="s">&#39;.&#39;</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">six</span><span class="o">.</span><span class="n">u</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%s</span><span class="s"> -&gt; </span><span class="si">%s</span><span class="s"> (</span><span class="si">%s</span><span class="s">)&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">production</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">six</span><span class="o">.</span><span class="n">u</span><span class="p">(</span><span class="s">&#39; &#39;</span><span class="p">)</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">repr</span><span class="p">(</span><span class="n">sym</span><span class="p">)</span> <span class="k">for</span> <span class="n">sym</span> <span class="ow">in</span> <span class="n">symbols</span><span class="p">]),</span> <span class="bp">self</span><span class="o">.</span><span class="n">terminal</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">production</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dot</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">terminal</span><span class="p">)</span> <span class="o">==</span> <span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">production</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">dot</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">terminal</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__lt__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">production</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dot</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">terminal</span><span class="p">)</span> <span class="o">&lt;</span> <span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">production</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">dot</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">terminal</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">hash</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">production</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dot</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">terminal</span><span class="p">))</span>
+
+
+<span class="k">class</span> <span class="nc">_Accept</span><span class="p">(</span><span class="ne">BaseException</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">result</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">result</span> <span class="o">=</span> <span class="n">result</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">_Accept</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">()</span>
+
+
+<span class="n">_StackItem</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">namedtuple</span><span class="p">(</span><span class="s">&#39;_StackItem&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s">&#39;state&#39;</span><span class="p">,</span> <span class="s">&#39;value&#39;</span><span class="p">])</span>
+
+
+<span class="k">class</span> <span class="nc">_Shift</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">newState</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">newState</span> <span class="o">=</span> <span class="n">newState</span>
+
+    <span class="k">def</span> <span class="nf">doAction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">grammar</span><span class="p">,</span> <span class="n">stack</span><span class="p">,</span> <span class="n">tok</span><span class="p">):</span> <span class="c"># pylint: disable=W0613</span>
+        <span class="n">stack</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_StackItem</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">newState</span><span class="p">,</span> <span class="n">tok</span><span class="o">.</span><span class="n">value</span><span class="p">))</span>
+        <span class="k">return</span> <span class="bp">True</span>
+
+
+<span class="k">class</span> <span class="nc">_Reduce</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">item</span> <span class="o">=</span> <span class="n">item</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nargs</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">production</span><span class="o">.</span><span class="n">right</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">doAction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">grammar</span><span class="p">,</span> <span class="n">stack</span><span class="p">,</span> <span class="n">tok</span><span class="p">):</span> <span class="c"># pylint: disable=W0613</span>
+        <span class="n">callback</span><span class="p">,</span> <span class="n">kwargs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_getCallback</span><span class="p">(</span><span class="n">stack</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_applied</span><span class="p">(</span><span class="n">grammar</span><span class="p">,</span> <span class="n">stack</span><span class="p">,</span> <span class="n">callback</span><span class="p">(</span><span class="n">grammar</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">))</span>
+        <span class="k">return</span> <span class="bp">False</span>
+
+    <span class="k">def</span> <span class="nf">_applied</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">grammar</span><span class="p">,</span> <span class="n">stack</span><span class="p">,</span> <span class="n">prodVal</span><span class="p">):</span>
+        <span class="n">stack</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_StackItem</span><span class="p">(</span><span class="n">grammar</span><span class="o">.</span><span class="n">goto</span><span class="p">(</span><span class="n">stack</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">state</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">item</span><span class="o">.</span><span class="n">production</span><span class="o">.</span><span class="n">name</span><span class="p">),</span> <span class="n">prodVal</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">_getCallback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stack</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">nargs</span><span class="p">:</span>
+            <span class="n">args</span> <span class="o">=</span> <span class="p">[</span><span class="n">stackItem</span><span class="o">.</span><span class="n">value</span> <span class="k">for</span> <span class="n">stackItem</span> <span class="ow">in</span> <span class="n">stack</span><span class="p">[</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">nargs</span><span class="p">:]]</span>
+            <span class="n">stack</span><span class="p">[</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">nargs</span><span class="p">:]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">args</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">item</span><span class="o">.</span><span class="n">production</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="LRParser"><a class="viewcode-back" href="../../parser.html#ptk.parser.LRParser">[docs]</a><span class="k">class</span> <span class="nc">LRParser</span><span class="p">(</span><span class="n">Grammar</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    LR(1) parser. This class is intended to be used with a lexer class</span>
+<span class="sd">    derived from :py:class:`LexerBase`, using inheritance; it</span>
+<span class="sd">    overrides :py:func:`LexerBase.newToken` so you must inherit from</span>
+<span class="sd">    the parser first, then the lexer:</span>
+
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">       class MyParser(LRParser, ReLexer):</span>
+<span class="sd">           # ...</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> <span class="c"># pylint: disable=R0914,R0912</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">LRParser</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_restartParser</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">newToken</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tok</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">action</span><span class="p">,</span> <span class="n">stack</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_processToken</span><span class="p">(</span><span class="n">tok</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">action</span><span class="o">.</span><span class="n">doAction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stack</span><span class="p">,</span> <span class="n">tok</span><span class="p">):</span>
+                    <span class="k">break</span>
+        <span class="k">except</span> <span class="n">_Accept</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_restartParser</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">newSentence</span><span class="p">(</span><span class="n">exc</span><span class="o">.</span><span class="n">result</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_processToken</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tok</span><span class="p">):</span>
+        <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+            <span class="n">action</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__actions__</span><span class="o">.</span><span class="n">get</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">__stack</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">state</span><span class="p">,</span> <span class="n">tok</span><span class="o">.</span><span class="n">type</span><span class="p">),</span> <span class="bp">None</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">action</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">ParseError</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tok</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__stack</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">state</span><span class="p">)</span>
+            <span class="k">yield</span> <span class="n">action</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__stack</span>
+
+<div class="viewcode-block" id="LRParser.newSentence"><a class="viewcode-back" href="../../parser.html#ptk.parser.LRParser.newSentence">[docs]</a>    <span class="k">def</span> <span class="nf">newSentence</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sentence</span><span class="p">):</span> <span class="c"># pragma: no cover</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This is called when the start symbol has been reduced.</span>
+
+<span class="sd">        :param sentence: The value associated with the start symbol.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">_createProductionParser</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">priority</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">ProductionParser</span><span class="p">(</span><span class="n">callbackByName</span><span class="p">(</span><span class="n">name</span><span class="p">),</span> <span class="n">priority</span><span class="p">,</span> <span class="n">cls</span><span class="p">)</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">_createReduceAction</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">item</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">_Reduce</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">_createShiftAction</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">state</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">_Shift</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">prepare</span><span class="p">(</span><span class="n">cls</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">prod</span> <span class="ow">in</span> <span class="n">cls</span><span class="o">.</span><span class="n">productions</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">prod</span><span class="o">.</span><span class="n">name</span> <span class="ow">is</span> <span class="n">_StartState</span><span class="p">:</span>
+                <span class="k">break</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">def</span> <span class="nf">acceptor</span><span class="p">(</span><span class="n">_</span><span class="p">,</span> <span class="n">result</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="n">_Accept</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+            <span class="n">prod</span> <span class="o">=</span> <span class="n">Production</span><span class="p">(</span><span class="n">_StartState</span><span class="p">,</span> <span class="n">acceptor</span><span class="p">)</span>
+            <span class="n">prod</span><span class="o">.</span><span class="n">addSymbol</span><span class="p">(</span><span class="n">cls</span><span class="o">.</span><span class="n">_defaultStartSymbol</span><span class="p">()</span> <span class="k">if</span> <span class="n">cls</span><span class="o">.</span><span class="n">startSymbol</span> <span class="ow">is</span> <span class="bp">None</span> <span class="k">else</span> <span class="n">cls</span><span class="o">.</span><span class="n">startSymbol</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s">&#39;result&#39;</span><span class="p">)</span>
+            <span class="n">cls</span><span class="o">.</span><span class="n">__productions__</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">prod</span><span class="p">)</span>
+
+        <span class="n">cls</span><span class="o">.</span><span class="n">startSymbol</span> <span class="o">=</span> <span class="n">_StartState</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">LRParser</span><span class="p">,</span> <span class="n">cls</span><span class="p">)</span><span class="o">.</span><span class="n">prepare</span><span class="p">()</span>
+
+        <span class="n">states</span><span class="p">,</span> <span class="n">goto</span> <span class="o">=</span> <span class="n">cls</span><span class="o">.</span><span class="n">__computeStates</span><span class="p">(</span><span class="n">prod</span><span class="p">)</span>
+        <span class="n">reachable</span> <span class="o">=</span> <span class="n">cls</span><span class="o">.</span><span class="n">__computeActions</span><span class="p">(</span><span class="n">states</span><span class="p">,</span> <span class="n">goto</span><span class="p">)</span>
+
+        <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s">&#39;LRParser&#39;</span><span class="p">)</span>
+        <span class="n">cls</span><span class="o">.</span><span class="n">__resolveConflicts</span><span class="p">(</span><span class="n">logger</span><span class="p">)</span>
+
+        <span class="n">usedTokens</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="n">symbol</span> <span class="k">for</span> <span class="n">state</span><span class="p">,</span> <span class="n">symbol</span> <span class="ow">in</span> <span class="n">cls</span><span class="o">.</span><span class="n">__actions__</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="k">if</span> <span class="n">symbol</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">EOF</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">usedTokens</span> <span class="o">!=</span> <span class="n">cls</span><span class="o">.</span><span class="n">tokenTypes</span><span class="p">():</span> <span class="c"># pragma: no cover</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s">&#39;The following tokens are not used: </span><span class="si">%s</span><span class="s">&#39;</span><span class="p">,</span> <span class="s">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">repr</span><span class="p">(</span><span class="n">sym</span><span class="p">)</span> <span class="k">for</span> <span class="n">sym</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">cls</span><span class="o">.</span><span class="n">tokenTypes</span><span class="p">()</span> <span class="o">-</span> <span class="n">usedTokens</span><span class="p">)]))</span>
+
+        <span class="k">if</span> <span class="n">reachable</span> <span class="o">!=</span> <span class="n">cls</span><span class="o">.</span><span class="n">nonterminals</span><span class="p">():</span> <span class="c"># pragma: no cover</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s">&#39;The following nonterminals are not reachable: </span><span class="si">%s</span><span class="s">&#39;</span><span class="p">,</span> <span class="s">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">repr</span><span class="p">(</span><span class="n">sym</span><span class="p">)</span> <span class="k">for</span> <span class="n">sym</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">cls</span><span class="o">.</span><span class="n">nonterminals</span><span class="p">()</span> <span class="o">-</span> <span class="n">reachable</span><span class="p">)]))</span>
+
+        <span class="c"># Reductions only need goto entries for nonterminals</span>
+        <span class="n">cls</span><span class="o">.</span><span class="n">_goto</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">([((</span><span class="n">state</span><span class="p">,</span> <span class="n">symbol</span><span class="p">),</span> <span class="n">newState</span><span class="p">)</span> <span class="k">for</span> <span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">symbol</span><span class="p">),</span> <span class="n">newState</span> <span class="ow">in</span> <span class="n">goto</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">symbol</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">cls</span><span class="o">.</span><span class="n">tokenTypes</span><span class="p">()])</span>
+
+        <span class="n">parts</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">cls</span><span class="o">.</span><span class="n">nSR</span><span class="p">:</span>
+            <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%d</span><span class="s"> shift/reduce conflicts&#39;</span> <span class="o">%</span> <span class="n">cls</span><span class="o">.</span><span class="n">nSR</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">cls</span><span class="o">.</span><span class="n">nRR</span><span class="p">:</span>
+            <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%d</span><span class="s"> reduce/reduce conflicts&#39;</span> <span class="o">%</span> <span class="n">cls</span><span class="o">.</span><span class="n">nRR</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">parts</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">parts</span><span class="p">))</span>
+
+        <span class="c"># Cast to tuple because sets are not totally ordered</span>
+        <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">state</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">([</span><span class="nb">tuple</span><span class="p">(</span><span class="n">cls</span><span class="o">.</span><span class="n">_startState</span><span class="p">)]</span> <span class="o">+</span> <span class="nb">sorted</span><span class="p">([</span><span class="nb">tuple</span><span class="p">(</span><span class="n">state</span><span class="p">)</span> <span class="k">for</span> <span class="n">state</span> <span class="ow">in</span> <span class="n">states</span> <span class="k">if</span> <span class="n">state</span> <span class="o">!=</span> <span class="n">cls</span><span class="o">.</span><span class="n">_startState</span><span class="p">])):</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;State </span><span class="si">%d</span><span class="s">&#39;</span><span class="p">,</span> <span class="n">index</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">state</span><span class="p">):</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;    </span><span class="si">%s</span><span class="s">&#39;</span><span class="p">,</span> <span class="n">item</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%d</span><span class="s"> states.&#39;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">states</span><span class="p">))</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">__computeStates</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">start</span><span class="p">):</span>
+        <span class="n">allSyms</span> <span class="o">=</span> <span class="n">cls</span><span class="o">.</span><span class="n">tokenTypes</span><span class="p">()</span> <span class="o">|</span> <span class="n">cls</span><span class="o">.</span><span class="n">nonterminals</span><span class="p">()</span>
+        <span class="n">goto</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="n">cls</span><span class="o">.</span><span class="n">_startState</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">([</span><span class="n">_Item</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">EOF</span><span class="p">)])</span>
+        <span class="n">states</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="n">cls</span><span class="o">.</span><span class="n">_startState</span><span class="p">])</span>
+        <span class="n">stack</span> <span class="o">=</span> <span class="p">[</span><span class="n">cls</span><span class="o">.</span><span class="n">_startState</span><span class="p">]</span>
+        <span class="k">while</span> <span class="n">stack</span><span class="p">:</span>
+            <span class="n">state</span> <span class="o">=</span> <span class="n">stack</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+            <span class="n">stateClosure</span> <span class="o">=</span> <span class="n">cls</span><span class="o">.</span><span class="n">__itemSetClosure</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">symbol</span> <span class="ow">in</span> <span class="n">allSyms</span><span class="p">:</span>
+                <span class="c"># Compute goto(symbol, state)</span>
+                <span class="n">nextState</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+                <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">stateClosure</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">item</span><span class="o">.</span><span class="n">shouldReduce</span><span class="p">()</span> <span class="ow">and</span> <span class="n">item</span><span class="o">.</span><span class="n">production</span><span class="o">.</span><span class="n">right</span><span class="p">[</span><span class="n">item</span><span class="o">.</span><span class="n">dot</span><span class="p">]</span> <span class="o">==</span> <span class="n">symbol</span><span class="p">:</span>
+                        <span class="n">nextState</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">next</span><span class="p">())</span>
+                <span class="k">if</span> <span class="n">nextState</span><span class="p">:</span>
+                    <span class="n">nextState</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">(</span><span class="n">nextState</span><span class="p">)</span>
+                    <span class="n">goto</span><span class="p">[(</span><span class="n">state</span><span class="p">,</span> <span class="n">symbol</span><span class="p">)]</span> <span class="o">=</span> <span class="n">nextState</span>
+                    <span class="k">if</span> <span class="n">nextState</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">states</span><span class="p">:</span>
+                        <span class="n">states</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">nextState</span><span class="p">)</span>
+                        <span class="n">stack</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">nextState</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">states</span><span class="p">,</span> <span class="n">goto</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">__computeActions</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">states</span><span class="p">,</span> <span class="n">goto</span><span class="p">):</span>
+        <span class="n">cls</span><span class="o">.</span><span class="n">__actions__</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="n">reachable</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">state</span> <span class="ow">in</span> <span class="n">states</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">cls</span><span class="o">.</span><span class="n">__itemSetClosure</span><span class="p">(</span><span class="n">state</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">item</span><span class="o">.</span><span class="n">shouldReduce</span><span class="p">():</span>
+                    <span class="n">action</span> <span class="o">=</span> <span class="n">cls</span><span class="o">.</span><span class="n">_createReduceAction</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+                    <span class="n">reachable</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">production</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+                    <span class="n">cls</span><span class="o">.</span><span class="n">__addReduceAction</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">item</span><span class="o">.</span><span class="n">terminal</span><span class="p">,</span> <span class="n">action</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">symbol</span> <span class="o">=</span> <span class="n">item</span><span class="o">.</span><span class="n">production</span><span class="o">.</span><span class="n">right</span><span class="p">[</span><span class="n">item</span><span class="o">.</span><span class="n">dot</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="n">symbol</span> <span class="ow">in</span> <span class="n">cls</span><span class="o">.</span><span class="n">tokenTypes</span><span class="p">():</span>
+                        <span class="n">cls</span><span class="o">.</span><span class="n">__addShiftAction</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">cls</span><span class="o">.</span><span class="n">_createShiftAction</span><span class="p">(</span><span class="n">goto</span><span class="p">[(</span><span class="n">state</span><span class="p">,</span> <span class="n">symbol</span><span class="p">)]))</span>
+        <span class="k">return</span> <span class="n">reachable</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">__shouldPreferShift</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">logger</span><span class="p">,</span> <span class="n">reduceAction</span><span class="p">,</span> <span class="n">symbol</span><span class="p">):</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;Shift/reduce conflict for &quot;</span><span class="si">%s</span><span class="s">&quot; on &quot;</span><span class="si">%s</span><span class="s">&quot;&#39;</span><span class="p">,</span> <span class="n">reduceAction</span><span class="o">.</span><span class="n">item</span><span class="p">,</span> <span class="n">symbol</span><span class="p">)</span>
+
+        <span class="n">prodPrecedence</span> <span class="o">=</span> <span class="n">reduceAction</span><span class="o">.</span><span class="n">item</span><span class="o">.</span><span class="n">production</span><span class="o">.</span><span class="n">precedence</span><span class="p">(</span><span class="n">cls</span><span class="p">)</span>
+        <span class="n">tokenPrecedence</span> <span class="o">=</span> <span class="n">cls</span><span class="o">.</span><span class="n">terminalPrecedence</span><span class="p">(</span><span class="n">symbol</span><span class="p">)</span>
+
+        <span class="c"># If both precedences are specified, use priority/associativity</span>
+        <span class="k">if</span> <span class="n">prodPrecedence</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="ow">and</span> <span class="n">tokenPrecedence</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">prodAssoc</span><span class="p">,</span> <span class="n">prodPrio</span> <span class="o">=</span> <span class="n">prodPrecedence</span>
+            <span class="n">tokenAssoc</span><span class="p">,</span> <span class="n">tokenPrio</span> <span class="o">=</span> <span class="n">tokenPrecedence</span>
+            <span class="k">if</span> <span class="n">prodPrio</span> <span class="o">&gt;</span> <span class="n">tokenPrio</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;Resolving in favor of reduction because of priority&#39;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="bp">False</span>
+            <span class="k">if</span> <span class="n">prodPrio</span> <span class="o">&lt;</span> <span class="n">tokenPrio</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;Resolving in favor of shift because of priority&#39;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="bp">True</span>
+            <span class="k">if</span> <span class="n">prodAssoc</span> <span class="o">==</span> <span class="n">tokenAssoc</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">prodAssoc</span> <span class="o">==</span> <span class="s">&#39;non&#39;</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;Resolving in favor of error because of associativity&#39;</span><span class="p">)</span>
+                    <span class="k">raise</span> <span class="n">_ResolveError</span><span class="p">()</span>
+                <span class="k">if</span> <span class="n">prodAssoc</span> <span class="o">==</span> <span class="s">&#39;left&#39;</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;Resolving in favor of reduction because of associativity&#39;</span><span class="p">)</span>
+                    <span class="k">return</span> <span class="bp">False</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;Resolving in favor of shift because of associativity&#39;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="bp">True</span>
+
+        <span class="c"># At least one of those is not specified; use shift</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s">&#39;Could not disambiguate shift/reduce conflict for &quot;</span><span class="si">%s</span><span class="s">&quot; on &quot;</span><span class="si">%s</span><span class="s">&quot;; using shift&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">reduceAction</span><span class="o">.</span><span class="n">item</span><span class="p">,</span> <span class="n">symbol</span><span class="p">))</span>
+        <span class="n">cls</span><span class="o">.</span><span class="n">nSR</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">return</span> <span class="bp">True</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">__resolveConflicts</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">logger</span><span class="p">):</span>
+        <span class="n">cls</span><span class="o">.</span><span class="n">nSR</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">cls</span><span class="o">.</span><span class="n">nRR</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="k">for</span> <span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">symbol</span><span class="p">),</span> <span class="n">actions</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">cls</span><span class="o">.</span><span class="n">__actions__</span><span class="o">.</span><span class="n">items</span><span class="p">()):</span>
+            <span class="n">action</span> <span class="o">=</span> <span class="n">actions</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+            <span class="k">while</span> <span class="n">actions</span><span class="p">:</span>
+                <span class="n">conflicting</span> <span class="o">=</span> <span class="n">actions</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">action</span> <span class="o">=</span> <span class="n">cls</span><span class="o">.</span><span class="n">__resolveConflict</span><span class="p">(</span><span class="n">logger</span><span class="p">,</span> <span class="n">action</span><span class="p">,</span> <span class="n">conflicting</span><span class="p">,</span> <span class="n">symbol</span><span class="p">)</span>
+                <span class="k">except</span> <span class="n">_ResolveError</span><span class="p">:</span>
+                    <span class="k">del</span> <span class="n">cls</span><span class="o">.</span><span class="n">__actions__</span><span class="p">[(</span><span class="n">state</span><span class="p">,</span> <span class="n">symbol</span><span class="p">)]</span>
+                    <span class="k">break</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">cls</span><span class="o">.</span><span class="n">__actions__</span><span class="p">[(</span><span class="n">state</span><span class="p">,</span> <span class="n">symbol</span><span class="p">)]</span> <span class="o">=</span> <span class="n">action</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">__resolveConflict</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">logger</span><span class="p">,</span> <span class="n">action1</span><span class="p">,</span> <span class="n">action2</span><span class="p">,</span> <span class="n">symbol</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">action2</span><span class="p">,</span> <span class="n">_Shift</span><span class="p">):</span>
+            <span class="n">action1</span><span class="p">,</span> <span class="n">action2</span> <span class="o">=</span> <span class="n">action2</span><span class="p">,</span> <span class="n">action1</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">action1</span><span class="p">,</span> <span class="n">_Shift</span><span class="p">):</span>
+            <span class="c"># Shift/reduce</span>
+            <span class="k">return</span> <span class="n">action1</span> <span class="k">if</span> <span class="n">cls</span><span class="o">.</span><span class="n">__shouldPreferShift</span><span class="p">(</span><span class="n">logger</span><span class="p">,</span> <span class="n">action2</span><span class="p">,</span> <span class="n">symbol</span><span class="p">)</span> <span class="k">else</span> <span class="n">action2</span>
+
+        <span class="c"># Reduce/reduce</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s">&#39;Reduce/reduce conflict between &quot;</span><span class="si">%s</span><span class="s">&quot; and &quot;</span><span class="si">%s</span><span class="s">&quot;&#39;</span><span class="p">,</span> <span class="n">action1</span><span class="o">.</span><span class="n">item</span><span class="p">,</span> <span class="n">action2</span><span class="o">.</span><span class="n">item</span><span class="p">)</span>
+        <span class="n">cls</span><span class="o">.</span><span class="n">nRR</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="c"># Use the first one to be declared</span>
+        <span class="k">for</span> <span class="n">prod</span> <span class="ow">in</span> <span class="n">cls</span><span class="o">.</span><span class="n">productions</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">prod</span> <span class="o">==</span> <span class="n">action1</span><span class="o">.</span><span class="n">item</span><span class="o">.</span><span class="n">production</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s">&#39;Using &quot;</span><span class="si">%s</span><span class="s">&#39;</span><span class="p">,</span> <span class="n">prod</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">action1</span>
+            <span class="k">if</span> <span class="n">prod</span> <span class="o">==</span> <span class="n">action2</span><span class="o">.</span><span class="n">item</span><span class="o">.</span><span class="n">production</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s">&#39;Using &quot;</span><span class="si">%s</span><span class="s">&#39;</span><span class="p">,</span> <span class="n">prod</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">action2</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">__addReduceAction</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">action</span><span class="p">):</span>
+        <span class="n">cls</span><span class="o">.</span><span class="n">__actions__</span><span class="o">.</span><span class="n">setdefault</span><span class="p">((</span><span class="n">state</span><span class="p">,</span> <span class="n">symbol</span><span class="p">),</span> <span class="nb">list</span><span class="p">())</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">action</span><span class="p">)</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">__addShiftAction</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">action</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">existing</span> <span class="ow">in</span> <span class="n">cls</span><span class="o">.</span><span class="n">__actions__</span><span class="o">.</span><span class="n">get</span><span class="p">((</span><span class="n">state</span><span class="p">,</span> <span class="n">symbol</span><span class="p">),</span> <span class="nb">list</span><span class="p">()):</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">existing</span><span class="p">,</span> <span class="n">_Shift</span><span class="p">):</span>
+                <span class="k">return</span>
+        <span class="n">cls</span><span class="o">.</span><span class="n">__actions__</span><span class="o">.</span><span class="n">setdefault</span><span class="p">((</span><span class="n">state</span><span class="p">,</span> <span class="n">symbol</span><span class="p">),</span> <span class="nb">list</span><span class="p">())</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">action</span><span class="p">)</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">goto</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">symbol</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">cls</span><span class="o">.</span><span class="n">_goto</span><span class="p">[(</span><span class="n">state</span><span class="p">,</span> <span class="n">symbol</span><span class="p">)]</span>
+
+    <span class="k">def</span> <span class="nf">_restartParser</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__stack</span> <span class="o">=</span> <span class="p">[</span><span class="n">_StackItem</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_startState</span><span class="p">,</span> <span class="bp">None</span><span class="p">)]</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">__itemSetClosure</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">items</span><span class="p">):</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">items</span><span class="p">)</span>
+        <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+            <span class="n">prev</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="p">[</span><span class="n">item</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">result</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">item</span><span class="o">.</span><span class="n">shouldReduce</span><span class="p">()]:</span>
+                <span class="n">symbol</span> <span class="o">=</span> <span class="n">item</span><span class="o">.</span><span class="n">production</span><span class="o">.</span><span class="n">right</span><span class="p">[</span><span class="n">item</span><span class="o">.</span><span class="n">dot</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">symbol</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">cls</span><span class="o">.</span><span class="n">tokenTypes</span><span class="p">():</span>
+                    <span class="n">terminals</span> <span class="o">=</span> <span class="n">cls</span><span class="o">.</span><span class="n">first</span><span class="p">(</span><span class="o">*</span><span class="nb">tuple</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">production</span><span class="o">.</span><span class="n">right</span><span class="p">[</span><span class="n">item</span><span class="o">.</span><span class="n">dot</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:]</span> <span class="o">+</span> <span class="p">[</span><span class="n">item</span><span class="o">.</span><span class="n">terminal</span><span class="p">]))</span>
+                    <span class="k">for</span> <span class="n">prod</span> <span class="ow">in</span> <span class="p">(</span><span class="n">prod</span> <span class="k">for</span> <span class="n">prod</span> <span class="ow">in</span> <span class="n">cls</span><span class="o">.</span><span class="n">productions</span><span class="p">()</span> <span class="k">if</span> <span class="n">prod</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">symbol</span><span class="p">):</span>
+                        <span class="k">for</span> <span class="n">terminal</span> <span class="ow">in</span> <span class="n">terminals</span><span class="p">:</span>
+                            <span class="n">result</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">_Item</span><span class="p">(</span><span class="n">prod</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">terminal</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">prev</span> <span class="o">==</span> <span class="n">result</span><span class="p">:</span>
+                <span class="k">break</span>
+        <span class="k">return</span> <span class="n">result</span></div>
+
+
+<span class="k">class</span> <span class="nc">ProductionParser</span><span class="p">(</span><span class="n">LRParser</span><span class="p">,</span> <span class="n">ProgressiveLexer</span><span class="p">):</span> <span class="c"># pylint: disable=R0904</span>
+    <span class="c"># pylint: disable=C0111,C0103,R0201</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">callback</span><span class="p">,</span> <span class="n">priority</span><span class="p">,</span> <span class="n">grammarClass</span><span class="p">):</span> <span class="c"># pylint: disable=R0915</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">callback</span> <span class="o">=</span> <span class="n">callback</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">priority</span> <span class="o">=</span> <span class="n">priority</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">grammarClass</span> <span class="o">=</span> <span class="n">grammarClass</span>
+
+        <span class="nb">super</span><span class="p">(</span><span class="n">ProductionParser</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">()</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">prepare</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span> <span class="c"># pylint: disable=R0915</span>
+        <span class="c"># Obviously cannot use @production here</span>
+
+        <span class="c"># DECL -&gt; identifier &quot;-&gt;&quot; PRODS</span>
+        <span class="n">prod</span> <span class="o">=</span> <span class="n">Production</span><span class="p">(</span><span class="s">&#39;DECL&#39;</span><span class="p">,</span> <span class="n">cls</span><span class="o">.</span><span class="n">DECL</span><span class="p">)</span>
+        <span class="n">prod</span><span class="o">.</span><span class="n">addSymbol</span><span class="p">(</span><span class="s">&#39;identifier&#39;</span><span class="p">,</span> <span class="s">&#39;name&#39;</span><span class="p">)</span>
+        <span class="n">prod</span><span class="o">.</span><span class="n">addSymbol</span><span class="p">(</span><span class="s">&#39;arrow&#39;</span><span class="p">)</span>
+        <span class="n">prod</span><span class="o">.</span><span class="n">addSymbol</span><span class="p">(</span><span class="s">&#39;PRODS&#39;</span><span class="p">,</span> <span class="s">&#39;prods&#39;</span><span class="p">)</span>
+        <span class="n">cls</span><span class="o">.</span><span class="n">__productions__</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">prod</span><span class="p">)</span>
+
+        <span class="c"># PRODS -&gt; P</span>
+        <span class="n">prod</span> <span class="o">=</span> <span class="n">Production</span><span class="p">(</span><span class="s">&#39;PRODS&#39;</span><span class="p">,</span> <span class="n">cls</span><span class="o">.</span><span class="n">PRODS1</span><span class="p">)</span>
+        <span class="n">prod</span><span class="o">.</span><span class="n">addSymbol</span><span class="p">(</span><span class="s">&#39;P&#39;</span><span class="p">,</span> <span class="s">&#39;prodlist&#39;</span><span class="p">)</span>
+        <span class="n">cls</span><span class="o">.</span><span class="n">__productions__</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">prod</span><span class="p">)</span>
+
+        <span class="c"># PRODS -&gt; PRODS &quot;|&quot; P</span>
+        <span class="n">prod</span> <span class="o">=</span> <span class="n">Production</span><span class="p">(</span><span class="s">&#39;PRODS&#39;</span><span class="p">,</span> <span class="n">cls</span><span class="o">.</span><span class="n">PRODS2</span><span class="p">)</span>
+        <span class="n">prod</span><span class="o">.</span><span class="n">addSymbol</span><span class="p">(</span><span class="s">&#39;PRODS&#39;</span><span class="p">,</span> <span class="s">&#39;prods&#39;</span><span class="p">)</span>
+        <span class="n">prod</span><span class="o">.</span><span class="n">addSymbol</span><span class="p">(</span><span class="s">&#39;union&#39;</span><span class="p">)</span>
+        <span class="n">prod</span><span class="o">.</span><span class="n">addSymbol</span><span class="p">(</span><span class="s">&#39;P&#39;</span><span class="p">,</span> <span class="s">&#39;prodlist&#39;</span><span class="p">)</span>
+        <span class="n">cls</span><span class="o">.</span><span class="n">__productions__</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">prod</span><span class="p">)</span>
+
+        <span class="c"># P -&gt; P SYM</span>
+        <span class="n">prod</span> <span class="o">=</span> <span class="n">Production</span><span class="p">(</span><span class="s">&#39;P&#39;</span><span class="p">,</span> <span class="n">cls</span><span class="o">.</span><span class="n">P1</span><span class="p">)</span>
+        <span class="n">prod</span><span class="o">.</span><span class="n">addSymbol</span><span class="p">(</span><span class="s">&#39;P&#39;</span><span class="p">,</span> <span class="s">&#39;prodlist&#39;</span><span class="p">)</span>
+        <span class="n">prod</span><span class="o">.</span><span class="n">addSymbol</span><span class="p">(</span><span class="s">&#39;SYM&#39;</span><span class="p">,</span> <span class="s">&#39;sym&#39;</span><span class="p">)</span>
+        <span class="n">cls</span><span class="o">.</span><span class="n">__productions__</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">prod</span><span class="p">)</span>
+
+        <span class="c"># P -&gt; ɛ</span>
+        <span class="n">prod</span> <span class="o">=</span> <span class="n">Production</span><span class="p">(</span><span class="s">&#39;P&#39;</span><span class="p">,</span> <span class="n">cls</span><span class="o">.</span><span class="n">P2</span><span class="p">)</span>
+        <span class="n">cls</span><span class="o">.</span><span class="n">__productions__</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">prod</span><span class="p">)</span>
+
+        <span class="c"># SYM -&gt; SYMNAME PROPERTIES</span>
+        <span class="n">prod</span> <span class="o">=</span> <span class="n">Production</span><span class="p">(</span><span class="s">&#39;SYM&#39;</span><span class="p">,</span> <span class="n">cls</span><span class="o">.</span><span class="n">SYM</span><span class="p">)</span>
+        <span class="n">prod</span><span class="o">.</span><span class="n">addSymbol</span><span class="p">(</span><span class="s">&#39;SYMNAME&#39;</span><span class="p">,</span> <span class="s">&#39;symname&#39;</span><span class="p">)</span>
+        <span class="n">prod</span><span class="o">.</span><span class="n">addSymbol</span><span class="p">(</span><span class="s">&#39;PROPERTIES&#39;</span><span class="p">,</span> <span class="s">&#39;properties&#39;</span><span class="p">)</span>
+        <span class="n">cls</span><span class="o">.</span><span class="n">__productions__</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">prod</span><span class="p">)</span>
+
+        <span class="c"># SYM -&gt; SYMNAME repeat PROPERTIES</span>
+        <span class="n">prod</span> <span class="o">=</span> <span class="n">Production</span><span class="p">(</span><span class="s">&#39;SYM&#39;</span><span class="p">,</span> <span class="n">cls</span><span class="o">.</span><span class="n">SYMREP</span><span class="p">)</span>
+        <span class="n">prod</span><span class="o">.</span><span class="n">addSymbol</span><span class="p">(</span><span class="s">&#39;SYMNAME&#39;</span><span class="p">,</span> <span class="s">&#39;symname&#39;</span><span class="p">)</span>
+        <span class="n">prod</span><span class="o">.</span><span class="n">addSymbol</span><span class="p">(</span><span class="s">&#39;repeat&#39;</span><span class="p">,</span> <span class="s">&#39;repeat&#39;</span><span class="p">)</span>
+        <span class="n">prod</span><span class="o">.</span><span class="n">addSymbol</span><span class="p">(</span><span class="s">&#39;PROPERTIES&#39;</span><span class="p">,</span> <span class="s">&#39;properties&#39;</span><span class="p">)</span>
+        <span class="n">cls</span><span class="o">.</span><span class="n">__productions__</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">prod</span><span class="p">)</span>
+
+        <span class="c"># SYM -&gt; SYMNAME repeat lparen identifier rparen PROPERTIES</span>
+        <span class="n">prod</span> <span class="o">=</span> <span class="n">Production</span><span class="p">(</span><span class="s">&#39;SYM&#39;</span><span class="p">,</span> <span class="n">cls</span><span class="o">.</span><span class="n">SYMREP</span><span class="p">)</span>
+        <span class="n">prod</span><span class="o">.</span><span class="n">addSymbol</span><span class="p">(</span><span class="s">&#39;SYMNAME&#39;</span><span class="p">,</span> <span class="s">&#39;symname&#39;</span><span class="p">)</span>
+        <span class="n">prod</span><span class="o">.</span><span class="n">addSymbol</span><span class="p">(</span><span class="s">&#39;repeat&#39;</span><span class="p">,</span> <span class="s">&#39;repeat&#39;</span><span class="p">)</span>
+        <span class="n">prod</span><span class="o">.</span><span class="n">addSymbol</span><span class="p">(</span><span class="s">&#39;lparen&#39;</span><span class="p">)</span>
+        <span class="n">prod</span><span class="o">.</span><span class="n">addSymbol</span><span class="p">(</span><span class="s">&#39;identifier&#39;</span><span class="p">,</span> <span class="s">&#39;separator&#39;</span><span class="p">)</span>
+        <span class="n">prod</span><span class="o">.</span><span class="n">addSymbol</span><span class="p">(</span><span class="s">&#39;rparen&#39;</span><span class="p">)</span>
+        <span class="n">prod</span><span class="o">.</span><span class="n">addSymbol</span><span class="p">(</span><span class="s">&#39;PROPERTIES&#39;</span><span class="p">,</span> <span class="s">&#39;properties&#39;</span><span class="p">)</span>
+        <span class="n">cls</span><span class="o">.</span><span class="n">__productions__</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">prod</span><span class="p">)</span>
+
+        <span class="c"># SYM -&gt; SYMNAME repeat lparen litteral rparen PROPERTIES</span>
+        <span class="n">prod</span> <span class="o">=</span> <span class="n">Production</span><span class="p">(</span><span class="s">&#39;SYM&#39;</span><span class="p">,</span> <span class="n">cls</span><span class="o">.</span><span class="n">SYMREP_LIT</span><span class="p">)</span>
+        <span class="n">prod</span><span class="o">.</span><span class="n">addSymbol</span><span class="p">(</span><span class="s">&#39;SYMNAME&#39;</span><span class="p">,</span> <span class="s">&#39;symname&#39;</span><span class="p">)</span>
+        <span class="n">prod</span><span class="o">.</span><span class="n">addSymbol</span><span class="p">(</span><span class="s">&#39;repeat&#39;</span><span class="p">,</span> <span class="s">&#39;repeat&#39;</span><span class="p">)</span>
+        <span class="n">prod</span><span class="o">.</span><span class="n">addSymbol</span><span class="p">(</span><span class="s">&#39;lparen&#39;</span><span class="p">)</span>
+        <span class="n">prod</span><span class="o">.</span><span class="n">addSymbol</span><span class="p">(</span><span class="s">&#39;litteral&#39;</span><span class="p">,</span> <span class="s">&#39;separator&#39;</span><span class="p">)</span>
+        <span class="n">prod</span><span class="o">.</span><span class="n">addSymbol</span><span class="p">(</span><span class="s">&#39;rparen&#39;</span><span class="p">)</span>
+        <span class="n">prod</span><span class="o">.</span><span class="n">addSymbol</span><span class="p">(</span><span class="s">&#39;PROPERTIES&#39;</span><span class="p">,</span> <span class="s">&#39;properties&#39;</span><span class="p">)</span>
+        <span class="n">cls</span><span class="o">.</span><span class="n">__productions__</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">prod</span><span class="p">)</span>
+
+        <span class="c"># SYMNAME -&gt; identifier</span>
+        <span class="n">prod</span> <span class="o">=</span> <span class="n">Production</span><span class="p">(</span><span class="s">&#39;SYMNAME&#39;</span><span class="p">,</span> <span class="n">cls</span><span class="o">.</span><span class="n">SYMNAME1</span><span class="p">)</span>
+        <span class="n">prod</span><span class="o">.</span><span class="n">addSymbol</span><span class="p">(</span><span class="s">&#39;identifier&#39;</span><span class="p">,</span> <span class="s">&#39;identifier&#39;</span><span class="p">)</span>
+        <span class="n">cls</span><span class="o">.</span><span class="n">__productions__</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">prod</span><span class="p">)</span>
+
+        <span class="c"># SYMNAME -&gt; litteral</span>
+        <span class="n">prod</span> <span class="o">=</span> <span class="n">Production</span><span class="p">(</span><span class="s">&#39;SYMNAME&#39;</span><span class="p">,</span> <span class="n">cls</span><span class="o">.</span><span class="n">SYMNAME2</span><span class="p">)</span>
+        <span class="n">prod</span><span class="o">.</span><span class="n">addSymbol</span><span class="p">(</span><span class="s">&#39;litteral&#39;</span><span class="p">,</span> <span class="s">&#39;litteral&#39;</span><span class="p">)</span>
+        <span class="n">cls</span><span class="o">.</span><span class="n">__productions__</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">prod</span><span class="p">)</span>
+
+        <span class="c"># PROPERTIES -&gt; ɛ</span>
+        <span class="n">prod</span> <span class="o">=</span> <span class="n">Production</span><span class="p">(</span><span class="s">&#39;PROPERTIES&#39;</span><span class="p">,</span> <span class="n">cls</span><span class="o">.</span><span class="n">PROPERTIES1</span><span class="p">)</span>
+        <span class="n">cls</span><span class="o">.</span><span class="n">__productions__</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">prod</span><span class="p">)</span>
+
+        <span class="c"># PROPERTIES -&gt; lchev identifier rchev</span>
+        <span class="n">prod</span> <span class="o">=</span> <span class="n">Production</span><span class="p">(</span><span class="s">&#39;PROPERTIES&#39;</span><span class="p">,</span> <span class="n">cls</span><span class="o">.</span><span class="n">PROPERTIES2</span><span class="p">)</span>
+        <span class="n">prod</span><span class="o">.</span><span class="n">addSymbol</span><span class="p">(</span><span class="s">&#39;lchev&#39;</span><span class="p">)</span>
+        <span class="n">prod</span><span class="o">.</span><span class="n">addSymbol</span><span class="p">(</span><span class="s">&#39;identifier&#39;</span><span class="p">,</span> <span class="s">&#39;name&#39;</span><span class="p">)</span>
+        <span class="n">prod</span><span class="o">.</span><span class="n">addSymbol</span><span class="p">(</span><span class="s">&#39;rchev&#39;</span><span class="p">)</span>
+        <span class="n">cls</span><span class="o">.</span><span class="n">__productions__</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">prod</span><span class="p">)</span>
+
+        <span class="nb">super</span><span class="p">(</span><span class="n">ProductionParser</span><span class="p">,</span> <span class="n">cls</span><span class="p">)</span><span class="o">.</span><span class="n">prepare</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">newSentence</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">startSymbol</span><span class="p">):</span>
+        <span class="n">name</span><span class="p">,</span> <span class="n">prods</span> <span class="o">=</span> <span class="n">startSymbol</span>
+        <span class="k">for</span> <span class="n">prod</span> <span class="ow">in</span> <span class="n">prods</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">prod</span><span class="o">.</span><span class="n">name</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="n">prod</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">grammarClass</span><span class="o">.</span><span class="n">__productions__</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">prods</span><span class="p">)</span>
+
+    <span class="c"># Lexer</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">ignore</span><span class="p">(</span><span class="n">char</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">char</span> <span class="ow">in</span> <span class="s">&#39; </span><span class="se">\t\n</span><span class="s">&#39;</span>
+
+    <span class="nd">@token</span><span class="p">(</span><span class="s">&#39;-&gt;&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">arrow</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tok</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="nd">@token</span><span class="p">(</span><span class="s">&#39;&lt;&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">lchev</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tok</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="nd">@token</span><span class="p">(</span><span class="s">&#39;&gt;&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">rchev</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tok</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="nd">@token</span><span class="p">(</span><span class="s">r&#39;\|&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">union</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tok</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="nd">@token</span><span class="p">(</span><span class="s">r&#39;\*|\+|\?&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">repeat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tok</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="nd">@token</span><span class="p">(</span><span class="s">r&#39;\(&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">lparen</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tok</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="nd">@token</span><span class="p">(</span><span class="s">r&#39;\)&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">rparen</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tok</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="nd">@token</span><span class="p">(</span><span class="s">&#39;[a-zA-Z_][a-zA-Z0-9_]*&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">identifier</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tok</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="nd">@token</span><span class="p">(</span><span class="s">r&#39;&quot;|</span><span class="se">\&#39;</span><span class="s">&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">litteral</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tok</span><span class="p">):</span>
+        <span class="k">class</span> <span class="nc">StringBuilder</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+            <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">quotetype</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">quotetype</span> <span class="o">=</span> <span class="n">quotetype</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">chars</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">def</span> <span class="nf">feed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">char</span><span class="p">):</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">char</span> <span class="o">==</span> <span class="s">&#39;</span><span class="se">\\</span><span class="s">&#39;</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="mi">1</span>
+                    <span class="k">elif</span> <span class="n">char</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">quotetype</span><span class="p">:</span>
+                        <span class="k">return</span> <span class="s">&#39;litteral&#39;</span><span class="p">,</span> <span class="s">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">chars</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">chars</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">char</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">chars</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">char</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setConsumer</span><span class="p">(</span><span class="n">StringBuilder</span><span class="p">(</span><span class="n">tok</span><span class="o">.</span><span class="n">value</span><span class="p">))</span>
+
+    <span class="c"># Parser</span>
+
+    <span class="k">def</span> <span class="nf">DECL</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">prods</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">grammarClass</span><span class="o">.</span><span class="n">tokenTypes</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="n">GrammarError</span><span class="p">(</span><span class="s">&#39;&quot;</span><span class="si">%s</span><span class="s">&quot; is a token name and cannot be used as non-terminal&#39;</span> <span class="o">%</span> <span class="n">name</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">prods</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">PRODS1</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prodlist</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">prodlist</span>
+
+    <span class="k">def</span> <span class="nf">PRODS2</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prods</span><span class="p">,</span> <span class="n">prodlist</span><span class="p">):</span>
+        <span class="n">prods</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">prodlist</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">prods</span>
+
+    <span class="k">def</span> <span class="nf">P1</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sym</span><span class="p">,</span> <span class="n">prodlist</span><span class="p">):</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="n">symbol</span><span class="p">,</span> <span class="n">properties</span><span class="p">,</span> <span class="n">repeat</span><span class="p">,</span> <span class="n">sep</span> <span class="o">=</span> <span class="n">sym</span>
+
+        <span class="k">for</span> <span class="n">prod</span> <span class="ow">in</span> <span class="n">prodlist</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">prod</span><span class="o">.</span><span class="n">name</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">repeat</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+                    <span class="n">prod</span><span class="o">.</span><span class="n">addSymbol</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">properties</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;name&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">))</span>
+                    <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">prod</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">repeat</span> <span class="o">==</span> <span class="s">&#39;?&#39;</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">sep</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                        <span class="k">raise</span> <span class="n">GrammarError</span><span class="p">(</span><span class="s">&#39;A separator makes no sense for &quot;?&quot;&#39;</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">__addAtMostOne</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">prod</span><span class="p">,</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">properties</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;name&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">))</span>
+                <span class="k">elif</span> <span class="n">repeat</span> <span class="ow">in</span> <span class="p">[</span><span class="s">&#39;*&#39;</span><span class="p">,</span> <span class="s">&#39;+&#39;</span><span class="p">]:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">__addList</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">prod</span><span class="p">,</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">properties</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;name&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">),</span> <span class="n">repeat</span> <span class="o">==</span> <span class="s">&#39;*&#39;</span><span class="p">,</span> <span class="n">sep</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">prod</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">result</span>
+
+    <span class="k">def</span> <span class="nf">__addAtMostOne</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">productions</span><span class="p">,</span> <span class="n">prod</span><span class="p">,</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="n">clone</span> <span class="o">=</span> <span class="n">prod</span><span class="o">.</span><span class="n">cloned</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_wrapCallbackNone</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">clone</span><span class="p">)</span>
+        <span class="n">productions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">clone</span><span class="p">)</span>
+
+        <span class="n">prod</span><span class="o">.</span><span class="n">addSymbol</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+        <span class="n">productions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">prod</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_wrapCallbackNone</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">prod</span><span class="p">):</span>
+        <span class="n">previous</span> <span class="o">=</span> <span class="n">prod</span><span class="o">.</span><span class="n">callback</span>
+        <span class="k">def</span> <span class="nf">callback</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="bp">None</span>
+            <span class="k">return</span> <span class="n">previous</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">prod</span><span class="o">.</span><span class="n">callback</span> <span class="o">=</span> <span class="n">callback</span>
+
+    <span class="k">def</span> <span class="nf">__addList</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">productions</span><span class="p">,</span> <span class="n">prod</span><span class="p">,</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">allowEmpty</span><span class="p">,</span> <span class="n">sep</span><span class="p">):</span>
+        <span class="k">class</span> <span class="nc">ListSymbol</span><span class="p">(</span><span class="n">six</span><span class="o">.</span><span class="n">with_metaclass</span><span class="p">(</span><span class="n">Singleton</span><span class="p">,</span> <span class="nb">object</span><span class="p">)):</span>
+            <span class="n">__reprval__</span> <span class="o">=</span> <span class="n">six</span><span class="o">.</span><span class="n">u</span><span class="p">(</span><span class="s">&#39;List(</span><span class="si">%s</span><span class="s">, &quot;</span><span class="si">%s</span><span class="s">&quot;)&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="n">six</span><span class="o">.</span><span class="n">u</span><span class="p">(</span><span class="s">&#39;*&#39;</span><span class="p">)</span> <span class="k">if</span> <span class="n">allowEmpty</span> <span class="k">else</span> <span class="n">six</span><span class="o">.</span><span class="n">u</span><span class="p">(</span><span class="s">&#39;+&#39;</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="n">allowEmpty</span><span class="p">:</span>
+            <span class="n">clone</span> <span class="o">=</span> <span class="n">prod</span><span class="o">.</span><span class="n">cloned</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_wrapCallbackEmpty</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">clone</span><span class="p">)</span>
+            <span class="n">productions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">clone</span><span class="p">)</span>
+
+        <span class="n">prod</span><span class="o">.</span><span class="n">addSymbol</span><span class="p">(</span><span class="n">ListSymbol</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+        <span class="n">productions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">prod</span><span class="p">)</span>
+
+        <span class="n">listProd</span> <span class="o">=</span> <span class="n">Production</span><span class="p">(</span><span class="n">ListSymbol</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_wrapCallbackOne</span><span class="p">())</span>
+        <span class="n">listProd</span><span class="o">.</span><span class="n">addSymbol</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s">&#39;item&#39;</span><span class="p">)</span>
+        <span class="n">productions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">listProd</span><span class="p">)</span>
+
+        <span class="n">listProd</span> <span class="o">=</span> <span class="n">Production</span><span class="p">(</span><span class="n">ListSymbol</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_wrapCallbackNext</span><span class="p">())</span>
+        <span class="n">listProd</span><span class="o">.</span><span class="n">addSymbol</span><span class="p">(</span><span class="n">ListSymbol</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s">&#39;items&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">sep</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">listProd</span><span class="o">.</span><span class="n">addSymbol</span><span class="p">(</span><span class="n">sep</span><span class="p">)</span>
+        <span class="n">listProd</span><span class="o">.</span><span class="n">addSymbol</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s">&#39;item&#39;</span><span class="p">)</span>
+        <span class="n">productions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">listProd</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_wrapCallbackEmpty</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">prod</span><span class="p">):</span>
+        <span class="n">previous</span> <span class="o">=</span> <span class="n">prod</span><span class="o">.</span><span class="n">callback</span>
+        <span class="k">def</span> <span class="nf">cbEmpty</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="n">kwargs</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">return</span> <span class="n">previous</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">prod</span><span class="o">.</span><span class="n">callback</span> <span class="o">=</span> <span class="n">cbEmpty</span>
+
+    <span class="k">def</span> <span class="nf">_wrapCallbackOne</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">def</span> <span class="nf">cbOne</span><span class="p">(</span><span class="n">_</span><span class="p">,</span> <span class="n">item</span><span class="p">):</span>
+            <span class="k">return</span> <span class="p">[</span><span class="n">item</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">cbOne</span>
+
+    <span class="k">def</span> <span class="nf">_wrapCallbackNext</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">def</span> <span class="nf">cbNext</span><span class="p">(</span><span class="n">_</span><span class="p">,</span> <span class="n">items</span><span class="p">,</span> <span class="n">item</span><span class="p">):</span>
+            <span class="n">items</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">items</span>
+        <span class="k">return</span> <span class="n">cbNext</span>
+
+    <span class="k">def</span> <span class="nf">P2</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c"># &#39;name&#39; is replaced in newSentence()</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">Production</span><span class="p">(</span><span class="bp">None</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">callback</span><span class="p">,</span> <span class="n">priority</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">priority</span><span class="p">)]</span>
+
+    <span class="k">def</span> <span class="nf">SYMNAME1</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">identifier</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">identifier</span>
+
+    <span class="k">def</span> <span class="nf">SYMNAME2</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">litteral</span><span class="p">):</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">litteral</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">grammarClass</span><span class="o">.</span><span class="n">tokenTypes</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">grammarClass</span><span class="o">.</span><span class="n">addTokenType</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">s</span><span class="p">,</span> <span class="n">tok</span><span class="p">:</span> <span class="bp">None</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">escape</span><span class="p">(</span><span class="n">name</span><span class="p">),</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">name</span>
+
+    <span class="k">def</span> <span class="nf">SYM</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">symname</span><span class="p">,</span> <span class="n">properties</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">symname</span><span class="p">,</span> <span class="n">properties</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">SYMREP</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">symname</span><span class="p">,</span> <span class="n">repeat</span><span class="p">,</span> <span class="n">properties</span><span class="p">,</span> <span class="n">separator</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">symname</span><span class="p">,</span> <span class="n">properties</span><span class="p">,</span> <span class="n">repeat</span><span class="p">,</span> <span class="n">separator</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">SYMREP_LIT</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">symname</span><span class="p">,</span> <span class="n">repeat</span><span class="p">,</span> <span class="n">properties</span><span class="p">,</span> <span class="n">separator</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">separator</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">grammarClass</span><span class="o">.</span><span class="n">tokenTypes</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">grammarClass</span><span class="o">.</span><span class="n">addTokenType</span><span class="p">(</span><span class="n">separator</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">s</span><span class="p">,</span> <span class="n">tok</span><span class="p">:</span> <span class="bp">None</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">escape</span><span class="p">(</span><span class="n">separator</span><span class="p">),</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">SYMREP</span><span class="p">(</span><span class="n">symname</span><span class="p">,</span> <span class="n">repeat</span><span class="p">,</span> <span class="n">properties</span><span class="p">,</span> <span class="n">separator</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">PROPERTIES1</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">PROPERTIES2</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2015, Jérôme Laheurte.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.7</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

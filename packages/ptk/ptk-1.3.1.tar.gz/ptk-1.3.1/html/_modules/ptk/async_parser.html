@@ -1,0 +1,187 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>ptk.async_parser &mdash; ptk 1.3.1 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '1.3.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="ptk 1.3.1 documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for ptk.async_parser</h1><div class="highlight"><pre>
+<span class="c"># -*- coding: UTF-8 -*-</span>
+
+<span class="c"># (c) Jérôme Laheurte 2015</span>
+<span class="c"># See LICENSE.txt</span>
+
+<span class="c"># XXXTODO: when pylint supports async, remove this...</span>
+<span class="c"># pylint: skip-file</span>
+
+<span class="kn">from</span> <span class="nn">ptk.parser</span> <span class="kn">import</span> <span class="n">production</span><span class="p">,</span> <span class="n">LRParser</span><span class="p">,</span> <span class="n">ProductionParser</span><span class="p">,</span> <span class="n">leftAssoc</span><span class="p">,</span> <span class="n">rightAssoc</span><span class="p">,</span> <span class="n">nonAssoc</span><span class="p">,</span> <span class="n">ParseError</span><span class="p">,</span> <span class="n">_Accept</span><span class="p">,</span> <span class="n">_Reduce</span><span class="p">,</span> <span class="n">_Shift</span>
+
+
+<span class="k">class</span> <span class="nc">_AsyncShift</span><span class="p">(</span><span class="n">_Shift</span><span class="p">):</span>
+    <span class="n">async</span> <span class="k">def</span> <span class="nf">asyncDoAction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">grammar</span><span class="p">,</span> <span class="n">stack</span><span class="p">,</span> <span class="n">tok</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">doAction</span><span class="p">(</span><span class="n">grammar</span><span class="p">,</span> <span class="n">stack</span><span class="p">,</span> <span class="n">tok</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">_AsyncReduce</span><span class="p">(</span><span class="n">_Reduce</span><span class="p">):</span>
+    <span class="n">async</span> <span class="k">def</span> <span class="nf">asyncDoAction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">grammar</span><span class="p">,</span> <span class="n">stack</span><span class="p">,</span> <span class="n">tok</span><span class="p">):</span>
+        <span class="n">callback</span><span class="p">,</span> <span class="n">kwargs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_getCallback</span><span class="p">(</span><span class="n">stack</span><span class="p">)</span>
+        <span class="n">prodVal</span> <span class="o">=</span> <span class="n">await</span> <span class="n">callback</span><span class="p">(</span><span class="n">grammar</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_applied</span><span class="p">(</span><span class="n">grammar</span><span class="p">,</span> <span class="n">stack</span><span class="p">,</span> <span class="n">prodVal</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">False</span>
+
+
+<span class="k">class</span> <span class="nc">AsyncProductionParser</span><span class="p">(</span><span class="n">ProductionParser</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_wrapCallbackNone</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">prod</span><span class="p">):</span>
+        <span class="n">previous</span> <span class="o">=</span> <span class="n">prod</span><span class="o">.</span><span class="n">callback</span>
+        <span class="n">async</span> <span class="k">def</span> <span class="nf">callback</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="bp">None</span>
+            <span class="k">return</span> <span class="n">await</span> <span class="n">previous</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">prod</span><span class="o">.</span><span class="n">callback</span> <span class="o">=</span> <span class="n">callback</span>
+
+    <span class="k">def</span> <span class="nf">_wrapCallbackEmpty</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">prod</span><span class="p">):</span>
+        <span class="n">previous</span> <span class="o">=</span> <span class="n">prod</span><span class="o">.</span><span class="n">callback</span>
+        <span class="n">async</span> <span class="k">def</span> <span class="nf">cbEmpty</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="n">kwargs</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">return</span> <span class="n">await</span> <span class="n">previous</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">prod</span><span class="o">.</span><span class="n">callback</span> <span class="o">=</span> <span class="n">cbEmpty</span>
+
+    <span class="k">def</span> <span class="nf">_wrapCallbackOne</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">async</span> <span class="k">def</span> <span class="nf">cbOne</span><span class="p">(</span><span class="n">_</span><span class="p">,</span> <span class="n">item</span><span class="p">):</span>
+            <span class="k">return</span> <span class="p">[</span><span class="n">item</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">cbOne</span>
+
+    <span class="k">def</span> <span class="nf">_wrapCallbackNext</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">async</span> <span class="k">def</span> <span class="nf">cbNext</span><span class="p">(</span><span class="n">_</span><span class="p">,</span> <span class="n">items</span><span class="p">,</span> <span class="n">item</span><span class="p">):</span>
+            <span class="n">items</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">items</span>
+        <span class="k">return</span> <span class="n">cbNext</span>
+
+
+<span class="k">def</span> <span class="nf">asyncCallbackByName</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
+    <span class="n">async</span> <span class="k">def</span> <span class="nf">_wrapper</span><span class="p">(</span><span class="n">instance</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">await</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">instance</span><span class="p">,</span> <span class="n">name</span><span class="p">)(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">_wrapper</span>
+
+
+<div class="viewcode-block" id="AsyncLRParser"><a class="viewcode-back" href="../../parser.html#ptk.async_parser.AsyncLRParser">[docs]</a><span class="k">class</span> <span class="nc">AsyncLRParser</span><span class="p">(</span><span class="n">LRParser</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This class works like :py:class:`LRParser` but supports</span>
+<span class="sd">    asynchronous methods (new in Python 3.5). You must use</span>
+<span class="sd">    :py:class:`AsyncLexer` in conjuction with it:</span>
+
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">    class Parser(AsyncLRParser, AsyncLexer):</span>
+<span class="sd">        # ...</span>
+
+<span class="sd">    And only use :py:func:`AsyncLexer.asyncFeed` to feed it the input</span>
+<span class="sd">    stream. Semantic actions must be asynchronous methods as</span>
+<span class="sd">    well. When the start symbol is reduced, the</span>
+<span class="sd">    :py:func:`asyncNewSentence` method is awaited.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">async</span> <span class="k">def</span> <span class="nf">asyncNewToken</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tok</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">action</span><span class="p">,</span> <span class="n">stack</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_processToken</span><span class="p">(</span><span class="n">tok</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">await</span> <span class="n">action</span><span class="o">.</span><span class="n">asyncDoAction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stack</span><span class="p">,</span> <span class="n">tok</span><span class="p">):</span>
+                    <span class="k">break</span>
+        <span class="k">except</span> <span class="n">_Accept</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_restartParser</span><span class="p">()</span>
+            <span class="n">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">asyncNewSentence</span><span class="p">(</span><span class="n">exc</span><span class="o">.</span><span class="n">result</span><span class="p">)</span>
+
+    <span class="n">async</span> <span class="k">def</span> <span class="nf">asyncNewSentence</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">result</span><span class="p">):</span>
+       <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">       Awaited when the start symbol is reached.</span>
+<span class="sd">       &quot;&quot;&quot;</span>
+       <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">_createProductionParser</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">priority</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">AsyncProductionParser</span><span class="p">(</span><span class="n">asyncCallbackByName</span><span class="p">(</span><span class="n">name</span><span class="p">),</span> <span class="n">priority</span><span class="p">,</span> <span class="n">cls</span><span class="p">)</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">_createShiftAction</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">state</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">_AsyncShift</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">_createReduceAction</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">item</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">_AsyncReduce</span><span class="p">(</span><span class="n">item</span><span class="p">)</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2015, Jérôme Laheurte.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.7</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

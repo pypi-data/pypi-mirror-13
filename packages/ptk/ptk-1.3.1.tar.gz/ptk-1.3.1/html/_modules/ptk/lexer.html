@@ -1,0 +1,481 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>ptk.lexer &mdash; ptk 1.3.1 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '1.3.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="ptk 1.3.1 documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for ptk.lexer</h1><div class="highlight"><pre>
+<span class="c"># -*- coding: UTF-8 -*-</span>
+
+<span class="c"># (c) Jérôme Laheurte 2015</span>
+<span class="c"># See LICENSE.txt</span>
+
+<span class="kn">import</span> <span class="nn">six</span>
+<span class="kn">import</span> <span class="nn">inspect</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">collections</span>
+
+<span class="kn">from</span> <span class="nn">ptk.regex</span> <span class="kn">import</span> <span class="n">buildRegex</span><span class="p">,</span> <span class="n">DeadState</span><span class="p">,</span> <span class="n">RegexTokenizer</span>
+<span class="kn">from</span> <span class="nn">ptk.utils</span> <span class="kn">import</span> <span class="n">Singleton</span><span class="p">,</span> <span class="n">callbackByName</span>
+
+
+<span class="c"># In Python 3 we&#39;d use __prepare__ and an ordered dict...</span>
+<span class="n">_TOKREGISTER</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+
+
+<span class="k">class</span> <span class="nc">_LexerMeta</span><span class="p">(</span><span class="nb">type</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__new__</span><span class="p">(</span><span class="n">metacls</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">bases</span><span class="p">,</span> <span class="n">attrs</span><span class="p">):</span>
+        <span class="k">global</span> <span class="n">_TOKREGISTER</span> <span class="c"># pylint: disable=W0603</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">attrs</span><span class="p">[</span><span class="s">&#39;__tokens__&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="nb">set</span><span class="p">(),</span> <span class="nb">list</span><span class="p">())</span> <span class="c"># Set of token names, list of (rx, callback, defaultType)</span>
+            <span class="n">klass</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">_LexerMeta</span><span class="p">,</span> <span class="n">metacls</span><span class="p">)</span><span class="o">.</span><span class="n">__new__</span><span class="p">(</span><span class="n">metacls</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">bases</span><span class="p">,</span> <span class="n">attrs</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">func</span><span class="p">,</span> <span class="n">rx</span><span class="p">,</span> <span class="n">toktypes</span> <span class="ow">in</span> <span class="n">_TOKREGISTER</span><span class="p">:</span>
+                <span class="n">klass</span><span class="o">.</span><span class="n">addTokenType</span><span class="p">(</span><span class="n">func</span><span class="o">.</span><span class="n">__name__</span><span class="p">,</span> <span class="n">callbackByName</span><span class="p">(</span><span class="n">func</span><span class="o">.</span><span class="n">__name__</span><span class="p">),</span> <span class="n">rx</span><span class="p">,</span> <span class="n">toktypes</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">klass</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">_TOKREGISTER</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+
+
+<span class="k">def</span> <span class="nf">token</span><span class="p">(</span><span class="n">rx</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_wrap</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">any</span><span class="p">([</span><span class="n">func</span><span class="o">.</span><span class="n">__name__</span> <span class="o">==</span> <span class="n">aFunc</span><span class="o">.</span><span class="n">__name__</span> <span class="ow">and</span> <span class="n">func</span> <span class="o">!=</span> <span class="n">aFunc</span> <span class="k">for</span> <span class="n">aFunc</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">_TOKREGISTER</span><span class="p">]):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s">&#39;Duplicate token method name &quot;</span><span class="si">%s</span><span class="s">&quot;&#39;</span> <span class="o">%</span> <span class="n">func</span><span class="o">.</span><span class="n">__name__</span><span class="p">)</span>
+        <span class="n">_TOKREGISTER</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">func</span><span class="p">,</span> <span class="n">rx</span><span class="p">,</span> <span class="n">types</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">func</span>
+    <span class="k">return</span> <span class="n">_wrap</span>
+
+
+<div class="viewcode-block" id="LexerError"><a class="viewcode-back" href="../../lexer.html#ptk.lexer.LexerError">[docs]</a><span class="k">class</span> <span class="nc">LexerError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Unrecognized token in input</span>
+
+<span class="sd">    :ivar lineno: Line in input</span>
+<span class="sd">    :ivar colno: Column in input</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">char</span><span class="p">,</span> <span class="n">colno</span><span class="p">,</span> <span class="n">lineno</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">LexerError</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="s">&#39;Unrecognized token &quot;</span><span class="si">%s</span><span class="s">&quot; at line </span><span class="si">%d</span><span class="s">, column </span><span class="si">%d</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">char</span><span class="p">,</span> <span class="n">lineno</span><span class="p">,</span> <span class="n">colno</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lineno</span> <span class="o">=</span> <span class="n">lineno</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">colno</span> <span class="o">=</span> <span class="n">colno</span></div>
+
+
+<div class="viewcode-block" id="EOF"><a class="viewcode-back" href="../../lexer.html#ptk.lexer.EOF">[docs]</a><span class="k">class</span> <span class="nc">EOF</span><span class="p">(</span><span class="n">six</span><span class="o">.</span><span class="n">with_metaclass</span><span class="p">(</span><span class="n">Singleton</span><span class="p">,</span> <span class="nb">object</span><span class="p">)):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    End symbol</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">__reprval__</span> <span class="o">=</span> <span class="n">six</span><span class="o">.</span><span class="n">u</span><span class="p">(</span><span class="s">&#39;$&#39;</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Read-only attribute for Token duck-typing&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">value</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Read-only attribute for Token duck-typing&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+
+<span class="n">_LexerPosition</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">namedtuple</span><span class="p">(</span><span class="s">&#39;_LexerPosition&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s">&#39;column&#39;</span><span class="p">,</span> <span class="s">&#39;line&#39;</span><span class="p">])</span>
+
+
+<div class="viewcode-block" id="LexerBase"><a class="viewcode-back" href="../../lexer.html#ptk.lexer.LexerBase">[docs]</a><span class="k">class</span> <span class="nc">LexerBase</span><span class="p">(</span><span class="n">six</span><span class="o">.</span><span class="n">with_metaclass</span><span class="p">(</span><span class="n">_LexerMeta</span><span class="p">,</span> <span class="nb">object</span><span class="p">)):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This defines the interface for lexer classes. For concrete</span>
+<span class="sd">    implementations, see :py:class:`ProgressiveLexer` and</span>
+<span class="sd">    :py:class:`ReLexer`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">Token</span> <span class="o">=</span> <span class="n">RegexTokenizer</span><span class="o">.</span><span class="n">Token</span>
+
+    <span class="c"># Shut up pychecker. Those are actually set by the metaclass.</span>
+    <span class="n">__tokens__</span> <span class="o">=</span> <span class="p">()</span>
+
+    <span class="k">class</span> <span class="nc">_MutableToken</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+        <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">type_</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">=</span> <span class="n">type_</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">value</span>
+
+        <span class="k">def</span> <span class="nf">token</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="sd">&quot;&quot;&quot;Returns the unmutable equivalent&quot;&quot;&quot;</span>
+            <span class="k">return</span> <span class="n">EOF</span> <span class="k">if</span> <span class="n">EOF</span> <span class="ow">in</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">type</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">]</span> <span class="k">else</span> <span class="n">RegexTokenizer</span><span class="o">.</span><span class="n">Token</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">type</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">LexerBase</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">restartLexer</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">restartLexer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">resetPos</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">resetPos</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__pos</span> <span class="o">=</span> <span class="n">_LexerPosition</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_input</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__consumer</span> <span class="o">=</span> <span class="bp">None</span>
+
+<div class="viewcode-block" id="LexerBase.position"><a class="viewcode-back" href="../../lexer.html#ptk.lexer.LexerBase.position">[docs]</a>    <span class="k">def</span> <span class="nf">position</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :return: The current position in stream as a 2-tuple (column, line).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__pos</span></div>
+
+<div class="viewcode-block" id="LexerBase.advanceColumn"><a class="viewcode-back" href="../../lexer.html#ptk.lexer.LexerBase.advanceColumn">[docs]</a>    <span class="k">def</span> <span class="nf">advanceColumn</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">count</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Advances the current position by *count* columns.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">col</span><span class="p">,</span> <span class="n">row</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__pos</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__pos</span> <span class="o">=</span> <span class="n">_LexerPosition</span><span class="p">(</span><span class="n">col</span> <span class="o">+</span> <span class="n">count</span><span class="p">,</span> <span class="n">row</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="LexerBase.advanceLine"><a class="viewcode-back" href="../../lexer.html#ptk.lexer.LexerBase.advanceLine">[docs]</a>    <span class="k">def</span> <span class="nf">advanceLine</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">count</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Advances the current position by *count* lines.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">row</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__pos</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__pos</span> <span class="o">=</span> <span class="n">_LexerPosition</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">row</span> <span class="o">+</span> <span class="n">count</span><span class="p">)</span></div>
+
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="LexerBase.ignore"><a class="viewcode-back" href="../../lexer.html#ptk.lexer.LexerBase.ignore">[docs]</a>    <span class="k">def</span> <span class="nf">ignore</span><span class="p">(</span><span class="n">char</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Override this to ignore characters in input stream. The</span>
+<span class="sd">        default is to ignore spaces and tabs.</span>
+
+<span class="sd">        :param char: The character to test</span>
+<span class="sd">        :return: True if *char* should be ignored</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">char</span> <span class="ow">in</span> <span class="p">[</span><span class="n">six</span><span class="o">.</span><span class="n">b</span><span class="p">(</span><span class="s">&#39; &#39;</span><span class="p">),</span> <span class="n">six</span><span class="o">.</span><span class="n">u</span><span class="p">(</span><span class="s">&#39; &#39;</span><span class="p">),</span> <span class="n">six</span><span class="o">.</span><span class="n">b</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\t</span><span class="s">&#39;</span><span class="p">),</span> <span class="n">six</span><span class="o">.</span><span class="n">u</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\t</span><span class="s">&#39;</span><span class="p">)]</span></div>
+
+<div class="viewcode-block" id="LexerBase.setConsumer"><a class="viewcode-back" href="../../lexer.html#ptk.lexer.LexerBase.setConsumer">[docs]</a>    <span class="k">def</span> <span class="nf">setConsumer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">consumer</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Sets the current consumer. A consumer is an object with a</span>
+<span class="sd">        *feed* method; all characters seen on the input stream after</span>
+<span class="sd">        the consumer is set are passed directly to it. When the *feed*</span>
+<span class="sd">        method returns a 2-tuple (type, value), the corresponding</span>
+<span class="sd">        token is generated and the consumer reset to None. This may be</span>
+<span class="sd">        handy to parse tokens that are not easily recognized by a</span>
+<span class="sd">        regular expression but easily by code; for instance the</span>
+<span class="sd">        following lexer recognizes C strings without having to use</span>
+<span class="sd">        negative lookahead:</span>
+
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">           class MyLexer(ReLexer):</span>
+<span class="sd">               @token(&#39;&quot;&#39;)</span>
+<span class="sd">               def cstring(self, tok):</span>
+<span class="sd">                   class CString(object):</span>
+<span class="sd">                       def __init__(self):</span>
+<span class="sd">                           self.state = 0</span>
+<span class="sd">                           self.value = StringIO.StringIO()</span>
+<span class="sd">                       def feed(self, char):</span>
+<span class="sd">                           if self.state == 0:</span>
+<span class="sd">                               if char == &#39;&quot;&#39;:</span>
+<span class="sd">                                   return &#39;cstring&#39;, self.value.getvalue()</span>
+<span class="sd">                               if char == &#39;\\\\&#39;:</span>
+<span class="sd">                                   self.state = 1</span>
+<span class="sd">                               else:</span>
+<span class="sd">                                   self.value.write(char)</span>
+<span class="sd">                           elif self.state == 1:</span>
+<span class="sd">                               self.value.write(char)</span>
+<span class="sd">                               self.state = 0</span>
+<span class="sd">                   self.setConsumer(CString())</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__consumer</span> <span class="o">=</span> <span class="n">consumer</span></div>
+
+    <span class="k">def</span> <span class="nf">consumer</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__consumer</span>
+
+<div class="viewcode-block" id="LexerBase.parse"><a class="viewcode-back" href="../../lexer.html#ptk.lexer.LexerBase.parse">[docs]</a>    <span class="k">def</span> <span class="nf">parse</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">string</span><span class="p">):</span> <span class="c"># pragma: no cover</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Parses the whole *string*</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+
+<div class="viewcode-block" id="LexerBase.newToken"><a class="viewcode-back" href="../../lexer.html#ptk.lexer.LexerBase.newToken">[docs]</a>    <span class="k">def</span> <span class="nf">newToken</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tok</span><span class="p">):</span> <span class="c"># pragma: no cover</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This method will be invoked as soon as a token is recognized on input.</span>
+
+<span class="sd">        :param tok: The token. This is a named tuple with *type* and *value* attributes.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">addTokenType</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">callback</span><span class="p">,</span> <span class="n">regex</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">typeName</span> <span class="ow">in</span> <span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="k">if</span> <span class="n">types</span> <span class="ow">is</span> <span class="bp">None</span> <span class="k">else</span> <span class="n">types</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">typeName</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">EOF</span><span class="p">:</span>
+                <span class="n">cls</span><span class="o">.</span><span class="n">__tokens__</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">typeName</span><span class="p">)</span>
+        <span class="n">cls</span><span class="o">.</span><span class="n">__tokens__</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">regex</span><span class="p">,</span> <span class="n">callback</span><span class="p">,</span> <span class="n">name</span> <span class="k">if</span> <span class="n">types</span> <span class="ow">is</span> <span class="bp">None</span> <span class="k">else</span> <span class="bp">None</span><span class="p">))</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">_allTokens</span><span class="p">(</span><span class="n">cls</span><span class="p">):</span>
+        <span class="n">tokens</span> <span class="o">=</span> <span class="p">(</span><span class="nb">set</span><span class="p">(),</span> <span class="nb">list</span><span class="p">())</span>
+        <span class="k">for</span> <span class="n">base</span> <span class="ow">in</span> <span class="n">inspect</span><span class="o">.</span><span class="n">getmro</span><span class="p">(</span><span class="n">cls</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">base</span><span class="p">,</span> <span class="n">LexerBase</span><span class="p">):</span>
+                <span class="n">tokens</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">base</span><span class="o">.</span><span class="n">__tokens__</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+                <span class="n">tokens</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">base</span><span class="o">.</span><span class="n">__tokens__</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">tokens</span>
+
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="LexerBase.tokenTypes"><a class="viewcode-back" href="../../lexer.html#ptk.lexer.LexerBase.tokenTypes">[docs]</a>    <span class="k">def</span> <span class="nf">tokenTypes</span><span class="p">(</span><span class="n">cls</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :return: the set of all token names, as strings.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">cls</span><span class="o">.</span><span class="n">_allTokens</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span></div></div>
+
+
+<div class="viewcode-block" id="ReLexer"><a class="viewcode-back" href="../../lexer.html#ptk.lexer.ReLexer">[docs]</a><span class="k">class</span> <span class="nc">ReLexer</span><span class="p">(</span><span class="n">LexerBase</span><span class="p">):</span> <span class="c"># pylint: disable=W0223</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Concrete lexer based on Python regular expressions. this is</span>
+<span class="sd">    **way** faster than :py:class:`ProgressiveLexer` but it can only</span>
+<span class="sd">    tokenize whole strings.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__regexes</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">rx</span><span class="p">,</span> <span class="n">callback</span><span class="p">,</span> <span class="n">defaultType</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_allTokens</span><span class="p">()[</span><span class="mi">1</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="n">six</span><span class="o">.</span><span class="n">PY2</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">rx</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">or</span> <span class="n">six</span><span class="o">.</span><span class="n">PY3</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">rx</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">):</span>
+                <span class="n">crx</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">six</span><span class="o">.</span><span class="n">b</span><span class="p">(</span><span class="s">&#39;^&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="n">rx</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">crx</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">six</span><span class="o">.</span><span class="n">u</span><span class="p">(</span><span class="s">&#39;^&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="n">rx</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__regexes</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">crx</span><span class="p">,</span> <span class="n">callback</span><span class="p">,</span> <span class="n">defaultType</span><span class="p">))</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">ReLexer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">parse</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">string</span><span class="p">):</span>
+        <span class="n">pos</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">while</span> <span class="n">pos</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">string</span><span class="p">):</span>
+            <span class="n">char</span> <span class="o">=</span> <span class="n">string</span><span class="p">[</span><span class="n">pos</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">char</span> <span class="o">==</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">advanceLine</span><span class="p">()</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">advanceColumn</span><span class="p">()</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">consumer</span><span class="p">()</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ignore</span><span class="p">(</span><span class="n">char</span><span class="p">):</span>
+                    <span class="n">pos</span> <span class="o">+=</span> <span class="mi">1</span>
+                    <span class="k">continue</span>
+                <span class="n">pos</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__findMatch</span><span class="p">(</span><span class="n">string</span><span class="p">,</span> <span class="n">pos</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">tok</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">consumer</span><span class="p">()</span><span class="o">.</span><span class="n">feed</span><span class="p">(</span><span class="n">char</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">tok</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">setConsumer</span><span class="p">(</span><span class="bp">None</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">tok</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">newToken</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Token</span><span class="p">(</span><span class="o">*</span><span class="n">tok</span><span class="p">))</span>
+                <span class="n">pos</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">newToken</span><span class="p">(</span><span class="n">EOF</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__findMatch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">string</span><span class="p">,</span> <span class="n">pos</span><span class="p">):</span>
+        <span class="n">match</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="n">matchlen</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">rx</span><span class="p">,</span> <span class="n">callback</span><span class="p">,</span> <span class="n">defaultType</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__regexes</span><span class="p">:</span>
+            <span class="n">mtc</span> <span class="o">=</span> <span class="n">rx</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">string</span><span class="p">[</span><span class="n">pos</span><span class="p">:])</span>
+            <span class="k">if</span> <span class="n">mtc</span><span class="p">:</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="n">mtc</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">matchlen</span><span class="p">:</span>
+                    <span class="n">match</span> <span class="o">=</span> <span class="n">value</span><span class="p">,</span> <span class="n">callback</span><span class="p">,</span> <span class="n">defaultType</span>
+                    <span class="n">matchlen</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">match</span><span class="p">:</span>
+            <span class="n">value</span><span class="p">,</span> <span class="n">callback</span><span class="p">,</span> <span class="n">defaultType</span> <span class="o">=</span> <span class="n">match</span>
+            <span class="n">tok</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_MutableToken</span><span class="p">(</span><span class="n">defaultType</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+            <span class="n">callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tok</span><span class="p">)</span>
+            <span class="n">pos</span> <span class="o">+=</span> <span class="n">matchlen</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">consumer</span><span class="p">()</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">and</span> <span class="n">tok</span><span class="o">.</span><span class="n">type</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">newToken</span><span class="p">(</span><span class="n">tok</span><span class="o">.</span><span class="n">token</span><span class="p">())</span>
+            <span class="k">return</span> <span class="n">pos</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">LexerError</span><span class="p">(</span><span class="n">string</span><span class="p">[</span><span class="n">pos</span><span class="p">:</span><span class="n">pos</span><span class="o">+</span><span class="mi">10</span><span class="p">],</span> <span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">position</span><span class="p">())</span></div>
+
+
+<div class="viewcode-block" id="ProgressiveLexer"><a class="viewcode-back" href="../../lexer.html#ptk.lexer.ProgressiveLexer">[docs]</a><span class="k">class</span> <span class="nc">ProgressiveLexer</span><span class="p">(</span><span class="n">LexerBase</span><span class="p">):</span> <span class="c"># pylint: disable=W0223</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Concrete lexer based on a simple pure-Python regular expression</span>
+<span class="sd">    engine. This lexer is able to tokenize an input stream in a</span>
+<span class="sd">    progressive fashion; just call the</span>
+<span class="sd">    :py:func:`ProgressiveLexer.feed` method with whatever bytes are</span>
+<span class="sd">    available when they&#39;re available. Useful for asynchronous</span>
+<span class="sd">    contexts. Starting with Python 3.5 there is also an asynchronous</span>
+<span class="sd">    version, see :py:class:`AsyncLexer`.</span>
+
+<span class="sd">    This is **slow as hell**.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">restartLexer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">resetPos</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__currentState</span> <span class="o">=</span> <span class="p">[(</span><span class="n">buildRegex</span><span class="p">(</span><span class="n">rx</span><span class="p">)</span><span class="o">.</span><span class="n">start</span><span class="p">(),</span> <span class="n">callback</span><span class="p">,</span> <span class="n">defaultType</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="k">for</span> <span class="n">rx</span><span class="p">,</span> <span class="n">callback</span><span class="p">,</span> <span class="n">defaultType</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_allTokens</span><span class="p">()[</span><span class="mi">1</span><span class="p">]]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__currentMatch</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__matches</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__maxPos</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__state</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_input</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">ProgressiveLexer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">restartLexer</span><span class="p">(</span><span class="n">resetPos</span><span class="o">=</span><span class="n">resetPos</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">parse</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">string</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">six</span><span class="o">.</span><span class="n">PY3</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">string</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">):</span>
+            <span class="n">string</span> <span class="o">=</span> <span class="p">[</span><span class="nb">chr</span><span class="p">(</span><span class="n">c</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s">&#39;ascii&#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">string</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">char</span> <span class="ow">in</span> <span class="n">string</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">feed</span><span class="p">(</span><span class="n">char</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">feed</span><span class="p">(</span><span class="n">EOF</span><span class="p">)</span>
+
+<div class="viewcode-block" id="ProgressiveLexer.feed"><a class="viewcode-back" href="../../lexer.html#ptk.lexer.ProgressiveLexer.feed">[docs]</a>    <span class="k">def</span> <span class="nf">feed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">char</span><span class="p">,</span> <span class="n">charPos</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Handle a single input character. When you&#39;re finished, call</span>
+<span class="sd">        this with EOF as argument.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_input</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">char</span><span class="p">,</span> <span class="n">charPos</span><span class="p">))</span>
+        <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">_input</span><span class="p">:</span>
+            <span class="n">char</span><span class="p">,</span> <span class="n">charPos</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_input</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">tok</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_feed</span><span class="p">(</span><span class="n">char</span><span class="p">,</span> <span class="n">charPos</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">newToken</span><span class="p">(</span><span class="n">tok</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_feed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">char</span><span class="p">,</span> <span class="n">charPos</span><span class="p">):</span> <span class="c"># pylint: disable=R0912,R0915</span>
+        <span class="k">if</span> <span class="n">char</span> <span class="o">==</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">advanceLine</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">advanceColumn</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">consumer</span><span class="p">()</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">tok</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">consumer</span><span class="p">()</span><span class="o">.</span><span class="n">feed</span><span class="p">(</span><span class="n">char</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">tok</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">setConsumer</span><span class="p">(</span><span class="bp">None</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">tok</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                    <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">Token</span><span class="p">(</span><span class="o">*</span><span class="n">tok</span><span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">char</span> <span class="ow">is</span> <span class="n">EOF</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__state</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">restartLexer</span><span class="p">()</span>
+                    <span class="k">yield</span> <span class="n">EOF</span>
+                    <span class="k">return</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__maxPos</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__maxPos</span><span class="p">,</span> <span class="nb">max</span><span class="p">(</span><span class="n">pos</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">regex</span><span class="p">,</span> <span class="n">callback</span><span class="p">,</span> <span class="n">defaultType</span><span class="p">,</span> <span class="n">pos</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__currentState</span><span class="p">))</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__maxPos</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">__currentMatch</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="n">LexerError</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__currentMatch</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">__currentMatch</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__matches</span><span class="o">.</span><span class="n">extend</span><span class="p">([(</span><span class="n">pos</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">callback</span><span class="p">)</span> <span class="k">for</span> <span class="n">regex</span><span class="p">,</span> <span class="n">callback</span><span class="p">,</span> <span class="n">defaultType</span><span class="p">,</span> <span class="n">pos</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__currentState</span> <span class="k">if</span> <span class="n">pos</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">__maxPos</span><span class="p">])</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__matches</span> <span class="o">=</span> <span class="p">[(</span><span class="n">pos</span><span class="p">,</span> <span class="n">callback</span><span class="p">)</span> <span class="k">for</span> <span class="n">pos</span><span class="p">,</span> <span class="n">callback</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__matches</span> <span class="k">if</span> <span class="n">pos</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">__maxPos</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__state</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">ignore</span><span class="p">(</span><span class="n">char</span><span class="p">):</span>
+                    <span class="k">return</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__state</span> <span class="o">=</span> <span class="mi">1</span>
+
+                <span class="n">newState</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+                <span class="k">for</span> <span class="n">regex</span><span class="p">,</span> <span class="n">callback</span><span class="p">,</span> <span class="n">defaultType</span><span class="p">,</span> <span class="n">pos</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__currentState</span><span class="p">:</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">regex</span><span class="o">.</span><span class="n">feed</span><span class="p">(</span><span class="n">char</span><span class="p">):</span>
+                            <span class="n">pos</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__currentMatch</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+                    <span class="k">except</span> <span class="n">DeadState</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">pos</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">__matches</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">pos</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">callback</span><span class="p">))</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">__maxPos</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__maxPos</span><span class="p">,</span> <span class="n">pos</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">newState</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">regex</span><span class="p">,</span> <span class="n">callback</span><span class="p">,</span> <span class="n">defaultType</span><span class="p">,</span> <span class="n">pos</span><span class="p">))</span>
+
+                <span class="k">if</span> <span class="nb">all</span><span class="p">([</span><span class="n">regex</span><span class="o">.</span><span class="n">isDeadEnd</span><span class="p">()</span> <span class="k">for</span> <span class="n">regex</span><span class="p">,</span> <span class="n">callback</span><span class="p">,</span> <span class="n">defaultType</span><span class="p">,</span> <span class="n">pos</span> <span class="ow">in</span> <span class="n">newState</span><span class="p">]):</span>
+                    <span class="k">for</span> <span class="n">regex</span><span class="p">,</span> <span class="n">callback</span><span class="p">,</span> <span class="n">defaultType</span><span class="p">,</span> <span class="n">pos</span> <span class="ow">in</span> <span class="n">newState</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">__matches</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__currentMatch</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">callback</span><span class="p">))</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">__maxPos</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__maxPos</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__currentMatch</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+                    <span class="n">newState</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+
+                <span class="bp">self</span><span class="o">.</span><span class="n">__matches</span> <span class="o">=</span> <span class="p">[(</span><span class="n">pos</span><span class="p">,</span> <span class="n">callback</span><span class="p">)</span> <span class="k">for</span> <span class="n">pos</span><span class="p">,</span> <span class="n">callback</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__matches</span> <span class="k">if</span> <span class="n">pos</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">__maxPos</span><span class="p">]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__currentState</span> <span class="o">=</span> <span class="n">newState</span>
+
+                <span class="bp">self</span><span class="o">.</span><span class="n">__currentMatch</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">char</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">position</span><span class="p">()</span> <span class="k">if</span> <span class="n">charPos</span> <span class="ow">is</span> <span class="bp">None</span> <span class="k">else</span> <span class="n">charPos</span><span class="p">))</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__currentState</span><span class="p">:</span>
+                    <span class="k">return</span>
+
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__maxPos</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="n">LexerError</span><span class="p">(</span><span class="n">char</span><span class="p">,</span> <span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">position</span><span class="p">())</span>
+        <span class="k">except</span> <span class="n">LexerError</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">restartLexer</span><span class="p">()</span>
+            <span class="k">raise</span>
+
+        <span class="n">tok</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__finalizeMatch</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">tok</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">tok</span>
+
+        <span class="k">if</span> <span class="n">char</span> <span class="ow">is</span> <span class="n">EOF</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">restartLexer</span><span class="p">()</span>
+            <span class="k">yield</span> <span class="n">EOF</span>
+
+    <span class="k">def</span> <span class="nf">__finalizeMatch</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c"># First declared token method</span>
+        <span class="n">matches</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="n">callback</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">callback</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__matches</span><span class="p">])</span>
+        <span class="n">match</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__currentMatch</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">])()</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">char</span> <span class="k">for</span> <span class="n">char</span><span class="p">,</span> <span class="n">pos</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__currentMatch</span><span class="p">[:</span><span class="bp">self</span><span class="o">.</span><span class="n">__maxPos</span><span class="p">]])</span> <span class="c"># byte or unicode</span>
+        <span class="n">remain</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__currentMatch</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">__maxPos</span><span class="p">:]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">restartLexer</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_input</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">remain</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">callback</span><span class="p">,</span> <span class="n">defaultType</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_allTokens</span><span class="p">()[</span><span class="mi">1</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="n">callback</span> <span class="ow">in</span> <span class="n">matches</span><span class="p">:</span>
+                <span class="n">tok</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_MutableToken</span><span class="p">(</span><span class="n">defaultType</span><span class="p">,</span> <span class="n">match</span><span class="p">)</span>
+                <span class="n">callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tok</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">tok</span><span class="o">.</span><span class="n">type</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">consumer</span><span class="p">()</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                    <span class="k">break</span>
+                <span class="k">return</span> <span class="n">tok</span><span class="o">.</span><span class="n">token</span><span class="p">()</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2015, Jérôme Laheurte.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.7</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

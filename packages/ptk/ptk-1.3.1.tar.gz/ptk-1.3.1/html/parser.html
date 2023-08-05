@@ -1,0 +1,516 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Syntactic analysis &mdash; ptk 1.3.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.3.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="ptk 1.3.1 documentation" href="index.html" />
+    <link rel="prev" title="Lexical analysis" href="lexer.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="syntactic-analysis">
+<h1>Syntactic analysis<a class="headerlink" href="#syntactic-analysis" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="production">
+<code class="descclassname">&#64;</code><code class="descname">production</code><span class="sig-paren">(</span><em>prod</em>, <em>priority=None</em><span class="sig-paren">)</span><a class="headerlink" href="#production" title="Permalink to this definition">¶</a></dt>
+<dd><p>Use this decorator to declare a grammar production:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">MyParser</span><span class="p">(</span><span class="n">LRParser</span><span class="p">,</span> <span class="n">ReLexer</span><span class="p">):</span>
+    <span class="nd">@production</span><span class="p">(</span><span class="s">&#39;E -&gt; E &quot;+&quot; E&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">sum</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+</pre></div>
+</div>
+<p>See the <a class="reference internal" href="#production-syntax"><span>Production syntax</span></a> section.</p>
+<p>The <em>priority</em> argument may be specified to declare that the production has the same priority as an existing token type. Typical use for unary minus:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">MyParser</span><span class="p">(</span><span class="n">LRParser</span><span class="p">,</span> <span class="n">ReLexer</span><span class="p">):</span>
+    <span class="c"># omitting productions for binary +, -, * and /</span>
+    <span class="nd">@production</span><span class="p">(</span><span class="s">&#39;E -&gt; &quot;-&quot; E&#39;</span><span class="p">,</span> <span class="n">priority</span><span class="o">=</span><span class="s">&#39;*&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">minus</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+</pre></div>
+</div>
+<p>You can also use a token type that has not been declared to the lexer as long as you have declared an explicit priority for it, using one of the associativity decorators:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="nd">@leftAssoc</span><span class="p">(</span><span class="s">&#39;+&#39;</span><span class="p">,</span> <span class="s">&#39;-&#39;</span><span class="p">)</span>
+<span class="nd">@leftAssoc</span><span class="p">(</span><span class="s">&#39;*&#39;</span><span class="p">,</span> <span class="s">&#39;/&#39;</span><span class="p">)</span>
+<span class="nd">@nonAssoc</span><span class="p">(</span><span class="s">&#39;UNARYMINUS&#39;</span><span class="p">)</span> <span class="c"># Non associative, higher priority than anything else</span>
+<span class="k">class</span> <span class="nc">MyParser</span><span class="p">(</span><span class="n">LRParser</span><span class="p">,</span> <span class="n">ReLexer</span><span class="p">):</span>
+    <span class="nd">@production</span><span class="p">(</span><span class="s">&#39;E -&gt; &quot;-&quot; E&#39;</span><span class="p">,</span> <span class="n">priority</span><span class="o">=</span><span class="s">&#39;UNARYMINUS&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">minus</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<span class="target" id="module-ptk.parser"></span><dl class="exception">
+<dt id="ptk.parser.ParseError">
+<em class="property">exception </em><code class="descclassname">ptk.parser.</code><code class="descname">ParseError</code><span class="sig-paren">(</span><em>grammar</em>, <em>tok</em>, <em>state</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ptk/parser.html#ParseError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ptk.parser.ParseError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Syntax error when parsing.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Variables:</th><td class="field-body"><a class="reference internal" href="lexer.html#token" title="token"><strong>token</strong></a> &#8211; The unexpected token.</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="ptk.parser.ParseError.expecting">
+<code class="descname">expecting</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/ptk/parser.html#ParseError.expecting"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ptk.parser.ParseError.expecting" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a set of tokens types that would have been valid in input.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="ptk.parser.leftAssoc">
+<code class="descclassname">ptk.parser.</code><code class="descname">leftAssoc</code><span class="sig-paren">(</span><em>*operators</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ptk/parser.html#leftAssoc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ptk.parser.leftAssoc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class decorator for left associative operators. Use this to
+decorate your <code class="xref py py-class docutils literal"><span class="pre">Parser</span></code> class. Operators passed as
+argument are assumed to have the same priority. The later you
+declare associativity, the higher the priority; so the following
+code</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="nd">@leftAssoc</span><span class="p">(</span><span class="s">&#39;+&#39;</span><span class="p">,</span> <span class="s">&#39;-&#39;</span><span class="p">)</span>
+<span class="nd">@leftAssoc</span><span class="p">(</span><span class="s">&#39;*&#39;</span><span class="p">,</span> <span class="s">&#39;/&#39;</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">MyParser</span><span class="p">(</span><span class="n">LRParser</span><span class="p">):</span>
+    <span class="c"># ...</span>
+</pre></div>
+</div>
+<p>declares &#8216;+&#8217; and &#8216;-&#8216; to be left associative, with the same
+priority. &#8216;*&#8217; and &#8216;/&#8217; are also left associative, with a higher
+priority than &#8216;+&#8217; and &#8216;-&#8216;.</p>
+<p>See also the <em>priority</em> argument to <a class="reference internal" href="#production" title="production"><code class="xref py py-func docutils literal"><span class="pre">production()</span></code></a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="ptk.parser.rightAssoc">
+<code class="descclassname">ptk.parser.</code><code class="descname">rightAssoc</code><span class="sig-paren">(</span><em>*operators</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ptk/parser.html#rightAssoc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ptk.parser.rightAssoc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class decorator for right associative operators. Same remarks as <a class="reference internal" href="#ptk.parser.leftAssoc" title="ptk.parser.leftAssoc"><code class="xref py py-func docutils literal"><span class="pre">leftAssoc()</span></code></a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="ptk.parser.nonAssoc">
+<code class="descclassname">ptk.parser.</code><code class="descname">nonAssoc</code><span class="sig-paren">(</span><em>*operators</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ptk/parser.html#nonAssoc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ptk.parser.nonAssoc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class decorator for non associative operators. Same remarks as <a class="reference internal" href="#ptk.parser.leftAssoc" title="ptk.parser.leftAssoc"><code class="xref py py-func docutils literal"><span class="pre">leftAssoc()</span></code></a>.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="ptk.parser.LRParser">
+<em class="property">class </em><code class="descclassname">ptk.parser.</code><code class="descname">LRParser</code><a class="reference internal" href="_modules/ptk/parser.html#LRParser"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ptk.parser.LRParser" title="Permalink to this definition">¶</a></dt>
+<dd><p>LR(1) parser. This class is intended to be used with a lexer class
+derived from <code class="xref py py-class docutils literal"><span class="pre">LexerBase</span></code>, using inheritance; it
+overrides <code class="xref py py-func docutils literal"><span class="pre">LexerBase.newToken()</span></code> so you must inherit from
+the parser first, then the lexer:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">MyParser</span><span class="p">(</span><span class="n">LRParser</span><span class="p">,</span> <span class="n">ReLexer</span><span class="p">):</span>
+    <span class="c"># ...</span>
+</pre></div>
+</div>
+<dl class="method">
+<dt id="ptk.parser.LRParser.newSentence">
+<code class="descname">newSentence</code><span class="sig-paren">(</span><em>sentence</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ptk/parser.html#LRParser.newSentence"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ptk.parser.LRParser.newSentence" title="Permalink to this definition">¶</a></dt>
+<dd><p>This is called when the start symbol has been reduced.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>sentence</strong> &#8211; The value associated with the start symbol.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="ptk.async_parser.AsyncLRParser">
+<em class="property">class </em><code class="descclassname">ptk.async_parser.</code><code class="descname">AsyncLRParser</code><a class="reference internal" href="_modules/ptk/async_parser.html#AsyncLRParser"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ptk.async_parser.AsyncLRParser" title="Permalink to this definition">¶</a></dt>
+<dd><p>This class works like <a class="reference internal" href="#ptk.parser.LRParser" title="ptk.parser.LRParser"><code class="xref py py-class docutils literal"><span class="pre">LRParser</span></code></a> but supports
+asynchronous methods (new in Python 3.5). You must use
+<code class="xref py py-class docutils literal"><span class="pre">AsyncLexer</span></code> in conjuction with it:</p>
+<div class="highlight-python"><div class="highlight"><pre>
+</pre></div>
+</div>
+<dl class="docutils">
+<dt>class Parser(AsyncLRParser, AsyncLexer):</dt>
+<dd># ...</dd>
+</dl>
+<p>And only use <code class="xref py py-func docutils literal"><span class="pre">AsyncLexer.asyncFeed()</span></code> to feed it the input
+stream. Semantic actions must be asynchronous methods as
+well. When the start symbol is reduced, the
+<code class="xref py py-func docutils literal"><span class="pre">asyncNewSentence()</span></code> method is awaited.</p>
+</dd></dl>
+
+<div class="section" id="production-syntax">
+<span id="id1"></span><h2>Production syntax<a class="headerlink" href="#production-syntax" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="basics">
+<h3>Basics<a class="headerlink" href="#basics" title="Permalink to this headline">¶</a></h3>
+<p>The productions specified through the <a class="reference internal" href="#production" title="production"><code class="xref py py-func docutils literal"><span class="pre">production()</span></code></a> decorator must be specified in a variant of BNF; for example</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">Parser</span><span class="p">(</span><span class="n">LRParser</span><span class="p">,</span> <span class="n">ReLexer</span><span class="p">):</span>
+    <span class="nd">@production</span><span class="p">(</span><span class="s">&#39;E -&gt; E plus E&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">binaryop_sum</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+     <span class="nd">@production</span><span class="p">(</span><span class="s">&#39;E -&gt; E minus E&#39;</span><span class="p">)</span>
+     <span class="k">def</span> <span class="nf">binaryop_minus</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+         <span class="k">pass</span>
+</pre></div>
+</div>
+<p>Here non terminal symbols are uppercase and terminals (token types) are lowercase, but this is only a convention.</p>
+<p>When you don&#8217;t need separate semantic actions you can group several productions by using either the &#8216;|&#8217; symbol:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">Parser</span><span class="p">(</span><span class="n">LRParser</span><span class="p">,</span> <span class="n">ReLexer</span><span class="p">):</span>
+    <span class="nd">@production</span><span class="p">(</span><span class="s">&#39;E -&gt; E plus E | E minus E&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">binaryop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+</pre></div>
+</div>
+<p>Or decorating the same method several times:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">Parser</span><span class="p">(</span><span class="n">LRParser</span><span class="p">,</span> <span class="n">ReLexer</span><span class="p">):</span>
+    <span class="nd">@production</span><span class="p">(</span><span class="s">&#39;E -&gt; E plus E&#39;</span><span class="p">)</span>
+    <span class="nd">@production</span><span class="p">(</span><span class="s">&#39;E -&gt; E minus E&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">binaryop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="semantic-values">
+<h3>Semantic values<a class="headerlink" href="#semantic-values" title="Permalink to this headline">¶</a></h3>
+<p>The semantic value associated with a production is the return value of the decorated method. Values for items on the right side of the production are not passed to the method by default; you have to use a specific syntax to associate each item with a name, which will then be used as the name of a keyword argument passed to the method. The name must be specified between brackets after the item, for instance:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">Parser</span><span class="p">(</span><span class="n">LRParser</span><span class="p">,</span> <span class="n">ReLexer</span><span class="p">):</span>
+    <span class="nd">@production</span><span class="p">(</span><span class="s">&#39;E -&gt; E&lt;left&gt; plus E&lt;right&gt;&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">sum</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">left</span> <span class="o">+</span> <span class="n">right</span>
+</pre></div>
+</div>
+<p>You can thus use  alternatives and default argument values to slightly change the action&#8217;s behavior depending on the actual matched production:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">Parser</span><span class="p">(</span><span class="n">LRParser</span><span class="p">,</span> <span class="n">ReLexer</span><span class="p">):</span>
+    <span class="nd">@production</span><span class="p">(</span><span class="s">&#39;SYMNAME -&gt; identifier&lt;value&gt; | identifier&lt;value&gt; left_bracket identifier&lt;name&gt; right_bracket&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">symname</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="c"># First form, name not specified</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c"># Second form</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="litteral-tokens">
+<h3>Litteral tokens<a class="headerlink" href="#litteral-tokens" title="Permalink to this headline">¶</a></h3>
+<p>A litteral token name may appear in a production, between double quotes. This allows you to skip declaring &#8220;simple&#8221; tokens at the lexer level.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">Parser</span><span class="p">(</span><span class="n">LRParser</span><span class="p">,</span> <span class="n">ReLexer</span><span class="p">):</span>
+    <span class="nd">@production</span><span class="p">(</span><span class="s">&#39;E -&gt; E &quot;+&quot; E&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">sum</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Those tokens are considered &#8220;declared&#8221; after the ones explicitely declared through the <a class="reference internal" href="lexer.html#token" title="token"><code class="xref py py-func docutils literal"><span class="pre">token()</span></code></a> decorator. This may be important because of the disambiguation rules; see the notes for the <a class="reference internal" href="lexer.html#token" title="token"><code class="xref py py-func docutils literal"><span class="pre">token()</span></code></a> decorator.</p>
+</div>
+<p>Litteral tokens may be named as well.</p>
+</div>
+<div class="section" id="repeat-operators">
+<h3>Repeat operators<a class="headerlink" href="#repeat-operators" title="Permalink to this headline">¶</a></h3>
+<p>A nonterminal in the right side of a production may be immediately
+followed by a repeat operator among &#8220;*&#8221;, &#8220;+&#8221; and &#8221;?&#8221;, which have the
+same meaning as in regular expressions. Note that this is only
+syntactic sugar; under the hood additional productions are
+generated.</p>
+<div class="highlight-none"><div class="highlight"><pre>A -&gt; B?
+</pre></div>
+</div>
+<p>is equivalent to</p>
+<div class="highlight-none"><div class="highlight"><pre>A -&gt;
+A -&gt; B
+</pre></div>
+</div>
+<p>The semantic value is None if the empty production was applied, or the
+semantic value of B if the &#8216;A -&gt; B&#8217; production was applied.</p>
+<div class="highlight-none"><div class="highlight"><pre>A -&gt; B*
+</pre></div>
+</div>
+<p>is equivalent to</p>
+<div class="highlight-none"><div class="highlight"><pre>A -&gt;
+A -&gt; L_B
+L_B -&gt; B
+L_B -&gt; L_B B
+</pre></div>
+</div>
+<p>The semantic value is a list of semantic values for B. &#8216;+&#8217; works the
+same way except for the empty production, so the list cannot be empty.</p>
+<p>Additionally, the &#8216;*&#8217; and &#8216;+&#8217; operators may include a separator
+specification, which is a symbol name or litteral token between parens:</p>
+<div class="highlight-none"><div class="highlight"><pre>A -&gt; B+(&quot;|&quot;)
+</pre></div>
+</div>
+<p>is equivalent to</p>
+<div class="highlight-none"><div class="highlight"><pre>A -&gt; L_B
+L_B -&gt; B
+L_B -&gt; L_B &quot;|&quot; B
+</pre></div>
+</div>
+<p>The semantic value is still a list of B values; there is no way to get
+the values for the separators.</p>
+</div>
+</div>
+<div class="section" id="wrapping-it-up">
+<h2>Wrapping it up<a class="headerlink" href="#wrapping-it-up" title="Permalink to this headline">¶</a></h2>
+<p>Fully functional parser for a four-operations integer calculator:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="nd">@leftAssoc</span><span class="p">(</span><span class="s">&#39;+&#39;</span><span class="p">,</span> <span class="s">&#39;-&#39;</span><span class="p">)</span>
+<span class="nd">@leftAssoc</span><span class="p">(</span><span class="s">&#39;*&#39;</span><span class="p">,</span> <span class="s">&#39;/&#39;</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">Parser</span><span class="p">(</span><span class="n">LRParser</span><span class="p">,</span> <span class="n">ReLexer</span><span class="p">):</span>
+    <span class="nd">@token</span><span class="p">(</span><span class="s">&#39;[1-9][0-9]*&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">number</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tok</span><span class="p">):</span>
+        <span class="n">tok</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">tok</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+
+    <span class="nd">@production</span><span class="p">(</span><span class="s">&#39;E -&gt; number&lt;n&gt;&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">litteral</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">n</span>
+
+    <span class="nd">@production</span><span class="p">(</span><span class="s">&#39;E -&gt; &quot;-&quot; E&lt;val&gt;&#39;</span><span class="p">,</span> <span class="n">priority</span><span class="o">=</span><span class="s">&#39;*&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">minus</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
+        <span class="k">return</span> <span class="o">-</span><span class="n">val</span>
+
+    <span class="nd">@production</span><span class="p">(</span><span class="s">&#39;E -&gt; &quot;(&quot; E&lt;val&gt; &quot;)&quot;&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">paren</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">val</span>
+
+    <span class="nd">@production</span><span class="p">(</span><span class="s">&#39;E -&gt; E&lt;left&gt; &quot;+&quot;&lt;op&gt; E&lt;right&gt;&#39;</span><span class="p">)</span>
+    <span class="nd">@production</span><span class="p">(</span><span class="s">&#39;E -&gt; E&lt;left&gt; &quot;-&quot;&lt;op&gt; E&lt;right&gt;&#39;</span><span class="p">)</span>
+    <span class="nd">@production</span><span class="p">(</span><span class="s">&#39;E -&gt; E&lt;left&gt; &quot;*&quot;&lt;op&gt; E&lt;right&gt;&#39;</span><span class="p">)</span>
+    <span class="nd">@production</span><span class="p">(</span><span class="s">&#39;E -&gt; E&lt;left&gt; &quot;/&quot;&lt;op&gt; E&lt;right&gt;&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">binaryop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">left</span><span class="p">,</span> <span class="n">op</span><span class="p">,</span> <span class="n">right</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s">&#39;+&#39;</span><span class="p">:</span> <span class="n">operator</span><span class="o">.</span><span class="n">add</span><span class="p">,</span>
+            <span class="s">&#39;-&#39;</span><span class="p">:</span> <span class="n">operator</span><span class="o">.</span><span class="n">sub</span><span class="p">,</span>
+            <span class="s">&#39;*&#39;</span><span class="p">:</span> <span class="n">operator</span><span class="o">.</span><span class="n">mul</span><span class="p">,</span>
+            <span class="s">&#39;/&#39;</span><span class="p">:</span> <span class="n">operator</span><span class="o">.</span><span class="n">floordiv</span>
+            <span class="p">}[</span><span class="n">op</span><span class="p">](</span><span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Parsing lists of integers separated by commas:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">Parser</span><span class="p">(</span><span class="n">LRParser</span><span class="p">,</span> <span class="n">ReLexer</span><span class="p">):</span>
+    <span class="nd">@token</span><span class="p">(</span><span class="s">&#39;[1-9][0-9]*&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">number</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tok</span><span class="p">):</span>
+        <span class="n">tok</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">tok</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+    <span class="nd">@production</span><span class="p">(</span><span class="s">&#39;LIST -&gt; number*(&quot;,&quot;)&lt;values&gt;&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">integer_list</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">values</span><span class="p">):</span>
+        <span class="k">print</span><span class="p">(</span><span class="s">&#39;Values are: </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">values</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="conflict-resolution-rules">
+<h1>Conflict resolution rules<a class="headerlink" href="#conflict-resolution-rules" title="Permalink to this headline">¶</a></h1>
+<p>Conflict resolution rules are the same as those used by Yacc/Bison. A shift/reduce conflict is resolved by choosing to shift. A reduce/reduce conflict is resolved by choosing the reduction associated with the first declared production. <a class="reference internal" href="#ptk.parser.leftAssoc" title="ptk.parser.leftAssoc"><code class="xref py py-func docutils literal"><span class="pre">leftAssoc()</span></code></a>, <a class="reference internal" href="#ptk.parser.rightAssoc" title="ptk.parser.rightAssoc"><code class="xref py py-func docutils literal"><span class="pre">rightAssoc()</span></code></a>, <a class="reference internal" href="#ptk.parser.nonAssoc" title="ptk.parser.nonAssoc"><code class="xref py py-func docutils literal"><span class="pre">nonAssoc()</span></code></a> and the <em>priority</em> argument to <a class="reference internal" href="#production" title="production"><code class="xref py py-func docutils literal"><span class="pre">production()</span></code></a> allows you to explicitely disambiguate.</p>
+</div>
+<div class="section" id="asynchronous-lexer-parser">
+<h1>Asynchronous lexer/parser<a class="headerlink" href="#asynchronous-lexer-parser" title="Permalink to this headline">¶</a></h1>
+<p>The <code class="xref py py-class docutils literal"><span class="pre">AsyncLexer</span></code> and <code class="xref py py-class docutils literal"><span class="pre">AsyncLRParser</span></code> classes allow
+you to parse an input stream asynchronously. Since this uses the new
+asynchronous method syntax introduced in Python 3.5, it&#8217;s only
+available with this version of Python.</p>
+<p>The basic idea is that the production methods are asynchronous. Feed
+the input stream one byte/char at a time by awaiting on
+<code class="xref py py-func docutils literal"><span class="pre">AsyncLexer.asyncFeed()</span></code>. When a token has been recognized
+unambiguously, this will in turn await on
+<code class="xref py py-func docutils literal"><span class="pre">AsyncParser.asyncNewToken()</span></code>. Semantic actions may then be
+awaited on as a result.</p>
+<p>The samples directory contains the following example of an
+asynchronous parser:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c">#!/usr/bin/env python</span>
+<span class="c"># -*- coding: UTF-8 -*-</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">Four operations calculator, asynchronous. Due to various buffering</span>
+<span class="sd">problems you probably won&#39;t see what&#39;s the point unless you force</span>
+<span class="sd">stdin to be noninteractive, e.g.</span>
+
+<span class="sd">$ echo &#39;3*4+6&#39; | python3 ./async_calc.py</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">six</span><span class="o">,</span> <span class="nn">operator</span><span class="o">,</span> <span class="nn">os</span><span class="o">,</span> <span class="nn">asyncio</span><span class="o">,</span> <span class="nn">sys</span><span class="o">,</span> <span class="nn">codecs</span>
+
+<span class="kn">from</span> <span class="nn">ptk.lexer</span> <span class="kn">import</span> <span class="n">token</span><span class="p">,</span> <span class="n">AsyncLexer</span><span class="p">,</span> <span class="n">EOF</span>
+<span class="kn">from</span> <span class="nn">ptk.parser</span> <span class="kn">import</span> <span class="n">production</span><span class="p">,</span> <span class="n">leftAssoc</span><span class="p">,</span> <span class="n">AsyncLRParser</span><span class="p">,</span> <span class="n">ParseError</span>
+
+
+<span class="nd">@leftAssoc</span><span class="p">(</span><span class="s">&#39;+&#39;</span><span class="p">,</span> <span class="s">&#39;-&#39;</span><span class="p">)</span>
+<span class="nd">@leftAssoc</span><span class="p">(</span><span class="s">&#39;*&#39;</span><span class="p">,</span> <span class="s">&#39;/&#39;</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">Parser</span><span class="p">(</span><span class="n">AsyncLRParser</span><span class="p">,</span> <span class="n">AsyncLexer</span><span class="p">):</span>
+    <span class="n">async</span> <span class="k">def</span> <span class="nf">asyncNewSentence</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">result</span><span class="p">):</span>
+        <span class="n">six</span><span class="o">.</span><span class="n">print_</span><span class="p">(</span><span class="s">&#39;== Result:&#39;</span><span class="p">,</span> <span class="n">result</span><span class="p">)</span>
+
+    <span class="c"># Lexer</span>
+    <span class="k">def</span> <span class="nf">ignore</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">char</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">char</span> <span class="ow">in</span> <span class="p">[</span><span class="s">&#39; &#39;</span><span class="p">,</span> <span class="s">&#39;</span><span class="se">\t</span><span class="s">&#39;</span><span class="p">]</span>
+
+    <span class="nd">@token</span><span class="p">(</span><span class="s">r&#39;[1-9][0-9]*&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">number</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tok</span><span class="p">):</span>
+        <span class="n">tok</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">tok</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+
+    <span class="c"># Parser</span>
+
+    <span class="nd">@production</span><span class="p">(</span><span class="s">&#39;E -&gt; &quot;-&quot; E&lt;value&gt;&#39;</span><span class="p">,</span> <span class="n">priority</span><span class="o">=</span><span class="s">&#39;*&#39;</span><span class="p">)</span>
+    <span class="n">async</span> <span class="k">def</span> <span class="nf">minus</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="n">six</span><span class="o">.</span><span class="n">print_</span><span class="p">(</span><span class="s">&#39;== Neg: - </span><span class="si">%d</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">value</span><span class="p">)</span>
+        <span class="k">return</span> <span class="o">-</span><span class="n">value</span>
+
+    <span class="nd">@production</span><span class="p">(</span><span class="s">&#39;E -&gt; &quot;(&quot; E&lt;value&gt; &quot;)&quot;&#39;</span><span class="p">)</span>
+    <span class="n">async</span> <span class="k">def</span> <span class="nf">paren</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">value</span>
+
+    <span class="nd">@production</span><span class="p">(</span><span class="s">&#39;E -&gt; number&lt;number&gt;&#39;</span><span class="p">)</span>
+    <span class="n">async</span> <span class="k">def</span> <span class="nf">litteral</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">number</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">number</span>
+
+    <span class="nd">@production</span><span class="p">(</span><span class="s">&#39;E -&gt; E&lt;left&gt; &quot;+&quot;&lt;op&gt; E&lt;right&gt;&#39;</span><span class="p">)</span>
+    <span class="nd">@production</span><span class="p">(</span><span class="s">&#39;E -&gt; E&lt;left&gt; &quot;-&quot;&lt;op&gt; E&lt;right&gt;&#39;</span><span class="p">)</span>
+    <span class="nd">@production</span><span class="p">(</span><span class="s">&#39;E -&gt; E&lt;left&gt; &quot;*&quot;&lt;op&gt; E&lt;right&gt;&#39;</span><span class="p">)</span>
+    <span class="nd">@production</span><span class="p">(</span><span class="s">&#39;E -&gt; E&lt;left&gt; &quot;/&quot;&lt;op&gt; E&lt;right&gt;&#39;</span><span class="p">)</span>
+    <span class="n">async</span> <span class="k">def</span> <span class="nf">binaryop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">left</span><span class="p">,</span> <span class="n">op</span><span class="p">,</span> <span class="n">right</span><span class="p">):</span>
+        <span class="n">six</span><span class="o">.</span><span class="n">print_</span><span class="p">(</span><span class="s">&#39;Binary operation: </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">left</span><span class="p">,</span> <span class="n">op</span><span class="p">,</span> <span class="n">right</span><span class="p">))</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s">&#39;+&#39;</span><span class="p">:</span> <span class="n">operator</span><span class="o">.</span><span class="n">add</span><span class="p">,</span>
+            <span class="s">&#39;-&#39;</span><span class="p">:</span> <span class="n">operator</span><span class="o">.</span><span class="n">sub</span><span class="p">,</span>
+            <span class="s">&#39;*&#39;</span><span class="p">:</span> <span class="n">operator</span><span class="o">.</span><span class="n">mul</span><span class="p">,</span>
+            <span class="s">&#39;/&#39;</span><span class="p">:</span> <span class="n">operator</span><span class="o">.</span><span class="n">floordiv</span>
+            <span class="p">}[</span><span class="n">op</span><span class="p">](</span><span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">)</span>
+
+
+<span class="n">async</span> <span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+    <span class="n">reader</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">StreamReader</span><span class="p">()</span>
+    <span class="n">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">get_event_loop</span><span class="p">()</span><span class="o">.</span><span class="n">connect_read_pipe</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">StreamReaderProtocol</span><span class="p">(</span><span class="n">reader</span><span class="p">),</span> <span class="n">sys</span><span class="o">.</span><span class="n">stdin</span><span class="p">)</span>
+    <span class="n">decoder</span> <span class="o">=</span> <span class="n">codecs</span><span class="o">.</span><span class="n">getincrementaldecoder</span><span class="p">(</span><span class="s">&#39;utf_8&#39;</span><span class="p">)()</span>
+
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">Parser</span><span class="p">()</span>
+
+    <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+        <span class="n">byte</span> <span class="o">=</span> <span class="n">await</span> <span class="n">reader</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">byte</span><span class="p">:</span>
+            <span class="k">break</span>
+        <span class="n">char</span> <span class="o">=</span> <span class="n">decoder</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="n">byte</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">char</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">char</span> <span class="o">==</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">:</span>
+                <span class="n">char</span> <span class="o">=</span> <span class="n">EOF</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">six</span><span class="o">.</span><span class="n">print_</span><span class="p">(</span><span class="s">&#39;Input char: &quot;</span><span class="si">%s</span><span class="s">&quot;&#39;</span> <span class="o">%</span> <span class="nb">repr</span><span class="p">(</span><span class="n">char</span><span class="p">))</span>
+            <span class="n">await</span> <span class="n">parser</span><span class="o">.</span><span class="n">asyncFeed</span><span class="p">(</span><span class="n">char</span><span class="p">)</span>
+
+
+<span class="n">loop</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">get_event_loop</span><span class="p">()</span>
+<span class="n">loop</span><span class="o">.</span><span class="n">run_until_complete</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="asynchronous-lexer-parser-using-deferreds">
+<h1>Asynchronous lexer/parser using Deferreds<a class="headerlink" href="#asynchronous-lexer-parser-using-deferreds" title="Permalink to this headline">¶</a></h1>
+<p>The <code class="xref py py-class docutils literal"><span class="pre">DeferredLexer</span></code> and <code class="xref py py-class docutils literal"><span class="pre">DeferredLRParser</span></code> work the same
+as <code class="xref py py-class docutils literal"><span class="pre">AsyncLexer</span></code> and <code class="xref py py-class docutils literal"><span class="pre">AsyncLRParser</span></code>, but use
+Twisted&#8217;s Deferred objects instead of Python 3.5-like asynchronous
+methods. The special methods are called <code class="xref py py-func docutils literal"><span class="pre">DeferredLexer.deferNewToken`and</span>
+<span class="pre">:py:func:`DeferredLRParser.deferNewSentence()</span></code> and must return
+Deferred instances. Semantic actions can return either Deferred
+instances or regular values. See the defer_calc.py sample for details.</p>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Syntactic analysis</a><ul>
+<li><a class="reference internal" href="#production-syntax">Production syntax</a><ul>
+<li><a class="reference internal" href="#basics">Basics</a></li>
+<li><a class="reference internal" href="#semantic-values">Semantic values</a></li>
+<li><a class="reference internal" href="#litteral-tokens">Litteral tokens</a></li>
+<li><a class="reference internal" href="#repeat-operators">Repeat operators</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#wrapping-it-up">Wrapping it up</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#conflict-resolution-rules">Conflict resolution rules</a></li>
+<li><a class="reference internal" href="#asynchronous-lexer-parser">Asynchronous lexer/parser</a></li>
+<li><a class="reference internal" href="#asynchronous-lexer-parser-using-deferreds">Asynchronous lexer/parser using Deferreds</a></li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="lexer.html" title="previous chapter">Lexical analysis</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/parser.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2015, Jérôme Laheurte.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.7</a>
+      
+      |
+      <a href="_sources/parser.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
