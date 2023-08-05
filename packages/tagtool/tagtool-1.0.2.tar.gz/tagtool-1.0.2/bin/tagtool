@@ -1,0 +1,83 @@
+#!/usr/bin/env python
+
+"""
+Usage:
+    tagtool [--no-skip] <command> [<args>...]
+
+Commands:
+    replace     Perform regex replace on tags
+    remove      Remove tag frames
+    rename      Rename files to format: "%TrackTitle%.mp3"
+    help        Read about a specific command
+
+Options:
+    --no-skip   Do not skip already tagged files
+"""
+
+import textwrap
+
+from docopt import docopt
+
+import tagtool
+
+
+def _get_doc(command):
+    return textwrap.dedent(
+        getattr(tagtool.commands, command).__doc__
+    )
+
+
+if __name__ == '__main__':
+    old_args = docopt(
+        __doc__,
+        version="tagtool version " + tagtool.version,
+        options_first=True,
+    )
+    argv = [old_args['<command>']] + old_args['<args>']
+
+    command = argv[0]
+    if command == 'help':
+        if not old_args['<args>']:
+            exit(textwrap.dedent(__doc__).strip())
+
+        if hasattr(tagtool, argv[1]):
+            exit(_get_doc(argv[1]))
+        else:
+            exit("%r is not a tagtool command. See 'tagtool help'." % argv[1])
+
+    if not hasattr(tagtool, command):
+        exit("%r is not a tagtool command. See 'tagtool help'." % command)
+
+    args = docopt(_get_doc(command), argv=argv)
+
+    if command == 'replace':
+        tagtool.replace(
+            files=args['<file>'],
+            pattern=args['--pattern'],
+            repl=args['--repl']
+            if args['--repl'] else '',
+            prune=args['--prune'],
+            frames=args['--frames'].split(',')
+            if args['--frames'] else [],
+            frames_skip=args['--frames_skip'].split(',')
+            if args['--frames_skip'] else [],
+        )
+
+    elif command == 'remove':
+        tagtool.remove(
+            files=args['<file>'],
+            frames=args['--frames'].split(',') if args['--frames'] else [],
+            prefix=args['--prefix']
+        )
+
+    elif command == 'rename':
+        tagtool.rename(
+            files=args['<file>'],
+            skip_tagged=not old_args['--no-skip']
+        )
+
+    elif command == 'cover':
+        tagtool.cover(
+            files=args['<file>'],
+            frames=args['frame'],
+        )
