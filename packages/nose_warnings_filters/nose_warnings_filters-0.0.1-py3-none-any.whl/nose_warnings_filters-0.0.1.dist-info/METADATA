@@ -1,0 +1,29 @@
+Metadata-Version: 1.2
+Name: nose_warnings_filters
+Version: 0.0.1
+Summary: Nose plugin to add warnings filters (turn them into error) using nose.cfg file.
+Home-page: https://github.com/Carreau/nose_warnings_filters
+License: UNKNOWN
+Author: Matthias Bussonnier
+Author-email: bussonniermatthias@gmail.com
+Requires-Python: >=3.4
+Classifier: License :: OSI Approved :: MIT License
+Requires-Dist: nose
+
+Allow to inject warning filters during nosetest.
+
+Put the the same arguments as ``warnings.filterwarnings`` in
+``nose.cfg`` separated by pipes ``|``. Whitespace are stripped.
+
+for example:
+
+::
+
+    [nosetests]
+    warningfilters=default         |.*            |DeprecationWarning |notebook.*
+                   ignore          |.*metadata.*  |DeprecationWarning |notebook.*
+                   once            |.*schema.*    |UserWarning        |nbfor.*
+                   error           |.*warn.*      |DeprecationWarning |notebook.services.contents.manager*
+
+run the tests with ``nosetests -c nose.cfg``
+
