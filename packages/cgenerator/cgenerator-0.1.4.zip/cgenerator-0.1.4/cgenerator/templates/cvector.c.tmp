@@ -1,0 +1,81 @@
+
+#include <string.h>
+#include <stdlib.h>
+#include "cvector_<%name_prefix%>.h"
+
+
+struct cvector_<%name_prefix%>* cvector_<%name_prefix%>_allocate(uint size){
+    struct cvector_<%name_prefix%>* vec		= (struct cvector_<%name_prefix%>*)malloc(sizeof(struct cvector_<%name_prefix%>));
+    vec->length     = 0;
+    vec->maxSize    = size;
+    vec->data       = (<%name%>*)malloc(sizeof(<%name%>) * size);
+	return vec;
+}
+void cvector_<%name_prefix%>_free(struct cvector_<%name_prefix%>** vec){
+    free((*vec)->data);
+    free(*vec);
+    *vec=(struct cvector_<%name_prefix%>*)NULL;
+}
+    
+void cvector_<%name_prefix%>_set(struct cvector_<%name_prefix%>* vec, uint index, const <%name%>* element){
+    <%simple%>vec->data[index] = *element;//for simple type
+	//for custom type
+	<%custom%><%name_prefix%>_copy(&vec->data[index], element);
+}
+
+void cvector_<%name_prefix%>_get(struct cvector_<%name_prefix%>* vec, uint index, <%name%>* element){
+    <%simple%>*element = vec->data[index];
+	//for custom type
+	<%custom%><%name_prefix%>_copy(element, &vec->data[index]);
+}
+
+void cvector_<%name_prefix%>_set_array(struct cvector_<%name_prefix%>* vec, uint size, <%name%>* arr){
+    vec->data = (<%name%>*)realloc(vec->data, size*sizeof(<%name%>)*2);
+    memcpy(vec->data, arr, size*sizeof(<%name%>));
+    vec->length=size;
+    vec->maxSize=size * ALLOC_CONST_PROG;
+}
+    
+void cvector_<%name_prefix%>_push(struct cvector_<%name_prefix%>* vec, const <%name%>* element){
+    if(vec->length >= vec->maxSize){
+        vec->data = (<%name%>*)realloc(vec->data, vec->maxSize * sizeof(<%name%>) * ALLOC_CONST_PROG);
+        vec->maxSize = vec->maxSize * ALLOC_CONST_PROG;
+    }
+    <%simple%>vec->data[vec->length] = *element;//simple
+	//custom
+	<%custom%><%name_prefix%>_copy(&vec->data[vec->length], element);
+    vec->length++;
+}
+
+void cvector_<%name_prefix%>_pop(struct cvector_<%name_prefix%>* vec, <%name%>* element){
+    <%simple%>*element = vec->data[vec->length];//simple
+	//custom
+	<%custom%><%name_prefix%>_copy(element, &vec->data[vec->length]);
+    vec->length--;
+}
+
+void cvector_<%name_prefix%>_uint_resize(struct cvector_<%name_prefix%>* vec, uint size){
+    vec->length = size;
+    cvector_<%name_prefix%>_shrink_to_fit(vec);
+}
+
+void cvector_<%name_prefix%>_clear(struct cvector_<%name_prefix%>* vec){
+    vec->length = 0;
+}
+
+<%name%> cvector_<%name_prefix%>_front(struct cvector_<%name_prefix%>* vec){
+    return vec->data[vec->length];
+}
+   
+uint cvector_<%name_prefix%>_length(const struct cvector_<%name_prefix%>* vec){
+    return vec->length;
+}
+
+uint cvector_<%name_prefix%>_max_size(const struct cvector_<%name_prefix%>* vec){
+    return vec->maxSize;
+}
+
+void cvector_<%name_prefix%>_shrink_to_fit(struct cvector_<%name_prefix%>* vec){
+    vec->data = (<%name%>*)realloc(vec->data, vec->length * sizeof(<%name%>));
+    vec->maxSize = vec->length;
+}

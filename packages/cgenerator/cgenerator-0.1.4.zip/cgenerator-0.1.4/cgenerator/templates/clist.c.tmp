@@ -1,0 +1,140 @@
+#include "clist_<%name_prefix%>.h"
+#include "entity_<%name_prefix%>.h"
+
+static void clist_<%name_prefix%>_check_item(struct clist_<%name_prefix%>* list, struct list_item_<%name_prefix%> *newel){
+    if(newel->next == NULL)
+        list->head = newel;
+    if(newel->prev == NULL)
+        list->tail = newel;      
+}
+
+struct clist_<%name_prefix%>* clist_<%name_prefix%>_allocate(){
+    struct clist_<%name_prefix%>* list      = (struct clist_<%name_prefix%>*)malloc(sizeof(struct clist_<%name_prefix%>));
+	list->length = 0;
+	list->head = NULL;
+	list->tail = NULL;
+    return list;
+}
+
+void clist_<%name_prefix%>_clear(struct clist_<%name_prefix%>* list){
+    struct list_item_<%name_prefix%> *current = list->tail, *prev;
+    
+    while(current){
+        prev = current;
+        current = current->next;
+        free(prev);
+    }
+    list->length = 0;
+    list->head = (struct list_item_<%name_prefix%> *)NULL;
+    list->tail = (struct list_item_<%name_prefix%> *)NULL;
+}
+
+void clist_<%name_prefix%>_free(struct clist_<%name_prefix%>** list){
+    clist_<%name_prefix%>_clear(*list);
+    free(*list);
+    *list = (struct clist_<%name_prefix%>*)NULL;
+}
+
+static struct list_item_<%name_prefix%>* clist_<%name_prefix%>_item_by_index(struct clist_<%name_prefix%>* list, uint index){
+	struct list_item_<%name_prefix%>* item;
+	uint i, count;
+	if(index > list->length/2){
+		item = list->head;
+		count = list->length - index - 1;
+		for(i=0;i<count;i++)
+			item = item->prev;
+    }else{
+		item = list->tail;
+		count = index;
+		for(i=0;i<count;i++)
+			item = item->next;
+	}
+	return item;
+}
+
+uint clist_<%name_prefix%>_length(const struct clist_<%name_prefix%>* list){
+    return list->length;
+}
+
+void clist_<%name_prefix%>_set(struct clist_<%name_prefix%>* list, uint index, const <%name%>* element){
+    struct list_item_<%name_prefix%>* item = clist_<%name_prefix%>_item_by_index(list, index);  
+    <%simple%>item->data = *element;//for simple type
+	//for custom type
+	<%custom%><%name_prefix%>_copy(&item->data, element);
+}
+
+void clist_<%name_prefix%>_get(struct clist_<%name_prefix%>* list, uint index, <%name%>* element){
+    struct list_item_<%name_prefix%>* item = clist_<%name_prefix%>_item_by_index(list, index);
+    <%simple%>*element = item->data;//for simple type
+	//for custom type
+	<%custom%><%name_prefix%>_copy(element, &item->data);
+}
+
+void clist_<%name_prefix%>_delete(struct clist_<%name_prefix%>* list, uint index){
+    struct list_item_<%name_prefix%> *next, *item = clist_<%name_prefix%>_item_by_index(list, index);
+
+    next = item->next;
+    
+    item->prev->next = next;
+    next->prev = item->prev;
+    
+    //delete item
+    free(item);
+    
+    list->length--;
+}
+
+
+void clist_<%name_prefix%>_insert(struct clist_<%name_prefix%>* list, uint index, const <%name%>* element){
+    struct list_item_<%name_prefix%> *newel, *item = clist_<%name_prefix%>_item_by_index(list, index);
+    
+    newel = (struct list_item_<%name_prefix%>*)calloc(1, sizeof(struct list_item_<%name_prefix%>));
+    newel->next = item->next;
+    newel->prev = item;
+    <%simple%>newel->data = *element;//simple
+	//custom type
+	<%custom%><%name_prefix%>_copy(&newel->data, element);
+    
+    clist_<%name_prefix%>_check_item(list, newel);  
+    
+    list->length++;
+}
+
+void clist_<%name_prefix%>_back(struct clist_<%name_prefix%>* list, <%name%>* element){
+    struct list_item_<%name_prefix%> *newel;
+    
+    newel = (struct list_item_<%name_prefix%>*)calloc(1, sizeof(struct list_item_<%name_prefix%>));   
+    <%simple%>newel->data = *element;//simple
+	//custom type
+	<%custom%><%name_prefix%>_copy(&newel->data, element);
+    
+    if(!list->tail){
+       list->tail = newel;
+	   list->head = newel;
+    }else{
+		newel->next = list->tail;
+		list->tail->prev = newel;
+		list->tail = newel;
+    }    
+    list->length++;
+}
+
+void clist_<%name_prefix%>_front(struct clist_<%name_prefix%>* list, <%name%>* element){
+    struct list_item_<%name_prefix%> *newel;
+    
+    newel = (struct list_item_<%name_prefix%>*)calloc(1, sizeof(struct list_item_<%name_prefix%>));   
+    <%simple%>newel->data = *element;
+    //custom type
+	<%custom%><%name_prefix%>_copy(&newel->data, element);
+	
+    if(!list->head){
+       list->tail = newel;
+	   list->head = newel;
+    }else{
+		newel->prev = list->head;
+		list->head->next = newel;
+		list->head = newel;
+    }    
+    list->length++;
+}
+

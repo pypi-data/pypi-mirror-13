@@ -1,0 +1,74 @@
+#ifndef CVECTOR_<%name_upper%>_H
+#define	CVECTOR_<%name_upper%>_H
+
+#ifdef	__cplusplus
+extern "C" {
+#endif
+    
+/***************** function name convention***************
+container name, entity name, function name.
+Example:
+struct matrix
+{
+	int a, b;
+	float radius;
+};
+
+//generate methods
+void cvector_matrix_push(struct cvector_matrix* vec, struct CMatrix* element);
+uint cvector_matrix_length(struct cvector_matrix* vec);
+void cvector_matrix_set(struct cvector_matrix* vec, uint index, struct CMatrix* element);
+...
+//need implement for custom types
+struct matrix* cmatrix_allocation();
+void matrix_free(struct matrix* matrix);
+void matrix_init(struct matrix* matrix);
+void matrix_copy(struct matrix* dest, struct matrix* src);
+int matrix_cmp(struct matrix* a, struct matrix* b);
+//container implementation
+struct cvector_matrix
+{
+	struct matrix*		data;
+	uint				length;
+	uint				maxSize;
+};
+//
+*********************************************************/ 
+#include "ctypes.h"
+#include "entity_<%name_prefix%>.h"
+    
+#define ALLOC_CONST_PROG    3 / 2
+
+    struct cvector_<%name_prefix%>
+    {
+        <%name%>*    data;
+        uint     length;
+        uint     maxSize;
+    };
+    
+    
+    struct cvector_<%name_prefix%>* cvector_<%name_prefix%>_allocate(uint size);
+    void cvector_<%name_prefix%>_free(struct cvector_<%name_prefix%>** vec);
+    
+    void cvector_<%name_prefix%>_set(struct cvector_<%name_prefix%>* vec, uint index, const <%name%>* element);
+    void cvector_<%name_prefix%>_get(struct cvector_<%name_prefix%>* vec, uint index, <%name%>* element);
+    
+    void cvector_<%name_prefix%>_set_array(struct cvector_<%name_prefix%>* vec, uint size, <%name%>* arr);
+    
+    void cvector_<%name_prefix%>_push(struct cvector_<%name_prefix%>* vec, const <%name%>* element);
+    void cvector_<%name_prefix%>_pop(struct cvector_<%name_prefix%>* vec, <%name%>* element);
+    void cvector_<%name_prefix%>_clear(struct cvector_<%name_prefix%>* vec);
+    void cvector_<%name_prefix%>_resize(struct cvector_<%name_prefix%>* vec, uint size);
+    
+    <%name%> cvector_<%name_prefix%>_front(struct cvector_<%name_prefix%>* vec);
+    
+    uint cvector_<%name_prefix%>_length(const struct cvector_<%name_prefix%>* vec);
+    uint cvector_<%name_prefix%>_max_size(const struct cvector_<%name_prefix%>* vec);
+    void cvector_<%name_prefix%>_shrink_to_fit(struct cvector_<%name_prefix%>* vec);
+
+#ifdef	__cplusplus
+}
+#endif
+
+#endif	/* CVECTOR_<%name_upper%>_H */
+
