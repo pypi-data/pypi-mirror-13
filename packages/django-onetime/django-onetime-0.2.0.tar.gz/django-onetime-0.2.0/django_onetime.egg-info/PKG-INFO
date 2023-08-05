@@ -1,0 +1,60 @@
+Metadata-Version: 1.0
+Name: django-onetime
+Version: 0.2.0
+Summary: A reusable Django app that lets you call followup functions after an event has taken place.  (Such as two-factor authentication)
+Home-page: http://bitbucket.org/mirusresearch/django-onetime
+Author: Don Spaulding
+Author-email: don@mirusresearch.com
+License: MIT license, see LICENSE.txt
+Description: OneTime is a drop-in Django app that allows you store callbacks
+        in your database to be called once another event has taken place.
+        
+        
+        
+        In its most basic form, it has two main parts.  First, you give 
+        `onetime.call_later` a callable to execute when the event happens.  
+        Second you hook up the CallbackMiddleware which will call the callable
+        with the arguments you supply to `call_later()`. 
+        
+        views.py
+        ========
+        ::
+            # Log a user in via email
+            from onetime import call_later
+            
+            def login(request=None, user_id):
+                user = User.objects.get(id=user_id)
+                request.session['logged_in_user'] = user
+            
+            def email_login_link(request):
+                alleged_user = User.objects.get(id=request.GET['user_id'])
+                onetime_id = call_later(login, user_id=alleged_user.id)
+                email_utils.sendmail(
+                    alleged_user.email, 
+                    "Login Link", 
+                    "Login by clicking <a href='http://mysite/?onetime_id=%s'>here</a>"%onetime_id
+                )
+        
+        settings.py
+        ===========
+        ::
+            MIDDLEWARE_CLASSES = (
+                'onetime.middleware.CallbackMiddleware',
+                ...
+            )
+        
+        
+        If the callable you are passing in to call_later is in fact a Django
+        view that needs its first parameter to be the incoming request, you
+        can instead use `onetime.call_view_later` which will pass in the subsequent
+        request as the first parameter to the callable.
+        
+        
+        Settings
+        ========
+        ONETIME_REQUEST_PARAMETER The request.REQUEST key we should look under
+        while searching for OneTime IDs.  Can be any url-safe string, defaults
+        to `onetime_id`.
+        
+        
+Platform: UNKNOWN
