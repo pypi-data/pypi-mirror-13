@@ -1,0 +1,477 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>nvector.info &mdash; nvector 0.0.post0.dev12+6fb5038 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.0.post0.dev12+6fb5038',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="nvector 0.0.post0.dev12+6fb5038 documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body role="document">  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for nvector.info</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Introduction to Nvector</span>
+<span class="sd">=======================</span>
+<span class="sd">Nvector is a suite of tools written in Python to solve geographical position</span>
+<span class="sd">calculations like:</span>
+
+<span class="sd">* Calculate the surface distance between two geographical positions:*</span>
+
+<span class="sd">* Convert positions given in one reference frame into another reference frame*</span>
+
+<span class="sd">* Find the destination point given start position, azimuth/bearing and distance*</span>
+
+<span class="sd">* Find the mean position (center/midpoint) of several geographical positions.*</span>
+
+<span class="sd">* Find the intersection between two paths.*</span>
+
+<span class="sd">* Find the cross track distance between a path and a position.*</span>
+
+
+<span class="sd">In this library, we represent position with an &quot;n-vector&quot;,  which</span>
+<span class="sd">is the normal vector to the Earth model (the same reference ellipsoid that is</span>
+<span class="sd">used for latitude and longitude). When using n-vector, all Earth-positions are</span>
+<span class="sd">treated equally, and there is no need to worry about singularities or</span>
+<span class="sd">discontinuities. An additional benefit with using n-vector is that many</span>
+<span class="sd">position calculations can be solved with simple vector algebra</span>
+<span class="sd">(e.g. dot product and cross product).</span>
+
+<span class="sd">Converting between n-vector and latitude/longitude is unambiguous and easy</span>
+<span class="sd">using the provided functions.</span>
+
+<span class="sd">n_E is n-vector in the program code, while in documents we use nE. E denotes</span>
+<span class="sd">an Earth-fixed coordinate frame, and it indicates that the three components of</span>
+<span class="sd">n-vector are along the three axes of E. More details about the notation used</span>
+<span class="sd">are found here:  http://www.navlab.net/nvector/</span>
+
+<span class="sd">The core functions provided are:</span>
+
+<span class="sd">*lat_lon2n_E:*</span>
+<span class="sd">    Converts latitude and longitude to n-vector.</span>
+
+<span class="sd">*n_E2lat_lon:*</span>
+<span class="sd">    Converts n-vector to latitude and longitude.</span>
+
+<span class="sd">*n_EB_E2p_EB_E:*</span>
+<span class="sd">    Converts n-vector to Cartesian position vector in meters.</span>
+
+<span class="sd">*p_EB_E2n_EB_E:*</span>
+<span class="sd">    Converts Cartesian position vector in meters to n-vector.</span>
+
+<span class="sd">*n_EA_E_and_n_EB_E2p_AB_E:*</span>
+<span class="sd">    From two positions A and B, finds the delta position.</span>
+
+
+<span class="sd">Nvector also provide an object oriented interface.</span>
+
+<span class="sd">*FrameE:*</span>
+<span class="sd">    frame of reference rotates and moves with the Earth.</span>
+<span class="sd">    Origo = Earth&#39;s centre.</span>
+<span class="sd">    z-axis-&gt;North, x-axis-&gt;Latitude=Longitude=0</span>
+<span class="sd">*FrameB:*</span>
+<span class="sd">    frame of reference rotates and moves with Body.</span>
+<span class="sd">    Origo = Body&#39;s centre.</span>
+<span class="sd">    x-axis -&gt; forward, y-axis -&gt; starboard, z-axis -&gt; down</span>
+<span class="sd">*FrameN:*</span>
+<span class="sd">    frame of reference moves with Body and rotates with Earth.</span>
+<span class="sd">    Origo = Beneath/above Body at Earth&#39;s surface.</span>
+<span class="sd">    x-axis -&gt; North, y-axis -&gt; East, z-axis -&gt; down</span>
+<span class="sd">*FrameL:*</span>
+<span class="sd">    frame of reference moves with Body, but does not rotate with Earth.</span>
+<span class="sd">    Origo = Beneath/above Body at Earth&#39;s surface.</span>
+
+<span class="sd">*ECEFvector:*</span>
+<span class="sd">    Geographical position given as Cartesian position vector in frame E</span>
+<span class="sd">*GeoPoint:*</span>
+<span class="sd">    Geographical position given as latitude, longitude, depth in frame E</span>
+<span class="sd">*Nvector:*</span>
+<span class="sd">    Geographical position given as N-vector and depth in frame E</span>
+<span class="sd">*GeoPath:*</span>
+<span class="sd">    Geodesic path between two points in Frame E</span>
+
+
+<span class="sd">Documentation is at: http://www.navlab.net/nvector/</span>
+
+<span class="sd">Code and issue tracker is at https://github.com/pbrod/nvector.</span>
+
+<span class="sd">Latest stable release is at http://pypi.python.org/pypi/Nvector.</span>
+
+<span class="sd">To test if the toolbox is working paste the following in an interactive</span>
+<span class="sd">python session::</span>
+
+<span class="sd">   import nvector as nv</span>
+<span class="sd">   nv.test(coverage=True, doctests=True)</span>
+
+<span class="sd">Getting Started</span>
+<span class="sd">---------------</span>
+<span class="sd">Example 1: &quot;A and B to delta&quot;</span>
+
+<span class="sd">Given two positions, A and B as latitudes, longitudes and depths relative to</span>
+<span class="sd">Earth, E.</span>
+
+<span class="sd">Find the exact vector between the two positions, given in meters north, east,</span>
+<span class="sd">and down, and find the direction (azimuth) to B, relative to north.</span>
+<span class="sd">Assume WGS-84 ellipsoid. The given depths are from the ellipsoid surface.</span>
+<span class="sd">Use position A to define north, east, and down directions.</span>
+<span class="sd">(Due to the curvature of Earth and different directions to the North Pole,</span>
+<span class="sd">the north, east, and down directions will change (relative to Earth) for</span>
+<span class="sd">different places.  A must be outside the poles for the north and east</span>
+<span class="sd">directions to be defined.)</span>
+
+<span class="sd">Solution:</span>
+<span class="sd">    &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">    &gt;&gt;&gt; import nvector as nv</span>
+<span class="sd">    &gt;&gt;&gt; wgs84 = nv.FrameE(name=&#39;WGS84&#39;)</span>
+<span class="sd">    &gt;&gt;&gt; pointA = wgs84.GeoPoint(latitude=1, longitude=2, z=3, degrees=True)</span>
+<span class="sd">    &gt;&gt;&gt; pointB = wgs84.GeoPoint(latitude=4, longitude=5, z=6, degrees=True)</span>
+
+<span class="sd">Step 1: Convert to ECEF vectors</span>
+<span class="sd">    &gt;&gt;&gt; p_EA_E = pointA.to_ecef_vector()</span>
+<span class="sd">    &gt;&gt;&gt; p_EB_E = pointB.to_ecef_vector()</span>
+
+<span class="sd">Step 2: Find p_AB_E (delta decomposed in E).</span>
+<span class="sd">    &gt;&gt;&gt; p_AB_E = p_EB_E - p_EA_E  # (delta decomposed in E).</span>
+
+<span class="sd">Step 3: Find p_AB_N (delta decomposed in N).</span>
+<span class="sd">    &gt;&gt;&gt; frame_N = nv.FrameN(pointA)</span>
+<span class="sd">    &gt;&gt;&gt; p_AB_N = p_AB_E.change_frame(frame_N)</span>
+<span class="sd">    &gt;&gt;&gt; p_AB_N = p_AB_N.pvector.ravel()</span>
+<span class="sd">    &gt;&gt;&gt; valtxt = &#39;{0:8.2f}, {1:8.2f}, {2:8.2f}&#39;.format(*p_AB_N)</span>
+<span class="sd">    &gt;&gt;&gt; &#39;delta north, east, down = {}&#39;.format(valtxt)</span>
+<span class="sd">    &#39;delta north, east, down = 331730.23, 332997.87, 17404.27&#39;</span>
+
+<span class="sd">Step4: Also find the direction (azimuth) to B, relative to north:</span>
+<span class="sd">    &gt;&gt;&gt; azimuth = np.arctan2(p_AB_N[1], p_AB_N[0])</span>
+<span class="sd">    &gt;&gt;&gt; &#39;azimuth = {0:4.2f} deg&#39;.format(np.rad2deg(azimuth))</span>
+<span class="sd">    &#39;azimuth = 45.11 deg&#39;</span>
+
+
+<span class="sd">Example 2: &quot;B and delta to C&quot;</span>
+
+<span class="sd">A radar or sonar attached to a vehicle B (Body coordinate frame) measures the</span>
+<span class="sd">distance and direction to an object C. We assume that the distance and two</span>
+<span class="sd">angles (typically bearing and elevation relative to B) are already combined to</span>
+<span class="sd">the vector p_BC_B (i.e. the vector from B to C, decomposed in B). The position</span>
+<span class="sd">of B is given as n_EB_E and z_EB, and the orientation (attitude) of B is given</span>
+<span class="sd">as R_NB (this rotation matrix can be found from roll/pitch/yaw by using zyx2R).</span>
+
+<span class="sd">Find the exact position of object C as n-vector and depth ( n_EC_E and z_EC ),</span>
+<span class="sd">assuming Earth ellipsoid with semi-major axis a and flattening f. For WGS-72,</span>
+<span class="sd">use a = 6 378 135 m and f = 1/298.26.</span>
+
+<span class="sd">Solution:</span>
+<span class="sd">    &gt;&gt;&gt; import nvector as nv</span>
+<span class="sd">    &gt;&gt;&gt; wgs72 = nv.FrameE(name=&#39;WGS72&#39;)</span>
+<span class="sd">    &gt;&gt;&gt; wgs72 = nv.FrameE(a=6378135, f=1.0/298.26)</span>
+
+<span class="sd">Step 1: Position and orientation of B is given 400m above E:</span>
+<span class="sd">    &gt;&gt;&gt; n_EB_E = wgs72.Nvector(nv.unit([[1], [2], [3]]), z=-400)</span>
+
+<span class="sd">Step 2: Delta BC decomposed in B</span>
+<span class="sd">    &gt;&gt;&gt; frame_B = nv.FrameB(n_EB_E, yaw=10, pitch=20, roll=30, degrees=True)</span>
+<span class="sd">    &gt;&gt;&gt; p_BC_B = frame_B.Pvector(np.r_[3000, 2000, 100].reshape((-1, 1)))</span>
+
+<span class="sd">Step 3: Decompose delta BC in E</span>
+<span class="sd">    &gt;&gt;&gt; p_BC_E = p_BC_B.to_ecef_vector()</span>
+
+<span class="sd">Step 4: Find point C by adding delta BC to EB</span>
+<span class="sd">    &gt;&gt;&gt; p_EB_E = n_EB_E.to_ecef_vector()</span>
+<span class="sd">    &gt;&gt;&gt; p_EC_E = p_EB_E + p_BC_E</span>
+<span class="sd">    &gt;&gt;&gt; pointC = p_EC_E.to_geo_point()</span>
+
+<span class="sd">    &gt;&gt;&gt; lat, lon, z = pointC.latitude_deg, pointC.longitude_deg, pointC.z</span>
+<span class="sd">    &gt;&gt;&gt; msg = &#39;Pos C: lat, lon = {:4.2f}, {:4.2f} deg,  height = {:4.2f} m&#39;</span>
+<span class="sd">    &gt;&gt;&gt; msg.format(lat[0], lon[0], -z[0])</span>
+<span class="sd">    &#39;Pos C: lat, lon = 53.33, 63.47 deg,  height = 406.01 m&#39;</span>
+
+
+<span class="sd">Example 3: &quot;ECEF-vector to geodetic latitude&quot;</span>
+
+<span class="sd">Position B is given as an &quot;ECEF-vector&quot; p_EB_E (i.e. a vector from E, the</span>
+<span class="sd">center of the Earth, to B, decomposed in E).</span>
+<span class="sd">Find the geodetic latitude, longitude and height (latEB, lonEB and hEB),</span>
+<span class="sd">assuming WGS-84 ellipsoid.</span>
+
+<span class="sd">Solution:</span>
+<span class="sd">    &gt;&gt;&gt; import nvector as nv</span>
+<span class="sd">    &gt;&gt;&gt; wgs84 = nv.FrameE(name=&#39;WGS84&#39;)</span>
+<span class="sd">    &gt;&gt;&gt; position_B = 6371e3 * np.vstack((0.9, -1, 1.1))  # m</span>
+<span class="sd">    &gt;&gt;&gt; p_EB_E = wgs84.ECEFvector(position_B)</span>
+
+<span class="sd">Step 1: Find position B as geodetic latitude, longitude and height</span>
+<span class="sd">    &gt;&gt;&gt; pointB = p_EB_E.to_geo_point()</span>
+
+<span class="sd">Step 2: Extract latitude and longitude in degrees</span>
+<span class="sd">    &gt;&gt;&gt; lat, lon, h = pointB.latitude_deg, pointB.longitude_deg, -pointB.z</span>
+<span class="sd">    &gt;&gt;&gt; msg = &#39;Pos B: lat, lon = {:4.2f}, {:4.2f} deg, height = {:9.2f} m&#39;</span>
+<span class="sd">    &gt;&gt;&gt; msg.format(lat[0], lon[0], h[0])</span>
+<span class="sd">    &#39;Pos B: lat, lon = 39.38, -48.01 deg, height = 4702059.83 m&#39;</span>
+
+
+<span class="sd">Example 4: &quot;Geodetic latitude to ECEF-vector&quot;</span>
+
+<span class="sd">    &gt;&gt;&gt; wgs84 = nv.FrameE(name=&#39;WGS84&#39;)</span>
+<span class="sd">    &gt;&gt;&gt; pointB = wgs84.GeoPoint(latitude=1, longitude=2, z=-3, degrees=True)</span>
+<span class="sd">    &gt;&gt;&gt; p_EB_E = pointB.to_ecef_vector()</span>
+<span class="sd">    &gt;&gt;&gt; &#39;Ex4: p_EB_E = {} m&#39;.format(p_EB_E.pvector.ravel())</span>
+<span class="sd">    &#39;Ex4: p_EB_E = [ 6373290.27721828   222560.20067474   110568.82718179] m&#39;</span>
+
+
+<span class="sd">Example 5: &quot;Surface distance&quot;</span>
+
+<span class="sd">Find the surface distance sAB (i.e. great circle distance) between two</span>
+<span class="sd">positions A and B. The heights of A and B are ignored, i.e. if they don&#39;t have</span>
+<span class="sd">zero height, we seek the distance between the points that are at the surface of</span>
+<span class="sd">the Earth, directly above/below A and B. The Euclidean distance (chord length)</span>
+<span class="sd">dAB should also be found. Use Earth radius 6371e3 m.</span>
+
+<span class="sd">Solution:</span>
+<span class="sd">    &gt;&gt;&gt; frame_E = nv.FrameE(a=6371e3, f=0)</span>
+<span class="sd">    &gt;&gt;&gt; positionA = frame_E.GeoPoint(latitude=88, longitude=0, degrees=True)</span>
+<span class="sd">    &gt;&gt;&gt; positionB = frame_E.GeoPoint(latitude=89, longitude=-170, degrees=True)</span>
+
+<span class="sd">    &gt;&gt;&gt; s_AB, _azia, _azib = positionA.distance_and_azimuth(positionB)</span>
+<span class="sd">    &gt;&gt;&gt; p_AB_E = positionB.to_ecef_vector() - positionA.to_ecef_vector()</span>
+<span class="sd">    &gt;&gt;&gt; d_AB = np.linalg.norm(p_AB_E.pvector, axis=0)[0]</span>
+
+<span class="sd">    &gt;&gt;&gt; msg = &#39;Great circle and Euclidean distance = {:5.2f} km, {:5.2f} km&#39;</span>
+<span class="sd">    &gt;&gt;&gt; msg.format(s_AB / 1000, d_AB / 1000)</span>
+<span class="sd">    &#39;Great circle and Euclidean distance = 332.46 km, 332.42 km&#39;</span>
+
+<span class="sd">Alternative solution:</span>
+<span class="sd">    &gt;&gt;&gt; path = nv.GeoPath(positionA, positionB)</span>
+<span class="sd">    &gt;&gt;&gt; s_AB2 = path.track_distance(method=&#39;greatcircle&#39;).ravel()</span>
+<span class="sd">    &gt;&gt;&gt; d_AB2 = path.track_distance(method=&#39;euclidean&#39;).ravel()</span>
+<span class="sd">    &gt;&gt;&gt; msg.format(s_AB2[0] / 1000, d_AB2[0] / 1000)</span>
+<span class="sd">    &#39;Great circle and Euclidean distance = 332.46 km, 332.42 km&#39;</span>
+
+<span class="sd">Exact solution for the WGS84 ellipsoid:</span>
+<span class="sd">    &gt;&gt;&gt; wgs84 = nv.FrameE(name=&#39;WGS84&#39;)</span>
+<span class="sd">    &gt;&gt;&gt; point1 = wgs84.GeoPoint(latitude=88, longitude=0, degrees=True)</span>
+<span class="sd">    &gt;&gt;&gt; point2 = wgs84.GeoPoint(latitude=89, longitude=-170, degrees=True)</span>
+<span class="sd">    &gt;&gt;&gt; s_12, _azi1, _azi2 = point1.distance_and_azimuth(point2)</span>
+
+<span class="sd">    &gt;&gt;&gt; p_12_E = point2.to_ecef_vector() - point1.to_ecef_vector()</span>
+<span class="sd">    &gt;&gt;&gt; d_12 = np.linalg.norm(p_12_E.pvector, axis=0)[0]</span>
+<span class="sd">    &gt;&gt;&gt; msg.format(s_12 / 1000, d_12 / 1000)</span>
+<span class="sd">    &#39;Great circle and Euclidean distance = 333.95 km, 333.91 km&#39;</span>
+
+
+<span class="sd">Example 7: &quot;Mean position&quot;</span>
+
+<span class="sd">Three positions A, B, and C are given as n-vectors n_EA_E, n_EB_E, and n_EC_E.</span>
+<span class="sd">Find the mean position, M, given as n_EM_E.</span>
+<span class="sd">Note that the calculation is independent of the depths of the positions.</span>
+
+<span class="sd">Solution:</span>
+<span class="sd">    &gt;&gt;&gt; points = nv.GeoPoint(latitude=[90, 60, 50],</span>
+<span class="sd">    ...                      longitude=[0, 10, -20], degrees=True)</span>
+<span class="sd">    &gt;&gt;&gt; nvectors = points.to_nvector()</span>
+<span class="sd">    &gt;&gt;&gt; n_EM_E = nvectors.mean_horizontal_position()</span>
+<span class="sd">    &gt;&gt;&gt; g_EM_E = n_EM_E.to_geo_point()</span>
+<span class="sd">    &gt;&gt;&gt; lat, lon = g_EM_E.latitude_deg, g_EM_E.longitude_deg</span>
+<span class="sd">    &gt;&gt;&gt; msg = &#39;Pos M: lat, lon = {:4.2f}, {:4.2f} deg&#39;</span>
+<span class="sd">    &gt;&gt;&gt; msg.format(lat[0], lon[0])</span>
+<span class="sd">    &#39;Pos M: lat, lon = 67.24, -6.92 deg&#39;</span>
+
+
+<span class="sd">Example 8: &quot;A and azimuth/distance to B&quot;</span>
+
+<span class="sd">We have an initial position A, direction of travel given as an azimuth</span>
+<span class="sd">(bearing) relative to north (clockwise), and finally the</span>
+<span class="sd">distance to travel along a great circle given as sAB.</span>
+<span class="sd">Use Earth radius 6371e3 m to find the destination point B.</span>
+
+<span class="sd">In geodesy this is known as &quot;The first geodetic problem&quot; or</span>
+<span class="sd">&quot;The direct geodetic problem&quot; for a sphere, and we see that this is similar to</span>
+<span class="sd">Example 2, but now the delta is given as an azimuth and a great circle</span>
+<span class="sd">distance. (&quot;The second/inverse geodetic problem&quot; for a sphere is already</span>
+<span class="sd">solved in Examples 1 and 5.)</span>
+
+<span class="sd">Solution:</span>
+<span class="sd">    &gt;&gt;&gt; frame = nv.FrameE(a=6371e3, f=0)</span>
+<span class="sd">    &gt;&gt;&gt; pointA = frame.GeoPoint(latitude=80, longitude=-90, degrees=True)</span>
+<span class="sd">    &gt;&gt;&gt; pointB, _azimuthb = pointA.geo_point(distance=1000, azimuth=200,</span>
+<span class="sd">    ...                                      degrees=True)</span>
+<span class="sd">    &gt;&gt;&gt; latB, lonB = pointB.latitude_deg, pointB.longitude_deg</span>
+
+<span class="sd">    &gt;&gt;&gt; &#39;Ex8, Destination: lat, lon = {:4.2f}, {:4.2f} deg&#39;.format(latB, lonB)</span>
+<span class="sd">    &#39;Ex8, Destination: lat, lon = 79.99, -90.02 deg&#39;</span>
+
+
+<span class="sd">Example 9: &quot;Intersection of two paths&quot;</span>
+
+<span class="sd">Define a path from two given positions (at the surface of a spherical Earth),</span>
+<span class="sd">as the great circle that goes through the two points.</span>
+
+<span class="sd">Path A is given by A1 and A2, while path B is given by B1 and B2.</span>
+
+<span class="sd">Find the position C where the two paths intersect.</span>
+
+<span class="sd">Solution 9:</span>
+
+<span class="sd">    &gt;&gt;&gt; pointA1 = nv.GeoPoint(10, 20, degrees=True)</span>
+<span class="sd">    &gt;&gt;&gt; pointA2 = nv.GeoPoint(30, 40, degrees=True)</span>
+<span class="sd">    &gt;&gt;&gt; pointB1 = nv.GeoPoint(50, 60, degrees=True)</span>
+<span class="sd">    &gt;&gt;&gt; pointB2 = nv.GeoPoint(70, 80, degrees=True)</span>
+<span class="sd">    &gt;&gt;&gt; pathA = nv.GeoPath(pointA1, pointA2)</span>
+<span class="sd">    &gt;&gt;&gt; pathB = nv.GeoPath(pointB1, pointB2)</span>
+
+<span class="sd">    &gt;&gt;&gt; pointC = pathA.intersection(pathB)</span>
+
+<span class="sd">    &gt;&gt;&gt; lat, lon = pointC.latitude_deg, pointC.longitude_deg</span>
+<span class="sd">    &gt;&gt;&gt; msg = &#39;Ex9, Intersection: lat, long = {:4.2f}, {:4.2f} deg&#39;</span>
+<span class="sd">    &gt;&gt;&gt; msg.format(lat[0], lon[0])</span>
+<span class="sd">    &#39;Ex9, Intersection: lat, long = 40.32, 55.90 deg&#39;</span>
+
+
+<span class="sd">Example 10: &quot;Cross track distance&quot;</span>
+
+<span class="sd">Path A is given by the two positions A1 and A2 (similar to the previous</span>
+<span class="sd">example).</span>
+
+<span class="sd">Find the cross track distance sxt between the path A (i.e. the great circle</span>
+<span class="sd">through A1 and A2) and the position B (i.e. the shortest distance at the</span>
+<span class="sd">surface, between the great circle and B).</span>
+
+<span class="sd">Also find the Euclidean distance dxt between B and the plane defined by the</span>
+<span class="sd">great circle. Use Earth radius 6371e3.</span>
+
+<span class="sd">Solution 10:</span>
+<span class="sd">    &gt;&gt;&gt; frame = nv.FrameE(a=6371e3, f=0)</span>
+<span class="sd">    &gt;&gt;&gt; pointA1 = frame.GeoPoint(0, 0, degrees=True)</span>
+<span class="sd">    &gt;&gt;&gt; pointA2 = frame.GeoPoint(10, 0, degrees=True)</span>
+<span class="sd">    &gt;&gt;&gt; pointB = frame.GeoPoint(1, 0.1, degrees=True)</span>
+
+<span class="sd">    &gt;&gt;&gt; pathA = nv.GeoPath(pointA1, pointA2)</span>
+
+<span class="sd">    &gt;&gt;&gt; s_xt = pathA.cross_track_distance(pointB, method=&#39;greatcircle&#39;).ravel()</span>
+<span class="sd">    &gt;&gt;&gt; d_xt = pathA.cross_track_distance(pointB, method=&#39;euclidean&#39;).ravel()</span>
+<span class="sd">    &gt;&gt;&gt; val_txt = &#39;{:4.2f} km, {:4.2f} km&#39;.format(s_xt[0]/1000, d_xt[0]/1000)</span>
+<span class="sd">    &gt;&gt;&gt; msg = &#39;cross track distance from path A to position B&#39;</span>
+<span class="sd">    &gt;&gt;&gt; &#39;{}, s_xt, d_xt = {}&#39;.format(msg, val_txt)</span>
+<span class="sd">    &#39;cross track distance from path A to position B, s_xt, d_xt = 11.12 km, 11.12 km&#39;</span>
+
+<span class="sd">Below we also give the functional solutions to example 1.</span>
+
+<span class="sd">Example 1: Find the exact vector between the two positions, given in meters</span>
+<span class="sd">    north, east, and down, i.e. find p_AB_N:</span>
+
+<span class="sd">&gt;&gt;&gt; import numpy as np</span>
+<span class="sd">&gt;&gt;&gt; import nvector as nv</span>
+<span class="sd">&gt;&gt;&gt; from nvector import rad, deg</span>
+
+<span class="sd">&gt;&gt;&gt; lat_EA, lon_EA, z_EA = rad(1), rad(2), 3</span>
+<span class="sd">&gt;&gt;&gt; lat_EB, lon_EB, z_EB = rad(4), rad(5), 6</span>
+
+<span class="sd">SOLUTION:</span>
+<span class="sd">Step1: Convert to n-vectors:</span>
+<span class="sd">    &gt;&gt;&gt; n_EA_E = nv.lat_lon2n_E(lat_EA, lon_EA)</span>
+<span class="sd">    &gt;&gt;&gt; n_EB_E = nv.lat_lon2n_E(lat_EB, lon_EB)</span>
+
+<span class="sd">Step2: Find p_AB_E (delta decomposed in E).</span>
+<span class="sd">WGS-84 ellipsoid is default:</span>
+<span class="sd">    &gt;&gt;&gt; p_AB_E = nv.n_EA_E_and_n_EB_E2p_AB_E(n_EA_E, n_EB_E, z_EA, z_EB)</span>
+
+<span class="sd">Step3: Find R_EN for position A:</span>
+<span class="sd">    &gt;&gt;&gt; R_EN = nv.n_E2R_EN(n_EA_E)</span>
+
+<span class="sd">Step4: Find p_AB_N (delta decomposed in N).</span>
+<span class="sd">    &gt;&gt;&gt; p_AB_N = np.dot(R_EN.T, p_AB_E).ravel()</span>
+<span class="sd">    &gt;&gt;&gt; &#39;delta north, east, down = {0:8.2f}, {1:8.2f}, {2:8.2f}&#39;.format(*p_AB_N)</span>
+<span class="sd">    &#39;delta north, east, down = 331730.23, 332997.87, 17404.27&#39;</span>
+
+<span class="sd">Step5: Also find the direction (azimuth) to B, relative to north:</span>
+<span class="sd">    &gt;&gt;&gt; azimuth = np.arctan2(p_AB_N[1], p_AB_N[0]) # positive angle about down-axis</span>
+<span class="sd">    &gt;&gt;&gt; &#39;azimuth = {0:4.2f} deg&#39;.format(deg(azimuth))</span>
+<span class="sd">    &#39;azimuth = 45.11 deg&#39;</span>
+
+<span class="sd">See also</span>
+<span class="sd">--------</span>
+<span class="sd">geographiclib</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+
+<div class="viewcode-block" id="test_docstrings"><a class="viewcode-back" href="../../api/nvector.html#nvector.info.test_docstrings">[docs]</a><span class="k">def</span> <span class="nf">test_docstrings</span><span class="p">():</span>
+    <span class="kn">import</span> <span class="nn">doctest</span>
+    <span class="n">doctest</span><span class="o">.</span><span class="n">testmod</span><span class="p">(</span><span class="n">optionflags</span><span class="o">=</span><span class="n">doctest</span><span class="o">.</span><span class="n">NORMALIZE_WHITESPACE</span><span class="p">)</span>
+
+</div>
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">test_docstrings</span><span class="p">()</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2015, pbrod.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.6</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

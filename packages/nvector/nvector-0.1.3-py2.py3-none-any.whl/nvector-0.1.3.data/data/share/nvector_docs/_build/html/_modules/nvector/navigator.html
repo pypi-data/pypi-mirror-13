@@ -1,0 +1,1268 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>nvector.navigator &mdash; nvector 0.0.post0.dev12+6fb5038 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.0.post0.dev12+6fb5038',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="nvector 0.0.post0.dev12+6fb5038 documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body role="document">  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for nvector.navigator</h1><div class="highlight"><pre>
+<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">Module providing function and classes for  calculating distances and</span>
+<span class="sd">bearing from ship to sensor as well as the position of the sensor relative to</span>
+<span class="sd">the ship.</span>
+<span class="sd">&#39;&#39;&#39;</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">division</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">namedtuple</span>
+<span class="kn">from</span> <span class="nn">operator</span> <span class="kn">import</span> <span class="n">xor</span>
+<span class="c"># from subject import Subject</span>
+<span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="p">(</span><span class="n">sign</span><span class="p">,</span> <span class="n">pi</span><span class="p">,</span> <span class="n">sqrt</span><span class="p">,</span> <span class="n">sin</span><span class="p">,</span> <span class="n">cos</span><span class="p">,</span> <span class="n">arcsin</span><span class="p">,</span> <span class="n">arccos</span><span class="p">,</span>
+                   <span class="n">arctan2</span><span class="p">,</span> <span class="n">nan</span><span class="p">,</span> <span class="n">finfo</span><span class="p">,</span> <span class="n">mod</span><span class="p">,</span> <span class="n">asarray</span><span class="p">,</span> <span class="n">isfinite</span><span class="p">,</span>
+                   <span class="n">rad2deg</span><span class="p">,</span> <span class="n">deg2rad</span><span class="p">,</span> <span class="n">cross</span><span class="p">,</span> <span class="n">dot</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">numpy.linalg</span> <span class="kn">import</span> <span class="n">norm</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">timedelta</span>
+<span class="c"># from utilities.numpy_utils import is_numlike</span>
+<span class="kn">from</span> <span class="nn">nvector</span> <span class="kn">import</span> <span class="p">(</span><span class="n">n_E2lat_lon</span><span class="p">,</span> <span class="n">lat_lon2n_E</span><span class="p">,</span> <span class="n">n_EA_E_and_n_EB_E2p_AB_E</span><span class="p">,</span>
+                     <span class="n">unit</span><span class="p">,</span> <span class="n">n_E2R_EN</span><span class="p">,</span> <span class="n">great_circle_distance</span><span class="p">,</span> <span class="n">azimuth</span><span class="p">,</span>
+                     <span class="n">set_north_pole_axis_for_E_frame</span><span class="p">)</span>
+
+<span class="n">R_Ee</span> <span class="o">=</span> <span class="n">set_north_pole_axis_for_E_frame</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="s">&#39;z&#39;</span><span class="p">)</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;Navigator&#39;</span><span class="p">,</span> <span class="s">&#39;NmeaFileReader&#39;</span><span class="p">]</span>
+
+
+<span class="k">class</span> <span class="nc">Subject</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">pass</span>
+
+
+<span class="k">def</span> <span class="nf">is_numlike</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
+    <span class="s">&#39;return true if *obj* looks like a number&#39;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">obj</span> <span class="o">+</span> <span class="mi">1</span>
+    <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">False</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">True</span>
+
+<span class="c"># Calculate machine precision (machine epsilon)</span>
+<span class="n">_EPS</span> <span class="o">=</span> <span class="n">finfo</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span>
+<span class="c"># Corresponds to _DMAX in herman.py and chaco_gui.py</span>
+<span class="n">_DMAX</span> <span class="o">=</span> <span class="mf">99999999999999999.0</span>
+
+<span class="n">_GPS_AGE_LIMIT</span> <span class="o">=</span> <span class="mi">30</span>  <span class="c"># maximum age in seconds</span>
+<span class="c"># Approx. radius of the Earth (in meters) FAI standard</span>
+<span class="n">EARTH_RADIUS_M</span> <span class="o">=</span> <span class="mf">6371009.0</span>
+<span class="n">EARTH_RADIUS_KM</span> <span class="o">=</span> <span class="n">EARTH_RADIUS_M</span> <span class="o">/</span> <span class="mi">1000</span>
+<span class="n">_NUM_AVERAGES</span> <span class="o">=</span> <span class="mf">10.0</span>
+<span class="n">_SMOOTHING</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="n">_NUM_AVERAGES</span>
+
+
+<span class="k">def</span> <span class="nf">ellipsoidal_parameters</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&#39;WGS84&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Name           Major axis, a [m]    Flattening (f)</span>
+<span class="sd">    WGS84          6378137.00       1/298.257223563</span>
+<span class="sd">    GRS80/NAD83    6378137.00       1/298.257222101</span>
+<span class="sd">    WGS66          6378145.            1/298.25</span>
+<span class="sd">    GRS67/IAU68    6378160.00          1/298.2472</span>
+<span class="sd">    WGS72          6378135.            1/298.26</span>
+<span class="sd">    Krasovsky      6378245.            1/298.3</span>
+<span class="sd">    Clarke66/NAD27 6378206.4           1/294.9786982138</span>
+
+<span class="sd">    To convert between geocentric (radius r, geocentric latitude u) and</span>
+<span class="sd">    geodetic coordinates (geodetic latitude v, height above the ellipsoid h):</span>
+
+<span class="sd">    tan(u) = tan(v)*(h*sqrt((a*cos(v))^2+(b*sin(v))^2) +b^2)/</span>
+<span class="sd">                  (h*sqrt((a*cos(v))^2+(b*sin(v))^2) +a^2)</span>
+
+<span class="sd">    r^2 = h^2 + 2*h*sqrt((a*cos(v))^2+(b*sin(v))^2)+</span>
+<span class="sd">               (a^4-(a^4-b^4)*(sin(v))^2)/(a^2-(a^2-b^2)*(sin(v))^2)</span>
+
+<span class="sd">    a and b are the semi-major axes of the ellipsoid, and b=a*(1-f),</span>
+<span class="sd">    where f is the flattening. Note that geocentric and geodetic longitudes</span>
+<span class="sd">    are equal.</span>
+
+<span class="sd">    Reference:</span>
+<span class="sd">    ----------</span>
+<span class="sd">    Coordinate Systems and Map Projections, D. H. Maling (Pergamon 1992)</span>
+<span class="sd">    (except Clarke66 !)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">e_param</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s">&#39;Ellipsoidal_parameters&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s">&#39;a&#39;</span><span class="p">,</span> <span class="s">&#39;f&#39;</span><span class="p">],</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">e_parameters</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">WGS84</span><span class="o">=</span><span class="n">e_param</span><span class="p">(</span><span class="mf">6378137.00</span><span class="p">,</span> <span class="mf">1.</span><span class="o">/</span><span class="mf">298.257223563</span><span class="p">),</span>
+                        <span class="n">GRS80</span><span class="o">=</span><span class="n">e_param</span><span class="p">(</span><span class="mf">6378137.00</span><span class="p">,</span> <span class="mf">1.</span><span class="o">/</span><span class="mf">298.257222101</span><span class="p">),</span>
+                        <span class="n">NAD83</span><span class="o">=</span><span class="n">e_param</span><span class="p">(</span><span class="mf">6378137.00</span><span class="p">,</span> <span class="mf">1.</span><span class="o">/</span><span class="mf">298.257222101</span><span class="p">),</span>
+                        <span class="n">WGS66</span><span class="o">=</span><span class="n">e_param</span><span class="p">(</span><span class="mf">6378145.</span><span class="p">,</span> <span class="mf">1.</span><span class="o">/</span><span class="mf">298.25</span><span class="p">),</span>
+                        <span class="n">GRS67</span><span class="o">=</span><span class="n">e_param</span><span class="p">(</span><span class="mf">6378160.00</span><span class="p">,</span> <span class="mf">1.</span><span class="o">/</span><span class="mf">298.2472</span><span class="p">),</span>
+                        <span class="n">IAU68</span><span class="o">=</span><span class="n">e_param</span><span class="p">(</span><span class="mf">6378160.00</span><span class="p">,</span> <span class="mf">1.</span><span class="o">/</span><span class="mf">298.2472</span><span class="p">),</span>
+                        <span class="n">WGS72</span><span class="o">=</span><span class="n">e_param</span><span class="p">(</span><span class="mf">6378135.</span><span class="p">,</span> <span class="mf">1.</span><span class="o">/</span><span class="mf">298.26</span><span class="p">),</span>
+                        <span class="n">KRASOVSKY</span><span class="o">=</span><span class="n">e_param</span><span class="p">(</span><span class="mf">6378245.</span><span class="p">,</span> <span class="mf">1.</span><span class="o">/</span><span class="mf">298.3</span><span class="p">),</span>
+                        <span class="n">CLARKE66</span><span class="o">=</span><span class="n">e_param</span><span class="p">(</span><span class="mf">6378206.4</span><span class="p">,</span> <span class="mf">1.</span><span class="o">/</span><span class="mf">294.9786982138</span><span class="p">),</span>
+                        <span class="n">NAD27</span><span class="o">=</span><span class="n">e_param</span><span class="p">(</span><span class="mf">6378206.4</span><span class="p">,</span> <span class="mf">1.</span><span class="o">/</span><span class="mf">294.9786982138</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">e_parameters</span><span class="p">[</span><span class="n">name</span><span class="o">.</span><span class="n">upper</span><span class="p">()]</span>
+
+
+<span class="c"># rad2deg = lambda rad: rad * (180.0 / pi)</span>
+<span class="c"># deg2rad = lambda deg: deg * (pi / 180.0)</span>
+<span class="n">deg</span> <span class="o">=</span> <span class="n">rad2deg</span>
+<span class="n">rad</span> <span class="o">=</span> <span class="n">deg2rad</span>
+
+
+<span class="k">def</span> <span class="nf">knots2ms</span><span class="p">(</span><span class="n">knots</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">knots</span> <span class="o">*</span> <span class="mf">0.514444</span>
+
+
+<span class="k">def</span> <span class="nf">ms2knots</span><span class="p">(</span><span class="n">ms</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">ms</span> <span class="o">*</span> <span class="mf">1.943844</span>
+
+
+<span class="k">def</span> <span class="nf">distance_rad2distance_nm</span><span class="p">(</span><span class="n">distance_rad</span><span class="p">):</span>
+    <span class="k">return</span> <span class="mi">60</span> <span class="o">*</span> <span class="n">deg</span><span class="p">(</span><span class="n">distance_rad</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">distance_nm2distance_rad</span><span class="p">(</span><span class="n">distance_nm</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">rad</span><span class="p">(</span><span class="n">distance_nm</span><span class="p">)</span><span class="o">/</span><span class="mi">60</span>  <span class="c"># (pi / (180. * 60)) * distance_nm</span>
+
+
+<span class="k">def</span> <span class="nf">distance_km2distance_rad</span><span class="p">(</span><span class="n">distance_km</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">distance_km</span> <span class="o">/</span> <span class="n">EARTH_RADIUS_KM</span>
+
+
+<span class="k">def</span> <span class="nf">distance_m2distance_rad</span><span class="p">(</span><span class="n">distance_m</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">distance_m</span> <span class="o">/</span> <span class="n">EARTH_RADIUS_M</span>
+
+
+<span class="k">def</span> <span class="nf">distance_rad2distance_km</span><span class="p">(</span><span class="n">distance_rad</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">distance_rad</span> <span class="o">*</span> <span class="n">EARTH_RADIUS_KM</span>
+
+
+<span class="k">def</span> <span class="nf">distance_rad2distance_m</span><span class="p">(</span><span class="n">distance_rad</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">distance_rad</span> <span class="o">*</span> <span class="n">EARTH_RADIUS_M</span>
+
+
+<span class="k">def</span> <span class="nf">_acos_safe</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Arguments of arccos() may exceed 1 in magnitude because of</span>
+<span class="sd">    rounding errors. This function computes arccos(x) in a safe way.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">asarray</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">arccos</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="nb">min</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+
+
+<span class="k">def</span> <span class="nf">_asin_safe</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Arguments of arcsin() may exceed 1 in magnitude because of</span>
+<span class="sd">    rounding errors. This function computes arcsin(x) in a safe way.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">asarray</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">arcsin</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="nb">min</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+
+
+<span class="c"># ----- MISC HELPER FUNCTIONS</span>
+<span class="c">#</span>
+<span class="k">def</span> <span class="nf">nmea_split</span><span class="p">(</span><span class="n">nmea_str</span><span class="p">):</span>
+    <span class="n">sentence_id</span> <span class="o">=</span> <span class="n">nmea_str</span><span class="p">[</span><span class="mi">3</span><span class="p">:</span><span class="mi">6</span><span class="p">]</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">nmea_str</span><span class="p">[</span><span class="mi">7</span><span class="p">:]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;,&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">sentence_id</span><span class="p">,</span> <span class="n">data</span>
+
+
+<span class="k">def</span> <span class="nf">split_hhmm_string</span><span class="p">(</span><span class="n">hhmm</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Split lat or lon &#39;HHMM.nnnn&#39; string into &#39;HH&#39;, &#39;MM.nnnn&#39; strings.</span>
+
+<span class="sd">    HMM.nnnn or or HHHMM.nnnn</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">hhmm</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;.&#39;</span><span class="p">:</span>  <span class="c"># &#39;HHHMM.nnnn&#39;</span>
+        <span class="n">hours</span><span class="p">,</span> <span class="n">mins</span> <span class="o">=</span> <span class="n">hhmm</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">],</span> <span class="n">hhmm</span><span class="p">[</span><span class="mi">3</span><span class="p">:]</span>
+    <span class="k">elif</span> <span class="n">hhmm</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;.&#39;</span><span class="p">:</span>  <span class="c"># &#39;HMM.nnnn string&#39;</span>
+        <span class="n">hours</span><span class="p">,</span> <span class="n">mins</span> <span class="o">=</span> <span class="n">hhmm</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">1</span><span class="p">],</span> <span class="n">hhmm</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+    <span class="k">else</span><span class="p">:</span>  <span class="c"># &#39;HHMM.nnnn&#39; string</span>
+        <span class="n">hours</span><span class="p">,</span> <span class="n">mins</span> <span class="o">=</span> <span class="n">hhmm</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">],</span> <span class="n">hhmm</span><span class="p">[</span><span class="mi">2</span><span class="p">:]</span>
+    <span class="k">return</span> <span class="n">hours</span><span class="p">,</span> <span class="n">mins</span>
+
+
+<span class="k">def</span> <span class="nf">lat_or_lon_str2dec_str</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Converts lat or lon HHMM.nnnn string into HH.ddddd decimal string</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">hours</span><span class="p">,</span> <span class="n">mins</span> <span class="o">=</span> <span class="n">split_hhmm_string</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    <span class="n">dec</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">mins</span><span class="p">)</span> <span class="o">/</span> <span class="mf">60.0</span> <span class="o">*</span> <span class="mf">100.0</span>
+    <span class="c"># Cap at 6 digits - currently nn.nnnnnnnn</span>
+    <span class="n">dec</span> <span class="o">=</span> <span class="n">dec</span> <span class="o">*</span> <span class="mf">10000.0</span>
+    <span class="n">str_dec</span> <span class="o">=</span> <span class="s">&quot;</span><span class="si">%06d</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">dec</span>
+    <span class="k">return</span> <span class="n">hours</span> <span class="o">+</span> <span class="s">&quot;.&quot;</span> <span class="o">+</span> <span class="n">str_dec</span>
+
+
+<span class="k">def</span> <span class="nf">lat_lon_str2rad</span><span class="p">(</span><span class="n">lat</span><span class="p">,</span> <span class="n">lat_dir</span><span class="p">,</span> <span class="n">lon</span><span class="p">,</span> <span class="n">lon_dir</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Converts lat and lon HHMM.nnnn strings into floats (radians)</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">    -----------</span>
+<span class="sd">    lat : string</span>
+<span class="sd">        Latitude HHMM.nnnn</span>
+<span class="sd">    lat_dir : &#39;N&#39; or &#39;S&#39;</span>
+<span class="sd">        Latitudal direction North or South</span>
+<span class="sd">    lon : string</span>
+<span class="sd">        Longitude HHMM.nnnn</span>
+<span class="sd">    lon_dir : &#39;E&#39; or &#39;W&#39;</span>
+<span class="sd">        Longitudal direction East or West</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    lat_rad : real scalar</span>
+<span class="sd">        latitude in radians</span>
+<span class="sd">    lon_rad : real, scalar</span>
+<span class="sd">        longitude in radians</span>
+
+<span class="sd">    Example</span>
+<span class="sd">    -------</span>
+<span class="sd">    &gt;&gt;&gt; lat_lon_str2rad(&#39;60.5&#39;, &#39;N&#39;, &#39;40.2&#39;, &#39;E&#39;)</span>
+<span class="sd">    (1.0473429894831665, 0.6981898726217007)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c"># Convert NMEA lat_dec_str and lon_dec_str to decimals</span>
+    <span class="n">lat_dec_str</span> <span class="o">=</span> <span class="n">lat_or_lon_str2dec_str</span><span class="p">(</span><span class="n">lat</span><span class="p">)</span>
+    <span class="n">lon_dec_str</span> <span class="o">=</span> <span class="n">lat_or_lon_str2dec_str</span><span class="p">(</span><span class="n">lon</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">lat_dir</span> <span class="ow">in</span> <span class="p">(</span><span class="s">&#39;S&#39;</span><span class="p">,</span> <span class="s">&#39;s&#39;</span><span class="p">):</span>
+        <span class="n">lat_dec_str</span> <span class="o">=</span> <span class="s">&#39;-&#39;</span> <span class="o">+</span> <span class="n">lat_dec_str</span>
+    <span class="k">if</span> <span class="n">lon_dir</span> <span class="o">==</span> <span class="p">(</span><span class="s">&#39;W&#39;</span><span class="p">,</span> <span class="s">&#39;w&#39;</span><span class="p">):</span>
+        <span class="n">lon_dec_str</span> <span class="o">=</span> <span class="s">&#39;-&#39;</span> <span class="o">+</span> <span class="n">lon_dec_str</span>
+    <span class="n">lat_rad</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">lat_dec_str</span><span class="p">)</span> <span class="o">*</span> <span class="n">pi</span> <span class="o">/</span> <span class="mi">180</span>
+    <span class="n">lon_rad</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">lon_dec_str</span><span class="p">)</span> <span class="o">*</span> <span class="n">pi</span> <span class="o">/</span> <span class="mi">180</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">lat_rad</span><span class="p">,</span> <span class="n">lon_rad</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">GeoPath</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">point1</span><span class="p">,</span> <span class="n">point2</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">point1</span> <span class="o">=</span> <span class="n">point1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">point2</span> <span class="o">=</span> <span class="n">point2</span>
+
+    <span class="k">def</span> <span class="nf">_euclidean_cross_track_distance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">radius</span><span class="p">,</span> <span class="n">cos_angle</span><span class="p">):</span>
+        <span class="k">return</span> <span class="o">-</span><span class="n">cos_angle</span> <span class="o">*</span> <span class="n">radius</span>
+
+    <span class="k">def</span> <span class="nf">_great_circle_cross_track_distance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">radius</span><span class="p">,</span> <span class="n">cos_angle</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">arccos</span><span class="p">(</span><span class="n">cos_angle</span><span class="p">)</span> <span class="o">-</span> <span class="n">pi</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">radius</span>
+
+    <span class="k">def</span> <span class="nf">nvectors</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">point1</span><span class="o">.</span><span class="n">nvector</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">point2</span><span class="o">.</span><span class="n">nvector</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_normal_to_great_circle</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">n_EA1_E</span><span class="p">,</span> <span class="n">n_EA2_E</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nvectors</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">cross</span><span class="p">(</span><span class="n">n_EA1_E</span><span class="p">,</span> <span class="n">n_EA2_E</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">cross_track_distance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">point</span><span class="p">,</span> <span class="n">radius</span><span class="o">=</span><span class="mf">6371e3</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s">&#39;greatcircle&#39;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return cross track distance from the path to the point.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        point: GeoPoint</span>
+<span class="sd">        radius: real scalar</span>
+<span class="sd">            radius of sphere in [m]. Default mean Earth radius</span>
+<span class="sd">        method: string</span>
+<span class="sd">            defining distance calculated. Options are:</span>
+<span class="sd">            &#39;greatcircle&#39; or &#39;euclidian&#39;</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        distance: real scalar</span>
+<span class="sd">            distance in [m]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">c_E</span> <span class="o">=</span> <span class="n">unit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_normal_to_great_circle</span><span class="p">())</span>
+        <span class="n">n_EB_E</span> <span class="o">=</span> <span class="n">point</span><span class="o">.</span><span class="n">nvector</span><span class="p">()</span>
+        <span class="n">cos_angle</span> <span class="o">=</span> <span class="n">dot</span><span class="p">(</span><span class="n">c_E</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">n_EB_E</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">method</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;e&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_euclidean_cross_track_distance</span><span class="p">(</span><span class="n">radius</span><span class="p">,</span> <span class="n">cos_angle</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_great_circle_cross_track_distance</span><span class="p">(</span><span class="n">radius</span><span class="p">,</span> <span class="n">cos_angle</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_great_circle_distance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">radius</span><span class="p">,</span> <span class="n">n_EA_E</span><span class="p">,</span> <span class="n">n_EB_E</span><span class="p">):</span>
+        <span class="c"># The great circle distance is given by equation (16) in Gade (2010):</span>
+        <span class="c"># Well conditioned for all angles:</span>
+        <span class="k">return</span> <span class="n">arctan2</span><span class="p">(</span><span class="n">norm</span><span class="p">(</span><span class="n">cross</span><span class="p">(</span><span class="n">n_EA_E</span><span class="p">,</span> <span class="n">n_EB_E</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span>
+                       <span class="n">dot</span><span class="p">(</span><span class="n">n_EA_E</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">n_EB_E</span><span class="p">))</span> <span class="o">*</span> <span class="n">radius</span>
+
+    <span class="k">def</span> <span class="nf">track_distance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">radius</span><span class="o">=</span><span class="mf">6371e3</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s">&#39;greatcircle&#39;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return the distance of the path.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">n_EA_E</span><span class="p">,</span> <span class="n">n_EB_E</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nvectors</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">method</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s">&quot;e&quot;</span><span class="p">:</span>  <span class="c"># Euclidean distance:</span>
+            <span class="k">return</span> <span class="n">norm</span><span class="p">(</span><span class="n">n_EB_E</span> <span class="o">-</span> <span class="n">n_EA_E</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">*</span> <span class="n">radius</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_great_circle_distance</span><span class="p">(</span><span class="n">radius</span><span class="p">,</span> <span class="n">n_EA_E</span><span class="p">,</span> <span class="n">n_EB_E</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">intersection</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return the intersection between the paths</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        path: GeoPath object</span>
+<span class="sd">            path to intersect</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        point: GeoPoint</span>
+<span class="sd">            point of intersection between paths</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">n_EA1_E</span><span class="p">,</span> <span class="n">n_EA2_E</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nvectors</span><span class="p">()</span>
+        <span class="n">n_EB1_E</span><span class="p">,</span> <span class="n">n_EB2_E</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">nvectors</span><span class="p">()</span>
+
+        <span class="c"># Find the intersection between the two paths, n_EC_E:</span>
+        <span class="n">n_EC_E_tmp</span> <span class="o">=</span> <span class="n">unit</span><span class="p">(</span><span class="n">cross</span><span class="p">(</span><span class="n">cross</span><span class="p">(</span><span class="n">n_EA1_E</span><span class="p">,</span> <span class="n">n_EA2_E</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span>
+                                <span class="n">cross</span><span class="p">(</span><span class="n">n_EB1_E</span><span class="p">,</span> <span class="n">n_EB2_E</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span>
+
+        <span class="c"># n_EC_E_tmp is one of two solutions, the other is -n_EC_E_tmp. Select</span>
+        <span class="c"># the one that is closet to n_EA1_E, by selecting sign from the dot</span>
+        <span class="c"># product between n_EC_E_tmp and n_EA1_E:</span>
+        <span class="n">n_EC_E</span> <span class="o">=</span> <span class="n">sign</span><span class="p">(</span><span class="n">dot</span><span class="p">(</span><span class="n">n_EC_E_tmp</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">n_EA1_E</span><span class="p">))</span> <span class="o">*</span> <span class="n">n_EC_E_tmp</span>
+
+        <span class="n">lat_EC</span><span class="p">,</span> <span class="n">long_EC</span> <span class="o">=</span> <span class="n">n_E2lat_lon</span><span class="p">(</span><span class="n">n_EC_E</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">GeoPoint</span><span class="p">(</span><span class="n">lat_EC</span><span class="p">,</span> <span class="n">long_EC</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">GeoPoint</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Class for calculating on geographical locations</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    lat : real scalar</span>
+<span class="sd">        latitude in radians</span>
+<span class="sd">    lon : real, scalar</span>
+<span class="sd">        longitude in radians</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lat</span><span class="o">=</span><span class="n">nan</span><span class="p">,</span> <span class="n">lon</span><span class="o">=</span><span class="n">nan</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">valid</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lat</span> <span class="o">=</span> <span class="n">lat</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lon</span> <span class="o">=</span> <span class="n">lon</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">time</span> <span class="o">=</span> <span class="n">time</span>
+        <span class="k">if</span> <span class="n">valid</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">check_validity</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">valid</span> <span class="o">=</span> <span class="n">valid</span>
+
+    <span class="k">def</span> <span class="nf">check_validity</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">lat</span><span class="p">,</span> <span class="n">lon</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lat</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lon</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">valid</span> <span class="o">=</span> <span class="n">is_numlike</span><span class="p">(</span><span class="n">lat</span><span class="p">)</span> <span class="ow">and</span> <span class="n">isfinite</span><span class="p">(</span>
+            <span class="n">lat</span><span class="p">)</span> <span class="ow">and</span> <span class="n">is_numlike</span><span class="p">(</span><span class="n">lon</span><span class="p">)</span> <span class="ow">and</span> <span class="n">isfinite</span><span class="p">(</span><span class="n">lon</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">valid</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&#39;GeoPoint(lat={}, lon={})&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lat</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lon</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">nvector</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">lat_lon2n_E</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lat</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lon</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">distance_rad_and_bearing_rad_between_points</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geo_point</span><span class="p">):</span>
+        <span class="n">n_EA_E</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nvector</span><span class="p">()</span>
+        <span class="n">n_EB_E</span> <span class="o">=</span> <span class="n">geo_point</span><span class="o">.</span><span class="n">nvector</span><span class="p">()</span>
+
+        <span class="n">distance_rad1</span> <span class="o">=</span> <span class="n">great_circle_distance</span><span class="p">(</span><span class="n">n_EA_E</span><span class="p">,</span> <span class="n">n_EB_E</span><span class="p">,</span> <span class="n">radius</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">bearing_rad1</span> <span class="o">=</span> <span class="n">azimuth</span><span class="p">(</span><span class="n">n_EA_E</span><span class="p">,</span> <span class="n">n_EB_E</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="n">EARTH_RADIUS_M</span><span class="p">,</span> <span class="n">f</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">distance_rad1</span><span class="p">,</span> <span class="n">bearing_rad1</span>
+
+        <span class="n">lat1</span><span class="p">,</span> <span class="n">lon1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lat</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lon</span>
+        <span class="n">lat2</span><span class="p">,</span> <span class="n">lon2</span> <span class="o">=</span> <span class="n">geo_point</span><span class="o">.</span><span class="n">lat</span><span class="p">,</span> <span class="n">geo_point</span><span class="o">.</span><span class="n">lon</span>
+        <span class="n">d_lat</span> <span class="o">=</span> <span class="n">lat2</span> <span class="o">-</span> <span class="n">lat1</span>
+        <span class="n">d_lon</span> <span class="o">=</span> <span class="n">lon2</span> <span class="o">-</span> <span class="n">lon1</span>
+        <span class="c"># Use the Haversine formula for computing distance.</span>
+        <span class="n">a_0</span> <span class="o">=</span> <span class="p">(</span><span class="n">sin</span><span class="p">(</span><span class="n">d_lat</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">sin</span><span class="p">(</span><span class="n">d_lat</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">+</span>
+               <span class="n">cos</span><span class="p">(</span><span class="n">lat1</span><span class="p">)</span> <span class="o">*</span> <span class="n">cos</span><span class="p">(</span><span class="n">lat2</span><span class="p">)</span> <span class="o">*</span> <span class="n">sin</span><span class="p">(</span><span class="n">d_lon</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">sin</span><span class="p">(</span><span class="n">d_lon</span> <span class="o">/</span> <span class="mi">2</span><span class="p">))</span>
+        <span class="n">distance_rad</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">_asin_safe</span><span class="p">(</span><span class="n">sqrt</span><span class="p">(</span><span class="n">a_0</span><span class="p">))</span>  <span class="c"># Alternative 1</span>
+        <span class="c"># Alternative 2</span>
+        <span class="c"># distance_rad = 2 * arctan2(sqrt(a_0), sqrt(1.0 - a_0))</span>
+        <span class="n">x_1</span> <span class="o">=</span> <span class="n">sin</span><span class="p">(</span><span class="n">lat2</span><span class="p">)</span> <span class="o">-</span> <span class="n">sin</span><span class="p">(</span><span class="n">lat1</span><span class="p">)</span> <span class="o">*</span> <span class="n">cos</span><span class="p">(</span><span class="n">distance_rad</span><span class="p">)</span>
+        <span class="n">y_1</span> <span class="o">=</span> <span class="n">sin</span><span class="p">(</span><span class="n">distance_rad</span><span class="p">)</span> <span class="o">*</span> <span class="n">cos</span><span class="p">(</span><span class="n">lat1</span><span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">cos</span><span class="p">(</span><span class="n">lat1</span><span class="p">))</span> <span class="o">&lt;</span> <span class="n">_EPS</span><span class="p">):</span>  <span class="c"># Less  than machine precision?</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">lat1</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">):</span>
+                <span class="n">bearing_rad</span> <span class="o">=</span> <span class="n">pi</span>  <span class="c"># Starting from N pole</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">bearing_rad</span> <span class="o">=</span> <span class="mf">2.</span> <span class="o">*</span> <span class="n">pi</span>  <span class="c"># Starting from S pole</span>
+        <span class="k">elif</span> <span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">sin</span><span class="p">(</span><span class="n">distance_rad</span><span class="p">))</span> <span class="o">&lt;</span> <span class="n">_EPS</span><span class="p">):</span>  <span class="c"># Less than machine precision?</span>
+            <span class="n">bearing_rad</span> <span class="o">=</span> <span class="mf">0.0</span>  <span class="c"># Bearing not defined with zero distance</span>
+        <span class="k">elif</span> <span class="p">(</span><span class="n">sin</span><span class="p">(</span><span class="n">d_lon</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">):</span>
+            <span class="n">bearing_rad</span> <span class="o">=</span> <span class="n">_acos_safe</span><span class="p">(</span><span class="n">x_1</span> <span class="o">/</span> <span class="n">y_1</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">bearing_rad</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">pi</span> <span class="o">-</span> <span class="n">_acos_safe</span><span class="p">(</span><span class="n">x_1</span> <span class="o">/</span> <span class="n">y_1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">distance_rad</span><span class="p">,</span> <span class="n">bearing_rad</span>
+
+    <span class="k">def</span> <span class="nf">distance_rad_bearing_rad2point</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">distance_rad</span><span class="p">,</span> <span class="n">bearing_rad</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Returns GeoPoint given radial and distance</span>
+
+<span class="sd">        Example</span>
+<span class="sd">        -------</span>
+<span class="sd">        &gt;&gt;&gt; point1 = GeoPoint(lat=(33+57./60)*pi/180, lon=(118+24./60)*pi/180)</span>
+<span class="sd">        &gt;&gt;&gt; point1</span>
+<span class="sd">        GeoPoint(lat=0.592539281052, lon=2.06646983436)</span>
+
+<span class="sd">        &gt;&gt;&gt; point2 = GeoPoint(lat=0.709186, lon=1.287762)</span>
+<span class="sd">        &gt;&gt;&gt; d, b = point1.distance_rad_and_bearing_rad_between_points(point2)</span>
+<span class="sd">        &gt;&gt;&gt; point1.distance_rad_bearing_rad2point(d, b)</span>
+<span class="sd">        GeoPoint(lat=0.709186, lon=1.287762)</span>
+
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="c"># Find the destination point B, as n_EB_E (&quot;The direct/first geodetic</span>
+        <span class="c"># problem&quot; for a sphere)</span>
+
+        <span class="c"># Step1: Find unit vectors for north and east:</span>
+        <span class="n">n_EA_E</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nvector</span><span class="p">()</span>
+        <span class="n">k_east_E</span> <span class="o">=</span> <span class="n">unit</span><span class="p">(</span><span class="n">cross</span><span class="p">(</span><span class="n">dot</span><span class="p">(</span><span class="n">R_Ee</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="p">[[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">]]),</span> <span class="n">n_EA_E</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span>
+        <span class="n">k_north_E</span> <span class="o">=</span> <span class="n">cross</span><span class="p">(</span><span class="n">n_EA_E</span><span class="p">,</span> <span class="n">k_east_E</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="c"># Step2: Find the initial direction vector d_E:</span>
+        <span class="n">d_E</span> <span class="o">=</span> <span class="n">k_north_E</span> <span class="o">*</span> <span class="n">cos</span><span class="p">(</span><span class="n">bearing_rad</span><span class="p">)</span> <span class="o">+</span> <span class="n">k_east_E</span> <span class="o">*</span> <span class="n">sin</span><span class="p">(</span><span class="n">bearing_rad</span><span class="p">)</span>
+
+        <span class="c"># Step3: Find n_EB_E:</span>
+        <span class="n">n_EB_E</span> <span class="o">=</span> <span class="n">n_EA_E</span> <span class="o">*</span> <span class="n">cos</span><span class="p">(</span><span class="n">distance_rad</span><span class="p">)</span> <span class="o">+</span> <span class="n">d_E</span> <span class="o">*</span> <span class="n">sin</span><span class="p">(</span><span class="n">distance_rad</span><span class="p">)</span>
+
+        <span class="n">lat2</span><span class="p">,</span> <span class="n">lon2</span> <span class="o">=</span> <span class="n">n_E2lat_lon</span><span class="p">(</span><span class="n">n_EB_E</span><span class="p">)</span>  <span class="c"># convert to lat lon</span>
+        <span class="c">#return GeoPoint(lat2, lon2)</span>
+        <span class="c"># Old call</span>
+        <span class="n">lat1</span><span class="p">,</span> <span class="n">lon1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lat</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lon</span>
+        <span class="n">theta</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">pi</span> <span class="o">-</span> <span class="n">bearing_rad</span>
+        <span class="n">lat</span> <span class="o">=</span> <span class="n">_asin_safe</span><span class="p">(</span><span class="n">sin</span><span class="p">(</span><span class="n">lat1</span><span class="p">)</span> <span class="o">*</span> <span class="n">cos</span><span class="p">(</span><span class="n">distance_rad</span><span class="p">)</span> <span class="o">+</span>
+                         <span class="n">cos</span><span class="p">(</span><span class="n">lat1</span><span class="p">)</span> <span class="o">*</span> <span class="n">sin</span><span class="p">(</span><span class="n">distance_rad</span><span class="p">)</span> <span class="o">*</span> <span class="n">cos</span><span class="p">(</span><span class="n">theta</span><span class="p">))</span>
+        <span class="n">dlon</span> <span class="o">=</span> <span class="n">arctan2</span><span class="p">(</span><span class="n">sin</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span> <span class="o">*</span> <span class="n">sin</span><span class="p">(</span><span class="n">distance_rad</span><span class="p">)</span> <span class="o">*</span> <span class="n">cos</span><span class="p">(</span><span class="n">lat1</span><span class="p">),</span>
+                       <span class="n">cos</span><span class="p">(</span><span class="n">distance_rad</span><span class="p">)</span> <span class="o">-</span> <span class="n">sin</span><span class="p">(</span><span class="n">lat1</span><span class="p">)</span> <span class="o">*</span> <span class="n">sin</span><span class="p">(</span><span class="n">lat</span><span class="p">))</span>
+        <span class="n">lon</span> <span class="o">=</span> <span class="n">mod</span><span class="p">(</span><span class="n">lon1</span> <span class="o">-</span> <span class="n">dlon</span> <span class="o">+</span> <span class="n">pi</span><span class="p">,</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">pi</span><span class="p">)</span> <span class="o">-</span> <span class="n">pi</span>
+        <span class="k">return</span> <span class="n">GeoPoint</span><span class="p">(</span><span class="n">lat</span><span class="p">,</span> <span class="n">lon</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">distance_and_bearing_between_points</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geo_point</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Calculates distance [m] and bearing [deg] between point1 and point2</span>
+
+<span class="sd">        The bearing (b) between point 1 and point 2 is the angle, measured in</span>
+<span class="sd">        the clockwise direction, between the north reference ray and ray</span>
+<span class="sd">        between point 1 and 2.</span>
+
+<span class="sd">                      |--&gt;b  p2</span>
+<span class="sd">                      |     /</span>
+<span class="sd">                      |    /</span>
+<span class="sd">                      |   /</span>
+<span class="sd">                      |  /</span>
+<span class="sd">                      | /</span>
+<span class="sd">                      |/</span>
+<span class="sd">                      p1</span>
+
+<span class="sd">        Example</span>
+<span class="sd">        -------</span>
+<span class="sd">        &gt;&gt;&gt; from copy import copy</span>
+<span class="sd">        &gt;&gt;&gt; point1 = GeoPoint(lat=(33+57./60)*pi/180, lon=(118+24./60)*pi/180)</span>
+<span class="sd">        &gt;&gt;&gt; point1</span>
+<span class="sd">        GeoPoint(lat=0.592539281052, lon=2.06646983436)</span>
+
+<span class="sd">        &gt;&gt;&gt; point2 = GeoPoint(lat=0.709186, lon=1.287762)</span>
+<span class="sd">        &gt;&gt;&gt; point1.distance_and_bearing_between_points(point2)</span>
+<span class="sd">        (3972863.6351585817, 294.10788752261243)</span>
+
+<span class="sd">        &gt;&gt;&gt; east_point = copy(point1); east_point.lon += 0.00001</span>
+<span class="sd">        &gt;&gt;&gt; point1.distance_and_bearing_between_points(east_point)</span>
+<span class="sd">        (52.8491279964299, 89.999840010889983)</span>
+
+<span class="sd">        &gt;&gt;&gt; west_point = copy(point1); west_point.lon -= 0.00001</span>
+<span class="sd">        &gt;&gt;&gt; point1.distance_and_bearing_between_points(west_point)</span>
+<span class="sd">        (52.8491279964299, 270.00015998910999)</span>
+
+<span class="sd">        &gt;&gt;&gt; GeoPoint().distance_and_bearing_between_points(GeoPoint())</span>
+<span class="sd">        (nan, nan)</span>
+
+<span class="sd">        &gt;&gt;&gt; GeoPoint()</span>
+<span class="sd">        GeoPoint(lat=nan, lon=nan)</span>
+
+<span class="sd">        See http://williams.best.vwh.net/avform.htm for more info.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">d_rad</span><span class="p">,</span> <span class="n">b_rad</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">distance_rad_and_bearing_rad_between_points</span><span class="p">(</span>
+            <span class="n">geo_point</span><span class="p">)</span>
+        <span class="n">distance_m</span> <span class="o">=</span> <span class="n">distance_rad2distance_m</span><span class="p">(</span><span class="n">d_rad</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">distance_m</span><span class="p">,</span> <span class="n">rad2deg</span><span class="p">(</span><span class="n">b_rad</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">distance_bearing2point</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">distance</span><span class="p">,</span> <span class="n">bearing</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Returns GeoPoint given radial and distance</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        distance : real scalar</span>
+<span class="sd">            distance in [m]</span>
+<span class="sd">        bearing : real scalar</span>
+<span class="sd">            angle in degrees clockwise from North</span>
+
+
+<span class="sd">        Example</span>
+<span class="sd">        -------</span>
+<span class="sd">        &gt;&gt;&gt; point1 = GeoPoint(lat=(33+57./60)*pi/180, lon=(118+24./60)*pi/180)</span>
+<span class="sd">        &gt;&gt;&gt; point1</span>
+<span class="sd">        GeoPoint(lat=0.592539281052, lon=2.06646983436)</span>
+
+<span class="sd">        &gt;&gt;&gt; point2 = GeoPoint(lat=0.709186, lon=1.287762)</span>
+<span class="sd">        &gt;&gt;&gt; d, b = point1.distance_and_bearing_between_points(point2)</span>
+<span class="sd">        &gt;&gt;&gt; point1.distance_bearing2point(d, b)</span>
+<span class="sd">        GeoPoint(lat=0.709186, lon=1.287762)</span>
+
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">distance_rad</span> <span class="o">=</span> <span class="n">distance_m2distance_rad</span><span class="p">(</span><span class="n">distance</span><span class="p">)</span>
+        <span class="n">bearing_rad</span> <span class="o">=</span> <span class="n">deg2rad</span><span class="p">(</span><span class="n">bearing</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">distance_rad_bearing_rad2point</span><span class="p">(</span><span class="n">distance_rad</span><span class="p">,</span> <span class="n">bearing_rad</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">dead_reckoning2point</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">speed</span><span class="p">,</span> <span class="n">heading</span><span class="p">,</span> <span class="n">t</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Extrapolate current position based upon speed, heading and elapsed time</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        speed : real scalar</span>
+<span class="sd">            in knots</span>
+<span class="sd">        heading : real scalar</span>
+<span class="sd">            in degrees</span>
+<span class="sd">        t : real scalar</span>
+<span class="sd">            extrapolation time in seconds</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        position : GeoPoint</span>
+<span class="sd">            end position after travelling</span>
+
+<span class="sd">        Example</span>
+<span class="sd">        -------</span>
+<span class="sd">        &gt;&gt;&gt; point1 = GeoPoint(lat=0.6, lon=2.0)</span>
+<span class="sd">        &gt;&gt;&gt; point1.dead_reckoning2point(speed=5, heading=0,t=60)</span>
+<span class="sd">        GeoPoint(lat=0.600024224295, lon=2.0)</span>
+
+<span class="sd">        &gt;&gt;&gt; point1.dead_reckoning2point(speed=25, heading=180, t=60)</span>
+<span class="sd">        GeoPoint(lat=0.599878878526, lon=2.0)</span>
+
+<span class="sd">        &gt;&gt;&gt; point1.dead_reckoning2point(speed=25, heading=90, t=60)</span>
+<span class="sd">        GeoPoint(lat=0.599999994982, lon=1.99985324579)</span>
+
+<span class="sd">        &gt;&gt;&gt; point1.dead_reckoning2point(speed=25, heading=270, t=60)</span>
+<span class="sd">        GeoPoint(lat=0.599999994982, lon=2.00014675421)</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">heading_rad</span> <span class="o">=</span> <span class="n">deg2rad</span><span class="p">(</span><span class="n">heading</span><span class="p">)</span>
+        <span class="n">distance</span> <span class="o">=</span> <span class="n">t</span> <span class="o">*</span> <span class="n">knots2ms</span><span class="p">(</span><span class="n">speed</span><span class="p">)</span>  <span class="c"># Travelled distance in meters</span>
+        <span class="c"># point = self.distance_bearing2point(distance, 360-heading)</span>
+
+        <span class="n">distance_rad</span> <span class="o">=</span> <span class="n">distance_m2distance_rad</span><span class="p">(</span><span class="n">distance</span><span class="p">)</span>
+        <span class="c"># Compute lat/lon of new extrapolated position</span>
+        <span class="n">lat1</span><span class="p">,</span> <span class="n">lon1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lat</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lon</span>
+        <span class="n">lat</span> <span class="o">=</span> <span class="n">_asin_safe</span><span class="p">(</span><span class="n">sin</span><span class="p">(</span><span class="n">lat1</span><span class="p">)</span> <span class="o">*</span> <span class="n">cos</span><span class="p">(</span><span class="n">distance_rad</span><span class="p">)</span> <span class="o">+</span>
+                         <span class="n">cos</span><span class="p">(</span><span class="n">lat1</span><span class="p">)</span> <span class="o">*</span> <span class="n">sin</span><span class="p">(</span><span class="n">distance_rad</span><span class="p">)</span> <span class="o">*</span> <span class="n">cos</span><span class="p">(</span><span class="n">heading_rad</span><span class="p">))</span>
+        <span class="n">dlon</span> <span class="o">=</span> <span class="n">arctan2</span><span class="p">(</span><span class="n">sin</span><span class="p">(</span><span class="n">heading_rad</span><span class="p">)</span> <span class="o">*</span> <span class="n">sin</span><span class="p">(</span><span class="n">distance_rad</span><span class="p">)</span> <span class="o">*</span> <span class="n">cos</span><span class="p">(</span><span class="n">lat1</span><span class="p">),</span>
+                       <span class="n">cos</span><span class="p">(</span><span class="n">distance_rad</span><span class="p">)</span> <span class="o">-</span> <span class="n">sin</span><span class="p">(</span><span class="n">lat1</span><span class="p">)</span> <span class="o">*</span> <span class="n">sin</span><span class="p">(</span><span class="n">lat</span><span class="p">))</span>
+        <span class="n">lon</span> <span class="o">=</span> <span class="p">(</span><span class="n">lon1</span> <span class="o">-</span> <span class="n">dlon</span> <span class="o">+</span> <span class="n">pi</span><span class="p">)</span> <span class="o">%</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">pi</span><span class="p">)</span> <span class="o">-</span> <span class="n">pi</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">time</span><span class="p">:</span>
+            <span class="n">newtime</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">time</span> <span class="o">+</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="n">t</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">newtime</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="k">return</span> <span class="n">GeoPoint</span><span class="p">(</span><span class="n">lat</span><span class="p">,</span> <span class="n">lon</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="n">newtime</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">offset2point</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">north</span><span class="p">,</span> <span class="n">east</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Convert north, east positions in m to lat, lon</span>
+<span class="sd">                assuming local flat earth approximation</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        north, east : real scalars</span>
+<span class="sd">            distances in the northerly and easterly direction in [m],</span>
+<span class="sd">            respectively, relative to the current latitude and longitude.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        position : GeoPoint</span>
+<span class="sd">            end latitude and longitude</span>
+
+<span class="sd">        The approximation fails in the vicinity of either pole and at large</span>
+<span class="sd">        distances.  The error are of order (distance/R)**2</span>
+
+<span class="sd">        Example</span>
+<span class="sd">        -------</span>
+<span class="sd">        &gt;&gt;&gt; point1 = GeoPoint(lat=0.6, lon=2.0)</span>
+<span class="sd">        &gt;&gt;&gt; point1.offset2point(north=500,east=500)</span>
+<span class="sd">        GeoPoint(lat=0.600078668597, lon=2.00009488152)</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">lat0</span><span class="p">,</span> <span class="n">lon0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lat</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lon</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="mi">6378137</span>  <span class="c"># equatorial radius of the earth for WGS84</span>
+        <span class="n">f</span> <span class="o">=</span> <span class="mf">1.</span> <span class="o">/</span> <span class="mf">298.257223563</span>  <span class="c"># flattening in WGS84</span>
+        <span class="n">e2</span> <span class="o">=</span> <span class="n">f</span> <span class="o">*</span> <span class="p">(</span><span class="mi">2</span> <span class="o">-</span> <span class="n">f</span><span class="p">)</span>
+        <span class="n">fn</span> <span class="o">=</span> <span class="n">sqrt</span><span class="p">(</span><span class="mf">1.</span> <span class="o">-</span> <span class="n">e2</span> <span class="o">*</span> <span class="n">sin</span><span class="p">(</span><span class="n">lat0</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">R1</span> <span class="o">=</span> <span class="n">a</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">e2</span><span class="p">)</span> <span class="o">/</span> <span class="n">fn</span> <span class="o">**</span> <span class="mi">3</span>
+        <span class="n">R2</span> <span class="o">=</span> <span class="n">a</span> <span class="o">/</span> <span class="n">fn</span>
+        <span class="n">dlat</span> <span class="o">=</span> <span class="n">north</span> <span class="o">/</span> <span class="n">R1</span>
+        <span class="n">dlon</span> <span class="o">=</span> <span class="n">east</span> <span class="o">/</span> <span class="p">(</span><span class="n">R2</span> <span class="o">*</span> <span class="n">cos</span><span class="p">(</span><span class="n">lat0</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">GeoPoint</span><span class="p">(</span><span class="n">dlat</span> <span class="o">+</span> <span class="n">lat0</span><span class="p">,</span> <span class="n">dlon</span> <span class="o">+</span> <span class="n">lon0</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">from_lat_lon_str</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lat</span><span class="p">,</span> <span class="n">lat_dir</span><span class="p">,</span> <span class="n">lon</span><span class="p">,</span> <span class="n">lon_dir</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Converts lat and lon HHMM.nnnn strings into floats (radians)</span>
+
+<span class="sd">        Parameters:</span>
+<span class="sd">        -----------</span>
+<span class="sd">        lat : string</span>
+<span class="sd">            Latitude HHMM.nnnn</span>
+<span class="sd">        lat_dir : &#39;N&#39; or &#39;S&#39;</span>
+<span class="sd">            Latitudal direction North or South</span>
+<span class="sd">        lon : string</span>
+<span class="sd">            Longitude HHMM.nnnn</span>
+<span class="sd">        lon_dir : &#39;E&#39; or &#39;W&#39;</span>
+<span class="sd">            Longitudal direction East or West</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lat</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lon</span> <span class="o">=</span> <span class="n">lat_lon_str2rad</span><span class="p">(</span><span class="n">lat</span><span class="p">,</span> <span class="n">lat_dir</span><span class="p">,</span> <span class="n">lon</span><span class="p">,</span> <span class="n">lon_dir</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">sensor_position_relative_to_ship_location</span><span class="p">(</span><span class="n">distance</span><span class="p">,</span> <span class="n">bearing</span><span class="p">,</span> <span class="n">ship_heading</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39; Calculate plot-friendly sensor location relative to ship position</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    distance : real scalar</span>
+<span class="sd">        between ship and sensor</span>
+<span class="sd">    bearing  : real scalar</span>
+<span class="sd">        clockwise angle between sensor, ship and true North in degrees</span>
+<span class="sd">    heading : real scalar</span>
+<span class="sd">        of the ship in degrees</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    x : real scalar</span>
+<span class="sd">        distance from center of ship to sensor along the longitudinal axis</span>
+<span class="sd">        (i.e., the direction of the ship)</span>
+<span class="sd">    y : real scalar</span>
+<span class="sd">        distance from center of ship to sensor along the arthwartship axis</span>
+
+<span class="sd">    Example</span>
+<span class="sd">    -------</span>
+<span class="sd">    &gt;&gt;&gt; sensor_position_relative_to_ship_location(distance=10, bearing=90,</span>
+<span class="sd">    ...                                            ship_heading=0)</span>
+<span class="sd">    (6.1232339957367663e-16, 10.0)</span>
+
+<span class="sd">    &gt;&gt;&gt; sensor_position_relative_to_ship_location(distance=10, bearing=270,</span>
+<span class="sd">    ...                                            ship_heading=0)</span>
+<span class="sd">    (-1.8369701987210296e-15, -10.0)</span>
+
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">theta</span> <span class="o">=</span> <span class="n">deg2rad</span><span class="p">(</span><span class="n">bearing</span> <span class="o">-</span> <span class="n">ship_heading</span><span class="p">)</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">distance</span> <span class="o">*</span> <span class="n">cos</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">distance</span> <span class="o">*</span> <span class="n">sin</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span>
+
+
+<span class="k">class</span> <span class="nc">LocationParser</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start_time</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">start_time</span> <span class="o">=</span> <span class="n">start_time</span>
+
+    <span class="k">def</span> <span class="nf">_time_str2time_obj</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generates a datetime.time() object from an NMEA timestamp</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">time</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">start_time</span>  <span class="c"># make sure date is</span>
+        <span class="n">hour</span><span class="p">,</span> <span class="n">minute</span><span class="p">,</span> <span class="n">second</span><span class="p">,</span> <span class="n">_ms</span> <span class="o">=</span> <span class="n">split_hhmmss</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">t</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">datetime</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">year</span><span class="p">,</span> <span class="n">time</span><span class="o">.</span><span class="n">month</span><span class="p">,</span> <span class="n">time</span><span class="o">.</span><span class="n">day</span><span class="p">,</span> <span class="n">hour</span><span class="p">,</span> <span class="n">minute</span><span class="p">,</span> <span class="n">second</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_gga_to_geo_point</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="n">lat</span><span class="p">,</span> <span class="n">lon</span> <span class="o">=</span> <span class="n">lat_lon_str2rad</span><span class="p">(</span><span class="o">*</span><span class="n">data</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="mi">5</span><span class="p">])</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_time_str2time_obj</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">GeoPoint</span><span class="p">(</span><span class="n">lat</span><span class="p">,</span> <span class="n">lon</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="n">t</span><span class="p">,</span> <span class="n">valid</span><span class="o">=</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span> <span class="o">!=</span> <span class="s">&#39;0&#39;</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">_gll_to_geo_point</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="n">lat</span><span class="p">,</span> <span class="n">lon</span> <span class="o">=</span> <span class="n">lat_lon_str2rad</span><span class="p">(</span><span class="o">*</span><span class="n">data</span><span class="p">[:</span><span class="mi">4</span><span class="p">])</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_time_str2time_obj</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">4</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">GeoPoint</span><span class="p">(</span><span class="n">lat</span><span class="p">,</span> <span class="n">lon</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="n">t</span><span class="p">,</span> <span class="n">valid</span><span class="o">=</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;A&#39;</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">_rmc_to_geo_point</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="n">lat</span><span class="p">,</span> <span class="n">lon</span> <span class="o">=</span> <span class="n">lat_lon_str2rad</span><span class="p">(</span><span class="o">*</span><span class="n">data</span><span class="p">[</span><span class="mi">2</span><span class="p">:</span><span class="mi">6</span><span class="p">])</span>
+        <span class="n">day</span><span class="p">,</span> <span class="n">month</span><span class="p">,</span> <span class="n">_yy</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">split_hhmmss</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">8</span><span class="p">]))</span>
+        <span class="n">hour</span><span class="p">,</span> <span class="n">minute</span><span class="p">,</span> <span class="n">second</span><span class="p">,</span> <span class="n">_ms</span> <span class="o">=</span> <span class="n">split_hhmmss</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+        <span class="n">year</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">start_time</span><span class="o">.</span><span class="n">year</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">datetime</span><span class="p">(</span><span class="n">year</span><span class="p">,</span> <span class="n">month</span><span class="p">,</span> <span class="n">day</span><span class="p">,</span> <span class="n">hour</span><span class="p">,</span> <span class="n">minute</span><span class="p">,</span> <span class="n">second</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">GeoPoint</span><span class="p">(</span><span class="n">lat</span><span class="p">,</span> <span class="n">lon</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="n">t</span><span class="p">,</span> <span class="n">valid</span><span class="o">=</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;A&#39;</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">_empty_geo_point</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">GeoPoint</span><span class="p">(</span><span class="n">valid</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_get_parser</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sentence_id</span><span class="p">):</span>
+        <span class="n">default</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_empty_geo_point</span>
+        <span class="n">parser</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">GGA</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_gga_to_geo_point</span><span class="p">,</span>
+                      <span class="n">RMC</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_rmc_to_geo_point</span><span class="p">,</span>
+                      <span class="n">GLL</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_gll_to_geo_point</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">sentence_id</span><span class="p">,</span> <span class="n">default</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">parser</span>
+
+    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gps_sentence</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return GeoPoint location from a NMEA sentence.</span>
+
+<span class="sd">        The NMEA location sentences we&#39;re interested in are:</span>
+<span class="sd">        GGA - Global Positioning System Fix Data</span>
+<span class="sd">        GLL - Geographic Position - Latitude/Longitude</span>
+<span class="sd">        RMC - Recommended Minimum Specific GNSS Data</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">sentence_id</span><span class="p">,</span> <span class="n">data</span> <span class="o">=</span> <span class="n">nmea_split</span><span class="p">(</span><span class="n">gps_sentence</span><span class="p">)</span>
+        <span class="n">make_geo_point</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_parser</span><span class="p">(</span><span class="n">sentence_id</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">make_geo_point</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">Motion</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">speed_knots</span><span class="o">=</span><span class="n">nan</span><span class="p">,</span> <span class="n">true_heading</span><span class="o">=</span><span class="n">nan</span><span class="p">,</span> <span class="n">valid</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">speed_knots</span> <span class="o">=</span> <span class="n">speed_knots</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">true_heading</span> <span class="o">=</span> <span class="n">true_heading</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">valid</span> <span class="o">=</span> <span class="n">valid</span>
+
+
+<span class="k">def</span> <span class="nf">_parse_vtg_motion</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+    <span class="n">speed</span> <span class="o">=</span> <span class="mi">0</span> <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">4</span><span class="p">])</span> <span class="k">else</span> <span class="nb">float</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">4</span><span class="p">])</span>
+    <span class="n">heading</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">Motion</span><span class="p">(</span><span class="n">speed_knots</span><span class="o">=</span><span class="n">speed</span><span class="p">,</span> <span class="n">true_heading</span><span class="o">=</span><span class="n">heading</span><span class="p">,</span>
+                  <span class="n">valid</span><span class="o">=</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">8</span><span class="p">]</span> <span class="o">!=</span> <span class="s">&#39;N&#39;</span><span class="p">))</span>
+
+
+<span class="k">def</span> <span class="nf">_parse_rmc_motion</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+    <span class="n">speed</span> <span class="o">=</span> <span class="mi">0</span> <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">6</span><span class="p">])</span> <span class="k">else</span> <span class="nb">float</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">6</span><span class="p">])</span>
+    <span class="n">heading</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">7</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">Motion</span><span class="p">(</span><span class="n">speed_knots</span><span class="o">=</span><span class="n">speed</span><span class="p">,</span> <span class="n">true_heading</span><span class="o">=</span><span class="n">heading</span><span class="p">,</span>
+                  <span class="n">valid</span><span class="o">=</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;A&#39;</span><span class="p">))</span>
+
+
+<span class="k">def</span> <span class="nf">_parse_empty_motion</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">Motion</span><span class="p">()</span>
+
+<span class="n">_MOTION_PARSER_DICT</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">VTG</span><span class="o">=</span><span class="n">_parse_vtg_motion</span><span class="p">,</span> <span class="n">RMC</span><span class="o">=</span><span class="n">_parse_rmc_motion</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_parse_motion</span><span class="p">(</span><span class="n">sentence_id</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return current motion from NMEA sentences.</span>
+<span class="sd">        The NMEA motion sentences we&#39;re interested in are:</span>
+<span class="sd">        VTG - Course Over Ground and Ground Speed</span>
+<span class="sd">        RMC - Recommended Minimum Specific GNSS Data</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">_MOTION_PARSER_DICT</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">sentence_id</span><span class="p">,</span> <span class="n">_parse_empty_motion</span><span class="p">)(</span><span class="n">data</span><span class="p">)</span>
+
+
+<span class="c"># --- Navigator OBJECT ATTACHES ON TOP LEVEL, AND MAY BE OBSERVED BY OBSERVER</span>
+<div class="viewcode-block" id="Navigator"><a class="viewcode-back" href="../../api/nvector.html#nvector.navigator.Navigator">[docs]</a><span class="k">class</span> <span class="nc">Navigator</span><span class="p">(</span><span class="n">Subject</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Reads ship and sensor positions from file, and calculates distance and</span>
+<span class="sd">    bearing from ship to sensor as well as the position of the sensor relative</span>
+<span class="sd">    to the ship.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    source : BufferSource</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    distance : real scalar</span>
+<span class="sd">        distance from gps to sensor</span>
+<span class="sd">    bearing : real scalar</span>
+<span class="sd">        angle formed by North-pole, gps-position and sensor-position</span>
+<span class="sd">    true_heading : real scalar</span>
+<span class="sd">        of ship</span>
+<span class="sd">    speed: real scalar</span>
+<span class="sd">        of ship in knots</span>
+<span class="sd">    relative_position :</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="n">Subject</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="c"># Read by observer</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">distance</span> <span class="o">=</span> <span class="n">_DMAX</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bearing</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">true_heading</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">speed</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">relative_position</span> <span class="o">=</span> <span class="p">(</span><span class="n">_DMAX</span><span class="p">,</span> <span class="n">_DMAX</span><span class="p">)</span>
+
+        <span class="c"># Misc internal</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_filter</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">influence</span><span class="o">=</span><span class="s">&#39;navigation&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_gps_age</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ship_location</span> <span class="o">=</span> <span class="n">GeoPoint</span><span class="p">(</span><span class="n">valid</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ship_motion</span> <span class="o">=</span> <span class="n">Motion</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sensor_location</span> <span class="o">=</span> <span class="n">GeoPoint</span><span class="p">(</span><span class="n">valid</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">sample_time</span> <span class="o">=</span> <span class="mf">1.</span>       <span class="c"># is set with set_sample_time</span>
+
+        <span class="k">if</span> <span class="n">source</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update_source</span><span class="p">(</span><span class="n">source</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">source</span> <span class="o">=</span> <span class="bp">None</span>
+
+<div class="viewcode-block" id="Navigator.update_source"><a class="viewcode-back" href="../../api/nvector.html#nvector.navigator.Navigator.update_source">[docs]</a>    <span class="k">def</span> <span class="nf">update_source</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">source</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Updates source and initializes sensor location</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">source</span> <span class="o">=</span> <span class="n">source</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="p">:</span>
+            <span class="n">d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="o">.</span><span class="n">get_sensor_position</span><span class="p">()</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">_sensor_location</span> <span class="o">=</span> <span class="n">GeoPoint</span><span class="p">(</span><span class="o">*</span><span class="n">lat_lon_str2rad</span><span class="p">(</span><span class="o">*</span><span class="n">d</span><span class="p">[:</span><span class="mi">4</span><span class="p">]))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_sensor_location</span> <span class="o">=</span> <span class="n">GeoPoint</span><span class="p">(</span><span class="n">valid</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Navigator.handle_sample"><a class="viewcode-back" href="../../api/nvector.html#nvector.navigator.Navigator.handle_sample">[docs]</a>    <span class="k">def</span> <span class="nf">handle_sample</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Handles the next sentences and processes them</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">location</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="o">.</span><span class="n">get_sample</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_filter</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_handle_location</span><span class="p">(</span><span class="n">location</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">notify</span><span class="p">()</span>
+</div>
+    <span class="k">def</span> <span class="nf">_handle_location</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">location</span><span class="p">):</span>
+        <span class="n">location_updated</span> <span class="o">=</span> <span class="n">motion_updated</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="k">if</span> <span class="n">location</span><span class="p">:</span>
+            <span class="n">prev_location</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ship_location</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">location_updated</span><span class="p">:</span>
+                <span class="n">location_updated</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_set_ship_location</span><span class="p">(</span><span class="n">location</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">location_updated</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_gps_age</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">location_updated</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ship_motion</span><span class="o">.</span><span class="n">valid</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_set_ship_location_from_ship_speed_and_course</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">motion_updated</span> <span class="ow">and</span> <span class="n">location_updated</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_set_ship_motion_from_previous_ship_location</span><span class="p">(</span><span class="n">prev_location</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_sensor_position_relative_to_ship_location</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_gps_age</span> <span class="o">+=</span> <span class="mi">1</span>
+
+<div class="viewcode-block" id="Navigator.set_sample_time"><a class="viewcode-back" href="../../api/nvector.html#nvector.navigator.Navigator.set_sample_time">[docs]</a>    <span class="k">def</span> <span class="nf">set_sample_time</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sample_time</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sample_time</span> <span class="o">=</span> <span class="n">sample_time</span>
+</div>
+    <span class="k">def</span> <span class="nf">_set_distance_and_bearing_from_ship_to_sensor</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calculates distance and bearing from ship to sensor.</span>
+<span class="sd">        See http://williams.best.vwh.net/avform.htm for more info.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">ship_loc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ship_location</span>
+        <span class="k">if</span> <span class="n">ship_loc</span><span class="o">.</span><span class="n">valid</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gps_age</span> <span class="o">&lt;=</span> <span class="n">_GPS_AGE_LIMIT</span><span class="p">:</span>
+            <span class="n">sensor_loc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sensor_location</span>
+            <span class="n">d</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="n">ship_loc</span><span class="o">.</span><span class="n">distance_and_bearing_between_points</span><span class="p">(</span><span class="n">sensor_loc</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">distance</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">bearing</span> <span class="o">=</span> <span class="n">d</span><span class="p">,</span> <span class="n">b</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">distance</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">bearing</span> <span class="o">=</span> <span class="n">nan</span><span class="p">,</span> <span class="n">nan</span>
+
+    <span class="k">def</span> <span class="nf">_set_ship_location_from_ship_speed_and_course</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calculates (extrapolates) ship location from ship speed and course.</span>
+<span class="sd">        See http://williams.best.vwh.net/avform.htm for more info.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">ship_loc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ship_location</span>
+        <span class="n">ship_mot</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ship_motion</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">ship_loc</span><span class="o">.</span><span class="n">valid</span> <span class="ow">and</span> <span class="n">ship_mot</span><span class="o">.</span><span class="n">valid</span> <span class="ow">and</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_gps_age</span> <span class="o">&lt;=</span> <span class="n">_GPS_AGE_LIMIT</span><span class="p">):</span>
+
+            <span class="n">speed</span> <span class="o">=</span> <span class="n">ship_mot</span><span class="o">.</span><span class="n">speed_knots</span>
+            <span class="n">heading</span> <span class="o">=</span> <span class="n">ship_mot</span><span class="o">.</span><span class="n">true_heading</span>
+            <span class="n">new_ship_loc</span> <span class="o">=</span> <span class="n">ship_loc</span><span class="o">.</span><span class="n">dead_reckoning2point</span><span class="p">(</span>
+                <span class="n">speed</span><span class="p">,</span> <span class="n">heading</span><span class="p">,</span> <span class="n">t</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sample_time</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">new_ship_loc</span> <span class="o">=</span> <span class="n">GeoPoint</span><span class="p">(</span><span class="n">valid</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_ship_location</span><span class="p">(</span><span class="n">new_ship_loc</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_set_ship_motion_from_previous_ship_location</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prev_location</span><span class="p">):</span>
+        <span class="n">ship_loc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ship_location</span>
+        <span class="k">if</span> <span class="n">prev_location</span><span class="o">.</span><span class="n">valid</span> <span class="ow">and</span> <span class="n">ship_loc</span><span class="o">.</span><span class="n">valid</span><span class="p">:</span>
+            <span class="n">p</span> <span class="o">=</span> <span class="n">prev_location</span>
+            <span class="n">distance</span><span class="p">,</span> <span class="n">heading</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">distance_and_bearing_between_points</span><span class="p">(</span><span class="n">ship_loc</span><span class="p">)</span>
+            <span class="n">t2</span><span class="p">,</span> <span class="n">t1</span> <span class="o">=</span> <span class="n">ship_loc</span><span class="o">.</span><span class="n">time</span><span class="p">,</span> <span class="n">prev_location</span><span class="o">.</span><span class="n">time</span>
+            <span class="n">speed_knts</span> <span class="o">=</span> <span class="n">nan</span>
+            <span class="k">if</span> <span class="n">t2</span> <span class="ow">and</span> <span class="n">t1</span><span class="p">:</span>
+                <span class="n">time_diff</span> <span class="o">=</span> <span class="p">(</span><span class="n">t2</span> <span class="o">-</span> <span class="n">t1</span><span class="p">)</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span>
+                <span class="k">if</span> <span class="n">time_diff</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">t2</span> <span class="o">+=</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+                    <span class="n">time_diff</span> <span class="o">=</span> <span class="p">(</span><span class="n">t2</span> <span class="o">-</span> <span class="n">t1</span><span class="p">)</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span>
+
+                <span class="k">if</span> <span class="n">time_diff</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">speed_knts</span> <span class="o">=</span> <span class="n">ms2knots</span><span class="p">(</span><span class="n">distance</span> <span class="o">/</span> <span class="n">time_diff</span><span class="p">)</span>
+                    <span class="n">w</span> <span class="o">=</span> <span class="n">_SMOOTHING</span>
+                    <span class="n">prev_speed</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ship_motion</span><span class="o">.</span><span class="n">speed_knots</span>
+                    <span class="k">if</span> <span class="n">isfinite</span><span class="p">(</span><span class="n">prev_speed</span><span class="p">):</span>
+                        <span class="n">speed_knts</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">w</span><span class="p">)</span> <span class="o">*</span> <span class="n">prev_speed</span> <span class="o">+</span> <span class="n">w</span> <span class="o">*</span> <span class="n">speed_knts</span>
+                    <span class="n">prev_heading</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ship_motion</span><span class="o">.</span><span class="n">true_heading</span>
+                    <span class="k">if</span> <span class="n">isfinite</span><span class="p">(</span><span class="n">prev_heading</span><span class="p">):</span>
+                        <span class="n">diff_heading</span> <span class="o">=</span> <span class="n">prev_heading</span> <span class="o">-</span> <span class="n">heading</span>
+                        <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">diff_heading</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">180</span><span class="p">:</span>
+                            <span class="n">heading</span> <span class="o">+=</span> <span class="n">sign</span><span class="p">(</span><span class="n">diff_heading</span><span class="p">)</span> <span class="o">*</span> <span class="mi">360</span>
+
+                        <span class="n">heading</span> <span class="o">=</span> <span class="p">((</span><span class="mi">1</span> <span class="o">-</span> <span class="n">w</span><span class="p">)</span> <span class="o">*</span> <span class="n">prev_heading</span> <span class="o">+</span> <span class="n">w</span> <span class="o">*</span> <span class="n">heading</span><span class="p">)</span> <span class="o">%</span> <span class="mi">360</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_set_ship_motion</span><span class="p">(</span><span class="n">Motion</span><span class="p">(</span><span class="n">speed_knots</span><span class="o">=</span><span class="n">speed_knts</span><span class="p">,</span>
+                                         <span class="n">true_heading</span><span class="o">=</span><span class="n">heading</span><span class="p">,</span> <span class="n">valid</span><span class="o">=</span><span class="bp">True</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">_set_sensor_position_relative_to_ship_location</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39; Calculate plot-friendly sensor location relative to ship position</span>
+
+<span class="sd">        x = longitudinal axis (i.e., the direction of the ship)</span>
+<span class="sd">        y = arthwartship axis</span>
+
+<span class="sd">        Uses:</span>
+<span class="sd">        self.distance,</span>
+<span class="sd">        self.bearing and</span>
+<span class="sd">        self._ship_motion[&#39;true_heading&#39;]</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+
+        <span class="n">ship_motion</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ship_motion</span>
+        <span class="k">if</span> <span class="n">ship_motion</span><span class="o">.</span><span class="n">valid</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gps_age</span> <span class="o">&lt;=</span> <span class="n">_GPS_AGE_LIMIT</span><span class="p">:</span>
+            <span class="n">bearing</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bearing</span>
+            <span class="n">ship_heading</span> <span class="o">=</span> <span class="n">ship_motion</span><span class="o">.</span><span class="n">true_heading</span>
+            <span class="n">distance</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">distance</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">relative_position</span> <span class="o">=</span> <span class="n">sensor_position_relative_to_ship_location</span><span class="p">(</span>
+                <span class="n">distance</span><span class="p">,</span> <span class="n">bearing</span><span class="p">,</span> <span class="n">ship_heading</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">relative_position</span> <span class="o">=</span> <span class="p">(</span><span class="n">nan</span><span class="p">,</span> <span class="n">nan</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_set_ship_location</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">location</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">location</span><span class="o">.</span><span class="n">valid</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_ship_location</span> <span class="o">=</span> <span class="n">location</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_set_distance_and_bearing_from_ship_to_sensor</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">location</span><span class="o">.</span><span class="n">valid</span>
+
+    <span class="k">def</span> <span class="nf">_set_ship_motion</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">motion</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">motion</span><span class="o">.</span><span class="n">valid</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_ship_motion</span> <span class="o">=</span> <span class="n">motion</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">speed</span> <span class="o">=</span> <span class="n">motion</span><span class="o">.</span><span class="n">speed_knots</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">true_heading</span> <span class="o">=</span> <span class="n">motion</span><span class="o">.</span><span class="n">true_heading</span>
+        <span class="k">return</span> <span class="n">motion</span><span class="o">.</span><span class="n">valid</span>
+
+</div>
+<span class="k">class</span> <span class="nc">GpsInterpolator</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_reader</span><span class="p">,</span> <span class="n">start_time</span><span class="p">,</span> <span class="n">fetch_length_sec</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">file_reader</span> <span class="o">=</span> <span class="n">file_reader</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">start_time</span> <span class="o">=</span> <span class="n">start_time</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fetch_length_sec</span> <span class="o">=</span> <span class="n">fetch_length_sec</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">make_geo_point</span> <span class="o">=</span> <span class="n">LocationParser</span><span class="p">(</span><span class="n">start_time</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">get_start_time</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">time</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">start_time</span>
+        <span class="k">return</span> <span class="n">datetime</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">year</span><span class="p">,</span> <span class="n">time</span><span class="o">.</span><span class="n">month</span><span class="p">,</span> <span class="n">time</span><span class="o">.</span><span class="n">day</span><span class="p">,</span> <span class="n">time</span><span class="o">.</span><span class="n">hour</span><span class="p">,</span>
+                        <span class="n">time</span><span class="o">.</span><span class="n">minute</span><span class="p">,</span> <span class="n">time</span><span class="o">.</span><span class="n">second</span><span class="p">,</span> <span class="n">time</span><span class="o">.</span><span class="n">microsecond</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">interpolate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="n">last_point</span><span class="p">,</span> <span class="n">next_point</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">time</span> <span class="o">&lt;</span> <span class="n">last_point</span><span class="o">.</span><span class="n">time</span> <span class="ow">or</span> <span class="n">time</span> <span class="o">&gt;</span> <span class="n">next_point</span><span class="o">.</span><span class="n">time</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s">&#39;time should be between the time of the GeoPoints&#39;</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">last_point</span><span class="o">.</span><span class="n">time</span> <span class="o">==</span> <span class="n">next_point</span><span class="o">.</span><span class="n">time</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">next_point</span>
+        <span class="n">get_distance_and_bearing</span> <span class="o">=</span> <span class="n">last_point</span><span class="o">.</span><span class="n">distance_and_bearing_between_points</span>  <span class="c"># @IgnorePep8</span>
+        <span class="n">distance</span><span class="p">,</span> <span class="n">bearing</span> <span class="o">=</span> <span class="n">get_distance_and_bearing</span><span class="p">(</span><span class="n">next_point</span><span class="p">)</span>
+        <span class="n">sec_to_next_point</span> <span class="o">=</span> <span class="p">(</span><span class="n">next_point</span><span class="o">.</span><span class="n">time</span> <span class="o">-</span> <span class="n">last_point</span><span class="o">.</span><span class="n">time</span><span class="p">)</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span>
+        <span class="n">sec_to_interpolated_point</span> <span class="o">=</span> <span class="p">(</span><span class="n">time</span> <span class="o">-</span> <span class="n">last_point</span><span class="o">.</span><span class="n">time</span><span class="p">)</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span>
+
+        <span class="n">time_ratio</span> <span class="o">=</span> <span class="n">sec_to_interpolated_point</span> <span class="o">/</span> <span class="n">sec_to_next_point</span>
+
+        <span class="n">distance_to_new_point</span> <span class="o">=</span> <span class="n">distance</span> <span class="o">*</span> <span class="n">time_ratio</span>
+        <span class="n">new_point</span> <span class="o">=</span> <span class="n">last_point</span><span class="o">.</span><span class="n">distance_bearing2point</span><span class="p">(</span><span class="n">distance_to_new_point</span><span class="p">,</span>
+                                                      <span class="n">bearing</span><span class="p">)</span>
+        <span class="n">new_point</span><span class="o">.</span><span class="n">time</span> <span class="o">=</span> <span class="n">time</span>
+        <span class="k">return</span> <span class="n">new_point</span>
+
+    <span class="k">def</span> <span class="nf">generator_last_and_next_geo_points</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">dt</span> <span class="o">=</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">fetch_length_sec</span><span class="p">)</span>
+        <span class="n">iterator</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">generator_geo_points</span><span class="p">()</span>
+
+        <span class="n">last_point</span> <span class="o">=</span> <span class="n">iterator</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
+        <span class="n">next_point</span> <span class="o">=</span> <span class="n">iterator</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">time</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_start_time</span><span class="p">()</span>
+
+        <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+            <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">time</span> <span class="o">&gt;</span> <span class="n">next_point</span><span class="o">.</span><span class="n">time</span><span class="p">:</span>
+                <span class="n">last_point</span> <span class="o">=</span> <span class="n">next_point</span>
+                <span class="k">while</span> <span class="n">next_point</span><span class="o">.</span><span class="n">time</span> <span class="o">&lt;=</span> <span class="n">last_point</span><span class="o">.</span><span class="n">time</span><span class="p">:</span>
+                    <span class="n">next_point</span> <span class="o">=</span> <span class="n">iterator</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">time</span> <span class="o">&gt;=</span> <span class="n">last_point</span><span class="o">.</span><span class="n">time</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="n">last_point</span><span class="p">,</span> <span class="n">next_point</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">time</span> <span class="o">+=</span> <span class="n">dt</span>
+
+    <span class="k">def</span> <span class="nf">generator_geo_points</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">gps_sentence</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_reader</span><span class="o">.</span><span class="n">iget_data</span><span class="p">():</span>
+            <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">make_geo_point</span><span class="p">(</span><span class="n">gps_sentence</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">iget_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">points</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">generator_last_and_next_geo_points</span><span class="p">():</span>
+            <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">time</span><span class="p">,</span> <span class="o">*</span><span class="n">points</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="NmeaFileReader"><a class="viewcode-back" href="../../api/nvector.html#nvector.navigator.NmeaFileReader">[docs]</a><span class="k">class</span> <span class="nc">NmeaFileReader</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Member variables</span>
+<span class="sd">    ----------------</span>
+<span class="sd">    file_path : string</span>
+<span class="sd">        file name with path</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_path</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">file_path</span> <span class="o">=</span> <span class="n">file_path</span>
+
+    <span class="k">def</span> <span class="nf">_generator_sentences</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_path</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Return next occurrence of GGA, GLL or RMC sentence.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">file_path</span><span class="p">):</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span> <span class="k">as</span> <span class="n">fid</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">fid</span><span class="o">.</span><span class="n">readlines</span><span class="p">():</span>
+                    <span class="n">line</span> <span class="o">=</span> <span class="n">_check_nmea_sentence</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">line</span><span class="p">[</span><span class="mi">3</span><span class="p">:</span><span class="mi">6</span><span class="p">]</span> <span class="ow">in</span> <span class="p">[</span><span class="s">&#39;GGA&#39;</span><span class="p">,</span> <span class="s">&#39;GLL&#39;</span><span class="p">,</span> <span class="s">&#39;RMC&#39;</span><span class="p">]:</span>
+                        <span class="k">yield</span> <span class="n">line</span>
+
+<div class="viewcode-block" id="NmeaFileReader.get_data"><a class="viewcode-back" href="../../api/nvector.html#nvector.navigator.NmeaFileReader.get_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return all data from the NMEA file&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">s</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_generator_sentences</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">file_path</span><span class="p">)]</span>
+</div>
+<div class="viewcode-block" id="NmeaFileReader.iget_data"><a class="viewcode-back" href="../../api/nvector.html#nvector.navigator.NmeaFileReader.iget_data">[docs]</a>    <span class="k">def</span> <span class="nf">iget_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Iterates over data from NMEA file &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_generator_sentences</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">file_path</span><span class="p">)</span>
+
+
+<span class="c"># ----- GLOBAL, INTERNAL METHODS</span>
+<span class="c">#</span></div></div>
+<span class="k">def</span> <span class="nf">nmea_checksum</span><span class="p">(</span><span class="n">nmea_str_n_chksum</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39; Generate checksum for nmea message</span>
+<span class="sd">        Checksum follows *, and is XOR of everything</span>
+<span class="sd">        from the $ to the *, exclusive.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="c"># (Checksum is all the data XORed and turned into hex)</span>
+    <span class="c"># hex_csum = &quot;%02x&quot; % reduce(xor, map(ord, data[1:-3]))</span>
+    <span class="n">nmea_str</span><span class="p">,</span> <span class="n">_star</span><span class="p">,</span> <span class="n">_chksum</span> <span class="o">=</span> <span class="n">nmea_str_n_chksum</span><span class="o">.</span><span class="n">partition</span><span class="p">(</span><span class="s">&#39;*&#39;</span><span class="p">)</span>
+    <span class="c"># hex_csum = &quot;%02x&quot; % reduce(xor, [ord(c) for c in nmea_str[1:]])</span>
+    <span class="n">hex_csum</span> <span class="o">=</span> <span class="s">&quot;</span><span class="si">%02x</span><span class="s">&quot;</span> <span class="o">%</span> <span class="nb">reduce</span><span class="p">(</span><span class="n">xor</span><span class="p">,</span> <span class="nb">map</span><span class="p">(</span><span class="nb">ord</span><span class="p">,</span> <span class="n">nmea_str</span><span class="p">[</span><span class="mi">1</span><span class="p">:]))</span>  <span class="c"># Fastest</span>
+    <span class="k">return</span> <span class="n">hex_csum</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+
+
+<span class="k">def</span> <span class="nf">_check_nmea_sentence</span><span class="p">(</span><span class="n">line</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Checks the NMEA sentence using start- and stop characters</span>
+<span class="sd">    and the checksum.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">line</span><span class="p">:</span>
+        <span class="c"># Discard fragmentary sentences -  start with the last &#39;$&#39;</span>
+        <span class="c"># _, dollar, nmea_str_chksum = line.rpartition(&#39;$&#39;)</span>
+        <span class="n">nmea_str_n_chksum</span> <span class="o">=</span> <span class="n">line</span><span class="p">[</span><span class="n">line</span><span class="o">.</span><span class="n">rfind</span><span class="p">(</span><span class="s">&#39;$&#39;</span><span class="p">):]</span>
+
+        <span class="c"># see if string contains the * which starts the checksum and keep</span>
+        <span class="c"># string upto * for generating checksum</span>
+        <span class="n">nmea_str</span><span class="p">,</span> <span class="n">star</span><span class="p">,</span> <span class="n">chksum</span> <span class="o">=</span> <span class="n">nmea_str_n_chksum</span><span class="o">.</span><span class="n">partition</span><span class="p">(</span><span class="s">&#39;*&#39;</span><span class="p">)</span>
+
+        <span class="c"># Make sure it starts with $GP and contains the asterisk near the end</span>
+        <span class="k">if</span> <span class="n">star</span><span class="p">:</span>  <span class="c"># and nmea_str[:3] == &#39;$GP&#39; :</span>
+
+            <span class="c"># Checksum follows *, and is XOR of everything</span>
+            <span class="c"># from the $ to the *, exclusive.</span>
+            <span class="c"># Generate checksum for messages</span>
+            <span class="c"># (Checksum is all the data XORed and turned into hex)</span>
+            <span class="n">hex_csum</span> <span class="o">=</span> <span class="s">&quot;</span><span class="si">%02x</span><span class="s">&quot;</span> <span class="o">%</span> <span class="nb">reduce</span><span class="p">(</span><span class="n">xor</span><span class="p">,</span> <span class="nb">map</span><span class="p">(</span><span class="nb">ord</span><span class="p">,</span> <span class="n">nmea_str</span><span class="p">[</span><span class="mi">1</span><span class="p">:]))</span>  <span class="c"># Fastest</span>
+            <span class="c"># hex_csum = &quot;%02x&quot; % reduce(xor, [ord(c) for c in nmea_str[1:])</span>
+            <span class="k">if</span> <span class="n">chksum</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="n">hex_csum</span><span class="o">.</span><span class="n">upper</span><span class="p">():</span>
+                <span class="c"># Strips the checksum</span>
+                <span class="k">return</span> <span class="n">nmea_str</span>
+        <span class="k">return</span> <span class="s">&#39;&#39;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">line</span>
+
+
+<span class="k">def</span> <span class="nf">split_yymmdd</span><span class="p">(</span><span class="n">yymmdd</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Split date yymmdd or yyyymmdd into year, month and day</span>
+
+<span class="sd">    Example</span>
+<span class="sd">    -------</span>
+<span class="sd">    &gt;&gt;&gt; split_yymmdd(20121001)</span>
+<span class="sd">    (2012, 10, 1)</span>
+<span class="sd">    &gt;&gt;&gt; split_yymmdd(121001)</span>
+<span class="sd">    (12, 10, 1)</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">return</span> <span class="n">split_hhmmss</span><span class="p">(</span><span class="n">yymmdd</span><span class="p">)[:</span><span class="mi">3</span><span class="p">]</span>
+
+
+<span class="k">def</span> <span class="nf">split_hhmmss</span><span class="p">(</span><span class="n">hhmmss</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Split hhmmss number into hours minutes and seconds</span>
+
+<span class="sd">    Example</span>
+<span class="sd">    -------</span>
+<span class="sd">    &gt;&gt;&gt; split_hhmmss(60233.5)</span>
+<span class="sd">    (6, 2, 33, 0.5)</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">hh</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">hhmmss</span> <span class="o">//</span> <span class="mi">10000</span><span class="p">)</span>
+    <span class="n">mmss</span> <span class="o">=</span> <span class="p">(</span><span class="n">hhmmss</span> <span class="o">-</span> <span class="n">hh</span> <span class="o">*</span> <span class="mi">10000</span><span class="p">)</span>
+    <span class="n">mm</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">mmss</span> <span class="o">//</span> <span class="mi">100</span><span class="p">)</span>
+    <span class="n">ss</span> <span class="o">=</span> <span class="p">(</span><span class="n">mmss</span> <span class="o">-</span> <span class="n">mm</span> <span class="o">*</span> <span class="mi">100</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">hh</span><span class="p">,</span> <span class="n">mm</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">ss</span><span class="p">),</span> <span class="n">ss</span> <span class="o">-</span> <span class="nb">int</span><span class="p">(</span><span class="n">ss</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">add2timestamp_on_gps_files</span><span class="p">(</span><span class="n">hh</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">mm</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">ss</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">subtract</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39; Add time to timestamp on gps files</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    hh : integer</span>
+<span class="sd">        hours to add</span>
+<span class="sd">    mm : integer</span>
+<span class="sd">        minutes to add</span>
+<span class="sd">    ss : real</span>
+<span class="sd">        seconds to add</span>
+<span class="sd">    subtract : bool</span>
+<span class="sd">        If True time is subtracted from timestamp otherwise added.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+
+    <span class="n">root_path</span> <span class="o">=</span> <span class="s">&#39;X:</span><span class="se">\\</span><span class="s">Files</span><span class="se">\\</span><span class="s">2011.05.02</span><span class="se">\\</span><span class="s">KV Tor</span><span class="se">\\</span><span class="s">Herdla&#39;</span>
+    <span class="n">file_names</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">folder</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">root_path</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">folder</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;Run&#39;</span><span class="p">):</span>
+            <span class="n">file_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root_path</span><span class="p">,</span> <span class="n">folder</span><span class="p">,</span> <span class="s">&#39;DC201B.gps&#39;</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="n">hh</span> <span class="ow">or</span> <span class="n">mm</span> <span class="ow">or</span> <span class="n">ss</span><span class="p">:</span>
+        <span class="n">sgn</span> <span class="o">=</span> <span class="s">&#39;m&#39;</span> <span class="k">if</span> <span class="n">subtract</span> <span class="k">else</span> <span class="s">&#39;p&#39;</span>
+        <span class="n">ext</span> <span class="o">=</span> <span class="s">&#39;corrected</span><span class="si">%s%d</span><span class="s">.gps&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">sgn</span><span class="p">,</span> <span class="n">hh</span> <span class="o">*</span> <span class="mi">10000</span> <span class="o">+</span> <span class="n">mm</span> <span class="o">*</span> <span class="mi">100</span> <span class="o">+</span> <span class="n">ss</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">ext</span> <span class="o">=</span> <span class="s">&#39;.gps&#39;</span>
+
+    <span class="n">td</span> <span class="o">=</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="n">hh</span><span class="p">,</span> <span class="n">minutes</span><span class="o">=</span><span class="n">mm</span><span class="p">,</span> <span class="n">seconds</span><span class="o">=</span><span class="n">ss</span><span class="p">)</span>
+    <span class="n">utc_index_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;$GPRMC&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s">&#39;$GPGGA&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s">&#39;$GPGNS&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s">&#39;$GPGLL&#39;</span><span class="p">:</span> <span class="mi">5</span><span class="p">}</span>
+    <span class="k">for</span> <span class="n">file_name</span> <span class="ow">in</span> <span class="n">file_names</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">file_name</span><span class="p">):</span>
+            <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">file_name</span><span class="p">)</span>
+            <span class="n">line</span> <span class="o">=</span> <span class="s">&#39;1&#39;</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">while</span> <span class="ow">not</span> <span class="n">line</span> <span class="o">==</span> <span class="s">&#39;&#39;</span><span class="p">:</span>
+                <span class="n">raw_data</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
+                <span class="c"># for raw_data in raw_data0.split(&#39;SOLO&#39;):</span>
+                <span class="n">line</span> <span class="o">=</span> <span class="n">_check_nmea_sentence</span><span class="p">(</span><span class="n">raw_data</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">line</span><span class="p">:</span>
+                    <span class="n">tmp</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;,&#39;</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">tmp</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">in</span> <span class="n">utc_index_dict</span><span class="p">:</span>
+                        <span class="n">utc_ix</span> <span class="o">=</span> <span class="n">utc_index_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">tmp</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">1</span><span class="p">)</span>
+                        <span class="n">hh0</span><span class="p">,</span> <span class="n">mm0</span><span class="p">,</span> <span class="n">ss0</span><span class="p">,</span> <span class="n">ms0</span> <span class="o">=</span> <span class="n">split_hhmmss</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">tmp</span><span class="p">[</span><span class="n">utc_ix</span><span class="p">]))</span>
+
+                        <span class="k">if</span> <span class="n">tmp</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;$GPRMC&#39;</span><span class="p">:</span>
+                            <span class="n">dd</span><span class="p">,</span> <span class="n">mo</span><span class="p">,</span> <span class="n">yy</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">split_hhmmss</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">tmp</span><span class="p">[</span><span class="mi">9</span><span class="p">]))</span>
+                            <span class="n">tm</span> <span class="o">=</span> <span class="n">datetime</span><span class="p">(</span><span class="n">year</span><span class="o">=</span><span class="n">yy</span><span class="p">,</span> <span class="n">month</span><span class="o">=</span><span class="n">mo</span><span class="p">,</span> <span class="n">day</span><span class="o">=</span><span class="n">dd</span><span class="p">,</span> <span class="n">hour</span><span class="o">=</span><span class="n">hh0</span><span class="p">,</span>
+                                          <span class="n">minute</span><span class="o">=</span><span class="n">mm0</span><span class="p">,</span> <span class="n">second</span><span class="o">=</span><span class="n">ss0</span><span class="p">)</span>
+                            <span class="k">if</span> <span class="n">subtract</span><span class="p">:</span>
+                                <span class="n">tn</span> <span class="o">=</span> <span class="n">tm</span> <span class="o">-</span> <span class="n">td</span>
+                            <span class="k">else</span><span class="p">:</span>
+                                <span class="n">tn</span> <span class="o">=</span> <span class="n">tm</span> <span class="o">+</span> <span class="n">td</span>
+                            <span class="n">tmp</span><span class="p">[</span><span class="mi">9</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;</span><span class="si">%d</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">tn</span><span class="o">.</span><span class="n">day</span> <span class="o">*</span> <span class="mi">10000</span> <span class="o">+</span> <span class="n">tn</span><span class="o">.</span><span class="n">month</span> <span class="o">*</span> <span class="mi">100</span> <span class="o">+</span>
+                                             <span class="n">mod</span><span class="p">(</span><span class="n">tn</span><span class="o">.</span><span class="n">year</span><span class="p">,</span> <span class="mi">100</span><span class="p">))</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="n">tm</span> <span class="o">=</span> <span class="n">datetime</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">hour</span><span class="o">=</span><span class="n">hh0</span><span class="p">,</span> <span class="n">minute</span><span class="o">=</span><span class="n">mm0</span><span class="p">,</span>
+                                          <span class="n">second</span><span class="o">=</span><span class="n">ss0</span><span class="p">)</span>
+                            <span class="k">if</span> <span class="n">subtract</span><span class="p">:</span>
+                                <span class="n">tn</span> <span class="o">=</span> <span class="n">tm</span> <span class="o">-</span> <span class="n">td</span>
+                            <span class="k">else</span><span class="p">:</span>
+                                <span class="n">tn</span> <span class="o">=</span> <span class="n">tm</span> <span class="o">+</span> <span class="n">td</span>
+                        <span class="n">utc</span> <span class="o">=</span> <span class="s">&#39;</span><span class="si">%09.2f</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">tn</span><span class="o">.</span><span class="n">hour</span> <span class="o">*</span> <span class="mi">10000</span> <span class="o">+</span> <span class="n">tn</span><span class="o">.</span><span class="n">minute</span> <span class="o">*</span> <span class="mi">100</span> <span class="o">+</span>
+                                          <span class="n">tn</span><span class="o">.</span><span class="n">second</span> <span class="o">+</span> <span class="n">ms0</span><span class="p">)</span>
+                        <span class="n">tmp</span><span class="p">[</span><span class="n">utc_ix</span><span class="p">]</span> <span class="o">=</span> <span class="n">utc</span>
+                    <span class="n">nmea_string</span> <span class="o">=</span> <span class="s">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tmp</span><span class="p">)</span>
+                    <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">nmea_string</span> <span class="o">+</span> <span class="s">&#39;*</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span>
+                                <span class="n">nmea_checksum</span><span class="p">(</span><span class="n">nmea_string</span><span class="p">))</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+            <span class="n">path</span><span class="p">,</span> <span class="n">filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">file_name</span><span class="p">)</span>
+
+            <span class="n">new_filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">filename</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;.&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">ext</span><span class="p">)</span>
+            <span class="n">fid2</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">new_filename</span><span class="p">,</span> <span class="s">&#39;w&#39;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">sentence</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+                <span class="n">fid2</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">sentence</span><span class="p">)</span>
+                <span class="n">fid2</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+            <span class="n">fid2</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+
+<span class="k">def</span> <span class="nf">test_docstrings</span><span class="p">():</span>
+    <span class="kn">import</span> <span class="nn">doctest</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">&#39;Testing docstrings in </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">__file__</span><span class="p">)</span>
+    <span class="n">doctest</span><span class="o">.</span><span class="n">testmod</span><span class="p">(</span><span class="n">optionflags</span><span class="o">=</span><span class="n">doctest</span><span class="o">.</span><span class="n">NORMALIZE_WHITESPACE</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">&#39;Docstrings tested&#39;</span><span class="p">)</span>
+
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
+
+    <span class="n">test_docstrings</span><span class="p">()</span>
+    <span class="c"># add2timestamp_on_gps_files(ss=29,subtract=True)</span>
+    <span class="n">p1</span> <span class="o">=</span> <span class="n">GeoPoint</span><span class="p">(</span><span class="n">rad</span><span class="p">(</span><span class="mi">50</span><span class="p">),</span> <span class="n">rad</span><span class="p">(</span><span class="mi">4</span><span class="p">))</span>
+    <span class="n">p2</span> <span class="o">=</span> <span class="n">GeoPoint</span><span class="p">(</span><span class="n">rad</span><span class="p">(</span><span class="mi">50</span> <span class="o">+</span> <span class="mf">1.</span><span class="o">/</span><span class="mi">60</span><span class="p">),</span> <span class="n">rad</span><span class="p">(</span><span class="mi">4</span><span class="p">))</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">p2</span><span class="o">.</span><span class="n">distance_and_bearing_between_points</span><span class="p">(</span><span class="n">p1</span><span class="p">))</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">GeoPath</span><span class="p">(</span><span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">track_distance</span><span class="p">())</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2015, pbrod.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.6</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

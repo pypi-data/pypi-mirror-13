@@ -1,0 +1,621 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>nvector.ngs &mdash; nvector 0.0.post0.dev12+6fb5038 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.0.post0.dev12+6fb5038',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="nvector 0.0.post0.dev12+6fb5038 documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body role="document">  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for nvector.ngs</h1><div class="highlight"><pre>
+<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">Vincenty&#39;s formulae are two related iterative methods used in geodesy to</span>
+<span class="sd">calculate the distance between two points on the surface of a spheroid,</span>
+<span class="sd">developed by Thaddeus Vincenty (1975a) They are based on the assumption that</span>
+<span class="sd">the figure of the Earth is an oblate spheroid, and hence are more accurate than</span>
+<span class="sd">methods such as great-circle distance which assume a spherical Earth.</span>
+<span class="sd">The first (direct) method computes the location of a point which is a given</span>
+<span class="sd">distance and azimuth (direction) from another point. The second (inverse)</span>
+<span class="sd">method computes the geographical distance and azimuth between two given points.</span>
+<span class="sd">They have been widely used in geodesy because they are accurate to within</span>
+<span class="sd">0.5 mm (0.020&#39;&#39;) on the Earth ellipsoid.</span>
+
+
+<span class="sd">Reference</span>
+<span class="sd">---------</span>
+
+
+<span class="sd"> name:      inverse</span>
+<span class="sd"> version:   201105.xx</span>
+<span class="sd"> author:    stephen j. frakes</span>
+<span class="sd"> last mod:  dr. dennis milbert</span>
+<span class="sd"> purpose:   to compute a geodetic inverse</span>
+<span class="sd">            and then display output information</span>
+
+
+<span class="sd"> local variables and constants:</span>
+<span class="sd"> ------------------------------</span>
+<span class="sd"> a                semimajor axis equatorial (in meters)</span>
+<span class="sd"> f                flattening</span>
+<span class="sd"> b                semiminor axis polar (in meters)</span>
+<span class="sd"> baz              azimuth back (in radians)</span>
+
+<span class="sd"> dlon             temporary value for difference in longitude (radians)</span>
+
+<span class="sd"> edist            ellipsoid distance (in meters)</span>
+<span class="sd"> elips            ellipsoid choice</span>
+
+<span class="sd"> faz              azimuth forward (in radians)</span>
+
+<span class="sd"> finv             reciprocal flattening</span>
+
+<span class="sd"> option           user prompt response</span>
+
+<span class="sd"> name1            name of station one</span>
+<span class="sd"> glat1,glon1      station one       - (lat &amp; lon in radians )</span>
+
+<span class="sd"> name2            name of station two</span>
+<span class="sd"> glat2,glon2      station two       - (lat &amp; lon in radians )</span>
+
+
+<span class="sd">&#39;&#39;&#39;</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">division</span><span class="p">,</span> <span class="n">print_function</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">pi</span><span class="p">,</span> <span class="n">arctan</span><span class="p">,</span> <span class="n">arctan2</span><span class="p">,</span> <span class="n">tan</span><span class="p">,</span> <span class="n">sin</span><span class="p">,</span> <span class="n">cos</span><span class="p">,</span> <span class="n">sqrt</span>
+<span class="kn">from</span> <span class="nn">nvector</span> <span class="kn">import</span> <span class="n">lat_lon2n_E</span><span class="p">,</span> <span class="n">azimuth</span>
+
+<span class="n">_EPS</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span>
+
+<span class="n">ELLIPSOID</span> <span class="o">=</span> <span class="p">{</span><span class="mi">1</span><span class="p">:</span> <span class="p">(</span><span class="mf">6377563.3960</span><span class="p">,</span> <span class="mf">1.0</span><span class="o">/</span><span class="mf">299.3249646</span><span class="p">,</span> <span class="s">&#39;Airy 1858&#39;</span><span class="p">),</span>
+             <span class="mi">2</span><span class="p">:</span> <span class="p">(</span><span class="mf">6377340.189</span><span class="p">,</span> <span class="mf">1.0</span><span class="o">/</span><span class="mf">299.3249646</span><span class="p">,</span> <span class="s">&#39;Airy Modified&#39;</span><span class="p">),</span>
+             <span class="mi">3</span><span class="p">:</span> <span class="p">(</span><span class="mi">6378160</span><span class="p">,</span> <span class="mf">1.0</span><span class="o">/</span><span class="mf">298.25</span><span class="p">,</span> <span class="s">&#39;Australian National&#39;</span><span class="p">),</span>
+             <span class="mi">4</span><span class="p">:</span> <span class="p">(</span><span class="mf">6377397.155</span><span class="p">,</span> <span class="mf">1.0</span><span class="o">/</span><span class="mf">299.1528128</span><span class="p">,</span> <span class="s">&#39;Bessel 1841&#39;</span><span class="p">),</span>
+             <span class="mi">5</span><span class="p">:</span> <span class="p">(</span><span class="mf">6378249.145</span><span class="p">,</span> <span class="mf">1.0</span><span class="o">/</span><span class="mf">293.465</span><span class="p">,</span> <span class="s">&#39;Clarke 1880&#39;</span><span class="p">),</span>
+             <span class="mi">6</span><span class="p">:</span> <span class="p">(</span><span class="mf">6377276.345</span><span class="p">,</span> <span class="mf">1.0</span><span class="o">/</span><span class="mf">300.8017</span><span class="p">,</span> <span class="s">&#39;Everest 1830&#39;</span><span class="p">),</span>
+             <span class="mi">7</span><span class="p">:</span> <span class="p">(</span><span class="mf">6377304.063</span><span class="p">,</span> <span class="mf">1.0</span><span class="o">/</span><span class="mf">300.8017</span><span class="p">,</span> <span class="s">&#39;Everest Modified&#39;</span><span class="p">),</span>
+             <span class="mi">8</span><span class="p">:</span> <span class="p">(</span><span class="mf">6378166.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="o">/</span><span class="mf">298.3</span><span class="p">,</span> <span class="s">&#39;Fisher 1960&#39;</span><span class="p">),</span>
+             <span class="mi">9</span><span class="p">:</span> <span class="p">(</span><span class="mf">6378150.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="o">/</span><span class="mf">298.3</span><span class="p">,</span> <span class="s">&#39;Fisher 1968&#39;</span><span class="p">),</span>
+             <span class="mi">10</span><span class="p">:</span> <span class="p">(</span><span class="mf">6378270.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="o">/</span><span class="mi">297</span><span class="p">,</span> <span class="s">&#39;Hough 1956&#39;</span><span class="p">),</span>
+             <span class="mi">11</span><span class="p">:</span> <span class="p">(</span><span class="mf">6378388.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="o">/</span><span class="mi">297</span><span class="p">,</span> <span class="s">&#39;International (Hayford)&#39;</span><span class="p">),</span>
+             <span class="mi">12</span><span class="p">:</span> <span class="p">(</span><span class="mf">6378245.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="o">/</span><span class="mf">298.3</span><span class="p">,</span> <span class="s">&#39;Krassovsky 1938&#39;</span><span class="p">),</span>
+             <span class="mi">13</span><span class="p">:</span> <span class="p">(</span><span class="mf">6378145.</span><span class="p">,</span> <span class="mf">1.0</span><span class="o">/</span><span class="mf">298.25</span><span class="p">,</span> <span class="s">&#39;NWL-9D  (WGS 66)&#39;</span><span class="p">),</span>
+             <span class="mi">14</span><span class="p">:</span> <span class="p">(</span><span class="mf">6378160.</span><span class="p">,</span> <span class="mf">1.0</span><span class="o">/</span><span class="mf">298.25</span><span class="p">,</span> <span class="s">&#39;South American 1969&#39;</span><span class="p">),</span>
+             <span class="mi">15</span><span class="p">:</span> <span class="p">(</span><span class="mi">6378136</span><span class="p">,</span> <span class="mf">1.0</span><span class="o">/</span><span class="mf">298.257</span><span class="p">,</span> <span class="s">&#39;Soviet Geod. System 1985&#39;</span><span class="p">),</span>
+             <span class="mi">16</span><span class="p">:</span> <span class="p">(</span><span class="mf">6378135.</span><span class="p">,</span> <span class="mf">1.0</span><span class="o">/</span><span class="mf">298.26</span><span class="p">,</span> <span class="s">&#39;WGS 72&#39;</span><span class="p">),</span>
+             <span class="mi">17</span><span class="p">:</span> <span class="p">(</span><span class="mf">6378206.4</span><span class="p">,</span> <span class="mf">1.0</span><span class="o">/</span><span class="mf">294.9786982138</span><span class="p">,</span> <span class="s">&#39;Clarke 1866    (NAD27)&#39;</span><span class="p">),</span>
+             <span class="mi">18</span><span class="p">:</span> <span class="p">(</span><span class="mf">6378137.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="o">/</span><span class="mf">1.0</span><span class="o">/</span><span class="mf">298.257223563</span><span class="p">,</span>
+                  <span class="s">&#39;GRS80 / WGS84  (NAD83)&#39;</span><span class="p">)}</span>
+
+<span class="n">ELLIPSOID_IX</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;airy1858&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s">&#39;airymodified&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s">&#39;australiannational&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+                <span class="s">&#39;everest1830&#39;</span><span class="p">:</span> <span class="mi">6</span><span class="p">,</span> <span class="s">&#39;everestmodified&#39;</span><span class="p">:</span> <span class="mi">7</span><span class="p">,</span> <span class="s">&#39;krassovsky&#39;</span><span class="p">:</span> <span class="mi">12</span><span class="p">,</span>
+                <span class="s">&#39;krassovsky1938&#39;</span><span class="p">:</span> <span class="mi">12</span><span class="p">,</span> <span class="s">&#39;fisher1968&#39;</span><span class="p">:</span> <span class="mi">9</span><span class="p">,</span> <span class="s">&#39;fisher1960&#39;</span><span class="p">:</span> <span class="mi">8</span><span class="p">,</span>
+                <span class="s">&#39;international&#39;</span><span class="p">:</span> <span class="mi">11</span><span class="p">,</span> <span class="s">&#39;hayford&#39;</span><span class="p">:</span> <span class="mi">11</span><span class="p">,</span>
+                <span class="s">&#39;clarke1866&#39;</span><span class="p">:</span> <span class="mi">17</span><span class="p">,</span> <span class="s">&#39;nad27&#39;</span><span class="p">:</span> <span class="mi">17</span><span class="p">,</span> <span class="s">&#39;bessel&#39;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span>
+                <span class="s">&#39;bessel1841&#39;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span> <span class="s">&#39;grs80&#39;</span><span class="p">:</span> <span class="mi">18</span><span class="p">,</span> <span class="s">&#39;wgs84&#39;</span><span class="p">:</span> <span class="mi">18</span><span class="p">,</span> <span class="s">&#39;nad83&#39;</span><span class="p">:</span> <span class="mi">18</span><span class="p">,</span>
+                <span class="s">&#39;sovietgeod.system1985&#39;</span><span class="p">:</span> <span class="mi">15</span><span class="p">,</span> <span class="s">&#39;wgs72&#39;</span><span class="p">:</span> <span class="mi">16</span><span class="p">,</span>
+                <span class="s">&#39;hough1956&#39;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span> <span class="s">&#39;hough&#39;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span> <span class="s">&#39;nwl-9d&#39;</span><span class="p">:</span> <span class="mi">13</span><span class="p">,</span> <span class="s">&#39;wgs66&#39;</span><span class="p">:</span> <span class="mi">13</span><span class="p">,</span>
+                <span class="s">&#39;southamerican1969&#39;</span><span class="p">:</span> <span class="mi">14</span><span class="p">,</span>  <span class="s">&#39;clarke1880&#39;</span><span class="p">:</span> <span class="mi">5</span><span class="p">}</span>
+
+
+<div class="viewcode-block" id="select_ellipsoid"><a class="viewcode-back" href="../../api/nvector.html#nvector.ngs.select_ellipsoid">[docs]</a><span class="k">def</span> <span class="nf">select_ellipsoid</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
+
+    <span class="n">msg</span> <span class="o">=</span> <span class="s">&quot;&quot;&quot;</span>
+<span class="s">    Other Ellipsoids.&#39;</span>
+<span class="s">    -----------------&#39;</span>
+<span class="s">    &#39;</span>
+<span class="s">    1) Airy 1858</span>
+<span class="s">    2) Airy Modified</span>
+<span class="s">    3) Australian National</span>
+<span class="s">    4) Bessel 1841</span>
+<span class="s">    5) Clarke 1880</span>
+<span class="s">    6) Everest 1830</span>
+<span class="s">    7) Everest Modified</span>
+<span class="s">    8) Fisher 1960</span>
+<span class="s">    9) Fisher 1968</span>
+<span class="s">    10) Hough 1956</span>
+<span class="s">    11) International (Hayford)</span>
+<span class="s">    12) Krassovsky 1938</span>
+<span class="s">    13) NWL-9D (WGS 66)</span>
+<span class="s">    14) South American 1969</span>
+<span class="s">    15) Soviet Geod. System 1985</span>
+<span class="s">    16) WGS 72</span>
+<span class="s">    17) User defined.</span>
+<span class="s">    &#39;</span>
+<span class="s">    Enter choice :</span>
+<span class="s">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">name</span><span class="p">:</span>
+        <span class="n">option</span> <span class="o">=</span> <span class="n">ELLIPSOID_IX</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&#39; &#39;</span><span class="p">,</span> <span class="s">&#39;&#39;</span><span class="p">),</span> <span class="n">name</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">option</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">ELLIPSOID</span><span class="p">[</span><span class="n">option</span><span class="p">]</span>
+
+<span class="c">#       else</span>
+<span class="c">#         elips = &#39;User defined.&#39;</span>
+<span class="c">#</span>
+<span class="c">#         write(*,*) &#39;  Enter Equatorial axis,   a : &#39;</span>
+<span class="c">#         read(*,*) a</span>
+<span class="c">#         a  = dabs(a)</span>
+<span class="c">#</span>
+<span class="c">#         write(*,*) &#39;  Enter either Polar axis, b or &#39;</span>
+<span class="c">#         write(*,*) &#39;  Reciprocal flattening,   1/f : &#39;</span>
+<span class="c">#         read(*,*) ss</span>
+<span class="c">#         ss = dabs(ss)</span>
+<span class="c">#</span>
+<span class="c">#         f = 0.0d0</span>
+<span class="c">#         if( 200.0d0.le.ss .and. ss.le.310.0d0 )then</span>
+<span class="c">#           f = 1.d0/ss</span>
+<span class="c">#         elseif( 6000000.0d0&lt;ss .and. ss&lt;a )then</span>
+<span class="c">#           f = (a-ss)/a</span>
+<span class="c">#         else</span>
+<span class="c">#           elips = &#39;Error: default GRS80 used.&#39;</span>
+<span class="c">#           a     = 6378137.0d0</span>
+<span class="c">#           f     = 1.0d0/298.25722210088d0</span>
+<span class="c">#         endif</span>
+<span class="c">#       endif</span>
+<span class="c">#</span>
+<span class="c">#       return</span>
+<span class="c">#       end</span>
+
+</div>
+<span class="k">def</span> <span class="nf">_compute_c</span><span class="p">(</span><span class="n">rf</span><span class="p">,</span> <span class="n">cosal2</span><span class="p">):</span>
+    <span class="k">return</span> <span class="p">((</span><span class="mf">4.0</span> <span class="o">-</span> <span class="mf">3.0</span> <span class="o">*</span> <span class="n">cosal2</span><span class="p">)</span> <span class="o">/</span> <span class="n">rf</span> <span class="o">+</span> <span class="mf">4.0</span><span class="p">)</span> <span class="o">*</span> <span class="n">cosal2</span> <span class="o">/</span> <span class="n">rf</span> <span class="o">/</span> <span class="mf">16.0</span>  <span class="c"># Eq. 10</span>
+
+
+<span class="k">def</span> <span class="nf">_costm</span><span class="p">(</span><span class="n">sinu1sinu2</span><span class="p">,</span> <span class="n">cosal2</span><span class="p">,</span> <span class="n">cossig</span><span class="p">):</span>
+    <span class="n">sgn</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">cosal2</span> <span class="o">&gt;=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">return</span> <span class="o">-</span><span class="mf">2.0</span> <span class="o">*</span> <span class="p">(</span><span class="n">sinu1sinu2</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">cosal2</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">_EPS</span><span class="p">,</span>
+                                         <span class="n">_EPS</span> <span class="o">*</span> <span class="n">sgn</span><span class="p">,</span>
+                                        <span class="n">cosal2</span><span class="p">))</span> <span class="o">+</span> <span class="n">cossig</span>  <span class="c"># avoid div 0</span>
+
+
+<span class="k">def</span> <span class="nf">_cossinsig</span><span class="p">(</span><span class="n">cosu1</span><span class="p">,</span> <span class="n">sinu1</span><span class="p">,</span> <span class="n">cosu2</span><span class="p">,</span> <span class="n">sinu2</span><span class="p">,</span> <span class="n">coslam</span><span class="p">,</span> <span class="n">sinlam</span><span class="p">):</span>
+    <span class="n">temp</span> <span class="o">=</span> <span class="n">cosu1</span> <span class="o">*</span> <span class="n">sinu2</span> <span class="o">-</span> <span class="n">sinu1</span> <span class="o">*</span> <span class="n">cosu2</span> <span class="o">*</span> <span class="n">coslam</span>
+    <span class="n">sinsig</span> <span class="o">=</span> <span class="n">sqrt</span><span class="p">((</span><span class="n">cosu2</span> <span class="o">*</span> <span class="n">sinlam</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">temp</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>  <span class="c"># v14   (rapp part II)</span>
+    <span class="n">cossig</span> <span class="o">=</span> <span class="n">sinu1</span><span class="o">*</span><span class="n">sinu2</span> <span class="o">+</span> <span class="n">cosu1</span><span class="o">*</span><span class="n">cosu2</span><span class="o">*</span><span class="n">coslam</span>         <span class="c"># v15   (rapp part II)</span>
+    <span class="k">return</span> <span class="n">cossig</span><span class="p">,</span> <span class="n">sinsig</span>
+
+
+<span class="k">def</span> <span class="nf">_big_ab</span><span class="p">(</span><span class="n">u2</span><span class="p">):</span>
+    <span class="n">bige</span> <span class="o">=</span> <span class="n">sqrt</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">+</span> <span class="n">u2</span><span class="p">)</span>                            <span class="c"># 15</span>
+    <span class="n">bigf</span> <span class="o">=</span> <span class="p">(</span><span class="n">bige</span> <span class="o">-</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">bige</span> <span class="o">+</span> <span class="mf">1.0</span><span class="p">)</span>               <span class="c"># 16</span>
+    <span class="n">biga</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">+</span> <span class="n">bigf</span> <span class="o">*</span> <span class="n">bigf</span> <span class="o">/</span> <span class="mf">4.0</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">bigf</span><span class="p">)</span>  <span class="c"># 17</span>
+    <span class="n">bigb</span> <span class="o">=</span> <span class="n">bigf</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="mf">0.3750</span> <span class="o">*</span> <span class="n">bigf</span> <span class="o">*</span> <span class="n">bigf</span><span class="p">)</span>       <span class="c"># 18</span>
+    <span class="k">return</span> <span class="n">biga</span><span class="p">,</span> <span class="n">bigb</span>
+
+
+<span class="k">def</span> <span class="nf">_dsigma</span><span class="p">(</span><span class="n">bigb</span><span class="p">,</span> <span class="n">cossig</span><span class="p">,</span> <span class="n">sinsig</span><span class="p">,</span> <span class="n">costm</span><span class="p">):</span>
+    <span class="n">costm2</span> <span class="o">=</span> <span class="n">costm</span><span class="o">**</span><span class="mi">2</span>
+    <span class="n">z</span> <span class="o">=</span> <span class="n">bigb</span> <span class="o">/</span> <span class="mf">6.0</span> <span class="o">*</span> <span class="n">costm</span> <span class="o">*</span> <span class="p">(</span><span class="mf">4.0</span> <span class="o">*</span> <span class="n">sinsig</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span> <span class="mf">3.0</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mf">4.0</span><span class="o">*</span><span class="n">costm2</span> <span class="o">-</span> <span class="mf">3.0</span><span class="p">)</span>
+    <span class="n">dsig</span> <span class="o">=</span> <span class="n">bigb</span><span class="o">*</span><span class="n">sinsig</span><span class="o">*</span><span class="p">(</span><span class="n">costm</span> <span class="o">+</span> <span class="n">bigb</span><span class="o">/</span><span class="mf">4.0</span> <span class="o">*</span> <span class="p">(</span><span class="n">cossig</span> <span class="o">*</span> <span class="p">(</span><span class="mf">2.0</span><span class="o">*</span><span class="n">costm2</span> <span class="o">-</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">-</span> <span class="n">z</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">dsig</span>  <span class="c"># 19</span>
+
+
+<span class="k">def</span> <span class="nf">_helmert</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">boa</span><span class="p">,</span> <span class="n">cossig</span><span class="p">,</span> <span class="n">sinsig</span><span class="p">,</span> <span class="n">sig</span><span class="p">,</span> <span class="n">cosal2</span><span class="p">,</span> <span class="n">costm</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Helmert (1880) from Vincenty</span>
+<span class="sd">    &#39;Geodetic inverse solution between antipodal points&#39;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">u2</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">/</span> <span class="p">(</span><span class="n">boa</span> <span class="o">*</span> <span class="n">boa</span><span class="p">)</span> <span class="o">-</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">*</span> <span class="n">cosal2</span>
+    <span class="n">biga</span><span class="p">,</span> <span class="n">bigb</span> <span class="o">=</span> <span class="n">_big_ab</span><span class="p">(</span><span class="n">u2</span><span class="p">)</span>
+    <span class="n">dsig</span> <span class="o">=</span> <span class="n">_dsigma</span><span class="p">(</span><span class="n">bigb</span><span class="p">,</span> <span class="n">cossig</span><span class="p">,</span> <span class="n">sinsig</span><span class="p">,</span> <span class="n">costm</span><span class="p">)</span>
+    <span class="n">s12</span> <span class="o">=</span> <span class="p">(</span><span class="n">boa</span> <span class="o">*</span> <span class="n">a</span><span class="p">)</span> <span class="o">*</span> <span class="n">biga</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">sig</span> <span class="o">-</span> <span class="n">dsig</span><span class="p">)</span>  <span class="c"># 20</span>
+    <span class="k">return</span> <span class="n">s12</span>
+
+
+<span class="k">def</span> <span class="nf">_antipodal_azimuths</span><span class="p">(</span><span class="n">cosu1</span><span class="p">,</span> <span class="n">sinu1</span><span class="p">,</span> <span class="n">cosu2</span><span class="p">,</span> <span class="n">sinu2</span><span class="p">,</span> <span class="n">coslam</span><span class="p">,</span> <span class="n">sinal</span><span class="p">,</span>
+                       <span class="n">cossig</span><span class="p">,</span> <span class="n">sinsig</span><span class="p">):</span>
+    <span class="n">faz</span> <span class="o">=</span> <span class="n">sinal</span> <span class="o">/</span> <span class="n">cosu1</span>
+    <span class="n">sgn</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">cosu1</span> <span class="o">*</span> <span class="n">sinu2</span> <span class="o">-</span> <span class="n">sinu1</span> <span class="o">*</span> <span class="n">cosu2</span> <span class="o">*</span> <span class="n">coslam</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">baz</span> <span class="o">=</span> <span class="n">sqrt</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">faz</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">sgn</span>
+    <span class="n">faz</span> <span class="o">=</span> <span class="n">arctan2</span><span class="p">(</span><span class="n">faz</span><span class="p">,</span> <span class="n">baz</span><span class="p">)</span>
+    <span class="n">baz</span> <span class="o">=</span> <span class="n">arctan2</span><span class="p">(</span><span class="o">-</span><span class="n">sinal</span><span class="p">,</span> <span class="n">sinu1</span> <span class="o">*</span> <span class="n">sinsig</span> <span class="o">-</span> <span class="n">cosu1</span> <span class="o">*</span> <span class="n">cossig</span> <span class="o">*</span> <span class="n">baz</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">faz</span><span class="p">,</span> <span class="n">baz</span>
+
+
+<span class="k">def</span> <span class="nf">_long_line_azimuths</span><span class="p">(</span><span class="n">cosu1</span><span class="p">,</span> <span class="n">sinu1</span><span class="p">,</span> <span class="n">cosu2</span><span class="p">,</span> <span class="n">sinu2</span><span class="p">,</span> <span class="n">coslam</span><span class="p">,</span> <span class="n">sinlam</span><span class="p">):</span>
+    <span class="n">faz</span> <span class="o">=</span> <span class="n">arctan2</span><span class="p">(</span><span class="n">cosu2</span> <span class="o">*</span> <span class="n">sinlam</span><span class="p">,</span> <span class="n">cosu1</span> <span class="o">*</span> <span class="n">sinu2</span> <span class="o">-</span> <span class="n">sinu1</span> <span class="o">*</span> <span class="n">cosu2</span> <span class="o">*</span> <span class="n">coslam</span><span class="p">)</span>
+    <span class="n">baz</span> <span class="o">=</span> <span class="n">arctan2</span><span class="p">(</span><span class="o">-</span><span class="n">cosu1</span> <span class="o">*</span> <span class="n">sinlam</span><span class="p">,</span> <span class="n">sinu1</span> <span class="o">*</span> <span class="n">cosu2</span> <span class="o">-</span> <span class="n">cosu1</span> <span class="o">*</span> <span class="n">sinu2</span> <span class="o">*</span> <span class="n">coslam</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">faz</span><span class="p">,</span> <span class="n">baz</span>
+
+
+<span class="k">def</span> <span class="nf">_refined_converge</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">test</span><span class="p">,</span> <span class="n">prev</span><span class="p">,</span> <span class="n">it</span><span class="p">):</span>
+    <span class="k">if</span><span class="p">(((</span><span class="n">val</span><span class="o">-</span><span class="n">test</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="n">test</span><span class="o">-</span><span class="n">prev</span><span class="p">))</span> <span class="o">&lt;</span> <span class="mf">0.0</span> <span class="ow">and</span> <span class="n">it</span> <span class="o">&gt;</span> <span class="mi">5</span><span class="p">):</span>
+        <span class="n">val</span> <span class="o">=</span> <span class="p">(</span><span class="mf">2.0</span><span class="o">*</span><span class="n">val</span><span class="o">+</span><span class="mf">3.0</span><span class="o">*</span><span class="n">test</span><span class="o">+</span><span class="n">prev</span><span class="p">)</span><span class="o">/</span><span class="mf">6.0</span>      <span class="c"># refined converge.</span>
+    <span class="k">return</span> <span class="n">val</span><span class="p">,</span> <span class="n">val</span><span class="p">,</span> <span class="n">test</span>
+
+
+<span class="k">def</span> <span class="nf">_diff_longitude</span><span class="p">(</span><span class="n">l1</span><span class="p">,</span> <span class="n">l2</span><span class="p">):</span>
+    <span class="n">l</span> <span class="o">=</span> <span class="n">l2</span> <span class="o">-</span> <span class="n">l1</span>  <span class="c"># longitude difference [-pi,pi]</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">l</span> <span class="o">&gt;</span> <span class="n">pi</span><span class="p">):</span>
+        <span class="n">l</span> <span class="o">=</span> <span class="n">l</span> <span class="o">-</span> <span class="n">pi</span> <span class="o">-</span> <span class="n">pi</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">l</span> <span class="o">&lt;</span> <span class="o">-</span><span class="n">pi</span><span class="p">):</span>
+        <span class="n">l</span> <span class="o">=</span> <span class="n">l</span> <span class="o">+</span> <span class="n">pi</span> <span class="o">+</span> <span class="n">pi</span>
+    <span class="k">return</span> <span class="n">l</span>
+
+
+<span class="k">def</span> <span class="nf">_cossinal</span><span class="p">(</span><span class="n">cosu1</span><span class="p">,</span> <span class="n">cosu2</span><span class="p">,</span> <span class="n">sinsig</span><span class="p">,</span> <span class="n">sinlam</span><span class="p">):</span>
+    <span class="n">sgn</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">sinsig</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">sinal</span> <span class="o">=</span> <span class="n">cosu1</span> <span class="o">*</span> <span class="n">cosu2</span> <span class="o">*</span> <span class="n">sinlam</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">sinsig</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">_EPS</span><span class="p">,</span>
+                                              <span class="n">_EPS</span> <span class="o">*</span> <span class="n">sgn</span><span class="p">,</span>
+                                              <span class="n">sinsig</span><span class="p">)</span>  <span class="c"># avoid div 0</span>
+    <span class="n">cosal2</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="n">sinal</span> <span class="o">**</span> <span class="mi">2</span>
+    <span class="k">return</span> <span class="n">cosal2</span><span class="p">,</span> <span class="n">sinal</span>
+
+
+<span class="k">def</span> <span class="nf">_reduced_latitude</span><span class="p">(</span><span class="n">lat1</span><span class="p">,</span> <span class="n">boa</span><span class="p">):</span>
+    <span class="n">u1</span> <span class="o">=</span> <span class="n">arctan</span><span class="p">(</span><span class="n">boa</span> <span class="o">*</span> <span class="n">tan</span><span class="p">(</span><span class="n">lat1</span><span class="p">))</span>  <span class="c"># better reduced latitude</span>
+    <span class="n">cosu1</span><span class="p">,</span> <span class="n">sinu1</span> <span class="o">=</span> <span class="n">cos</span><span class="p">(</span><span class="n">u1</span><span class="p">),</span> <span class="n">sin</span><span class="p">(</span><span class="n">u1</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">cosu1</span><span class="p">,</span> <span class="n">sinu1</span>
+
+
+<div class="viewcode-block" id="Geodesic"><a class="viewcode-back" href="../../api/nvector.html#nvector.ngs.Geodesic">[docs]</a><span class="k">class</span> <span class="nc">Geodesic</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Solve geodesic problems.</span>
+
+<span class="sd">    The following illustrates its use</span>
+
+<span class="sd">    &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">    &gt;&gt;&gt; from ngs import Geodesic</span>
+
+<span class="sd">    &gt;&gt;&gt; wgs84 = Geodesic(name=&#39;WGS84&#39;)</span>
+
+<span class="sd">    # The geodesic inverse problem</span>
+<span class="sd">    &gt;&gt;&gt; lat1, lon1 = np.deg2rad((-41.32, 174.81))</span>
+<span class="sd">    &gt;&gt;&gt; lat2, lon2 = np.deg2rad((40.96, -5.50))</span>
+<span class="sd">    &gt;&gt;&gt; s12, az1, az2 = wgs84.inverse(lat1, lon1, lat2, lon2)[:3]</span>
+
+<span class="sd">    # The geodesic direct problem</span>
+<span class="sd">    &gt;&gt;&gt; lat1, lon1, az1 = np.deg2rad((40.6, -73.8, 45))</span>
+<span class="sd">    &gt;&gt;&gt; lat2, lon2, az2 = wgs84.direct(lat1, lon1, az1, 10000e3)</span>
+
+<span class="sd">    All angles (latitudes, longitudes, azimuths, spherical arc lengths)</span>
+<span class="sd">    are measured in radians.  Latitudes must lie in [-pi/2,pi/2].  All lengths</span>
+<span class="sd">    (distance, reduced length) are measured in meters.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="mi">6378137</span><span class="p">,</span> <span class="n">f</span><span class="o">=</span><span class="mf">1.0</span><span class="o">/</span><span class="mf">298.257223563</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s">&#39;&#39;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">name</span><span class="p">:</span>
+            <span class="n">a</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">_full_name</span> <span class="o">=</span> <span class="n">select_ellipsoid</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">a</span> <span class="o">=</span> <span class="n">a</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">f</span> <span class="o">=</span> <span class="n">f</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+
+<div class="viewcode-block" id="Geodesic.inverse"><a class="viewcode-back" href="../../api/nvector.html#nvector.ngs.Geodesic.inverse">[docs]</a>    <span class="k">def</span> <span class="nf">inverse</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lat1</span><span class="p">,</span> <span class="n">lon1</span><span class="p">,</span> <span class="n">lat2</span><span class="p">,</span> <span class="n">lon2</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return ellipsoidal distance between points</span>
+<span class="sd">        inverse for long-line and antipodal cases.</span>
+<span class="sd">        latitudes may be 90 degrees exactly.</span>
+<span class="sd">        latitude positive north, longitude positive east, radians.</span>
+<span class="sd">        azimuth clockwise from north, radians.</span>
+<span class="sd">        original programmed by thaddeus vincenty, 1975, 1976</span>
+<span class="sd">        removed back side solution option,</span>
+<span class="sd">        debugged, revised -- 2011may01 -- dgm</span>
+<span class="sd">        this version of code is interim -- antipodal boundary needs work</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        s12: real scalar</span>
+<span class="sd">            ellopsoidal distance between point 1 and 2</span>
+<span class="sd">        faz, baz: real scalars</span>
+<span class="sd">            forward and backward azimuth</span>
+
+
+<span class="sd">        sig,  spherical distance on auxiliary sphere</span>
+<span class="sd">        lam,  longitude difference on auxiliary sphere</span>
+<span class="sd">        kind, solution flag:  kind=1, long-line;  kind=2, antipodal</span>
+<span class="sd">        it,   iteration count</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">tol</span> <span class="o">=</span> <span class="mf">1.e-14</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">lat1</span><span class="p">)</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">lon1</span><span class="p">)</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">lat2</span><span class="p">)</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">lon2</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="mi">0</span>
+        <span class="n">n_EA_E</span> <span class="o">=</span> <span class="n">lat_lon2n_E</span><span class="p">(</span><span class="n">lat1</span><span class="p">,</span> <span class="n">lon1</span><span class="p">)</span>
+        <span class="n">n_EB_E</span> <span class="o">=</span> <span class="n">lat_lon2n_E</span><span class="p">(</span><span class="n">lat2</span><span class="p">,</span> <span class="n">lon2</span><span class="p">)</span>
+        <span class="n">faz1</span> <span class="o">=</span> <span class="n">azimuth</span><span class="p">(</span><span class="n">n_EA_E</span><span class="p">,</span> <span class="n">n_EB_E</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">a</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">f</span><span class="p">)</span>
+        <span class="n">baz1</span> <span class="o">=</span> <span class="n">azimuth</span><span class="p">(</span><span class="n">n_EB_E</span><span class="p">,</span> <span class="n">n_EA_E</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">a</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">f</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">lon1</span> <span class="o">&lt;</span> <span class="mf">0.0</span><span class="p">:</span>
+            <span class="n">lon1</span> <span class="o">=</span> <span class="n">lon1</span><span class="o">+</span><span class="mf">2.0</span><span class="o">*</span><span class="n">pi</span>
+
+        <span class="k">if</span> <span class="n">lon2</span> <span class="o">&lt;</span> <span class="mf">0.0</span><span class="p">:</span>
+            <span class="n">lon2</span> <span class="o">=</span> <span class="n">lon2</span><span class="o">+</span><span class="mf">2.0</span><span class="o">*</span><span class="n">pi</span>
+
+        <span class="n">a</span><span class="p">,</span> <span class="n">rf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">a</span><span class="p">,</span> <span class="mf">1.0</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">f</span>
+        <span class="n">boa</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="mf">1.0</span><span class="o">/</span><span class="n">rf</span>
+        <span class="n">cosu1</span><span class="p">,</span> <span class="n">sinu1</span> <span class="o">=</span> <span class="n">_reduced_latitude</span><span class="p">(</span><span class="n">lat1</span><span class="p">,</span> <span class="n">boa</span><span class="p">)</span>
+        <span class="n">cosu2</span><span class="p">,</span> <span class="n">sinu2</span> <span class="o">=</span> <span class="n">_reduced_latitude</span><span class="p">(</span><span class="n">lat2</span><span class="p">,</span> <span class="n">boa</span><span class="p">)</span>
+
+        <span class="n">lon_diff</span> <span class="o">=</span> <span class="n">_diff_longitude</span><span class="p">(</span><span class="n">lon1</span><span class="p">,</span> <span class="n">lon2</span><span class="p">)</span>
+        <span class="n">prev</span><span class="p">,</span> <span class="n">test</span> <span class="o">=</span> <span class="n">lon_diff</span><span class="p">,</span> <span class="n">lon_diff</span>
+        <span class="n">it</span><span class="p">,</span> <span class="n">kind</span><span class="p">,</span> <span class="n">lam</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">lon_diff</span>                  <span class="c"># v13   (rapp part II)</span>
+
+        <span class="n">stop_running</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="c"># top of the long-line loop (kind=1)</span>
+        <span class="k">while</span> <span class="ow">not</span> <span class="n">stop_running</span><span class="p">:</span>  <span class="c"># 2</span>
+            <span class="n">coslam</span><span class="p">,</span> <span class="n">sinlam</span> <span class="o">=</span> <span class="n">cos</span><span class="p">(</span><span class="n">lam</span><span class="p">),</span> <span class="n">sin</span><span class="p">(</span><span class="n">lam</span><span class="p">)</span>
+            <span class="n">cossig</span><span class="p">,</span> <span class="n">sinsig</span> <span class="o">=</span> <span class="n">_cossinsig</span><span class="p">(</span><span class="n">cosu1</span><span class="p">,</span> <span class="n">sinu1</span><span class="p">,</span> <span class="n">cosu2</span><span class="p">,</span> <span class="n">sinu2</span><span class="p">,</span> <span class="n">coslam</span><span class="p">,</span> <span class="n">sinlam</span><span class="p">)</span>
+            <span class="n">sig</span> <span class="o">=</span> <span class="n">arctan2</span><span class="p">(</span><span class="n">sinsig</span><span class="p">,</span> <span class="n">cossig</span><span class="p">)</span>
+            <span class="n">cosal2</span><span class="p">,</span> <span class="n">sinal</span> <span class="o">=</span> <span class="n">_cossinal</span><span class="p">(</span><span class="n">cosu1</span><span class="p">,</span> <span class="n">cosu2</span><span class="p">,</span> <span class="n">sinsig</span><span class="p">,</span> <span class="n">sinlam</span><span class="p">)</span>
+            <span class="n">costm</span> <span class="o">=</span> <span class="n">_costm</span><span class="p">(</span><span class="n">sinu1</span><span class="o">*</span><span class="n">sinu2</span><span class="p">,</span> <span class="n">cosal2</span><span class="p">,</span> <span class="n">cossig</span><span class="p">)</span>
+
+            <span class="n">c</span> <span class="o">=</span> <span class="n">_compute_c</span><span class="p">(</span><span class="n">rf</span><span class="p">,</span> <span class="n">cosal2</span><span class="p">)</span>    <span class="c"># v10   (rapp part II)</span>
+
+            <span class="c"># entry point of the antipodal loop (kind=2)</span>
+            <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>  <span class="c"># 6</span>
+                <span class="n">it</span> <span class="o">=</span> <span class="n">it</span><span class="o">+</span><span class="mi">1</span>
+                <span class="c"># v11</span>
+                <span class="n">d</span> <span class="o">=</span> <span class="p">(((</span><span class="mf">2.0</span><span class="o">*</span><span class="n">costm</span><span class="o">**</span><span class="mi">2</span><span class="o">-</span><span class="mf">1.0</span><span class="p">)</span><span class="o">*</span><span class="n">cossig</span><span class="o">*</span><span class="n">c</span><span class="o">+</span><span class="n">costm</span><span class="p">)</span><span class="o">*</span><span class="n">sinsig</span><span class="o">*</span><span class="n">c</span><span class="o">+</span><span class="n">sig</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="mf">1.0</span><span class="o">-</span><span class="n">c</span><span class="p">)</span><span class="o">/</span><span class="n">rf</span>
+                <span class="k">if</span> <span class="n">kind</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="n">lam</span> <span class="o">=</span> <span class="n">lon_diff</span><span class="o">+</span><span class="n">d</span><span class="o">*</span><span class="n">sinal</span>
+                    <span class="n">stop_running</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">lam</span><span class="o">-</span><span class="n">test</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">tol</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">stop_running</span><span class="p">:</span>
+                        <span class="k">break</span>  <span class="c"># go to 100</span>
+
+                    <span class="k">if</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">lam</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">pi</span><span class="p">):</span>
+                        <span class="n">kind</span> <span class="o">=</span> <span class="mi">2</span>
+                        <span class="n">lam</span> <span class="o">=</span> <span class="n">pi</span>
+                        <span class="k">if</span><span class="p">(</span><span class="n">lon_diff</span> <span class="o">&lt;</span> <span class="mf">0.0</span><span class="p">):</span>
+                            <span class="n">lam</span> <span class="o">=</span> <span class="o">-</span><span class="n">lam</span>
+                        <span class="n">sinal</span><span class="p">,</span> <span class="n">cosal2</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span>
+                        <span class="n">prev</span><span class="p">,</span> <span class="n">test</span> <span class="o">=</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">2.0</span>
+                        <span class="n">sig</span> <span class="o">=</span> <span class="n">pi</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">arctan</span><span class="p">(</span><span class="n">sinu1</span><span class="o">/</span><span class="n">cosu1</span><span class="p">)</span> <span class="o">+</span> <span class="n">arctan</span><span class="p">(</span><span class="n">sinu2</span><span class="o">/</span><span class="n">cosu2</span><span class="p">))</span>
+                        <span class="n">sinsig</span><span class="p">,</span> <span class="n">cossig</span> <span class="o">=</span> <span class="n">sin</span><span class="p">(</span><span class="n">sig</span><span class="p">),</span> <span class="n">cos</span><span class="p">(</span><span class="n">sig</span><span class="p">)</span>
+                        <span class="n">c</span> <span class="o">=</span> <span class="n">_compute_c</span><span class="p">(</span><span class="n">rf</span><span class="p">,</span> <span class="n">cosal2</span><span class="p">)</span>
+                        <span class="n">stop_running</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">sinal</span><span class="o">-</span><span class="n">prev</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">tol</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="n">stop_running</span><span class="p">:</span>
+                            <span class="k">break</span>  <span class="c"># go to 100</span>
+                        <span class="n">costm</span> <span class="o">=</span> <span class="n">_costm</span><span class="p">(</span><span class="n">sinu1</span><span class="o">*</span><span class="n">sinu2</span><span class="p">,</span> <span class="n">cosal2</span><span class="p">,</span> <span class="n">cossig</span><span class="p">)</span>
+                        <span class="k">continue</span>  <span class="c"># go to 6</span>
+                        <span class="c"># endif</span>
+                    <span class="n">lam</span><span class="p">,</span> <span class="n">test</span><span class="p">,</span> <span class="n">prev</span> <span class="o">=</span> <span class="n">_refined_converge</span><span class="p">(</span><span class="n">lam</span><span class="p">,</span> <span class="n">test</span><span class="p">,</span> <span class="n">prev</span><span class="p">,</span> <span class="n">it</span><span class="p">)</span>
+                    <span class="k">break</span>  <span class="c"># go to 2</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">sinal</span> <span class="o">=</span> <span class="p">(</span><span class="n">lam</span><span class="o">-</span><span class="n">lon_diff</span><span class="p">)</span><span class="o">/</span><span class="n">d</span>
+                    <span class="n">sinal</span><span class="p">,</span> <span class="n">test</span><span class="p">,</span> <span class="n">prev</span> <span class="o">=</span> <span class="n">_refined_converge</span><span class="p">(</span><span class="n">sinal</span><span class="p">,</span> <span class="n">test</span><span class="p">,</span> <span class="n">prev</span><span class="p">,</span> <span class="n">it</span><span class="p">)</span>
+
+                    <span class="n">cosal2</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="n">sinal</span><span class="o">**</span><span class="mi">2</span>
+                    <span class="n">sinlam</span> <span class="o">=</span> <span class="n">sinal</span><span class="o">*</span><span class="n">sinsig</span><span class="o">/</span><span class="p">(</span><span class="n">cosu1</span><span class="o">*</span><span class="n">cosu2</span><span class="p">)</span>
+                    <span class="n">coslam</span> <span class="o">=</span> <span class="o">-</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">sinlam</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
+                    <span class="n">lam</span> <span class="o">=</span> <span class="n">arctan2</span><span class="p">(</span><span class="n">sinlam</span><span class="p">,</span> <span class="n">coslam</span><span class="p">)</span>
+                    <span class="n">cossig</span><span class="p">,</span> <span class="n">sinsig</span> <span class="o">=</span> <span class="n">_cossinsig</span><span class="p">(</span><span class="n">cosu1</span><span class="p">,</span> <span class="n">sinu1</span><span class="p">,</span> <span class="n">cosu2</span><span class="p">,</span> <span class="n">sinu2</span><span class="p">,</span>
+                                                <span class="n">coslam</span><span class="p">,</span> <span class="n">sinlam</span><span class="p">)</span>
+
+                    <span class="n">sig</span> <span class="o">=</span> <span class="n">arctan2</span><span class="p">(</span><span class="n">sinsig</span><span class="p">,</span> <span class="n">cossig</span><span class="p">)</span>
+                    <span class="n">c</span> <span class="o">=</span> <span class="n">_compute_c</span><span class="p">(</span><span class="n">rf</span><span class="p">,</span> <span class="n">cosal2</span><span class="p">)</span>
+                    <span class="n">stop_running</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">sinal</span><span class="o">-</span><span class="n">prev</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">tol</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">stop_running</span><span class="p">:</span>
+                        <span class="k">break</span>  <span class="c"># go to 100</span>
+
+                    <span class="n">costm</span> <span class="o">=</span> <span class="n">_costm</span><span class="p">(</span><span class="n">sinu1</span><span class="o">*</span><span class="n">sinu2</span><span class="p">,</span> <span class="n">cosal2</span><span class="p">,</span> <span class="n">cossig</span><span class="p">)</span>
+                    <span class="c"># go to 6</span>
+                <span class="c"># endif</span>
+    <span class="c"># convergence</span>
+
+    <span class="c">#  100</span>
+        <span class="k">if</span><span class="p">(</span><span class="n">kind</span> <span class="o">==</span> <span class="mi">2</span><span class="p">):</span>    <span class="c"># antipodal</span>
+            <span class="n">faz</span><span class="p">,</span> <span class="n">baz</span> <span class="o">=</span> <span class="n">_antipodal_azimuths</span><span class="p">(</span><span class="n">cosu1</span><span class="p">,</span> <span class="n">sinu1</span><span class="p">,</span> <span class="n">cosu2</span><span class="p">,</span> <span class="n">sinu2</span><span class="p">,</span>
+                                          <span class="n">coslam</span><span class="p">,</span> <span class="n">sinal</span><span class="p">,</span> <span class="n">cossig</span><span class="p">,</span> <span class="n">sinsig</span><span class="p">,)</span>
+        <span class="k">else</span><span class="p">:</span>                                      <span class="c"># long-line</span>
+            <span class="n">faz</span><span class="p">,</span> <span class="n">baz</span> <span class="o">=</span> <span class="n">_long_line_azimuths</span><span class="p">(</span><span class="n">cosu1</span><span class="p">,</span> <span class="n">sinu1</span><span class="p">,</span> <span class="n">cosu2</span><span class="p">,</span> <span class="n">sinu2</span><span class="p">,</span>
+                                          <span class="n">coslam</span><span class="p">,</span> <span class="n">sinlam</span><span class="p">)</span>
+<span class="c">#         if(faz &lt; 0.0):</span>
+<span class="c">#             faz = faz+pi+pi</span>
+<span class="c">#         if(baz &lt; 0.0):</span>
+<span class="c">#             baz = baz+pi+pi</span>
+
+
+        <span class="n">s12</span> <span class="o">=</span> <span class="n">_helmert</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">boa</span><span class="p">,</span> <span class="n">cossig</span><span class="p">,</span> <span class="n">sinsig</span><span class="p">,</span> <span class="n">sig</span><span class="p">,</span> <span class="n">cosal2</span><span class="p">,</span> <span class="n">costm</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">s12</span><span class="p">,</span> <span class="n">faz</span><span class="p">,</span> <span class="n">baz</span><span class="p">,</span> <span class="n">sig</span><span class="p">,</span> <span class="n">lam</span><span class="p">,</span> <span class="n">kind</span><span class="p">,</span> <span class="n">it</span>
+        <span class="c"># end</span>
+</div>
+<div class="viewcode-block" id="Geodesic.direct"><a class="viewcode-back" href="../../api/nvector.html#nvector.ngs.Geodesic.direct">[docs]</a>    <span class="k">def</span> <span class="nf">direct</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lat1</span><span class="p">,</span> <span class="n">lon1</span><span class="p">,</span> <span class="n">faz</span><span class="p">,</span> <span class="n">S</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        SOLUTION OF THE GEODETIC DIRECT PROBLEM AFTER T.VINCENTY</span>
+<span class="sd">        MODIFIED RAINSFORD&#39;S METHOD WITH HELMERT&#39;S ELLIPTICAL TERMS</span>
+<span class="sd">        EFFECTIVE IN ANY AZIMUTH AND AT ANY DISTANCE SHORT OF ANTIPODAL</span>
+
+<span class="sd">        A IS THE SEMI-MAJOR AXIS OF THE REFERENCE ELLIPSOID</span>
+<span class="sd">        F IS THE FLATTENING OF THE REFERENCE ELLIPSOID</span>
+<span class="sd">        LATITUDES AND LONGITUDES IN RADIANS POSITIVE NORTH AND EAST</span>
+<span class="sd">        AZIMUTHS IN RADIANS CLOCKWISE FROM NORTH</span>
+<span class="sd">        GEODESIC DISTANCE S ASSUMED IN UNITS OF SEMI-MAJOR AXIS A</span>
+
+<span class="sd">        PROGRAMMED FOR CDC-6600 BY LCDR L.PFEIFER NGS ROCKVILLE MD 20FEB75</span>
+<span class="sd">        MODIFIED FOR SYSTEM 360 BY JOHN G GERGEN NGS ROCKVILLE MD 750608</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">a</span><span class="p">,</span> <span class="n">f</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">a</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">f</span>
+        <span class="n">EPS</span> <span class="o">=</span> <span class="mf">0.5e-13</span>
+        <span class="n">R</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="n">f</span>
+        <span class="n">TU</span> <span class="o">=</span> <span class="n">R</span> <span class="o">*</span> <span class="n">sin</span><span class="p">(</span><span class="n">lat1</span><span class="p">)</span><span class="o">/</span><span class="n">cos</span><span class="p">(</span><span class="n">lat1</span><span class="p">)</span>
+        <span class="n">SF</span> <span class="o">=</span> <span class="n">sin</span><span class="p">(</span><span class="n">faz</span><span class="p">)</span>
+        <span class="n">CF</span> <span class="o">=</span> <span class="n">cos</span><span class="p">(</span><span class="n">faz</span><span class="p">)</span>
+        <span class="n">baz</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">CF</span> <span class="o">!=</span> <span class="mf">0.0</span><span class="p">):</span>
+            <span class="n">baz</span> <span class="o">=</span> <span class="n">arctan2</span><span class="p">(</span><span class="n">TU</span><span class="p">,</span> <span class="n">CF</span><span class="p">)</span><span class="o">*</span><span class="mf">2.0</span>
+        <span class="n">CU</span> <span class="o">=</span> <span class="mf">1.</span><span class="o">/</span><span class="n">sqrt</span><span class="p">(</span><span class="n">TU</span><span class="o">*</span><span class="n">TU</span><span class="o">+</span><span class="mf">1.</span><span class="p">)</span>
+        <span class="n">SU</span> <span class="o">=</span> <span class="n">TU</span><span class="o">*</span><span class="n">CU</span>
+        <span class="n">SA</span> <span class="o">=</span> <span class="n">CU</span><span class="o">*</span><span class="n">SF</span>
+        <span class="n">C2A</span> <span class="o">=</span> <span class="o">-</span><span class="n">SA</span><span class="o">*</span><span class="n">SA</span><span class="o">+</span><span class="mf">1.0</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">sqrt</span><span class="p">((</span><span class="mf">1.</span><span class="o">/</span><span class="n">R</span><span class="o">/</span><span class="n">R</span><span class="o">-</span><span class="mf">1.</span><span class="p">)</span><span class="o">*</span><span class="n">C2A</span><span class="o">+</span><span class="mf">1.</span><span class="p">)</span><span class="o">+</span><span class="mf">1.</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="p">(</span><span class="n">X</span><span class="o">-</span><span class="mf">2.</span><span class="p">)</span><span class="o">/</span><span class="n">X</span>
+        <span class="n">C</span> <span class="o">=</span> <span class="mf">1.</span><span class="o">-</span><span class="n">X</span>
+        <span class="n">C</span> <span class="o">=</span> <span class="p">(</span><span class="n">X</span><span class="o">*</span><span class="n">X</span><span class="o">/</span><span class="mf">4.</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="n">C</span>
+        <span class="n">D</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.375</span><span class="o">*</span><span class="n">X</span><span class="o">*</span><span class="n">X</span><span class="o">-</span><span class="mf">1.</span><span class="p">)</span><span class="o">*</span><span class="n">X</span>
+        <span class="n">TU</span> <span class="o">=</span> <span class="n">S</span><span class="o">/</span><span class="n">R</span><span class="o">/</span><span class="n">a</span><span class="o">/</span><span class="n">C</span>
+        <span class="n">Y</span> <span class="o">=</span> <span class="n">TU</span>
+        <span class="k">while</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">Y</span><span class="o">-</span><span class="n">C</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">EPS</span><span class="p">):</span>  <span class="c"># 100</span>
+            <span class="n">SY</span><span class="p">,</span> <span class="n">CY</span> <span class="o">=</span> <span class="n">sin</span><span class="p">(</span><span class="n">Y</span><span class="p">),</span> <span class="n">cos</span><span class="p">(</span><span class="n">Y</span><span class="p">)</span>
+            <span class="n">CZ</span> <span class="o">=</span> <span class="n">cos</span><span class="p">(</span><span class="n">baz</span><span class="o">+</span><span class="n">Y</span><span class="p">)</span>
+            <span class="n">E</span> <span class="o">=</span> <span class="n">CZ</span><span class="o">*</span><span class="n">CZ</span><span class="o">*</span><span class="mf">2.0</span><span class="o">-</span><span class="mf">1.0</span>
+            <span class="n">C</span> <span class="o">=</span> <span class="n">Y</span>
+            <span class="n">X</span> <span class="o">=</span> <span class="n">E</span><span class="o">*</span><span class="n">CY</span>
+            <span class="n">Y</span> <span class="o">=</span> <span class="n">E</span> <span class="o">+</span> <span class="n">E</span> <span class="o">-</span> <span class="mf">1.0</span>
+            <span class="n">Y</span> <span class="o">=</span> <span class="p">(((</span><span class="n">SY</span><span class="o">*</span><span class="n">SY</span><span class="o">*</span><span class="mf">4.</span><span class="o">-</span><span class="mf">3.</span><span class="p">)</span><span class="o">*</span><span class="n">Y</span><span class="o">*</span><span class="n">CZ</span><span class="o">*</span><span class="n">D</span><span class="o">/</span><span class="mf">6.</span><span class="o">+</span><span class="n">X</span><span class="p">)</span><span class="o">*</span><span class="n">D</span><span class="o">/</span><span class="mf">4.</span><span class="o">-</span><span class="n">CZ</span><span class="p">)</span><span class="o">*</span><span class="n">SY</span><span class="o">*</span><span class="n">D</span><span class="o">+</span><span class="n">TU</span>
+            <span class="c"># IF(np.abs(Y-C).GT.EPS)GO TO 100</span>
+
+        <span class="n">baz</span> <span class="o">=</span> <span class="n">CU</span><span class="o">*</span><span class="n">CY</span><span class="o">*</span><span class="n">CF</span><span class="o">-</span><span class="n">SU</span><span class="o">*</span><span class="n">SY</span>
+        <span class="n">C</span> <span class="o">=</span> <span class="n">R</span><span class="o">*</span><span class="n">sqrt</span><span class="p">(</span><span class="n">SA</span><span class="o">*</span><span class="n">SA</span> <span class="o">+</span> <span class="n">baz</span><span class="o">*</span><span class="n">baz</span><span class="p">)</span>
+        <span class="n">D</span> <span class="o">=</span> <span class="n">SU</span><span class="o">*</span><span class="n">CY</span><span class="o">+</span><span class="n">CU</span><span class="o">*</span><span class="n">SY</span><span class="o">*</span><span class="n">CF</span>
+        <span class="n">lat2</span> <span class="o">=</span> <span class="n">arctan2</span><span class="p">(</span><span class="n">D</span><span class="p">,</span> <span class="n">C</span><span class="p">)</span>
+        <span class="n">C</span> <span class="o">=</span> <span class="n">CU</span><span class="o">*</span><span class="n">CY</span><span class="o">-</span><span class="n">SU</span><span class="o">*</span><span class="n">SY</span><span class="o">*</span><span class="n">CF</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">arctan2</span><span class="p">(</span><span class="n">SY</span><span class="o">*</span><span class="n">SF</span><span class="p">,</span> <span class="n">C</span><span class="p">)</span>
+        <span class="n">C</span> <span class="o">=</span> <span class="p">((</span><span class="o">-</span><span class="mf">3.</span><span class="o">*</span><span class="n">C2A</span><span class="o">+</span><span class="mf">4.0</span><span class="p">)</span> <span class="o">*</span> <span class="n">f</span> <span class="o">+</span> <span class="mf">4.</span><span class="p">)</span> <span class="o">*</span> <span class="n">C2A</span> <span class="o">*</span> <span class="n">f</span> <span class="o">/</span> <span class="mf">16.0</span>
+        <span class="n">D</span> <span class="o">=</span> <span class="p">((</span><span class="n">E</span><span class="o">*</span><span class="n">CY</span><span class="o">*</span><span class="n">C</span><span class="o">+</span><span class="n">CZ</span><span class="p">)</span><span class="o">*</span><span class="n">SY</span><span class="o">*</span><span class="n">C</span><span class="o">+</span><span class="n">Y</span><span class="p">)</span><span class="o">*</span><span class="n">SA</span>
+        <span class="n">lon2</span> <span class="o">=</span> <span class="n">lon1</span> <span class="o">+</span> <span class="n">X</span> <span class="o">-</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">C</span><span class="p">)</span> <span class="o">*</span> <span class="n">D</span> <span class="o">*</span> <span class="n">f</span> <span class="c">#+ np.pi*2, np.pi*2)-np.pi</span>
+        <span class="n">baz</span> <span class="o">=</span> <span class="n">arctan2</span><span class="p">(</span><span class="n">SA</span><span class="p">,</span> <span class="n">baz</span><span class="p">)</span><span class="o">+</span><span class="n">pi</span>
+        <span class="n">lon2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mod</span><span class="p">(</span><span class="n">lon2</span><span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="mi">2</span><span class="p">)</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span>
+        <span class="k">return</span> <span class="n">lat2</span><span class="p">,</span> <span class="n">lon2</span><span class="p">,</span> <span class="n">baz</span>
+
+</div></div>
+<span class="n">wgs84</span> <span class="o">=</span> <span class="n">Geodesic</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&#39;WGS84&#39;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="main"><a class="viewcode-back" href="../../api/nvector.html#nvector.ngs.main">[docs]</a><span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+    <span class="n">option</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="c"># option = input(</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">&quot;&quot;&quot;</span>
+<span class="s">    Program Inverse  -  Version 3.0</span>
+
+<span class="s">    Ellipsoid options :</span>
+
+<span class="s">    1) GRS80 / WGS84  (NAD83)</span>
+<span class="s">    2) Clarke 1866    (NAD27)</span>
+<span class="s">    3) Any other ellipsoid</span>
+
+<span class="s">    Enter choice :</span>
+<span class="s">    &quot;&quot;&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">option</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="mf">6378137.0</span>
+        <span class="n">f</span> <span class="o">=</span> <span class="mf">1.0</span><span class="o">/</span><span class="mf">298.257222100882711243162836600094</span>
+        <span class="n">elips</span> <span class="o">=</span> <span class="s">&#39;GRS80 / WGS84  (NAD83)&#39;</span>
+    <span class="k">elif</span> <span class="p">(</span><span class="n">option</span> <span class="o">==</span> <span class="mi">2</span><span class="p">):</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="mf">6378206.4</span>
+        <span class="n">f</span> <span class="o">=</span> <span class="mf">1.0</span><span class="o">/</span><span class="mf">294.9786982138</span>
+        <span class="n">elips</span> <span class="o">=</span> <span class="s">&#39;Clarke 1866    (NAD27)&#39;</span>
+    <span class="k">elif</span> <span class="p">(</span><span class="n">option</span> <span class="o">==</span> <span class="mi">3</span><span class="p">):</span>
+        <span class="n">a</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">elips</span> <span class="o">=</span> <span class="n">select_ellipsoid</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">print</span><span class="p">(</span><span class="s">&#39;Not a valid option. Quitting&#39;</span><span class="p">)</span>
+
+    <span class="c"># esq = f*(2.0-f)</span>
+
+    <span class="k">print</span><span class="p">(</span><span class="s">&#39;  Enter First Station &#39;</span><span class="p">)</span>
+    <span class="n">lat1</span><span class="p">,</span> <span class="n">lon1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="k">print</span><span class="p">(</span><span class="s">&#39;  Enter Second Station &#39;</span><span class="p">)</span>
+    <span class="n">lat2</span><span class="p">,</span> <span class="n">lon2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="mf">0.5</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="mf">179.5</span><span class="p">)</span>
+
+<span class="c">#     compute the geodetic inverse</span>
+    <span class="n">wgs84</span> <span class="o">=</span> <span class="n">Geodesic</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&#39;WGS84&#39;</span><span class="p">)</span>
+    <span class="n">finv</span> <span class="o">=</span> <span class="mf">1.0</span><span class="o">/</span><span class="n">f</span>
+    <span class="n">s12</span><span class="p">,</span> <span class="n">az1</span><span class="p">,</span> <span class="n">az2</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">dlambda</span><span class="p">,</span> <span class="n">kind</span><span class="p">,</span> <span class="n">numiter</span> <span class="o">=</span> <span class="n">wgs84</span><span class="o">.</span><span class="n">inverse</span><span class="p">(</span><span class="n">lat1</span><span class="p">,</span> <span class="n">lon1</span><span class="p">,</span>
+                                                                 <span class="n">lat2</span><span class="p">,</span> <span class="n">lon2</span><span class="p">)</span>
+    <span class="n">lat22</span><span class="p">,</span> <span class="n">lon22</span><span class="p">,</span> <span class="n">baz2</span> <span class="o">=</span> <span class="n">wgs84</span><span class="o">.</span><span class="n">direct</span><span class="p">(</span><span class="n">lat1</span><span class="p">,</span> <span class="n">lon1</span><span class="p">,</span> <span class="n">az1</span><span class="p">,</span> <span class="n">s12</span><span class="p">)</span>
+<span class="c">#     check for a non distance ... lat1,lon1 &amp; lat2,lon2 equal zero ?</span>
+    <span class="k">if</span> <span class="n">s12</span> <span class="o">&lt;</span> <span class="mf">0.00005</span><span class="p">:</span>
+        <span class="n">az1</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="n">az2</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">elips</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">&#39;  Ellipsoid : &#39;</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">&#39;  Equatorial axis,    a   = </span><span class="si">%15.4f</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">a</span><span class="p">),</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">&#39;  Polar axis,         b   = </span><span class="si">%15.4f</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">a</span><span class="o">*</span><span class="p">(</span><span class="mf">1.0</span><span class="o">-</span><span class="n">f</span><span class="p">)))</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">&#39;  Inverse flattening, 1/f = </span><span class="si">%16.11f</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">finv</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">&#39;&#39;</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">&#39;  First  Station : &#39;</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">&#39;  ---------------- &#39;</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">&#39;    LAT = </span><span class="si">%2.3f</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">np</span><span class="o">.</span><span class="n">rad2deg</span><span class="p">(</span><span class="n">lat1</span><span class="p">))</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">&#39;    LON = </span><span class="si">%2.3f</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">np</span><span class="o">.</span><span class="n">rad2deg</span><span class="p">(</span><span class="n">lon1</span><span class="p">))</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">&#39;&#39;</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">&#39;&#39;</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">&#39;  Second  Station : &#39;</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">&#39;  ---------------- &#39;</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">&#39;    LAT = </span><span class="si">%2.3f</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">np</span><span class="o">.</span><span class="n">rad2deg</span><span class="p">(</span><span class="n">lat2</span><span class="p">))</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">&#39;    LON = </span><span class="si">%2.3f</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">np</span><span class="o">.</span><span class="n">rad2deg</span><span class="p">(</span><span class="n">lon2</span><span class="p">))</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">&#39;&#39;</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">&#39;Ellipsoidal distance  S = </span><span class="si">%14.4f</span><span class="s"> [m]&#39;</span> <span class="o">%</span> <span class="n">s12</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">&#39;Forward azimuth    AZ1 = </span><span class="si">%2.2f</span><span class="s"> [deg] from North&#39;</span> <span class="o">%</span> <span class="n">np</span><span class="o">.</span><span class="n">rad2deg</span><span class="p">(</span><span class="n">az1</span><span class="p">))</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">&#39;Back azimuth       AZ2 = </span><span class="si">%2.2f</span><span class="s"> [deg] from North&#39;</span> <span class="o">%</span> <span class="n">np</span><span class="o">.</span><span class="n">rad2deg</span><span class="p">(</span><span class="n">az2</span><span class="p">))</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">&#39;iter = </span><span class="si">%d</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">numiter</span><span class="p">)</span>
+    <span class="mf">19944127.421</span>
+
+</div>
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="c"># print(dict((ELLIPSOID[key][2].lower().replace(&#39; &#39;,&#39;&#39;),key)for key in ELLIPSOID))</span>
+
+    <span class="n">main</span><span class="p">()</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2015, pbrod.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.6</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

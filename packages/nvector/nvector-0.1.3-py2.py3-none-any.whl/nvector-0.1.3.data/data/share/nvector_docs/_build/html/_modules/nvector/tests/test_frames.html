@@ -1,0 +1,354 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>nvector.tests.test_frames &mdash; nvector 0.0.post0.dev12+6fb5038 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.0.post0.dev12+6fb5038',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="nvector 0.0.post0.dev12+6fb5038 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body role="document">  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for nvector.tests.test_frames</h1><div class="highlight"><pre>
+<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">Created on 18. des. 2015</span>
+
+<span class="sd">@author: pab</span>
+<span class="sd">&#39;&#39;&#39;</span>
+<span class="kn">import</span> <span class="nn">unittest</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">numpy.testing</span> <span class="kn">import</span> <span class="n">assert_array_almost_equal</span>
+<span class="kn">from</span> <span class="nn">nvector</span> <span class="kn">import</span> <span class="n">FrameB</span><span class="p">,</span> <span class="n">FrameE</span><span class="p">,</span> <span class="n">FrameN</span><span class="p">,</span> <span class="n">FrameL</span><span class="p">,</span> <span class="n">Nvector</span><span class="p">,</span> <span class="n">ECEFvector</span>
+<span class="kn">from</span> <span class="nn">nvector</span> <span class="kn">import</span> <span class="n">GeoPoint</span><span class="p">,</span> <span class="n">GeoPath</span><span class="p">,</span> <span class="n">unit</span><span class="p">,</span> <span class="n">Pvector</span>  <span class="c"># , diff_nvectors</span>
+<span class="kn">from</span> <span class="nn">nvector.navigator</span> <span class="kn">import</span> <span class="n">EARTH_RADIUS_M</span>
+
+
+<div class="viewcode-block" id="TestFrameE"><a class="viewcode-back" href="../../../api/nvector.tests.html#nvector.tests.test_frames.TestFrameE">[docs]</a><span class="k">class</span> <span class="nc">TestFrameE</span><span class="p">(</span><span class="n">unittest</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
+<div class="viewcode-block" id="TestFrameE.test_comparisons_with_frame_E"><a class="viewcode-back" href="../../../api/nvector.tests.html#nvector.tests.test_frames.TestFrameE.test_comparisons_with_frame_E">[docs]</a>    <span class="k">def</span> <span class="nf">test_comparisons_with_frame_E</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">E</span> <span class="o">=</span> <span class="n">FrameE</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&#39;WGS84&#39;</span><span class="p">)</span>
+        <span class="n">E2</span> <span class="o">=</span> <span class="n">FrameE</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="n">E</span><span class="o">.</span><span class="n">a</span><span class="p">,</span> <span class="n">f</span><span class="o">=</span><span class="n">E</span><span class="o">.</span><span class="n">f</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">E</span><span class="p">,</span> <span class="n">E2</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">E</span><span class="p">,</span> <span class="n">E</span><span class="p">)</span>
+        <span class="n">E3</span> <span class="o">=</span> <span class="n">FrameE</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="n">E</span><span class="o">.</span><span class="n">a</span><span class="p">,</span> <span class="n">f</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertNotEqual</span><span class="p">(</span><span class="n">E</span><span class="p">,</span> <span class="n">E3</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="TestFrameE.test_compare_with_frame_B"><a class="viewcode-back" href="../../../api/nvector.tests.html#nvector.tests.test_frames.TestFrameE.test_compare_with_frame_B">[docs]</a>    <span class="k">def</span> <span class="nf">test_compare_with_frame_B</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">E</span> <span class="o">=</span> <span class="n">FrameE</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&#39;WGS84&#39;</span><span class="p">)</span>
+        <span class="n">E2</span> <span class="o">=</span> <span class="n">FrameE</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&#39;WGS72&#39;</span><span class="p">)</span>
+
+        <span class="n">n_EB_E</span> <span class="o">=</span> <span class="n">E</span><span class="o">.</span><span class="n">Nvector</span><span class="p">(</span><span class="n">unit</span><span class="p">([[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">]]),</span> <span class="n">z</span><span class="o">=-</span><span class="mi">400</span><span class="p">)</span>
+        <span class="n">B</span> <span class="o">=</span> <span class="n">FrameB</span><span class="p">(</span><span class="n">n_EB_E</span><span class="p">,</span> <span class="n">yaw</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">pitch</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">roll</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">degrees</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="n">B</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertNotEqual</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="n">E</span><span class="p">)</span>
+
+        <span class="n">B2</span> <span class="o">=</span> <span class="n">FrameB</span><span class="p">(</span><span class="n">n_EB_E</span><span class="p">,</span> <span class="n">yaw</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">pitch</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">roll</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">degrees</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertNotEqual</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="n">B2</span><span class="p">)</span>
+
+        <span class="n">B3</span> <span class="o">=</span> <span class="n">FrameB</span><span class="p">(</span><span class="n">n_EB_E</span><span class="p">,</span> <span class="n">yaw</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">pitch</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">roll</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">degrees</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="n">B3</span><span class="p">)</span>
+
+        <span class="n">n_EC_E</span> <span class="o">=</span> <span class="n">E</span><span class="o">.</span><span class="n">Nvector</span><span class="p">(</span><span class="n">unit</span><span class="p">([[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">]]),</span> <span class="n">z</span><span class="o">=-</span><span class="mi">400</span><span class="p">)</span>
+        <span class="n">B4</span> <span class="o">=</span> <span class="n">FrameB</span><span class="p">(</span><span class="n">n_EC_E</span><span class="p">,</span> <span class="n">yaw</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">pitch</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">roll</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">degrees</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertNotEqual</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="n">B4</span><span class="p">)</span>
+
+        <span class="n">n_ED_E</span> <span class="o">=</span> <span class="n">Nvector</span><span class="p">(</span><span class="n">unit</span><span class="p">([[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">]]),</span> <span class="n">z</span><span class="o">=-</span><span class="mi">400</span><span class="p">,</span> <span class="n">frame</span><span class="o">=</span><span class="n">E2</span><span class="p">)</span>
+        <span class="n">B5</span> <span class="o">=</span> <span class="n">FrameB</span><span class="p">(</span><span class="n">n_ED_E</span><span class="p">,</span> <span class="n">yaw</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">pitch</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">roll</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">degrees</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertNotEqual</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="n">B5</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="TestFrameE.test_Ex1_A_and_B_to_delta_in_frame_N"><a class="viewcode-back" href="../../../api/nvector.tests.html#nvector.tests.test_frames.TestFrameE.test_Ex1_A_and_B_to_delta_in_frame_N">[docs]</a>    <span class="k">def</span> <span class="nf">test_Ex1_A_and_B_to_delta_in_frame_N</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">wgs84</span> <span class="o">=</span> <span class="n">FrameE</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&#39;WGS84&#39;</span><span class="p">)</span>
+        <span class="n">pointA</span> <span class="o">=</span> <span class="n">wgs84</span><span class="o">.</span><span class="n">GeoPoint</span><span class="p">(</span><span class="n">latitude</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">longitude</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">degrees</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="n">pointB</span> <span class="o">=</span> <span class="n">wgs84</span><span class="o">.</span><span class="n">GeoPoint</span><span class="p">(</span><span class="n">latitude</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">longitude</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">degrees</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+        <span class="c"># Find the exact vector between the two positions, given in meters</span>
+        <span class="c"># north, east, and down, i.e. find p_AB_N.</span>
+
+        <span class="c"># SOLUTION:</span>
+        <span class="n">p_EA_E</span> <span class="o">=</span> <span class="n">pointA</span><span class="o">.</span><span class="n">to_ecef_vector</span><span class="p">()</span>
+        <span class="n">p_EB_E</span> <span class="o">=</span> <span class="n">pointB</span><span class="o">.</span><span class="n">to_ecef_vector</span><span class="p">()</span>
+        <span class="n">p_AB_E</span> <span class="o">=</span> <span class="n">p_EB_E</span> <span class="o">-</span> <span class="n">p_EA_E</span>  <span class="c"># (delta decomposed in E).</span>
+
+        <span class="n">frame_N</span> <span class="o">=</span> <span class="n">FrameN</span><span class="p">(</span><span class="n">pointA</span><span class="p">)</span>
+        <span class="c"># frame_N = FrameL(n_EA_E, wander_azimuth=0)</span>
+        <span class="n">p_AB_N</span> <span class="o">=</span> <span class="n">p_AB_E</span><span class="o">.</span><span class="n">change_frame</span><span class="p">(</span><span class="n">frame_N</span><span class="p">)</span>
+        <span class="n">p_AB_N</span> <span class="o">=</span> <span class="n">p_AB_N</span><span class="o">.</span><span class="n">pvector</span>
+        <span class="c"># Step5: Also find the direction (azimuth) to B, relative to north:</span>
+        <span class="n">azimuth</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">rad2deg</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">p_AB_N</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">p_AB_N</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+        <span class="c"># positive angle about down-axis</span>
+
+        <span class="k">print</span><span class="p">(</span><span class="s">&#39;Ex1, delta north, east, down = {}, {}, {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">p_AB_N</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                                                                 <span class="n">p_AB_N</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                                                                 <span class="n">p_AB_N</span><span class="p">[</span><span class="mi">2</span><span class="p">]))</span>
+
+        <span class="k">print</span><span class="p">(</span><span class="s">&#39;Ex1, azimuth = {} deg&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">azimuth</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertAlmostEqual</span><span class="p">(</span><span class="n">p_AB_N</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mf">331730.23478089</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertAlmostEqual</span><span class="p">(</span><span class="n">p_AB_N</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="mf">332997.87498927</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertAlmostEqual</span><span class="p">(</span><span class="n">p_AB_N</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="mf">17404.27136194</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertAlmostEqual</span><span class="p">(</span><span class="n">azimuth</span><span class="p">,</span> <span class="mf">45.10926324</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="TestFrameE.test_Ex2_B_and_delta_in_frame_B_to_C_in_frame_E"><a class="viewcode-back" href="../../../api/nvector.tests.html#nvector.tests.test_frames.TestFrameE.test_Ex2_B_and_delta_in_frame_B_to_C_in_frame_E">[docs]</a>    <span class="k">def</span> <span class="nf">test_Ex2_B_and_delta_in_frame_B_to_C_in_frame_E</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c"># delta vector from B to C, decomposed in B is given:</span>
+
+        <span class="c"># A custom reference ellipsoid is given (replacing WGS-84):</span>
+        <span class="n">wgs72</span> <span class="o">=</span> <span class="n">FrameE</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&#39;WGS72&#39;</span><span class="p">)</span>
+
+        <span class="c"># Position and orientation of B is given 400m above E:</span>
+        <span class="n">n_EB_E</span> <span class="o">=</span> <span class="n">wgs72</span><span class="o">.</span><span class="n">Nvector</span><span class="p">(</span><span class="n">unit</span><span class="p">([[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">]]),</span> <span class="n">z</span><span class="o">=-</span><span class="mi">400</span><span class="p">)</span>
+
+        <span class="n">frame_B</span> <span class="o">=</span> <span class="n">FrameB</span><span class="p">(</span><span class="n">n_EB_E</span><span class="p">,</span> <span class="n">yaw</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">pitch</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">roll</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">degrees</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="n">p_BC_B</span> <span class="o">=</span> <span class="n">frame_B</span><span class="o">.</span><span class="n">Pvector</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">r_</span><span class="p">[</span><span class="mi">3000</span><span class="p">,</span> <span class="mi">2000</span><span class="p">,</span> <span class="mi">100</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)))</span>
+
+        <span class="n">p_BC_E</span> <span class="o">=</span> <span class="n">p_BC_B</span><span class="o">.</span><span class="n">to_ecef_vector</span><span class="p">()</span>
+
+        <span class="n">p_EB_E</span> <span class="o">=</span> <span class="n">n_EB_E</span><span class="o">.</span><span class="n">to_ecef_vector</span><span class="p">()</span>
+        <span class="n">p_EC_E</span> <span class="o">=</span> <span class="n">p_EB_E</span> <span class="o">+</span> <span class="n">p_BC_E</span>
+        <span class="n">pointC</span> <span class="o">=</span> <span class="n">p_EC_E</span><span class="o">.</span><span class="n">to_geo_point</span><span class="p">()</span>
+
+        <span class="n">lat_EC</span><span class="p">,</span> <span class="n">long_EC</span> <span class="o">=</span> <span class="n">pointC</span><span class="o">.</span><span class="n">latitude_deg</span><span class="p">,</span> <span class="n">pointC</span><span class="o">.</span><span class="n">longitude_deg</span>
+        <span class="n">z_EC</span> <span class="o">=</span> <span class="n">pointC</span><span class="o">.</span><span class="n">z</span>
+        <span class="c"># Here we also assume that the user wants output height (= - depth):</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="s">&#39;Ex2, Pos C: lat, long = {},{} deg,  height = {} m&#39;</span>
+        <span class="k">print</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">lat_EC</span><span class="p">,</span> <span class="n">long_EC</span><span class="p">,</span> <span class="o">-</span><span class="n">z_EC</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertAlmostEqual</span><span class="p">(</span><span class="n">lat_EC</span><span class="p">,</span> <span class="mf">53.32637826</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertAlmostEqual</span><span class="p">(</span><span class="n">long_EC</span><span class="p">,</span> <span class="mf">63.46812344</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertAlmostEqual</span><span class="p">(</span><span class="n">z_EC</span><span class="p">,</span> <span class="o">-</span><span class="mf">406.00719607</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="TestFrameE.test_Ex3_ECEF_vector_to_geodetic_latitude"><a class="viewcode-back" href="../../../api/nvector.tests.html#nvector.tests.test_frames.TestFrameE.test_Ex3_ECEF_vector_to_geodetic_latitude">[docs]</a>    <span class="k">def</span> <span class="nf">test_Ex3_ECEF_vector_to_geodetic_latitude</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="n">wgs84</span> <span class="o">=</span> <span class="n">FrameE</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&#39;WGS84&#39;</span><span class="p">)</span>
+        <span class="c"># Position B is given as p_EB_E (&quot;ECEF-vector&quot;)</span>
+        <span class="n">position_B</span> <span class="o">=</span> <span class="mf">6371e3</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="mf">0.9</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mf">1.1</span><span class="p">))</span>  <span class="c"># m</span>
+        <span class="n">p_EB_E</span> <span class="o">=</span> <span class="n">wgs84</span><span class="o">.</span><span class="n">ECEFvector</span><span class="p">(</span><span class="n">position_B</span><span class="p">)</span>
+
+        <span class="c"># Find position B as geodetic latitude, longitude and height</span>
+        <span class="n">pointB</span> <span class="o">=</span> <span class="n">p_EB_E</span><span class="o">.</span><span class="n">to_geo_point</span><span class="p">()</span>
+        <span class="n">lat</span><span class="p">,</span> <span class="n">lon</span><span class="p">,</span> <span class="n">h</span> <span class="o">=</span> <span class="n">pointB</span><span class="o">.</span><span class="n">latitude_deg</span><span class="p">,</span> <span class="n">pointB</span><span class="o">.</span><span class="n">longitude_deg</span><span class="p">,</span> <span class="o">-</span><span class="n">pointB</span><span class="o">.</span><span class="n">z</span>
+
+        <span class="n">msg</span> <span class="o">=</span> <span class="s">&#39;Ex3, Pos B: lat, lon = {} {} deg, height = {} m&#39;</span>
+        <span class="k">print</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">lat</span><span class="p">,</span> <span class="n">lon</span><span class="p">,</span> <span class="n">h</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertAlmostEqual</span><span class="p">(</span><span class="n">lat</span><span class="p">,</span> <span class="mf">39.37874867</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertAlmostEqual</span><span class="p">(</span><span class="n">lon</span><span class="p">,</span> <span class="o">-</span><span class="mf">48.0127875</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertAlmostEqual</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="mf">4702059.83429485</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="TestFrameE.test_Ex4_geodetic_latitude_to_ECEF_vector"><a class="viewcode-back" href="../../../api/nvector.tests.html#nvector.tests.test_frames.TestFrameE.test_Ex4_geodetic_latitude_to_ECEF_vector">[docs]</a>    <span class="k">def</span> <span class="nf">test_Ex4_geodetic_latitude_to_ECEF_vector</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">wgs84</span> <span class="o">=</span> <span class="n">FrameE</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&#39;WGS84&#39;</span><span class="p">)</span>
+        <span class="n">pointB</span> <span class="o">=</span> <span class="n">wgs84</span><span class="o">.</span><span class="n">GeoPoint</span><span class="p">(</span><span class="n">latitude</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">longitude</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">z</span><span class="o">=-</span><span class="mi">3</span><span class="p">,</span> <span class="n">degrees</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+        <span class="n">p_EB_E</span> <span class="o">=</span> <span class="n">pointB</span><span class="o">.</span><span class="n">to_ecef_vector</span><span class="p">()</span>
+        <span class="k">print</span><span class="p">(</span><span class="s">&#39;Ex4: p_EB_E = {} m&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">p_EB_E</span><span class="o">.</span><span class="n">pvector</span><span class="o">.</span><span class="n">ravel</span><span class="p">()))</span>
+
+        <span class="n">assert_array_almost_equal</span><span class="p">(</span><span class="n">p_EB_E</span><span class="o">.</span><span class="n">pvector</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span>
+                                  <span class="p">[</span><span class="mf">6373290.27721828</span><span class="p">,</span> <span class="mf">222560.20067474</span><span class="p">,</span>
+                                   <span class="mf">110568.82718179</span><span class="p">])</span>
+</div>
+<div class="viewcode-block" id="TestFrameE.test_Ex5_great_circle_distance"><a class="viewcode-back" href="../../../api/nvector.tests.html#nvector.tests.test_frames.TestFrameE.test_Ex5_great_circle_distance">[docs]</a>    <span class="k">def</span> <span class="nf">test_Ex5_great_circle_distance</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">frame_E</span> <span class="o">=</span> <span class="n">FrameE</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="mf">6371e3</span><span class="p">,</span> <span class="n">f</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">positionA</span> <span class="o">=</span> <span class="n">frame_E</span><span class="o">.</span><span class="n">GeoPoint</span><span class="p">(</span><span class="n">latitude</span><span class="o">=</span><span class="mi">88</span><span class="p">,</span> <span class="n">longitude</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">degrees</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="n">positionB</span> <span class="o">=</span> <span class="n">frame_E</span><span class="o">.</span><span class="n">GeoPoint</span><span class="p">(</span><span class="n">latitude</span><span class="o">=</span><span class="mi">89</span><span class="p">,</span> <span class="n">longitude</span><span class="o">=-</span><span class="mi">170</span><span class="p">,</span> <span class="n">degrees</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="n">s_AB</span><span class="p">,</span> <span class="n">_azia</span><span class="p">,</span> <span class="n">_azib</span> <span class="o">=</span> <span class="n">positionA</span><span class="o">.</span><span class="n">distance_and_azimuth</span><span class="p">(</span><span class="n">positionB</span><span class="p">)</span>
+
+        <span class="n">p_AB_E</span> <span class="o">=</span> <span class="n">positionB</span><span class="o">.</span><span class="n">to_ecef_vector</span><span class="p">()</span> <span class="o">-</span> <span class="n">positionA</span><span class="o">.</span><span class="n">to_ecef_vector</span><span class="p">()</span>
+        <span class="c"># The Euclidean distance is given by:</span>
+        <span class="n">d_AB</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">p_AB_E</span><span class="o">.</span><span class="n">pvector</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="n">msg</span> <span class="o">=</span> <span class="s">&#39;Ex5, Great circle distance = {} km, Euclidean distance = {} km&#39;</span>
+        <span class="k">print</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">s_AB</span> <span class="o">/</span> <span class="mi">1000</span><span class="p">,</span> <span class="n">d_AB</span> <span class="o">/</span> <span class="mi">1000</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertAlmostEqual</span><span class="p">(</span><span class="n">s_AB</span> <span class="o">/</span> <span class="mi">1000</span><span class="p">,</span> <span class="mf">332.45644411</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertAlmostEqual</span><span class="p">(</span><span class="n">d_AB</span> <span class="o">/</span> <span class="mi">1000</span><span class="p">,</span> <span class="mf">332.41872486</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="TestFrameE.test_alternative_great_circle_distance"><a class="viewcode-back" href="../../../api/nvector.tests.html#nvector.tests.test_frames.TestFrameE.test_alternative_great_circle_distance">[docs]</a>    <span class="k">def</span> <span class="nf">test_alternative_great_circle_distance</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">frame_E</span> <span class="o">=</span> <span class="n">FrameE</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="mf">6371e3</span><span class="p">,</span> <span class="n">f</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">positionA</span> <span class="o">=</span> <span class="n">frame_E</span><span class="o">.</span><span class="n">GeoPoint</span><span class="p">(</span><span class="n">latitude</span><span class="o">=</span><span class="mi">88</span><span class="p">,</span> <span class="n">longitude</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">degrees</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="n">positionB</span> <span class="o">=</span> <span class="n">frame_E</span><span class="o">.</span><span class="n">GeoPoint</span><span class="p">(</span><span class="n">latitude</span><span class="o">=</span><span class="mi">89</span><span class="p">,</span> <span class="n">longitude</span><span class="o">=-</span><span class="mi">170</span><span class="p">,</span> <span class="n">degrees</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">GeoPath</span><span class="p">(</span><span class="n">positionA</span><span class="p">,</span> <span class="n">positionB</span><span class="p">)</span>
+
+        <span class="n">s_AB</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">track_distance</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="s">&#39;greatcircle&#39;</span><span class="p">)</span>
+        <span class="n">d_AB</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">track_distance</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="s">&#39;euclidean&#39;</span><span class="p">)</span>
+
+        <span class="n">msg</span> <span class="o">=</span> <span class="s">&#39;Ex5, Great circle distance = {} km, Euclidean distance = {} km&#39;</span>
+        <span class="k">print</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">s_AB</span> <span class="o">/</span> <span class="mi">1000</span><span class="p">,</span> <span class="n">d_AB</span> <span class="o">/</span> <span class="mi">1000</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertAlmostEqual</span><span class="p">(</span><span class="n">s_AB</span> <span class="o">/</span> <span class="mi">1000</span><span class="p">,</span> <span class="mf">332.45644411</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertAlmostEqual</span><span class="p">(</span><span class="n">d_AB</span> <span class="o">/</span> <span class="mi">1000</span><span class="p">,</span> <span class="mf">332.41872486</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="TestFrameE.test_exact_ellipsoidal_distance"><a class="viewcode-back" href="../../../api/nvector.tests.html#nvector.tests.test_frames.TestFrameE.test_exact_ellipsoidal_distance">[docs]</a>    <span class="k">def</span> <span class="nf">test_exact_ellipsoidal_distance</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">wgs84</span> <span class="o">=</span> <span class="n">FrameE</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&#39;WGS84&#39;</span><span class="p">)</span>
+        <span class="n">pointA</span> <span class="o">=</span> <span class="n">wgs84</span><span class="o">.</span><span class="n">GeoPoint</span><span class="p">(</span><span class="n">latitude</span><span class="o">=</span><span class="mi">88</span><span class="p">,</span> <span class="n">longitude</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">degrees</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="n">pointB</span> <span class="o">=</span> <span class="n">wgs84</span><span class="o">.</span><span class="n">GeoPoint</span><span class="p">(</span><span class="n">latitude</span><span class="o">=</span><span class="mi">89</span><span class="p">,</span> <span class="n">longitude</span><span class="o">=-</span><span class="mi">170</span><span class="p">,</span> <span class="n">degrees</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="n">s_AB</span><span class="p">,</span> <span class="n">_azia</span><span class="p">,</span> <span class="n">_azib</span> <span class="o">=</span> <span class="n">pointA</span><span class="o">.</span><span class="n">distance_and_azimuth</span><span class="p">(</span><span class="n">pointB</span><span class="p">)</span>
+
+        <span class="n">p_AB_E</span> <span class="o">=</span> <span class="n">pointB</span><span class="o">.</span><span class="n">to_ecef_vector</span><span class="p">()</span> <span class="o">-</span> <span class="n">pointA</span><span class="o">.</span><span class="n">to_ecef_vector</span><span class="p">()</span>
+        <span class="c"># The Euclidean distance is given by:</span>
+        <span class="n">d_AB</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">p_AB_E</span><span class="o">.</span><span class="n">pvector</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="n">msg</span> <span class="o">=</span> <span class="s">&#39;Ex5, Great circle distance = {} km, Euclidean distance = {} km&#39;</span>
+        <span class="k">print</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">s_AB</span> <span class="o">/</span> <span class="mi">1000</span><span class="p">,</span> <span class="n">d_AB</span> <span class="o">/</span> <span class="mi">1000</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertAlmostEqual</span><span class="p">(</span><span class="n">s_AB</span> <span class="o">/</span> <span class="mi">1000</span><span class="p">,</span> <span class="mf">333.94750946834665</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertAlmostEqual</span><span class="p">(</span><span class="n">d_AB</span> <span class="o">/</span> <span class="mi">1000</span><span class="p">,</span> <span class="mf">333.90962112</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="TestFrameE.test_Ex7_mean_position"><a class="viewcode-back" href="../../../api/nvector.tests.html#nvector.tests.test_frames.TestFrameE.test_Ex7_mean_position">[docs]</a>    <span class="k">def</span> <span class="nf">test_Ex7_mean_position</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="c"># Three positions A, B and C are given:</span>
+        <span class="c"># Enter elements directly:</span>
+        <span class="c"># n_EA_E=unit(np.vstack((1, 0, -2)))</span>
+        <span class="c"># n_EB_E=unit(np.vstack((-1, -2, 0)))</span>
+        <span class="c"># n_EC_E=unit(np.vstack((0, -2, 3)))</span>
+
+        <span class="c"># or input as lat/long in deg:</span>
+        <span class="n">points</span> <span class="o">=</span> <span class="n">GeoPoint</span><span class="p">(</span><span class="n">latitude</span><span class="o">=</span><span class="p">[</span><span class="mi">90</span><span class="p">,</span> <span class="mi">60</span><span class="p">,</span> <span class="mi">50</span><span class="p">],</span> <span class="n">longitude</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="o">-</span><span class="mi">20</span><span class="p">],</span>
+                          <span class="n">degrees</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="n">nvectors</span> <span class="o">=</span> <span class="n">points</span><span class="o">.</span><span class="n">to_nvector</span><span class="p">()</span>
+        <span class="n">nmean</span> <span class="o">=</span> <span class="n">nvectors</span><span class="o">.</span><span class="n">mean_horizontal_position</span><span class="p">()</span>
+        <span class="n">n_EM_E</span> <span class="o">=</span> <span class="n">nmean</span><span class="o">.</span><span class="n">normal</span>
+        <span class="n">assert_array_almost_equal</span><span class="p">(</span><span class="n">n_EM_E</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span>
+                                  <span class="p">[</span><span class="mf">0.384117</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.046602</span><span class="p">,</span> <span class="mf">0.922107</span><span class="p">])</span>
+</div>
+<div class="viewcode-block" id="TestFrameE.test_Ex8_position_A_and_azimuth_and_distance_to_B"><a class="viewcode-back" href="../../../api/nvector.tests.html#nvector.tests.test_frames.TestFrameE.test_Ex8_position_A_and_azimuth_and_distance_to_B">[docs]</a>    <span class="k">def</span> <span class="nf">test_Ex8_position_A_and_azimuth_and_distance_to_B</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">frame</span> <span class="o">=</span> <span class="n">FrameE</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="n">EARTH_RADIUS_M</span><span class="p">,</span> <span class="n">f</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">pointA</span> <span class="o">=</span> <span class="n">frame</span><span class="o">.</span><span class="n">GeoPoint</span><span class="p">(</span><span class="n">latitude</span><span class="o">=</span><span class="mi">80</span><span class="p">,</span> <span class="n">longitude</span><span class="o">=-</span><span class="mi">90</span><span class="p">,</span> <span class="n">degrees</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="n">pointB</span><span class="p">,</span> <span class="n">_azimuthb</span> <span class="o">=</span> <span class="n">pointA</span><span class="o">.</span><span class="n">geo_point</span><span class="p">(</span><span class="n">distance</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">azimuth</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span>
+                                             <span class="n">degrees</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+        <span class="n">lat_B</span><span class="p">,</span> <span class="n">lon_B</span> <span class="o">=</span> <span class="n">pointB</span><span class="o">.</span><span class="n">latitude_deg</span><span class="p">,</span> <span class="n">pointB</span><span class="o">.</span><span class="n">longitude_deg</span>
+
+        <span class="k">print</span><span class="p">(</span><span class="s">&#39;Ex8, Destination: lat, long = {} {} deg&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">lat_B</span><span class="p">,</span> <span class="n">lon_B</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertAlmostEqual</span><span class="p">(</span><span class="n">lat_B</span><span class="p">,</span> <span class="mf">79.99154867</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertAlmostEqual</span><span class="p">(</span><span class="n">lon_B</span><span class="p">,</span> <span class="o">-</span><span class="mf">90.01769837</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="TestFrameE.test_Ex9_intersection"><a class="viewcode-back" href="../../../api/nvector.tests.html#nvector.tests.test_frames.TestFrameE.test_Ex9_intersection">[docs]</a>    <span class="k">def</span> <span class="nf">test_Ex9_intersection</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="c"># Two paths A and B are given by two pairs of positions:</span>
+        <span class="n">pointA1</span> <span class="o">=</span> <span class="n">GeoPoint</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="n">degrees</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="n">pointA2</span> <span class="o">=</span> <span class="n">GeoPoint</span><span class="p">(</span><span class="mi">30</span><span class="p">,</span> <span class="mi">40</span><span class="p">,</span> <span class="n">degrees</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="n">pointB1</span> <span class="o">=</span> <span class="n">GeoPoint</span><span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="mi">60</span><span class="p">,</span> <span class="n">degrees</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="n">pointB2</span> <span class="o">=</span> <span class="n">GeoPoint</span><span class="p">(</span><span class="mi">70</span><span class="p">,</span> <span class="mi">80</span><span class="p">,</span> <span class="n">degrees</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="n">pathA</span> <span class="o">=</span> <span class="n">GeoPath</span><span class="p">(</span><span class="n">pointA1</span><span class="p">,</span> <span class="n">pointA2</span><span class="p">)</span>
+        <span class="n">pathB</span> <span class="o">=</span> <span class="n">GeoPath</span><span class="p">(</span><span class="n">pointB1</span><span class="p">,</span> <span class="n">pointB2</span><span class="p">)</span>
+
+        <span class="n">pointC</span> <span class="o">=</span> <span class="n">pathA</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">pathB</span><span class="p">)</span>
+
+        <span class="n">lat</span><span class="p">,</span> <span class="n">lon</span> <span class="o">=</span> <span class="n">pointC</span><span class="o">.</span><span class="n">latitude_deg</span><span class="p">,</span> <span class="n">pointC</span><span class="o">.</span><span class="n">longitude_deg</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="s">&#39;Ex9, Intersection: lat, long = {} {} deg&#39;</span>
+        <span class="k">print</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">lat</span><span class="p">,</span> <span class="n">lon</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertAlmostEqual</span><span class="p">(</span><span class="n">lat</span><span class="p">,</span> <span class="mf">40.31864307</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertAlmostEqual</span><span class="p">(</span><span class="n">lon</span><span class="p">,</span> <span class="mf">55.90186788</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="TestFrameE.test_intersection_of_parallell_paths"><a class="viewcode-back" href="../../../api/nvector.tests.html#nvector.tests.test_frames.TestFrameE.test_intersection_of_parallell_paths">[docs]</a>    <span class="k">def</span> <span class="nf">test_intersection_of_parallell_paths</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="c"># Two paths A and B are given by two pairs of positions:</span>
+        <span class="n">pointA1</span> <span class="o">=</span> <span class="n">GeoPoint</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="n">degrees</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="n">pointA2</span> <span class="o">=</span> <span class="n">GeoPoint</span><span class="p">(</span><span class="mi">30</span><span class="p">,</span> <span class="mi">40</span><span class="p">,</span> <span class="n">degrees</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="n">pointB1</span> <span class="o">=</span> <span class="n">GeoPoint</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="n">degrees</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="n">pointB2</span> <span class="o">=</span> <span class="n">GeoPoint</span><span class="p">(</span><span class="mi">30</span><span class="p">,</span> <span class="mi">40</span><span class="p">,</span> <span class="n">degrees</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="n">pathA</span> <span class="o">=</span> <span class="n">GeoPath</span><span class="p">(</span><span class="n">pointA1</span><span class="p">,</span> <span class="n">pointA2</span><span class="p">)</span>
+        <span class="n">pathB</span> <span class="o">=</span> <span class="n">GeoPath</span><span class="p">(</span><span class="n">pointB1</span><span class="p">,</span> <span class="n">pointB2</span><span class="p">)</span>
+
+        <span class="n">pointC</span> <span class="o">=</span> <span class="n">pathA</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">pathB</span><span class="p">)</span>
+
+        <span class="n">lat</span><span class="p">,</span> <span class="n">lon</span> <span class="o">=</span> <span class="n">pointC</span><span class="o">.</span><span class="n">latitude_deg</span><span class="p">,</span> <span class="n">pointC</span><span class="o">.</span><span class="n">longitude_deg</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="s">&#39;Ex9, Intersection: lat, long = {} {} deg&#39;</span>
+        <span class="k">print</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">lat</span><span class="p">,</span> <span class="n">lon</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">lat</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">lon</span><span class="p">))</span>
+</div>
+<div class="viewcode-block" id="TestFrameE.test_Ex10_cross_track_distance"><a class="viewcode-back" href="../../../api/nvector.tests.html#nvector.tests.test_frames.TestFrameE.test_Ex10_cross_track_distance">[docs]</a>    <span class="k">def</span> <span class="nf">test_Ex10_cross_track_distance</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="n">frame</span> <span class="o">=</span> <span class="n">FrameE</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="mf">6371e3</span><span class="p">,</span> <span class="n">f</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="c"># Position A1 and A2 and B as lat/long in deg:</span>
+        <span class="n">pointA1</span> <span class="o">=</span> <span class="n">frame</span><span class="o">.</span><span class="n">GeoPoint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">degrees</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="n">pointA2</span> <span class="o">=</span> <span class="n">frame</span><span class="o">.</span><span class="n">GeoPoint</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">degrees</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="n">pointB</span> <span class="o">=</span> <span class="n">frame</span><span class="o">.</span><span class="n">GeoPoint</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="n">degrees</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+        <span class="n">pathA</span> <span class="o">=</span> <span class="n">GeoPath</span><span class="p">(</span><span class="n">pointA1</span><span class="p">,</span> <span class="n">pointA2</span><span class="p">)</span>
+
+        <span class="c"># Find the cross track distance from path A to position B.</span>
+        <span class="n">s_xt</span> <span class="o">=</span> <span class="n">pathA</span><span class="o">.</span><span class="n">cross_track_distance</span><span class="p">(</span><span class="n">pointB</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s">&#39;greatcircle&#39;</span><span class="p">)</span>
+        <span class="n">d_xt</span> <span class="o">=</span> <span class="n">pathA</span><span class="o">.</span><span class="n">cross_track_distance</span><span class="p">(</span><span class="n">pointB</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s">&#39;euclidean&#39;</span><span class="p">)</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="s">&#39;Ex10, Cross track distance = {} m, Euclidean = {} m&#39;</span>
+        <span class="k">print</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">s_xt</span><span class="p">,</span> <span class="n">d_xt</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertAlmostEqual</span><span class="p">(</span><span class="n">s_xt</span><span class="p">,</span> <span class="mf">11117.79911015</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertAlmostEqual</span><span class="p">(</span><span class="n">d_xt</span><span class="p">,</span> <span class="mf">11117.79346741</span><span class="p">)</span>
+
+</div></div>
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="c"># import sys;sys.argv = [&#39;&#39;, &#39;Test.testName&#39;]</span>
+    <span class="n">unittest</span><span class="o">.</span><span class="n">main</span><span class="p">()</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2015, pbrod.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.6</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>
