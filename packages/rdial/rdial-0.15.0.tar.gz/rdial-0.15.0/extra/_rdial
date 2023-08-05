@@ -1,0 +1,166 @@
+#compdef rdial rdial.py
+# coding=utf-8
+# rdial - ZSH completion support for rdial
+# Copyright © 2012-2016  James Rowe <jnrowe@gmail.com>
+#
+# This file is part of rdial.
+#
+# rdial is free software: you can redistribute it and/or modify it under the
+# terms of the GNU General Public License as published by the Free Software
+# Foundation, either version 3 of the License, or (at your option) any later
+# version.
+#
+# rdial is distributed in the hope that it will be useful, but WITHOUT ANY
+# WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+# A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along with
+# rdial.  If not, see <http://www.gnu.org/licenses/>.
+
+# Most of this file is generated from rdial/__init__.py, but feel free to
+# customise it!  If you make improvements, open a pull request against
+# `JNRowe/rdial' with your super changes attached.
+
+(( $+functions[__list_styles] )) ||
+__list_styles() {
+    local tmp
+    tmp=($(python -c 'import tabulate; print(" ".join(tabulate._table_formats.keys()))' 2>/dev/null))
+    if [ -z "${tmp}" ]; then
+        _message "No styles found!"
+    else
+        compadd ${tmp[@]}
+    fi
+}
+
+(( $+functions[__list_tasks] )) ||
+__list_tasks() {
+    local tmp
+    tmp=(${XDG_DATA_HOME:-~/.local/share}/rdial/*~*~(:t:s/.csv/))
+    if [ -z "${tmp}" ]; then
+        _message "No rdial tasks found!"
+    else
+        compadd ${tmp[@]}
+    fi
+}
+
+(( $+functions[__list_wrappers] )) ||
+__list_wrappers() {
+    local tmp
+    tmp=($(sed -n '/^\[run wrappers\]/,/^$/s,^\(.*\) *=.*$,\1,p' \
+        ${XDG_CONFIG_HOME:-~/.config}/rdial/config \
+        .rdialrc 2>/dev/null
+    ))
+    if [ -z "${tmp}" ]; then
+        _message "No rdial wrappers found!"
+    else
+        compadd ${tmp[@]}
+    fi
+}
+
+_arguments \
+    '--version[Show the version and exit.]' \
+    "--directory=[Directory to read/write to.]:select directory:_files -/ ${XDG_DATA_HOME:-~/.local/share}" \
+    '--backup[Write data file backups.]' \
+    '--no-backup[Do not write data file backups.]' \
+    '--cache[Write cache files.]' \
+    '--no-cache[Do not write cache files.]' \
+    '--config=[File to read configuration data from.]:select config:_files' \
+    '--interactive[Support interactive message editing.]' \
+    '--no-interactive[Do not support interactive message editing.]' \
+    '--help[Show this message and exit.]' \
+    ':rdial command:((
+        fsck\:"Check storage consistency."
+        start\:"Start task."
+        stop\:"Stop task."
+        switch\:"Switch to another task."
+        run\:"Run command with timer."
+        wrapper\:"Run predefined command with timer."
+        report\:"Report time tracking data."
+        running\:"Display running task, if any."
+        last\:"Display last event, if any."
+        ledger\:"Generate ledger compatible data file."
+    ))' \
+    '*::subcmd:->subcmd' && return 0
+
+### DGEN_TAG: Generated from rdial/__init__.py {{{
+case "$words[1]" in
+(fsck)
+    _arguments \
+        '--help[Show this message and exit.]'
+    ;;
+(start)
+    _arguments \
+        '--help[Show this message and exit.]' \
+        '--from-dir[Use directory name as task name.]' \
+        '--new[Start a new task.]' \
+        '--time=[Set start time.]' \
+        ':select task:__list_tasks'
+    ;;
+(stop)
+    _arguments \
+        '--help[Show this message and exit.]' \
+        '--message=[Closing message.]:message text: ' \
+        '--file=[Read closing message from file.]:select file:_files' \
+        '--amend[Amend previous stop entry.]'
+    ;;
+(switch)
+    _arguments \
+        '--help[Show this message and exit.]' \
+        '--from-dir[Use directory name as task name.]' \
+        '--new[Start a new task.]' \
+        '--time=[Set start time.]' \
+        '--message=[Closing message.]:message text: ' \
+        '--file=[Read closing message from file.]:select file:_files' \
+        ':select task:__list_tasks'
+    ;;
+(run)
+    _arguments \
+        '--help[Show this message and exit.]' \
+        '--from-dir[Use directory name as task name.]' \
+        '--new[Start a new task.]' \
+        '--time=[Set start time.]' \
+        '--message=[Closing message.]:message text: ' \
+        '--file=[Read closing message from file.]:select file:_files' \
+        '--command=[Command to run.]:select command:_path_commands' \
+        ':select task:__list_tasks'
+    ;;
+(wrapper)
+    _arguments \
+        '--help[Show this message and exit.]' \
+        '--time=[Set start time.]' \
+        '--message=[Closing message.]:message text: ' \
+        '--file=[Read closing message from file.]:select file:_files' \
+        ':select wrapper:__list_wrappers'
+    ;;
+(report)
+    _arguments \
+        '--help[Show this message and exit.]' \
+        '--from-dir[Use directory name as task name.]' \
+        '--stats[Display database statistics.]' \
+        '--duration[Filter events for specified time period.]:select time period:(day week month year all)' \
+        '--sort[Field to sort by.]:select sort field:(task time)' \
+        '--reverse[Reverse sort order.]' \
+        '--style=[Table output style.]:Select style:__list_styles' \
+        ':select task:__list_tasks'
+    ;;
+(running)
+    _arguments \
+        '--help[Show this message and exit.]' \
+    ;;
+(last)
+    _arguments \
+        '--help[Show this message and exit.]' \
+    ;;
+(ledger)
+    _arguments \
+        '--help[Show this message and exit.]' \
+        '--from-dir[Use directory name as task name.]' \
+        '--duration[Filter events for specified time period.]:select time period:(day week month year all)' \
+        '--rate=[Hourly rate for task output.]:set hourly rate: ' \
+        ':select task:__list_tasks'
+    ;;
+(*)
+    ;;
+esac
+### DGEN_TAG: Generated from rdial/__init__.py }}}
+
