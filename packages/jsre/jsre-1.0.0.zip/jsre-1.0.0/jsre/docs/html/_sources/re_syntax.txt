@@ -1,0 +1,316 @@
+.. _ref_syntax:
+
+=========================
+Regular Expression Syntax
+=========================
+
+*jsre* syntax is the same as that used in the Python *re* module, and as similar as possible to other
+regular expression systems.
+
+*jsre* applies the POSIX (leftmost longest) matching policy which results in the longest of any 
+alternative patterns in an expression being matched regardless of the order in which they are specified. 
+Reluctant (lazy or smallest) matches are also supported and modify this policy for any groups or sub-groups 
+in which they appear. Lookahead assertions and backreferences are supported, but not lookbehind assertions 
+or negative lookaheads. 
+
+The behaviour of regular expression syntax may be varied by flags (e.g. DOTALL, IGNORECASE), which 
+are described in :ref:`ref_API`. 
+
+Single Characters
+^^^^^^^^^^^^^^^^^
++--------+-----------+--------------------------------------------------------------------------+
+| Syntax | Code point|                                                                          |
++========+===========+==========================================================================+
+| c      |           | The single character c.                                                  |
++--------+-----------+--------------------------------------------------------------------------+
+| .      |           | Any character except newline. If DOTALL set will also match newline.     |
++--------+-----------+--------------------------------------------------------------------------+
+| \\c	 |           | To input the character c, for reserved characters:                       |
+|        |           | Normally reserved characters:  ``\\ ' " ( ) [ ] { }  ^ $ + * ? .``       |
+|        |           | Reserved within a character class:  ``\\ ' " [ ] & | -``                 |
+|        |           | A backslash will also input any standard following character unless it   |
+|        |           | has a special interpretation in the list below.                          |
++--------+-----------+--------------------------------------------------------------------------+
+| \\a    | \\u0007   | Bell.                                                                    |
++--------+-----------+--------------------------------------------------------------------------+
+| \\b    | \\u0008   | Backspace (only in character classes, otherwise word boundary).          |
++--------+-----------+--------------------------------------------------------------------------+
+| \\f	 | \\u000C   | Form feed.                                                               |
++--------+-----------+--------------------------------------------------------------------------+
+| \\n	 | \\u000A   | Newline.                                                                 |
++--------+-----------+--------------------------------------------------------------------------+
+| \\r	 | \\u000D   | Carriage return.                                                         |
++--------+-----------+--------------------------------------------------------------------------+
+| \\t	 | \\u0009   | Tab.                                                                     |
++--------+-----------+--------------------------------------------------------------------------+
+| \\uhhhh            | 4 hex digit Unicode code point.                                          |
++--------------------+--------------------------------------------------------------------------+
+| \\Uhhhhhhhh        | 8 hex digit Unicode code point.                                          |
++--------+-----------+--------------------------------------------------------------------------+
+| \\v	 | \\u000B   | Vertical Tab.                                                            |
++--------+-----------+--------------------------------------------------------------------------+
+| \\xhh	 |           | Single byte with hex value hh.                                           |
+|        |           | WARNING: Use this only for actual byte encodings (e.g. file signature    |
+|        |           | searches). To correctly encode an ASCII control character use \\u        |
+|        |           | because this will be correctly interpreted in all encodings.             |
++--------+-----------+--------------------------------------------------------------------------+
+| \\ \\  | \\u005C   | Backslash.                                                               |
++--------+-----------+--------------------------------------------------------------------------+
+| \\'	 | \\u0027   | Single quote.                                                            |
++--------+-----------+--------------------------------------------------------------------------+
+| \\"	 | \\u0022   | Double quote.                                                            |
++--------+-----------+--------------------------------------------------------------------------+
+
+**Character notes**
+
+1.  Python codecs do not handle unicode surrogates. 
+
+
+Zero width tests
+^^^^^^^^^^^^^^^^
+
++--------+--------------------------------------------------------------------------------------+
+| ^      | Matches the start of the text buffer,                                                |
+|        | if MULTILINE also matches at the start of a new line.                                |
++--------+--------------------------------------------------------------------------------------+
+| $      | Matches the end of the text buffer, if MULTILINE also matches before a line break.   |
++--------+--------------------------------------------------------------------------------------+
+| \\A    | Matches only at the start of the text buffer.                                        |
++--------+--------------------------------------------------------------------------------------+
+| \\z    | Matches the end of the text buffer.                                                  |
++--------+--------------------------------------------------------------------------------------+
+| \\b    | Match at start or end of a word. (Defined as boundary between \\w and \\W.)          |
++--------+--------------------------------------------------------------------------------------+
+| \\B    | Zero width match if NOT at start or end of word.                                     |
+|        | (Defined as between \\w or between \\W.)                                             |
++--------+--------------------------------------------------------------------------------------+
+| \\X    | Extended Grapheme cluster boundary. (see Unicode Standard Annex #29.)                |
++--------+--------------------------------------------------------------------------------------+
+
+**Zero width test notes**
+
+1.  Zero width tests do not change the position of the regular expression match in the bytes buffer,
+    they are known as 'non consuming' or 'boundary' tests.
+
+2.  :class:`RegexObject` instances allow the user to specify a start point in a buffer
+    (see :ref:`ref_api_compiler`), the 'start of the text buffer' specified by ``^`` 
+    and ``\A`` is the start of the specified area to be matched. For example::
+
+	    >>>pattern ='^test'
+	    >>>buffer = b'xxxxxtest'
+	    >>>regex = jsre.compile(pattern)
+	    >>>match = regex.search(buffer, 5)
+	    >>>print(match.group())
+	    test	
+
+3.  In order to maintain compatibility with as many encodings as possible ``\b`` and ``\B`` use
+    word boundary definitions compatible with ``\w``.
+
+4.  The negated forms of these tests (and of character classes below) are those valid code points
+    that are not in the class being negated. An invalid code under the current encoding will be
+    false in both the original and negated versions.
+
+5.  The Extended Grapheme Cluster is limited to full Unicode encodings because it requires a
+    wide range of Unicode code points; using ``\X`` in byte encodings such as ascii will result in a
+    syntax error.
+
+6.  The ``\X`` test requires a large number of individual character tests, its use may
+    significantly impact performance if it appears early in a regular expression.
+
+
+
+Named Character Classes
+^^^^^^^^^^^^^^^^^^^^^^^
+
++-----------+-----------------------------------------------------------------------------------+
+| \\d       | Matches decimal digit. ``\p{digit}``  (\\D  matches everything except digit.)     |
++-----------+-----------------------------------------------------------------------------------+
+| \\s       | Matches whitespace. ``\p{blank}``  (\\S matches everything except whitespace.)    |
++-----------+-----------------------------------------------------------------------------------+
+| \\w       | Matches word characters. ``\p{word}`` (\\W matches everything except word         |
+|           | characters.)                                                                      |
++-----------+-----------------------------------------------------------------------------------+
+
+*Unicode Properties*
+
++-----------------------+-----------------------------------------------------------------------+
+| \\p{propertyVal}      | Many classes can be specified by just the value name. They include all|
+|                       | the binary properties, short form general category properties (L, Lu, |
+|                       | Ll .....etc), their long equivalents, and scripts.                    |
++-----------------------+-----------------------------------------------------------------------+
+| \\pC                  | Matches a Unicode single character property:  L (letter)  M (mark)    |
+|                       | N (number)  S (symbol)  P (punctuation)  Z (separator)  C (other)     |
++-----------------------+-----------------------------------------------------------------------+
+| \\p{propertyVal}      | Many classes can be specified by just the value name. They include all|
+|                       | the binary properties, short form general category properties (L, Lu, |
+|                       | Ll .....etc), their long equivalents, and scripts.                    |
++-----------------------+-----------------------------------------------------------------------+
+| \\p{property=value}   | The standard way of specifying all non-binary property classes.       |
+|                       | The alternative syntax *\\p{property:value}* is also supported.       |
++-----------------------+-----------------------------------------------------------------------+
+
+**Named Classes Notes**
+
+1.  Named classes are available inside and outside of character classes.
+
+2.	\\P... specifies a negated property.
+
+3.  Some special Unicode properies are supported, including those recommended by Appendix C of Unicode
+    Technical Standard #18 for use in regular expressions:
+
+        *lower, upper, punct, digit, xdigit, alnum, space, blank, cntrl, graph, print, word*
+
+    Note that *word* is defined as in UTS #18 and includes digits; the zero width tests ``\b \B`` also use this definition.
+    Some additional properties defined in UTS #18 1.2.1 and 1.6 are also supported:
+
+        *any, assigned, ascii*
+
+    Note that *any* is every code point, unlike '.' which omits newline characters unless the DOTALL flag
+    is set. *ascii* will specify a character class with unicode code points 0x00-0xFF, it will not specify
+    an encoding.
+
+    The property:
+
+        *newline*
+
+    is provided to specify the set of new line characters in UTS #18 1.6, ie the familiar \u000A, \u000B etc
+    as well as the Unicode characters such as \u2028.
+
+4.	At present no encoding supports surrogate pairs, since they are not supported by current python codecs.
+
+
+Character Classes
+^^^^^^^^^^^^^^^^^
+
++--------+--------------------------------------------------------------------------------------+
+| [S]    | Match all code points in the set S.                                                  |
++--------+--------------------------------------------------------------------------------------+
+| [^S]   | Match all valid code points except those in the set S.                               |
++--------+--------------------------------------------------------------------------------------+
+| ST     | Union of sets. Match code points in either S or T.                                   |
++--------+--------------------------------------------------------------------------------------+
+| S||T   | Union of sets. Match code points in either S or T.                                   |
++--------+--------------------------------------------------------------------------------------+
+| S&&T   | Intersection of sets. Match code points common to S and T.  ``&& -- ||`` are all     |
+|        | executed left to right, use [ ] brackets if required.                                |
++--------+--------------------------------------------------------------------------------------+
+| S\-\-T | Set difference. Match code points in S except for those that are also in T.          |
++--------+--------------------------------------------------------------------------------------+
+
+*Character Class Elements*
+
++-----------+-----------------------------------------------------------------------------------+
+| c         | An ASCII character, see note below.                                               |
++-----------+-----------------------------------------------------------------------------------+
+| c-c       | An ASCII character range, will be correctly interpreted as a set of code points,  |
+|           | IGNORECASE does NOT extend the range. (use appropriate Unicode property instead)  |
++-----------+-----------------------------------------------------------------------------------+
+| \xHH-\xHH | A hex byte range.  See note on hex characters: these are bytes not code points.   |
++-----------+-----------------------------------------------------------------------------------+
+
+
+**Character Class Notes**
+
+1.  The characters ``( ) { } + * . ^ $ ? ,`` do not need to be escaped within a class, they no longer have
+    a special meaning in this context.
+
+2.  The way that jsre handles character classes is that everything is modelled as a set of Unicode code
+    points. However if elements of the class are not present in a selected encoding then they will be
+    silently omitted at runtime. For example, *\\p{lower}* will work in all languages and encodings and doesn't
+    need special coding for ASCII, however if *\\p{Han}* is specified in combination with ASCII encoding then
+    (of course) the result will be null. If the compiler finds null character sets or groups it will log
+    a warning, if as a result the whole pattern is null in a selected encoding then an exception is raised.
+
+
+Repeats Alternatives and Backreferences
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
++-----------+-----------------------------------------------------------------------------------+
+| \*        | 0 or many repetitions. Repetitions apply to the previous character,               |
+|           | character class, or group.                                                        |
++-----------+-----------------------------------------------------------------------------------+
+| \?        | 0 or 1 instance.                                                                  |
++-----------+-----------------------------------------------------------------------------------+
+| \+        | 1 or many repetitions.                                                            |
++-----------+-----------------------------------------------------------------------------------+
+| {m}       | Match m times.                                                                    |
++-----------+-----------------------------------------------------------------------------------+
+| {m,n}     | Match at least m times and up to n times.                                         |
++-----------+-----------------------------------------------------------------------------------+
+| {,n}      | Match up to n times.                                                              |
++-----------+-----------------------------------------------------------------------------------+
+| {n,}      | Match at least n times, then as many as possible.                                 |
++-----------+-----------------------------------------------------------------------------------+
+| re|re     | Alternative - match either the left or right regular expression.                  |
++-----------+-----------------------------------------------------------------------------------+
+| \\nn      | Backreference to a previous capturing group. (nn is in the range 1 to 31)         |
++-----------+-----------------------------------------------------------------------------------+
+
+**Repeats and alternatives notes**
+
+1.  The reluctant quantifier ``?`` may follow a repeat;  jsre also provides a special
+    group construct to specify non-greedy groups. See groups below and :ref:`ref_example_reluctant`.
+
+2.  The limit for a specified number of repeats is 65535. If a bigger number is specified it will
+    be limited and a warning will be logged. Unlimited repeats such as ``*`` are also limited to 
+    this number.
+
+3.  if an expression starts with ''.*'' or similar then if a match fails then the next match 
+    will be attempted after the following newline. However if DOTALL is set the anchor will be 
+    incremented and a match will be attempted from the next byte; the user can prevent this 
+    behaviour by setting an anchor stop position.
+
+4.  Alternatives are evaluated in parallel, the order in which alternatives appear in the regular
+    expression is not significant.
+
+5.  Although alternatives are efficient they are not as efficient as relations between character classes,
+    so where there is a choice it is best to prefer the latter. For example, to combine scripts with
+    common characters ``[\p{Greek}\p{Common}]`` is more efficient than ``(\p{Greek}|\p{Common})``.
+
+6.	Backreferences test that the same characters are present at this position as were matched by 
+	the referenced group (count capture groups from the left of the expression, starting at 1). 
+	A backreference will match the exact encoding of Unicode characters found in the referenced
+	group - for example it will not check for case variations even if IGNORECASE is set. The 
+	Python group extension to provide named backreferences is also supported, see below. 
+
+	NB backreferences may be expensive in thread space. If the referenced group is determined in 
+	any particular input there is no performance problem, but if there are a very large number of
+	possible choices for the reference group each has to supported by a separate thread and the
+	system may run out of threads (error 3). See :ref:`ref_example_backreferences`.   
+
+Groups
+^^^^^^
+
++-------------+-----------------------------------------------------------------------------------+
+| (re)        | Matches whatever re is inside the group. Groups can be quantified by repetition,  |
+|             | for example ``(re)*``.                                                            |
++-------------+-----------------------------------------------------------------------------------+
+| (?#...)     | A comment, the group is ignored in the regular expression.                        |
++-------------+-----------------------------------------------------------------------------------+
+| (?= re )    | A forward match test. This matches if the re matches but doesn't consume any of   |
+|             | the target string.                                                                |
++-------------+-----------------------------------------------------------------------------------+
+| (?: re )    | The group is non-capturing.                                                       |
++-------------+-----------------------------------------------------------------------------------+
+| (?? re)     | Makes the regular expression within the group non-greedy. This property is not    |
+|             | inherited and can be separately specified for nested groups.                      |
++-------------+-----------------------------------------------------------------------------------+
+|(?P<name> re)| Names the group to allow the submatch to be retrieved by name as well as by index.|
++-------------+-----------------------------------------------------------------------------------+
+| (?P=name)   | A backreference to a previously named group. (See above for backreference notes.) |
++-------------+-----------------------------------------------------------------------------------+ 
+
+**Groups notes**
+
+1.  Groups which are quantified byforward matches are non-capturing, meaning that the
+    match is not recorded.
+
+2.  If non-greedy quantifiers are needed then they can be placed in a non-greedy extension group. The
+    advantage of group specification is that it allows the scope of greedy and non-greedy patterns
+    to be explicitly specified. See :ref:`ref_example_reluctant`.
+
+3.  A total of 32 sub-group matches can be recorded in any single regular expression. This maximum
+    may not be possible if the user uses INDEXALT (consumes one match position) or other group
+    types which may temporarily use match positions, depending on the nested structure of the
+    regular expression.
+
+

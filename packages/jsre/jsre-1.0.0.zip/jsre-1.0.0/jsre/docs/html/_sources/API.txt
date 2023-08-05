@@ -1,0 +1,373 @@
+.. _ref_API:
+
+============================
+Module Functions and Objects
+============================
+
+.. module:: jsre
+.. moduleauthor:: Howard Chivers
+
+This section provides interface information for *jsre* module functions Classes and methods. 
+See :ref:`ref_examples` for an overview with examples.
+
+The module uses standard Python exceptions, notably ``SyntaxError`` for errors in the regular expression pattern; 
+if logging is enabled it will also log syntax errors in a more helpful way which indicates the position of the
+error in the regular expression. For example::
+
+	>>> pattern = r'abc(?)def'
+	>>> jsre.compile(pattern)
+        
+	parser       ERROR    abc(?)def
+	parser       ERROR        ^
+	parser       ERROR    Syntax error - RE or group starts with a repeat specification (nothing to repeat) at 4
+
+The module functions provide simple shortcuts for the more comprehensive :class:`RegexObject` methods. Module functions 
+cache compiled regular expressions so repeated calling via module functions avoids the compilation overhead. 
+However, the :class:`RegexObject` methods provide a richer set of functionality and allows better control of 
+which objects are retained in memory.
+
+*jsre* also provides a :class:`ReCompiler` class which provides a more comprehensive set of compilation 
+functions than is available from the module level ``compile()``. This class allows combinations of 
+encodings and patterns to be combined into a single :class:`RegexObject` instance.
+
+.. _ref_api_module:
+
+----------------
+Module Functions
+----------------
+
+The module level functions ``search()``, ``match()``, ``finditer()``, ``findall()`` allow the search target 
+(the data to be searched) to be either bytes or str.  If a string target is presented any resulting :class:`Match` 
+instances will index the original string.
+
+(Note - matching patterns in string targets is currently presented as a compatibility feature. Strings presented
+to module functions are encoded into UTF-32 before matching and this may incur a speed overhead.)
+
+In *jsre* all patterns are strings, regardless of the type of the search target.
+
+The following constants may be used as flags in both module and object functions:
+
+.. data:: 	I
+			IGNORECASE
+
+	Matching is to be case insensitive; for example 'a' will match both 'a' and 'A'. 
+	Full UNICODE case folding is supported.  
+
+.. data::	M
+			MULTILINE
+
+	The special characters ``^`` and ``$`` match at the beginning and end of a line respectively 
+	(after/before newline characters). The default is for these characters to match only at the 
+	beginning and end of the input buffer. 
+
+.. data::   S
+            DOTALL
+
+	The special character ``.`` matches any valid codepoint (character). The default behaviour 
+	is for ``.`` to match all codepoints except newline characters.
+
+..	data::	X
+			VERBOSE
+
+	Allows the formatting of regular expessions to be more readable.
+
+	Whitespace within a regular expression is ignored, except where it is in a character class 
+	or preceeded with a backslash. Text between ``#`` and the next line is also ignored (ie is 
+	a comment), again provided that ``#`` is unescaped and not within a character class. 
+	Whitespace is not allowed between the start of a group and any extension syntax;
+	for example *(  ?  P  <name>)* would not parse, but ``(?P< name >)`` is accepted. 
+	Similarly whitespace is not allowed between a backspace and the following character 
+	(e.g. ``\w`` ) or within code point specifications. 
+
+.. data::	INDEXALT
+
+	Specifies that alternatives are indexed. This allows (sub)expressions specified as alternatives 
+	in the regular expression to be retrieved from a :class:`Match` object. This is much more efficient 
+	(and much more scalable) than using submatch groups to identify individual alternatives in a 
+	big list. See :ref:`ref_example_keyword` for an example.
+
+.. data::	SECTOR
+
+	This enables the specification of stride and offset of anchor positions within within 
+	the search target, for example to search at only disk sector boundaries. See 
+	:ref:`ref_example_sector` for an example.
+
+**Module level functions are:**
+
+.. function::	compile(pattern[, flags])
+
+	Compile the regular expression *pattern* and return a :class:`RegexObject` object which 
+	allows searching etc. using the methods below. Note that the :class:`ReCompiler` class 
+	may be used to compile combinations of expressions and encodings into a single matching object.
+
+.. function::	search(pattern, target[, flags])
+
+	Search through the *target* (string or bytes) to find the first matching *pattern*, 
+	and returns the corresponding :class:`Match` instance. Returns ``None`` if 
+	no match is found. The *pattern* must be a string, regardless of the type of *target*; 
+	if the *target* is a string then it is encoded using utf-32-be before matching; 
+	if a byte array then the default encoding (utf-8) is assumed. If different encodings 
+	are required the ``RegexObject`` methods provide a much wider range of options.
+
+.. function::	match(pattern, target[, flags])
+
+	Attempt to match the *pattern* starting at the first character in the target. In other words the 
+	function is the same as ``search()`` but only succeeds if there is a match at the start of 
+	the *target* string or buffer.
+
+.. function::	findall(pattern, target[, flags])
+
+	Returns all non-overlapping matches of *pattern* in the *target* as a list of strings, 
+	or a list of tuples. If the *pattern* has sub-match groups then the result will be a 
+	tuple in which the first value is the overall match and subsequent values are 
+	the groups defined in the regular expression. Non-matching groups will return a ``None`` 
+	entry in the tuple.
+
+.. function::	finditer(pattern, target[, flags])
+
+	Returns an *iterator* of :class:`Match` instances over non-overlapping 
+	matches of *pattern* in the given *target*. 
+
+.. function::	purge()
+
+	Clears the regular expression cache.
+
+.. _ref_api_compiler:
+
+---------------------------
+Regular Expression Compiler
+---------------------------
+
+.. class::	ReCompiler(pattern=None, encoding=('utf_8',), flags=0, offset=0, stride=0)
+
+	The :class:`ReCompiler` class may be used as an alternative to the module level ``compile()`` 
+	function to allow combinations of expressions, flags and encodings to be compiled into a 
+	single :class:`RegexObject` matching engine. 
+	
+	The class allows a search specification (flags, encodings) to be set and then one or 
+	more patterns to be associated with the current search specification. The specification 
+	may be changed using ``update(...)`` and more patterns added to the existing specification
+	using ``setPattern(...)``. Finally the :class:`RegexObject` is obtained via the ``compile()``
+	method. See examples in :ref:`ref_example_compile`. 
+	
+	The :class:`Match` object resulting from a successful match has attributes of ``re`` and ``encoding``
+	which document the pattern and encoding that resulted in the match.  
+
+	.. attribute:: encoding
+	
+	If present is a list or tuple of encodings; all the standard python codecs are supported. 
+	The most common encodings are installed by default and others can be added if required. 
+	See :ref:`ref_install_encoding` for more detail.
+	
+	.. attribute:: flags
+	
+	Flags from those defined for this module (see above); multiple flags may be combined by 
+	addition (``+``) or logical or (``|``).  
+	
+	.. attribute:: offset, stride
+	
+	If the ``SECTOR`` flag is set then integer values for offset and stride may be specified to 
+	control the allowed positions of matching anchors (the places from which a match is tested). 
+	See examples at :ref:`ref_example_sector`.
+	
+	.. attribute:: pattern
+	
+	The pattern is a regular expression presented as a string. (It is always a string, regardless 
+	of what encoding or set of encodings are to be searched.) When a pattern is registered it 
+	is compiled using the current search specification.
+	
+	The :class:`ReCompiler` class provides the following methods:
+	
+		.. method:: update(encoding=None, flags=None, offset=0, stride=0)
+		
+		This method allows the current search specification to be updated; the new specification
+		will apply to any patterns registered after the update, but not to any that are already 
+		registered. *offset* and *stride* are only required if the ``SECTOR`` flag is set and the
+		*encoding* and *flags* arguments are as decribed above.
+		
+		If one of *encoding* or *flags* is not specified, or is ``None``, it will not be updated.
+		
+		.. method:: setPattern(pattern)
+		
+		Registers a pattern to the compiler. The pattern is a regular expression which will be compiled
+		using the current search specification. The pattern is added to those already specified as an
+		independent regular expression.
+		
+		.. method:: compile()
+		
+		Returns a :class:`RegexObject` instance compiled from the various search specifications and 
+		patterns previously specified.
+
+.. _ref_api_regex:
+
+--------------------------
+Regular Expression Objects
+--------------------------
+
+.. class::	RegexObject
+
+    The :class:`RegexObject` class encapsulates a compiled matching engine and provides 
+    methods that allow the engine to be used to match patterns in buffers.
+    
+    This pattern matcher is designed to simultaneously run several different combinations
+    of regular expressions, flags, and encodings. As a consequence these attributes are 
+    provided by :class:`Match` objects`, and not as attributes of this class.
+
+    The pattern matching process checks each pattern/encoding combination in turn; in
+    consequence although order is preserved for individual patterns/encodings
+    there is a possibility of overlaps between matches from different patterns. Search will
+    also report the first pattern/encoding to match, not necessarily the earliest
+    position in the string from which a match could have been found (e.g. by a different encoding).
+
+    All methods except ``match()`` have the same argument signature *(buffer [,start [,end [,endanchor]]] )*:
+
+	**buffer**  A *byte* object to search. Note that :class:`RegexObject` does not support string 
+	objects, unlike the module level functions that encode strings if they are presented. 
+
+	**start**  The first byte in the buffer from which to search (default 0). It is assumed that 
+	the start will be on the minimum character word boundary of any encodings used (ie 2 byte for 
+	utf16, 4 byte for utf32).
+
+	**end**  The index of the last byte to be searched + 1 (i.e. normal Python slice end). A 
+	regular expression will fail if it gets to this point and has not matched. 
+
+	**endAnchor**  The last byte to be used as a match anchor + 1 (ie the last position 
+	from which the pattern match check should begin). The ability to specify both the buffer 
+	end and the end anchor allows long data streams to be split into blocks and ensure that 
+	all possible anchor points are searched without duplication and with a specified search 
+	window. See example in :ref:`ref_example_largeFile`.
+
+	The :class:`RegexObject` provides the following methods:
+
+		.. method:: search(buffer [,start [,end [,endanchor]]] )
+
+		Search through the *buffer* (string or bytes) to find the first matching *pattern*, 
+		and returns the corresponding :class:`Match` instance. Returns ``None`` if 
+		no match is found. 
+
+		.. method:: match(buffer [,start [,end]] )
+
+		Attempt to match the *pattern* starting at the first character in the buffer. In other words the 
+		function is the same as ``search()`` but only succeeds if there is a match at the start of 
+		the target buffer.
+
+		.. method:: findall(buffer [,start [,end [,endanchor]]] )
+
+		Returns all non-overlapping matches of *pattern* in the *buffer* as a list of strings, 
+		or a list of tuples. If the *pattern* has sub-match groups then the result will be a 
+		tuple in which the first value is the overall match and subsequent values are 
+		the groups. Non-matching groups will return a ``None`` entry in the tuple.
+
+		.. method:: finditer(buffer [,start [,end [,endanchor]]] )
+
+		Returns an *iterator* of :class:`Match` instances over non-overlapping 
+		matches of *pattern* in the given *target*. 
+   
+.. _ref_api_match:
+   
+-------------
+Match Objects
+-------------
+
+.. class::	Match
+
+    A :class:`Match` instance reports a single successful match; a Match object always evaluates as true.
+
+    The methods of this class provide the same signatures as the standard Python *re* module. However, 
+    because *jsre* supports multiple expressions and encodings :class:`Match` objects also provide 
+    attributes which allow the retrieval of the expression and encoding associated with a particular 
+    match, and (if ``INDEXALT``) the keyword component of the pattern which matched.
+
+    The text matched by the regular expression is always returned as a string by decoding
+    the byte buffer using whatever encoding was successful.
+
+    Usually the indexes of a match group (start, stop) are returned as byte indexes. However, if the match
+    resulted from a module function which was presented with a string target the indexes are corrected to
+    reference positions in the original string. 
+
+    Methods that require a group index as an argument can instead be provided with a group name, if the
+    group is named in the regular expression.
+
+    Available class attributes:
+
+	.. attribute:: pos, endpos, endAnchor
+
+	The buffer start, buffer end and last anchor buffer positions specified for this match in the :class:`RegexObject` 
+	method that resulted in the :class:`Match` object.	
+
+	.. attribute:: lastindex
+
+	The integer index of the last matched capturing group; note that this is the last group that 
+	resulted in a match in the expression, not necessarily the highest numbered group (which may not have matched).
+    
+	.. attribute:: lastgroup   
+
+	The name of the group corresponding to the *lastindex*, if it was named.
+    
+	.. attribute:: re
+
+	The regular expression that resulted in this :class:`Match` object.
+
+	.. attribute:: encoding
+
+	The encoding that resulted in this :class:`Match` object.
+
+	.. attribute:: flags
+
+	The flags used to compile this regular expression.
+
+	.. attribute:: buf
+
+	The byte buffer that was matched.
+
+	.. attribute:: keypattern
+
+	If a pattern which is one of a set of alternatives within an expression was matched, 
+	and the ``INDEXALT`` flag was set this is the pattern that matched. Note that this 
+	is the pattern as specified in the regular expression, not as found in the buffer. This is 
+	helpful in the common case where ``IGNORECASE`` was set resulting in many varients of the original 
+	pattern being matched.
+
+    The class :class:`Match` provides the following methods:
+
+        .. method:: group([group1, ...])
+        
+        Returns a decoded string for one or more match groups. The byte buffer which has been searched will
+        be decoded by the encoding that resulted in the hit, providing a string result. If one group is 
+        specified the result is a single string, if several are provided the result is a tuple of strings. 
+        Group 0 is always the whole match and is the default if no groups are specified; groups within 
+        the regular expression are indexed starting from 1 and group names, if specified, may be used 
+        instead of numbers.
+        
+        .. method:: groups([default])
+        
+        Returns a tuple of all the groups in a match, decoded to string using the encoding which matched.
+        Groups that did not contibute to the match are returned as ``None``, or as the default value 
+        if this is provided as a parameter.
+        
+        .. method:: groupdict([default])
+        
+        Returns a dict which maps group names to matched groups decoded to strings. If a group is not matched
+        then the dictionary maps to ``None`` or the default value if this is provided as a parameter.
+        
+        .. method:: start([group])
+        .. method:: end([group])
+        
+        Returns the start or end of a given group, or of the whole match if a group is not specified. The 
+        value of -1 is used to signifiy that the specified group did not match. Note that matching an 
+        empty string is different from failling to match; if an empty string is matched ``m.start()`` and 
+        ``m.end()`` have the same value. Groups may be named or numbered, and if no group is provided group 0 
+        (the whole match) is the default value. The end value is the index of the last characer + 1,  
+        i.e. ``[m.start(), m.end()]`` is a normal Python range.  
+        
+        The normal values returned are byte indexes into a byte buffer. So that::
+        
+        	m.group()  = m.buf[m.start(), m.end()].decode(m.encoding)
+        
+        However, if the match is a result of providing a module function with a string target, then the 
+        start and end values are corrected to index values in that string.
+        
+        .. method:: span([group])
+        
+        Returns the tuple ``(start([m.group]), end([m.group})``. 
+          

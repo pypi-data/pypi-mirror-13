@@ -1,0 +1,148 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>2. FAQ &mdash; jsre 1.0.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="jsre 1.0.0 documentation" href="index.html" />
+    <link rel="next" title="3. Performance" href="performance.html" />
+    <link rel="prev" title="1. Introduction" href="README.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="performance.html" title="3. Performance"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="README.html" title="1. Introduction"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">jsre 1.0.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="faq">
+<h1>2. FAQ<a class="headerlink" href="#faq" title="Permalink to this headline">¶</a></h1>
+<p><strong>jsre works only for python3 - will there be a py2.7 version?</strong></p>
+<p>At the moment I don&#8217;t plan to build against Python 2, the string handling is sufficiently different to make it a fair amount of work and the applications
+I&#8217;m using this for are all Python 3.</p>
+<p><strong>What does the acronym jsre stand for?</strong></p>
+<p>Just jsre! (If you really must know the js stands for Jigsaw which is a private forensic processing framework.)</p>
+<p><strong>Is the module is built on some standard C regexp implementation or some custom one?</strong></p>
+<p>It is built on a custom extension, not an existing library.
+The extension is not strictly a regex implementation, it is a bytecode virtual machine - the compilation is done in Python.
+The extension does not require anything other than standard C libraries so pip will compile the extension in Windows or Linux;
+the extension is installed automatically when you install the module.</p>
+<p><strong>I assume the module is rather new?</strong></p>
+<p>It has been in development from 2014. I moved it to full release at the start of 2016 after around 6 months of integration
+and use in my forensics framework.</p>
+<p><strong>Are you planning any further development?</strong></p>
+<p>At some point this year I aim to replace the current character encoding library which should improve compilation times,
+I may then provide better support for processing string (as opposed to byte) input. The current API, however, will remain stable.</p>
+<p>Please ask if you have any issues or wish-lists, I would like to hear about both (and
+success stories are also encouraging if you use the package).</p>
+<p><strong>I have seen performance comparisons, but have not had time to test. In common usage is jsre much faster than the standard python re?</strong></p>
+<p>It depends on what you mean by &#8216;common use&#8217;. If you are using expressions of any complexity against large sized byte buffers then yes, jsre will be
+much faster than re or regex. If you are using expressions which are compile-heavy against small text strings then you probably won&#8217;t see any benefit. I&#8217;m afraid that
+performance in all these implementations must be measured in your own problem space. The point is that the asymptotic performance of this is well behaved
+unlike the execution time of most of the standard software libraries.</p>
+<p>The performance issue, and the lack of a portable (Windows &amp; Linux) alternative for Python 3, was the primary reason that I started
+this project. Another factor was the need for efficient handling of multiple user-specified encodings.</p>
+<p><strong>I could not find the repository of the source code in documentation; is the module open source and if it is, where is the source code?</strong></p>
+<p>The module is open source (see licence section of documentation).</p>
+<p>The install section of the documentation will tell you how to get and install the module using pip,
+which will pull the source into your site package directory. If you want to download it
+manually then it is on pypi, the standard python open repository.</p>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="README.html"
+                        title="previous chapter">1. Introduction</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="performance.html"
+                        title="next chapter">3. Performance</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/FAQ.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="performance.html" title="3. Performance"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="README.html" title="1. Introduction"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">jsre 1.0.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2015, Howard Chivers.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+    </div>
+  </body>
+</html>

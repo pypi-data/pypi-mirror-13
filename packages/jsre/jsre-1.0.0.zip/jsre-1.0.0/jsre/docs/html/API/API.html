@@ -1,0 +1,475 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>1. jsre API &mdash; jsre 1.0a documentation</title>
+    
+    <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0a',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="jsre 1.0a documentation" href="../index.html" />
+    <link rel="next" title="1.1. Module Functions" href="Functions.html" />
+    <link rel="prev" title="Welcome to jsre’s documentation!" href="../index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="Functions.html" title="1.1. Module Functions"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../index.html" title="Welcome to jsre’s documentation!"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">jsre 1.0a documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="jsre-api">
+<h1>1. jsre API<a class="headerlink" href="#jsre-api" title="Permalink to this headline">¶</a></h1>
+<p>The module provides functions that provide simplified access to the objects described below.
+These functions also allow the use of string search targets as well as the bytes supported
+by normal jsre objects. This is achieved by encoding strings as utf-32-be before searching.</p>
+<p>The module uses standard Python exceptions, notably &#8216;SyntaxError&#8217; for errors in the pattern,</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Functions.html">1.1. Module Functions</a></li>
+</ul>
+</div>
+<span class="target" id="module-jsre"></span><div class="section" id="regular-expression-objects">
+<h2>1.2. Regular Expression Objects<a class="headerlink" href="#regular-expression-objects" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="jsre.ReCompiler">
+<em class="property">class </em><code class="descclassname">jsre.</code><code class="descname">ReCompiler</code><span class="sig-paren">(</span><em>pattern=None</em>, <em>encoding=('utf_8'</em>, <em>)</em>, <em>flags=0</em>, <em>offset=0</em>, <em>stride=0</em>, <em>utf32_bytecorrection=False</em><span class="sig-paren">)</span><a class="headerlink" href="#jsre.ReCompiler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Manages the compilation of multiple REs and encodings.</p>
+<p>The flags encodings and patterns specified for a single object of this class will be encoded     into a single VM and searched simultaneously. This compiler builds a RegexObject object     which wraps the virtual regex machine used to run pattern matching.</p>
+<p>Several patterns may be compiled into the same execution object at the same time, and each     may have different flags, encodings etc specified.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name" colspan="2">Keyword Arguments:</th></tr>
+<tr class="field-odd field"><td>&nbsp;</td><td class="field-body"><ul class="first">
+<li><p class="first"><strong>pattern</strong> &#8211;
+a str regular expression.</p>
+</li>
+<li><p class="first"><strong>encoding</strong> &#8211;
+a list of encodings to search, default value is utf_8.</p>
+</li>
+<li><p class="first"><strong>flags</strong> &#8211;</p>
+<p>I or IGNORECASE:    Character matching is case insensitive. Basic unicode folding is                                 implemented. (ie equivalent characters are not just upper and                                 lower case.)</p>
+<p>M or MULTILINE:     ^ and $ match the start/end of each line well as the buffer start/end.</p>
+<p>S or DOTALL:        dot &#8216;.&#8217; matches line ends as well as all other characters.</p>
+<p>VERBOSE:            Ignore while space including line breaks and comments within the                                 re outside character classes. A comment may be placed between &#8216;#&#8217;                                 and a line end.</p>
+<p>INDEXALT:           Index top level alternatives - eg index keyword hit in list of                                 alternative words this is more scalable than using groups to                                 identify matched alternatives. Only keywords are indexed, not                                 other alternative expressions.</p>
+<p>ASYNCHRONOUS:       Test for a match at every byte, not on the normal character                                 boundaries.</p>
+<p>SECTOR:             Specify stride and offset of match anchors. e.g. stride = 512,                                 offset = 0 will test at the start of every sector of a disk image.                                 (Otherwise stride and offset not needed.)</p>
+</li>
+<li><p class="first"><strong>stride</strong> &#8211;
+the stride value for moving anchors.</p>
+</li>
+<li><p class="first"><strong>offset</strong> &#8211;
+a start offset into buffer to be searched.</p>
+</li>
+<li><p class="first"><strong>utf32_bytecorrection</strong> &#8211;
+divides match locations by 4 to give string address for 4 byte                                 Unicode encoding.</p>
+</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal"><span class="pre">SyntaxError</span></code> &#8211;
+if the pattern is invalid</p>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="jsre.ReCompiler.compile">
+<code class="descname">compile</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#jsre.ReCompiler.compile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Builds a regular expression object which is used to execute the pattern matching.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">a regular expression object, supports search, findall, finditer.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="#jsre.RegexObject" title="jsre.RegexObject">RegexObject</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="jsre.ReCompiler.setPattern">
+<code class="descname">setPattern</code><span class="sig-paren">(</span><em>pattern</em><span class="sig-paren">)</span><a class="headerlink" href="#jsre.ReCompiler.setPattern" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update the search specification to include the specified pattern.</p>
+<p>This pattern is compiled using any previously specified options or flags. The pattern
+specified will be searched in addition to any previously set patterns.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>pattern</strong> &#8211; a regular expression, in str format.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="jsre.ReCompiler.update">
+<code class="descname">update</code><span class="sig-paren">(</span><em>encoding=None</em>, <em>flags=None</em>, <em>offset=0</em>, <em>stride=0</em><span class="sig-paren">)</span><a class="headerlink" href="#jsre.ReCompiler.update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update compiler encoding list, flags and options.</p>
+<p>Parameters specified using update will override any already set;         they will apply to any subsequently specified patterns. See ReCompiler for         argument details.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name" colspan="2">Keyword Arguments:</th></tr>
+<tr class="field-odd field"><td>&nbsp;</td><td class="field-body"><ul class="first last simple">
+<li><strong>encoding</strong> &#8211;
+a list of encodings to be used.</li>
+<li><strong>flags</strong> &#8211;
+combination of required flags (I, M, S, etc).</li>
+<li><strong>offset</strong> &#8211;
+start offset into buffer to be searched.</li>
+<li><strong>stride</strong> &#8211;
+stride value for anchor moving (0 is default move for the encoding).</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="jsre.RegexObject">
+<em class="property">class </em><code class="descclassname">jsre.</code><code class="descname">RegexObject</code><span class="sig-paren">(</span><em>tvm</em>, <em>reMap</em>, <em>altMap</em>, <em>utf32_bytecorrection</em><span class="sig-paren">)</span><a class="headerlink" href="#jsre.RegexObject" title="Permalink to this definition">¶</a></dt>
+<dd><p>Provides the pattern matching interface together with the compiled matching engine.</p>
+<p>This pattern matcher is designed to simultaneously run several different combinations     of regular expressions, flags, and encodings. As a consequence these attributes and     others such as groups are provided in match results, and not from the execution object     (unlike re and some other systems.)</p>
+<p>The pattern matching process checks each pattern/encoding combination in turn; in     consequence although order is preserved for individual patterns/encodings     there is a possibility of overlaps between matches from different patterns. Search will     also report from the first pattern/encoding to match.</p>
+<p>All methods have the same argument signature: (buffer [,start [,end [,endanchor]]] )</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>buffer</strong> &#8211; a byte object to search.</li>
+<li><strong>start</strong> &#8211; the first byte in the buffer from which to search (default 0). It is assumed                 that the start will be on the minimum character word boundary of any encodings                 used (ie 2 byte for utf16, 4 byte for utf32).</li>
+<li><strong>end</strong> &#8211; index of the last byte to be searched + 1 (i.e. normal python slice end).                 A regular expression will fail if it gets to this point and has not matched.</li>
+<li><strong>endAnchor</strong> &#8211; The last byte to be used as an re anchor (ie the last position from                       which the pattern match check should begin).</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>The ability to specify both the buffer end and the end anchor allows long data steams     to be split into blocks and ensure that all possible anchor points are searched without     duplication and with a specified search window which is the overlap between blocks.</p>
+<dl class="method">
+<dt id="jsre.RegexObject.findall">
+<code class="descname">findall</code><span class="sig-paren">(</span><em>*spec</em><span class="sig-paren">)</span><a class="headerlink" href="#jsre.RegexObject.findall" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns all search as a list, or if multiple group matches within patterns, a list of tuples.</p>
+<p>The results are returns as stings (str), the successful encoding is         used to decode the byte array and provide a string version of the result.</p>
+<p>Arguments:
+(buffer [,start [,end [,endanchor]]] ) - see RegexObject() for documentation.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">List of strings or list of tuples containing strings, see Match.groups().</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="jsre.RegexObject.finditer">
+<code class="descname">finditer</code><span class="sig-paren">(</span><em>*spec</em><span class="sig-paren">)</span><a class="headerlink" href="#jsre.RegexObject.finditer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns an iterator over all matches in the given buffer.</p>
+<p>Arguments:
+(buffer [,start [,end [,endanchor]]] ) - see RegexObject() for documentation.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">A iterator over Match objects.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="jsre.RegexObject.search">
+<code class="descname">search</code><span class="sig-paren">(</span><em>*spec</em><span class="sig-paren">)</span><a class="headerlink" href="#jsre.RegexObject.search" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the first pattern match in the given buffer.</p>
+<p>Arguments:
+(buffer [,start [,end [,endanchor]]] ) - see RegexObject() for documentation.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">A Match object, or None.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="match-objects">
+<h2>1.3. Match Objects<a class="headerlink" href="#match-objects" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="jsre.Match">
+<em class="property">class </em><code class="descclassname">jsre.</code><code class="descname">Match</code><span class="sig-paren">(</span><em>res</em>, <em>searchSpec</em>, <em>reSpec</em>, <em>altWord</em>, <em>utf32_bytecorrection</em><span class="sig-paren">)</span><a class="headerlink" href="#jsre.Match" title="Permalink to this definition">¶</a></dt>
+<dd><p>Describes a single successful match.</p>
+<p>A Match object always evaluates as true.</p>
+<p>As far as possible this class provides the same interface as the standard Python re Match     together with some extensions which allow the retrieval of the expression and     encoding associated with a particular match, and (if INDEXALT) the keyword component     of the pattern which matched.</p>
+<p>The characters matched by the regular expression are always returned as a string by decoding     the byte search target using whatever encoding was successful.</p>
+<p>Usually the (start, stop) indexes of a match group are returned as byte indexes. However if     utf32_bytecorrection was set as a ReCompiler option the indexes are divided by 4 to allow them     to be regarded as string indexes, provided the pattern used 32 bit Unicode encoding.</p>
+<p>Methods that require a group index as an argument can instead be provided with a group name, if the
+group is named in the regular expression.</p>
+<dl class="attribute">
+<dt id="jsre.Match.pos">
+<code class="descname">pos</code><a class="headerlink" href="#jsre.Match.pos" title="Permalink to this definition">¶</a></dt>
+<dd><p>the start position specified for this match (see RegexObject).</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="jsre.Match.endpos">
+<code class="descname">endpos</code><a class="headerlink" href="#jsre.Match.endpos" title="Permalink to this definition">¶</a></dt>
+<dd><p>the end of buffer specified for this match.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="jsre.Match.endAnchor">
+<code class="descname">endAnchor</code><a class="headerlink" href="#jsre.Match.endAnchor" title="Permalink to this definition">¶</a></dt>
+<dd><p>the last anchor position allowed for this match.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="jsre.Match.lastindex">
+<code class="descname">lastindex</code><a class="headerlink" href="#jsre.Match.lastindex" title="Permalink to this definition">¶</a></dt>
+<dd><p>the integer index of the last matched capturing group.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="jsre.Match.lastgroup">
+<code class="descname">lastgroup</code><a class="headerlink" href="#jsre.Match.lastgroup" title="Permalink to this definition">¶</a></dt>
+<dd><p>the name of the last matched capturing group.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="jsre.Match.re">
+<code class="descname">re</code><a class="headerlink" href="#jsre.Match.re" title="Permalink to this definition">¶</a></dt>
+<dd><p>the regular expression used for this match.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="jsre.Match.encoding">
+<code class="descname">encoding</code><a class="headerlink" href="#jsre.Match.encoding" title="Permalink to this definition">¶</a></dt>
+<dd><p>the encoding used for this match.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="jsre.Match.buf">
+<code class="descname">buf</code><a class="headerlink" href="#jsre.Match.buf" title="Permalink to this definition">¶</a></dt>
+<dd><p>the bytes buffer used for this match.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="jsre.Match.end">
+<code class="descname">end</code><span class="sig-paren">(</span><em>*args</em><span class="sig-paren">)</span><a class="headerlink" href="#jsre.Match.end" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the end of group, or of whole match, see start().</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="jsre.Match.getAltWord">
+<code class="descname">getAltWord</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#jsre.Match.getAltWord" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the keyword which was successful in this match.</p>
+<p>This is intended to allow the efficient indexing of results obtained by matching         large numbers of keywords.</p>
+<p>The feature is enabled by the INDEXALT flag, and returns None if not enabled or         there is no indexed match.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">A string which is the keyword (alternative regular expression sub-pattern) provided             by the user. This may not be the same as the string which matched if IGNORECASE is             specified.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="jsre.Match.group">
+<code class="descname">group</code><span class="sig-paren">(</span><em>*args</em><span class="sig-paren">)</span><a class="headerlink" href="#jsre.Match.group" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a decoded substring for one or more match subgroups.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>group</strong> &#8211; One or more group indexes or names.                       Group 0 is always the whole match and group names may be used                       instead of indexes.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">If there is a single argument a string, otherwise a tuple of strings.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="jsre.Match.groupdict">
+<code class="descname">groupdict</code><span class="sig-paren">(</span><em>*args</em><span class="sig-paren">)</span><a class="headerlink" href="#jsre.Match.groupdict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a dictionary of named group matches.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>default</strong> &#8211; specifies the value for groups that did not participate in the match,                         if not provided None is the default.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">A dictionary which maps group name to group string matched.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="jsre.Match.groups">
+<code class="descname">groups</code><span class="sig-paren">(</span><em>*args</em><span class="sig-paren">)</span><a class="headerlink" href="#jsre.Match.groups" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a tuple of the subgroups of the match.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name" colspan="2">Keyword Arguments:</th></tr>
+<tr class="field-odd field"><td>&nbsp;</td><td class="field-body"><strong>default</strong> &#8211;
+specifies the value for groups that did not participate in the match.                         if not specified None is the default.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">A tuple of decoded strings, with groups that failed to match replaced by the default value.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="jsre.Match.span">
+<code class="descname">span</code><span class="sig-paren">(</span><em>*args</em><span class="sig-paren">)</span><a class="headerlink" href="#jsre.Match.span" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the start and end of match as a tuple. See start().</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="jsre.Match.start">
+<code class="descname">start</code><span class="sig-paren">(</span><em>*args</em><span class="sig-paren">)</span><a class="headerlink" href="#jsre.Match.start" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return index of start of group, or of the whole match.</p>
+<p>start and end together allow retrieval of the bytes in the usual way:         match.buf[start(i):end(i)]</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>group</strong> &#8211; The ID or name of the group.                         If not specified, group 0 (the whole match) is returned.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">An integer index to bytes in the search target, or to utf32 string position (see             Match() documentation.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">1. jsre API</a><ul>
+<li><a class="reference internal" href="#regular-expression-objects">1.2. Regular Expression Objects</a></li>
+<li><a class="reference internal" href="#match-objects">1.3. Match Objects</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="../index.html"
+                        title="previous chapter">Welcome to jsre&#8217;s documentation!</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="Functions.html"
+                        title="next chapter">1.1. Module Functions</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/API/API.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="Functions.html" title="1.1. Module Functions"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../index.html" title="Welcome to jsre’s documentation!"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">jsre 1.0a documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2015, Howard Chivers.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+    </div>
+  </body>
+</html>

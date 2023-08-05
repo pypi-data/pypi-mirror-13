@@ -1,0 +1,376 @@
+.. _ref_examples:
+
+=====================
+Features and Examples
+=====================
+
+This section provides an introduction to features provided by *jsre*, including 
+features for handling large data buffers.  
+The examples here are cross referenced from :ref:`ref_API`. 
+
+.. _ref_example_compile:
+
+Compiling and Matching
+^^^^^^^^^^^^^^^^^^^^^^
+
+*jsre* provides a :class:`RegexObject` which is a compiled search engine which is then
+used to match patterns encoded as strings in a target byte buffer (or in a target string for module 
+level functions) resulting in either a string match or a :class:`Match` object which provides 
+more detailed information.
+
+Module functions include ``compile()`` which builds a :class:`RegexObject` object which 
+is then used for matching, and shortcut functions which combine building the :class:`RegexObject` 
+with a matching function. These functions are similar to those provided in the standard 
+Python *re* module. 
+
+In addition *jsre* provides a :class:`ReCompiler` class which allows a much wider
+range of matching algorithms to be compiled. In particular it allows different combinations
+regular expressions and encodings to be compiled into a single matching :class:`RegexObject` instance.
+
+The module level matching functions are ``search()``, ``match()``, ``finditer()`` and ``findall()``.
+Matching engines resulting from the use of these functions are cached. For example, the search function 
+is the simplest way to search a complete target for a specified pattern::
+
+        >>> buffer  = b'sample byte buffer 123.456. the end'
+        >>> pattern = '([0-9]{3}\.)+'
+
+        >>> match = jsre.search(pattern, buffer, encoding='utf-8')
+        >>> print(match.group())
+        123.456.
+
+Module functions are described in more detail in :ref:`ref_api_module`. 
+
+Both object and module functions can take control flags or combinations of flags, for example::
+
+        >>> buffer  = b'Foo, foo, FOO'
+        >>> pattern = 'foo'
+
+        >>> for match in jsre.finditer(pattern, buffer, encoding='ascii', flags=jsre.IGNORECASE):
+        >>>     print(match.group())
+
+        Foo
+        foo
+        FOO
+
+Often it will be necessary to specify only a single regular expression pattern and a range of 
+possible encodings. In this case the module ``compile()`` function, similar to that provided by 
+the Python *re* module, can be used to build the :class:`RegexObject` execution instance. For example::
+
+        >>> buffer  = b'sample byte buffer 123.456. the end'
+        >>> pattern = '([0-9]{3}\.)+'
+
+        >>> regex = jsre.compile(pattern, encoding='ascii')
+        >>> match = regex.search(buffer)
+        >>> print(match.group())
+        123.456.
+
+The :class:`RegexObject` provides ``search()``, ``match()``, ``finditer()`` and ``findall()``
+methods similar to the module methods. Unlike the module methods they take only a byte buffer
+as the search target (not a string), but provide more flexibility in specifying the part of the
+buffer to be matched.
+
+The required encodings can also be presented as a list or tuple, for example::
+
+        >>> regex = jsre.compile(pattern, encoding=('utf_8', 'utf_16_le', 'utf_16_be'))
+	
+The jsre compiler :class:`ReCompiler`` is used to build more complex combinations of 
+regular expressions and encodings which are compiled into a single :class:`RegexObject`. 
+Using the above example, the object sequence is::
+
+        >>> compiler = ReCompiler(encoding='ascii', pattern=pattern)
+        >>> regex = compiler.compile()
+        >>> match = regex.search(buffer)
+
+For more complex examples the :class:`ReCompiler`` instance is configured with a specification, 
+which is a set of encodings and associated flags; any regular expression patterns 
+added to the instance will use the current specification. The specification may be updated before 
+further patterns are added. For example::
+
+        >>> compiler = ReCompiler(encoding='utf_8', pattern=pattern1)
+        >>> compiler.setPattern(pattern2)
+        >>> compiler.update(encoding=('utf_16_le', 'utf_16_be'))
+        >>> compiler.setPattern(pattern3)
+        >>> regex = compiler.compile()
+
+*pattern1* and *pattern2* will be matched using *utf-8* and *pattern3* will be matched using
+both *utf_16_le* and *utf_16_be*. The matching engine will test all of these combinations
+and the :class:`Match` object properties of ``re`` and ``encoding`` can be used to determine 
+which of these combinations resulted in a particular match.
+
+.. _ref_example_search:
+
+Searching within Python Strings
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+jsre is primarily designed to search byte buffers, not Python 3 Strings. For compatibility 
+with re the module level functions also allow matching against a String target.
+
+(If a string is presented instead of a byte buffer the current implementation encodes the 
+string into *utf_32_be* before processing, and this may therefore incur a processing overhead.
+A more comprehensive approach to strings is planned.)
+
+If module functions are presented with a string the position values returned by ``Match`` in
+``start()``, ``end()`` and ``span()`` correctly index the original string::
+
+        >>> match = jsre.search(r'\bt\w+', 'str not byte text to search')
+
+        >>> print(match.group())
+        text
+        >>> print(str(match.span()))
+        (13, 17)
+
+Note that automated conversion of strings applies only in the module functions, it is 
+not provided by the object methods.
+
+.. _ref_example_alternative:
+
+Matching Semantics for Alternative Expressions
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Alternative patterns within a regular expression are evaluated in parallel, using 'leftmost longest'
+(POSIX style) evaluation. Note that this differs from many (PERL style) matching
+systems which evaluate alternatives left to right; in jsre the order of alternatives in
+a regular expression does not change the result. jsre also supports reluctant ('lazy', 'shortest' ) 
+matching which is not present in the POSIX specification but is common in current language libraries, see below. 
+
+For example::
+
+        >>> buffer  = b'search searching searched'
+        >>> pattern = '(search|searching)'
+
+        >>> for match in jsre.finditer(pattern, buffer):
+        >>>     print(match.group())
+
+        search
+        searching
+        search
+
+An example with sub-group matches::
+
+        >>> buffer  = b'abcd'
+        >>> pattern = r'(a|ab|abc)(bcd|cd|d)'
+
+        >>> for match in jsre.finditer(pattern, buffer, encoding='ascii'):
+        >>>     print(str(match.groups()))
+
+        ('abcd', 'abc', 'd')
+
+The longest leftmost match is 'abc', leaving 'd' to be matched by the second sub-group. 
+Note that exactly the same match occurs if a repeated group is used, but in this case the
+match returned from the sub-group is the last match for the repeated group::
+
+        >>> buffer  = b'abcd'
+        >>> pattern = r'(a|ab|abc|bcd|cd|d)+'
+
+        >>> for match in jsre.finditer(pattern, buffer, encoding='ascii'):
+        >>>     print(str(match.groups()))
+
+        ('abcd', 'd')
+
+.. _ref_example_keyword:
+
+Indexing Alternatives
+^^^^^^^^^^^^^^^^^^^^^
+
+Indexing allows the efficient identification of the matching (sub) expressions or keywords 
+without the need to provide each with its own subgroup. This allows the use of much larger
+alternative expression lists and provides some efficiency gains in their matching.
+
+Indexing is enabled using the flag ``jsre.INDEXALT``. ``Match`` objects then allow
+the user to retrieve the keyword matched using the ``keypattern`` attribute::
+
+        >>> buffer  = b'the quick brown Foo jumps over the lazy BAR'
+        >>> pattern = 'foo|bar|dog|fox'
+
+        >>> for match in jsre.finditer(pattern, buffer, flags=jsre.INDEXALT + jsre.IGNORECASE):
+        >>>     print('keypattern = {}, match = {}'.format(match.keypattern, match.group()))
+
+        keypattern = foo, match = Foo
+        keypattern = bar, match = BAR
+
+Alternatives indexed in this way are limited to the highest level of alternatives within a 
+given expression. For example, in ``foo|(?cat|dog)|fox`` the key patterns 
+would be ``foo``, ``(?:cat|dog)`` and ``fox``. The indexing would not extend recursively to
+separate ``cat`` and ``dog``.  
+
+.. _ref_example_largeFile:
+
+Large File Processing
+^^^^^^^^^^^^^^^^^^^^^
+
+In common with most regular expression libraries jsre allows a search to be limited to part
+of an input buffer, for example::
+
+        >>> buffer  = b'the quick brown Foo jumps over the lazy BAR'
+        >>> pattern = r'\b\w{5}\b'
+
+        >>> regex = jsre.compile(pattern, encoding='ascii')
+        >>> match = regex.search(buffer, 9, 20)
+
+        >>> print(match.group())
+        brown
+
+In large buffers this method of selection is often preferable to preprocessing the
+buffer with the equivalent ``buffer[9:20]``, since slicing a buffer in Python in this way
+will incur a buffer copy overhead.
+
+When splitting a very large file or disk image into buffers
+for processing it is necessary to allow an overlap between buffers, so that patterns that start
+to match (anchor) near the end of a buffer boundary can be matched to completion. The length of the
+overlap determines the match 'window' - some patterns will be required to match
+within this space.
+
+It is desirable to avoid duplication that may occur if a short match occurs within the overlap
+between buffers. This is achieved by setting a 'last anchor point' in the buffer, which is the last
+position at which a pattern match is allowed to start. This is an additional parameter which jsre allows
+after the usual (start,end) pair used above.
+
+For example, if a very large file was split into 1 MByte buffers, and the longest required window
+for any match was 1kByte, then the specification for each match would be::
+
+        >>> regex.finditer(buffer, 0, 1049600, 1048576)
+
+The actual buffer size is 1049600, the last anchor point is at 148576; the second buffer to be 
+processed would start at byte 1048576 and overlap into the third buffer, etc. 
+
+.. _ref_example_sector:
+
+Sector Offset Searches
+^^^^^^^^^^^^^^^^^^^^^^
+
+A common feature of searches against disks and other structured objects such as databases is that certain pattern matches
+are only valid at periodic offsets - for example at disk sector boundaries. jsre allows a *stride* and *offset* to be associated with
+an encoding to restrict the anchor points from which matches are attempted.
+
+This feature is enabled with the ``jsre.SECTOR`` flag, and requires the *stride* and *offset*
+keyword parameters to be set with the associated encoding list. For example, to search from only the start of sectors size 512::
+
+        >>> regex = jsre.compile(pattern=..., encoding=..., flags=jsre.SECTOR, stride=512, offset=0)
+
+A small example::
+
+        >>> buffer  = b'test4567890test5678901test6789012test7890123test8901234test9012345test'
+        >>> pattern = r'test\d'
+
+        >>> regex = jsre.compile(pattern=pattern, encoding='ascii', flags=jsre.SECTOR, stride=10, offset=3)
+        >>> for match in regex.finditer(buffer):
+        >>>     print(match.group())
+
+        test7
+
+.. _ref_example_reluctant:
+
+Reluctant Matching
+^^^^^^^^^^^^^^^^^^
+
+jsre supports reluctant (lazy or shortest) quantifiers (e.g. ``+?`` ). Because jsre does
+not search an expression using backtracking reluctant quatifiers are interpreted as requiring
+the shortest possible match for the group or subgroup in which they occur. For this reason jsre 
+also provides a group extension mechanism which can also be used to specify the scope of 
+the shortest match..
+
+In most cases this provides the same result as lazy evaluation in a backtracking system 
+(but with considerable performance benefits); there is one limitation, however, which is that 
+only one kind of quantifier (ie greedy or reluctant) is permitted in any single group. In 
+difficult cases this may require the user to specify additional sub-groups to achieve exactly the 
+desired matching.  
+
+Simple reluctant semantics, such as lazy evaluation of the whole regular expression,
+are most easily implemented using the group extension mechanism. For example if 
+alternatives are made reluctant, then the shortest available match will succeed::
+
+        >>> buffer  = b'search searching searched'
+        >>> pattern = '(??search|searching)'
+
+        >>> for match in jsre.finditer(pattern, buffer):
+        >>>     print(match.group())
+
+		('search', 'search')
+		('search', 'search')
+		('search', 'search')
+
+In this case 'search' appears as the overall match, and also as a submatch since the 
+whole expression is grouped. 
+
+Non-greedy sections of regular expression are often used to enforce locality, such as 
+ensuring that the closest brackets or tags are matched. For example::
+
+        >>> buffer  = b'brackets example {first{one},second{two}} end of example'
+        >>> pattern = r'\{.+?\}'
+
+        >>> for match in jsre.finditer(pattern, buffer, encoding='ascii'):
+        >>>     print(str(match.groups()))
+
+        ('{first{one}',)
+        ('{two}',)
+
+The matching behaviour can be controlled within nested groups.  
+For example, for the buffer above, the following regular expression::
+
+        >>> pattern = r'(??\{([a-z,]+(\{.+\}))+\})'
+
+results in::
+
+	('{first{one},second{two}}', 
+	 '{first{one},second{two}}', 
+	 'first{one},second{two}', 
+	 '{one},second{two}')
+
+Despite the reluctant outer match the inner group ``([a-z,]+(\{.+\}))`` is 
+processed greedily, as shown by the inner match of *{one},second{two}*.
+
+If the pattern specified a reluctant inner quantifier::
+
+        >>> pattern = r'(??\{([a-z,]+(??\{.+\}))+\})'
+
+Then the reluctant inner group would be executed twice because it will be constrained to short matches,
+resulting in the submatch reporting only the second inner bracket::
+
+	('{first{one},second{two}}', 
+	 '{first{one},second{two}}', 
+	 ',second{two}', 
+	 '{two}')
+
+Note that in this case jsre would NOT accept the syntax ``([a-z,]+\{.+?\})`` because it would 
+result in both reluctant and greedy quantifiers in a single branch; the user is required
+to specify the scope of the different matching policies. The example above uses the group 
+extension, the alternative is to clarify the intent by placing a standard reluctant quantifier 
+in a separate sub-group: ``([a-z,]+(\{.+?\}))``
+
+
+.. _ref_example_backreferences:
+
+Backreferences
+^^^^^^^^^^^^^^
+
+A backreference specifies that part of an expression must match exactly a string that was previously 
+matched by a specified group. The group may be identified by name or number.
+
+For example, it may be necessary to extract tagged information without knowing the tags in advance:: 
+
+        >>> buffer  = r'a<x>b<y>c<\y>d<\x>e<x>f<\x>g'
+        >>> pattern = r'<(.*>).*?<\\\1'
+        >>> for match in jsre.finditer(pattern, buffer):
+        >>>     print(str(match.groups()))
+
+        ('<x>b<y>c<\y>d<\x>', 'x>')
+        ('<x>f<\x>', 'x>)
+
+The first part of the pattern ``<(.*>)`` matches the tag *<x>* so the backreference ``\1`` to the first 
+subgroup matches *x>* capturing the closing tag; the reluctant quantifier ``.*?`` matches 
+the shortest possible string between tags, resulting in two matches.
+
+Backreferences allow expressions to be written that may otherwise be impossible, but also present potential
+performance problems. In this expression the first subgroup will match all possible strings ending in *>* 
+that follow a *<*, i.e.:  *x>, x>b<y>, x>b<y>c<\y>, x>b<y>c<\y>d<\x>, x>b<y>c<\y>d<\x>e<x>, x>b<y>c<\y>d<\x>e<x>f<\x>, y> ...*
+Each of these has to be tested in all the remaining positions of the input string. It should be obvious that
+patterns of this sort may result in performance problems. In backtracking pattern 
+matchers the result is likely to be excessive execution time, jsre will suffer little in speed but may
+exhaust the memory space allocated to tracking the alternatives at each point in the string.
+
+The solution is to minimise as far as possible the options available to the subgroup that is to be backreferenced. 
+For example, in this case assuming that tags are smaller than 3 characters the expression could be better rewritten 
+as: ``<(.{1,3}>).*?<\\\1``.
+
+
+

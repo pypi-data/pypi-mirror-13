@@ -1,0 +1,175 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>10. History &mdash; jsre 1.0.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="jsre 1.0.0 documentation" href="index.html" />
+    <link rel="next" title="11. Licence" href="Licence.html" />
+    <link rel="prev" title="9. Unicode Compliance" href="unicode.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="Licence.html" title="11. Licence"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="unicode.html" title="9. Unicode Compliance"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">jsre 1.0.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="history">
+<h1>10. History<a class="headerlink" href="#history" title="Permalink to this headline">¶</a></h1>
+<p><strong>Updates to Version 1.0.0</strong></p>
+<p>&#8216;+&#8217; and &#8216;*&#8217; are now unlimited (ie not restricted to 65535 repetitions)
+Loop optimisation has now been extended to inner loops (previously just those
+at the start of an expression.). This improves performance significantly for
+expressions with embedded loops that are likely to capture long strings.</p>
+<p>The matching sematics have now been clarified (thanks for several comments) so that the
+&#8216;first longest&#8217; rule usually applies following POSIX, assuming that shortest (reluctant)
+matching is not specified for a group. Reluctant matching is still supported.</p>
+<p>Bugfixes:
+The anchor movement process described below at beta 5 has been superceeded, since it
+was unsafe in the presence of invalid encodings that resulted from parsing inputs with
+sequences of different encodings. (&#8216;.*&#8217; does not now re-position the anchor after newline
+on failure.) This change does not impact performance.</p>
+<p><strong>Updates to Version 1.0.0 beta 7</strong></p>
+<p>Minor bugfix (match() not in __init__, purge function)</p>
+<p><strong>Updates to Version 1.0.0 beta 6</strong></p>
+<p>Indexing alternative expressions (<code class="docutils literal"><span class="pre">INDEXALT</span></code> flag) now applies to any alternative
+expression, not just to keywords.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The property of the <code class="xref py py-class docutils literal"><span class="pre">Match</span></code> object which has the value of the matched pattern
+is <code class="docutils literal"><span class="pre">keypattern</span></code>. The original <strong>keyword</strong> property has been removed.</p>
+</div>
+<p><code class="xref py py-class docutils literal"><span class="pre">Match</span></code> objects now have a <em>flags</em> property which are the flags used to compile
+the matched expression.</p>
+<p><strong>Updates to Version 1.0.0 beta 5</strong></p>
+<p><code class="docutils literal"><span class="pre">__getstate__</span></code> and <code class="docutils literal"><span class="pre">__setstate__</span></code> functions have been added to the extension
+class (jsvm) to allow a compiled expression to be pickled. This is necessary
+for use with the multiprocessing module on Windows.</p>
+<p>Backreferences are now supported.</p>
+<p><code class="docutils literal"><span class="pre">match()</span></code> and <code class="docutils literal"><span class="pre">purge()</span></code> functions have been added.</p>
+<p>Reluctant (lazy) quantifiers (e.g. <code class="docutils literal"><span class="pre">+?</span></code>) are now supported in addition to the
+reluctant group extension; see <a class="reference internal" href="examples.html#ref-example-reluctant"><span>Reluctant Matching</span></a> for details.</p>
+<p>The memory footprint is still limited below 10MB but its size is now adaptive
+depending on the expression to be evaluated.</p>
+<p>The depreciated ASYNCHRONOUS flag has been removed.</p>
+<p>There are minor changes to syntax for compatibility with other matching engines;
+the most significant is that the default status of repeated groups and groups
+that encompass the whole expression has changed from non-capturing to capturing.</p>
+<p>All repeats are limited to a maximum of 65535.
+Note that if the expression starts with &#8216;&#8217;.*&#8217;&#8217; or similar then this means that
+if a match fails then the next match will be attempted after the following newline.
+However if DOTALL is set the anchor will be incremented and a match will be attempted
+from every byte - the user can prevent this behaviour by setting an anchor stop
+position.</p>
+<p><strong>Updates to Version 1.0.0 beta 4</strong></p>
+<p>The primary update to beta 3 is to automatically detect expressions that start
+with .* and other similar prefixes. In previous versions it was necessary to
+set the anchor stop at the start of the text buffer to prevent the vm uselessly
+restarting a failed match from every position in the buffer. These cases are
+now detected automatically.</p>
+<p>This modification has also improved the use of Multiline <code class="docutils literal"><span class="pre">^</span></code>: the fast prefix
+scanning available in the VM is now used to move the anchor point to each line
+start.</p>
+<p>The update also includes bug fixes (optimiser treatment of non-consuming groups
+and thread order processing in counted loops) which appear seldom in
+(my) practice but improve asyptotic performance.</p>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="unicode.html"
+                        title="previous chapter">9. Unicode Compliance</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="Licence.html"
+                        title="next chapter">11. Licence</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/history.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="Licence.html" title="11. Licence"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="unicode.html" title="9. Unicode Compliance"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">jsre 1.0.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2015, Howard Chivers.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+    </div>
+  </body>
+</html>

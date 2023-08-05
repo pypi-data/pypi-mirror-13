@@ -1,0 +1,247 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>5. Installation &mdash; jsre 1.0.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="jsre 1.0.0 documentation" href="index.html" />
+    <link rel="next" title="6. Module Functions and Objects" href="API.html" />
+    <link rel="prev" title="4. Features and Examples" href="examples.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="API.html" title="6. Module Functions and Objects"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="examples.html" title="4. Features and Examples"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">jsre 1.0.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="installation">
+<h1>5. Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
+<p>The recommended way to install jsre is to use the Python <code class="docutils literal"><span class="pre">pip</span></code> utility which will
+download the module from the pypi repository then install it.</p>
+<p>This section briefly describes module installation, testing, and extending the installed
+set of encodings if required.</p>
+<p>jsre is compatible with Python 3, it is not available for Python 2. It has a single python extension written in C which is
+pre-compiled in a <em>wheel</em> for Microsoft Windows, or is compiled by <em>pip</em> during Linux installation.</p>
+<div class="section" id="windows-installation">
+<h2>5.1. Windows Installation<a class="headerlink" href="#windows-installation" title="Permalink to this headline">¶</a></h2>
+<p>Since Python 3.4, <code class="docutils literal"><span class="pre">pip</span></code> is installed with Python; jsre install should be straightforward:</p>
+<div class="highlight-python"><div class="highlight"><pre>pip install jsre
+</pre></div>
+</div>
+<p>Earlier versions of Python may need to install pip as a module and invoke it with <code class="docutils literal"><span class="pre">python</span> <span class="pre">-m</span> <span class="pre">pip</span> <span class="pre">...</span></code>.
+If you have multiple versions of Python installed you may need to use <code class="docutils literal"><span class="pre">pip3</span></code>. If pip is not installed
+as a module (<code class="docutils literal"><span class="pre">import</span> <span class="pre">pip</span></code> or <code class="docutils literal"><span class="pre">import</span> <span class="pre">pip3</span></code> both fail) then try <code class="docutils literal"><span class="pre">python</span> <span class="pre">-m</span> <span class="pre">ensurepip</span></code> to install
+the package - it will already be available as a wheel on the system.</p>
+<p>Python Modules are installed to the site-packages directory; for Python 3.4 the installation
+directory is:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="o">...</span><span class="n">Python3</span><span class="o">.</span><span class="mi">4</span>\<span class="n">Lib</span>\<span class="n">site</span><span class="o">-</span><span class="n">packages</span>\<span class="n">jsre</span>
+</pre></div>
+</div>
+<p>jsre documentation is installed in the <code class="docutils literal"><span class="pre">docs</span></code> subdirectory of the above path.</p>
+<p>After installation, check that all the components of the module have been installed by navigating to the module
+directory using the command line, then using <code class="docutils literal"><span class="pre">tools</span> <span class="pre">test</span></code>. For example:</p>
+<div class="highlight-python"><div class="highlight"><pre>C:\Python34\Lib\site-packages\jsre&gt;python tools.py test
+</pre></div>
+</div>
+<p>The script will generate warnings as part of its testing; it should complete with a message:</p>
+<div class="highlight-python"><div class="highlight"><pre>Ran .. tests in .. seconds
+OK
+</pre></div>
+</div>
+<p>Finally, check that the module can be accessed from an external Python script:</p>
+<div class="highlight-python"><div class="highlight"><pre>C:\Users\student&gt;Python
+Python 3.4.2 ... on win32 ...
+&gt;&gt;&gt; import jsre
+&gt;&gt;&gt; res = jsre.findall(&#39;b\w*&#39;,&#39;quick brown fox&#39;)
+&gt;&gt;&gt; print(str(res))
+[(&#39;brown&#39;,)]
+</pre></div>
+</div>
+<p>This assumes that only one version of python is installed, if you have multiple versions then you may
+need to use version-specific commands (e.g. <code class="docutils literal"><span class="pre">pip3.4</span></code>). An alternative (better) solution is to use virtual environments.</p>
+</div>
+<div class="section" id="linux-installation">
+<h2>5.2. Linux Installation<a class="headerlink" href="#linux-installation" title="Permalink to this headline">¶</a></h2>
+<p>There is considerable variation in Linux systems; the examples in this section may need to be
+adjusted for your system, but the process is straightforward.  <code class="docutils literal"><span class="pre">pip</span></code> is used to install the
+module and compile the associated C extension. There are no additional environmental libraries
+or modules required but since the extension must be compiled it is necessary to first install
+the Python development extensions. For example, in Debian based systems such as Ubuntu:</p>
+<div class="highlight-python"><div class="highlight"><pre>sudo apt-get install build-essential python3.4-dev
+</pre></div>
+</div>
+<p>RHEL/CentOS/Fedora users will need to use <em>yum</em> in place of <em>apt-get</em>.</p>
+<p>In Python 3.4 <em>pip</em> should already be installed, this can be tested using <code class="docutils literal"><span class="pre">pip3.4</span> <span class="pre">-V</span></code>. Note that Ubuntu users
+need to substitute <code class="docutils literal"><span class="pre">pip3</span></code> and <code class="docutils literal"><span class="pre">Python3</span></code>, omitting the minor version:</p>
+<div class="highlight-python"><div class="highlight"><pre>user@ubuntu:~$ pip3 -V
+pip 1.5.4 from /usr/lib/python3/dist-packages (python 3.4)
+</pre></div>
+</div>
+<p>Install pip if it is not present, for example in Ubuntu:</p>
+<div class="highlight-python"><div class="highlight"><pre>sudo apt-get install python3-pip
+</pre></div>
+</div>
+<p>Next use <em>pip</em> to download, compile and install the module:</p>
+<div class="highlight-python"><div class="highlight"><pre>sudo pip3 install jsre
+</pre></div>
+</div>
+<p>In Linux, Python modules are installed in <code class="docutils literal"><span class="pre">dist-packages</span></code>, for example:</p>
+<div class="highlight-python"><div class="highlight"><pre>/usr/local/lib/python3.4/dist-packages/jsre
+</pre></div>
+</div>
+<p>After installation check that all the components of the module have been installed by navigating to the module
+directory, then using <code class="docutils literal"><span class="pre">python</span> <span class="pre">tools.py</span> <span class="pre">test</span></code>. For example:</p>
+<div class="highlight-python"><div class="highlight"><pre>user@ubuntu:/usr/local/lib/python3.4/dist-packages/jsre$ sudo python3.4 tools.py test
+</pre></div>
+</div>
+<p>The script will generate warnings as part of its testing; it should complete with a message:</p>
+<div class="highlight-python"><div class="highlight"><pre>Ran .. tests in .. seconds
+OK
+</pre></div>
+</div>
+<p>Finally, check that the module can be accessed from an external Python script:</p>
+<div class="highlight-python"><div class="highlight"><pre>user@ubuntu:~$ python3
+Python 3.4.0 ... on linux ...
+&gt;&gt;&gt; import jsre
+&gt;&gt;&gt; res = jsre.findall(&#39;b\w*&#39;, &#39;quick brown fox&#39;)
+&gt;&gt;&gt; print(str(res))
+[(&#39;brown&#39;,)]
+</pre></div>
+</div>
+<p>Ubuntu is used as an example because it supports both python2 and python3, so the identification of versions
+in the commands is important. If you have only version 3 installed you may be able to simply use <em>pip</em>, <em>python</em>, etc.</p>
+</div>
+<div class="section" id="encodings">
+<span id="ref-install-encoding"></span><h2>5.3. Encodings<a class="headerlink" href="#encodings" title="Permalink to this headline">¶</a></h2>
+<p>jsre uses pre-compiled Unicode character classes for each encoding that is required.</p>
+<p>Unicode Encodings installed by default are:</p>
+<blockquote>
+<div>utf_8, utf_16_be, utf_16_le, utf_32_be, utf_32_le</div></blockquote>
+<p>together with codepages for:</p>
+<blockquote>
+<div>ascii, cp1250, cp1251, cp1252, cp1253, cp1254, cp1255, cp1256, cp1257, cp1258</div></blockquote>
+<p>Users can install additional encodings from the available Python codecs using the <em>tools</em> script
+as above with the argument <em>compile</em> followed by the codec name. For example, to install
+cp858 from the jsre install directory, use (Windows):</p>
+<div class="highlight-python"><div class="highlight"><pre>tools compile cp858
+</pre></div>
+</div>
+<p>or Linux:</p>
+<div class="highlight-python"><div class="highlight"><pre>sudo python3.4 tools.py compile cp858
+</pre></div>
+</div>
+<p>Compilation may take several minutes and should end with a <em>Compilation Complete</em> message.</p>
+<p>Most user-installed encodings are likely to be ascii extensions/code pages; in this case expect
+warning messages that some character classes cannot be found, since not all classes can be
+represented in all encodings. You are still able to use the installed character classes.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">5. Installation</a><ul>
+<li><a class="reference internal" href="#windows-installation">5.1. Windows Installation</a></li>
+<li><a class="reference internal" href="#linux-installation">5.2. Linux Installation</a></li>
+<li><a class="reference internal" href="#encodings">5.3. Encodings</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="examples.html"
+                        title="previous chapter">4. Features and Examples</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="API.html"
+                        title="next chapter">6. Module Functions and Objects</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/install.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="API.html" title="6. Module Functions and Objects"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="examples.html" title="4. Features and Examples"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">jsre 1.0.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2015, Howard Chivers.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+    </div>
+  </body>
+</html>

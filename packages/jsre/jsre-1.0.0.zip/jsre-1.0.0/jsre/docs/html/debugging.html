@@ -1,0 +1,206 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>8. Debugging and Error Codes &mdash; jsre 1.0.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="jsre 1.0.0 documentation" href="index.html" />
+    <link rel="next" title="9. Unicode Compliance" href="unicode.html" />
+    <link rel="prev" title="7. Regular Expression Syntax" href="re_syntax.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="unicode.html" title="9. Unicode Compliance"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="re_syntax.html" title="7. Regular Expression Syntax"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">jsre 1.0.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="debugging-and-error-codes">
+<h1>8. Debugging and Error Codes<a class="headerlink" href="#debugging-and-error-codes" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="regular-expression-parsing">
+<h2>8.1. Regular Expression Parsing<a class="headerlink" href="#regular-expression-parsing" title="Permalink to this headline">¶</a></h2>
+<p>It is often difficult for those who are occasional users of regular expessions
+to be sure about the meaning of more complex expressions. To help understand
+how jsre interprets an expression the module contains a simple print-to-console
+function which prints the tree resulting from parsing a given expression.</p>
+<p>To obtain the parse printout use any of the functions that accept a flag and
+add the XDUMPPARSE flag. For example, the following is a simplified (not recommended)
+regular expression for IP addresses:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">regex</span> <span class="o">=</span> <span class="n">jsre</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s">&quot;(\d{1,3}\.){3}[0-9]{1,3}&quot;</span><span class="p">,</span> <span class="n">flags</span><span class="o">=</span><span class="n">jsre</span><span class="o">.</span><span class="n">XDUMPPARSE</span><span class="p">)</span>
+
+<span class="go">        ********** Parse Tree **********</span>
+<span class="go">        0:group         (\d{1,3}\.){3}[0-9]{1,3}</span>
+<span class="go">          11:repeat         {3,3}</span>
+<span class="go">            0:group</span>
+<span class="go">              3:repeat         {1,3}</span>
+<span class="go">                1:property      {general_category=decimal_number}</span>
+<span class="go">              9:character     \.        (  2e,  2e)</span>
+<span class="go">          19:repeat         {1,3}</span>
+<span class="go">            14:class         [0-9]</span>
+<span class="go">              15:character     0-9      (  30,  39)</span>
+<span class="go">        ********************************</span>
+</pre></div>
+</div>
+<p>Note:</p>
+<p>1.  Each entry starts with the character index in the expression and the type of
+component (e.g. the first repeat above is at character 11); indentation represents nesting.</p>
+<p>2.  All repeats are expanded into their full representation (for example <code class="docutils literal"><span class="pre">{3}</span></code>
+is shown as <code class="docutils literal"><span class="pre">{3,3}</span></code>).</p>
+<p>3.  The characters included in each character class are listed below the class;
+the hexadecimal value (range) of characters (character ranges) is also given.</p>
+</div>
+<div class="section" id="virtual-machine-error-codes">
+<h2>8.2. Virtual Machine Error Codes<a class="headerlink" href="#virtual-machine-error-codes" title="Permalink to this headline">¶</a></h2>
+<p>Matching is carried out in a Python extension module <strong>jsre</strong> which is a virtual machine.
+Errors returned fom the VM are integer codes. For example:</p>
+<div class="highlight-python"><div class="highlight"><pre>SystemError: Error from jsvm.findMatch(), code: 3
+</pre></div>
+</div>
+<p>Codes 1-9 are reserved for runtime errors (i.e. during matching) and
+errors 10-99 are errors encountered during program loading. As far as possible the
+VM loader tests for errors during the loading to minimise the need for error checking
+during matching; most errors should therefore be caught by the compiler and a suitable
+message given.</p>
+<p>The following Virtual Machine exception codes may be seen by a user:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="11%" />
+<col width="89%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><strong>Code</strong></td>
+<td><strong>Cause</strong></td>
+</tr>
+<tr class="row-even"><td>2</td>
+<td>Failed to allocate space for the runtime object.</td>
+</tr>
+<tr class="row-odd"><td>3</td>
+<td>Thread Heap Overflow.</td>
+</tr>
+<tr class="row-even"><td>4</td>
+<td>Failed to allocate additional thread heap.</td>
+</tr>
+<tr class="row-odd"><td>11</td>
+<td>Failed to allocate memory for the VM.</td>
+</tr>
+</tbody>
+</table>
+<p>Any other error codes reported by the VM are likely to be the result of
+compiler errors; I would appreciate a report.</p>
+<p>The allocation failures (2, 4, 11) indicate memory exhaustion. Remember that
+Python is usually limited to 2GB memory; the original cause is unlikely to be <em>jsre</em> since
+its memory footprint is limited to below 10MB. The only <em>jsre</em> event that could perhaps
+exceed the memory available is attempting to build a very large result set with a single
+matching attempt. This would usually be a bug in the regular expression used, or the
+use of an expression which is not well suited to the application.</p>
+<p>Code 3 (Thread heap overflow) indicates that the expression has generated too many
+alternative options (valid prefixes) at some point in the input stream.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">8. Debugging and Error Codes</a><ul>
+<li><a class="reference internal" href="#regular-expression-parsing">8.1. Regular Expression Parsing</a></li>
+<li><a class="reference internal" href="#virtual-machine-error-codes">8.2. Virtual Machine Error Codes</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="re_syntax.html"
+                        title="previous chapter">7. Regular Expression Syntax</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="unicode.html"
+                        title="next chapter">9. Unicode Compliance</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/debugging.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="unicode.html" title="9. Unicode Compliance"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="re_syntax.html" title="7. Regular Expression Syntax"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">jsre 1.0.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2015, Howard Chivers.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+    </div>
+  </body>
+</html>

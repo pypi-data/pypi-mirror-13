@@ -1,0 +1,50 @@
+===
+FAQ
+===
+
+**jsre works only for python3 - will there be a py2.7 version?**
+
+At the moment I don't plan to build against Python 2, the string handling is sufficiently different to make it a fair amount of work and the applications
+I'm using this for are all Python 3.
+
+**What does the acronym jsre stand for?**
+
+Just jsre! (If you really must know the js stands for Jigsaw which is a private forensic processing framework.)
+
+**Is the module is built on some standard C regexp implementation or some custom one?**
+
+It is built on a custom extension, not an existing library.
+The extension is not strictly a regex implementation, it is a bytecode virtual machine - the compilation is done in Python.
+The extension does not require anything other than standard C libraries so pip will compile the extension in Windows or Linux;
+the extension is installed automatically when you install the module.
+
+**I assume the module is rather new?**
+
+It has been in development from 2014. I moved it to full release at the start of 2016 after around 6 months of integration
+and use in my forensics framework.
+
+**Are you planning any further development?**
+
+At some point this year I aim to replace the current character encoding library which should improve compilation times,
+I may then provide better support for processing string (as opposed to byte) input. The current API, however, will remain stable.
+
+Please ask if you have any issues or wish-lists, I would like to hear about both (and
+success stories are also encouraging if you use the package).
+
+**I have seen performance comparisons, but have not had time to test. In common usage is jsre much faster than the standard python re?**
+
+It depends on what you mean by 'common use'. If you are using expressions of any complexity against large sized byte buffers then yes, jsre will be
+much faster than re or regex. If you are using expressions which are compile-heavy against small text strings then you probably won't see any benefit. I'm afraid that
+performance in all these implementations must be measured in your own problem space. The point is that the asymptotic performance of this is well behaved
+unlike the execution time of most of the standard software libraries.
+
+The performance issue, and the lack of a portable (Windows & Linux) alternative for Python 3, was the primary reason that I started
+this project. Another factor was the need for efficient handling of multiple user-specified encodings.
+
+**I could not find the repository of the source code in documentation; is the module open source and if it is, where is the source code?**
+
+The module is open source (see licence section of documentation).
+
+The install section of the documentation will tell you how to get and install the module using pip,
+which will pull the source into your site package directory. If you want to download it
+manually then it is on pypi, the standard python open repository.
