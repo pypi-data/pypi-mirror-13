@@ -1,0 +1,53 @@
+<h2>Published in {{ month|date:"F, Y" }}</h2>
+
+<h3>Dates</h3>
+<ul>
+{% for date in date_list %}
+    {% with m=date|date:"m" d=date|date:"d" %}
+    <li>
+        <a href="{% url 'blargg:entry_archive_day' month.year m d %}">{{ date|date:"F jS"}}</a>
+    </li>
+    {% endwith %}
+{% endfor %}
+</ul>
+
+<h3>Entries</h3>
+<ul>
+{% for entry in object_list %}
+    <li>
+        <a href="{{ entry.get_absolute_url }}">{{ entry.title }}</a>
+    </li>
+{% endfor %}
+</ul>
+
+<h2>Stats for {{ month|date:"F, Y" }}</h2>
+<p>Total Words written: {{ total_words }}</p>
+<table>
+  <caption>Most Common words</caption>
+  <thead>
+    <tr><th>Word</th><th>Times Used</th></tr>
+  </thead>
+  <tbody>
+    {% for word, count in most_common %}
+      <tr><td>{{ word }}</td><td>{{ count }}</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+{% if previous_month or next_month %}
+    <p>
+    {% if previous_month %}
+        {% with y=previous_month|date:"Y" m=previous_month|date:"m" %}
+        <a href="{% url 'blargg:entry_archive_month' y m %}">{{ previous_month|date:"F Y" }}</a>.
+        {% endwith %}
+    {% endif %}
+
+    {{ month|date:"F, Y" }}.
+
+    {% if next_month %}
+        {% with y=next_month|date:"Y" m=next_month|date:"m" %}
+        <a href="{% url 'blargg:entry_archive_month' y m %}">{{ next_month|date:"F Y" }}</a>.
+        {% endwith %}
+    {% endif %}
+    </p>
+{% endif %}
