@@ -1,0 +1,91 @@
+Metadata-Version: 2.0
+Name: posts
+Version: 0.1.5
+Summary: A Python library for send mail easily
+Home-page: https://github.com/importcjj/Post
+Author: Jiaju.Chen
+Author-email: jiaju.chen@ele.me
+License: BSD2
+Platform: UNKNOWN
+
+Posts
+======
+
+Posts is a Python library for send mail easily.
+
+Installation
+------------
+
+- ``GitHub:`` https://github.com/importcjj/Posts
+- ``PyPi`` https://pypi.python.org/pypi/posts
+
+.. code:: sh
+
+	pip install posts
+
+Examples
+--------
+
+Here is the first one to send a mail in **text**:
+
+.. code:: python
+
+	from posts import Posts
+
+	mail = Posts('smtp-server', 'your-username', 'your-passwd')
+
+	with mail() as box:
+		box.text('to_address', subject='Subject', content='Content')
+
+
+Posts does not only support mail in **text** type, but also support **html**:
+
+.. code:: python
+
+	box.html('to_address', subject='Subject', content='Content')
+
+
+Next, we can send a mail with **attachments**:
+
+.. code:: python
+
+	with mail() as box:
+		box.attach({'example.jpg': './example.jpg})
+		box.text('to_address')
+
+
+Finally, we can send the mail in html type with image:
+
+.. code:: python
+
+	with mail(alias='alias') as box:
+		box.attach({
+				'example.jpg': './example.jpg'})
+		box.html(
+			recipient='to_address', 
+			subject='subject', 
+			content='<img src="cid:example.jpg">')
+
+
+Maybe you need to send mail by ssl, don't worry:
+
+.. code:: python
+
+	with mail(ssl=True) as box:
+		box.text('to_address')
+
+Chain Useage
+------------
+
+Just try like this:
+
+.. code:: python
+
+	box.attach(**kwargs).\
+		attach(**kwargs).\
+		text(**kwargs)
+
+
+
+
+
