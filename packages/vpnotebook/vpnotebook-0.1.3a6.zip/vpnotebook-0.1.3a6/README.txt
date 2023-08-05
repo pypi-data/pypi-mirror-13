@@ -1,0 +1,1 @@
+Adds "VPython" to the list of kernels in the Jupyter Notebook "New" menu 
