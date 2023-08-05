@@ -1,0 +1,348 @@
+{% extends "djmicrosip_inventarios\base.html" %}
+{% block title %}Inventarios Físicos{% endblock %}
+
+<!-- CSS Code -->
+{% block style_css %}
+<link rel="stylesheet" href="{{STATIC_URL}}djmicrosip_inventarios/css/styles.css">
+<link rel="stylesheet" href="{{STATIC_URL}}keyboard/css/keyboard.css">
+<link rel="stylesheet" href="{{STATIC_URL}}keyboard/css/keyboard-previewkeyset.css">
+{% endblock %}
+
+<!-- JavaScript Code -->
+{% block js_code %}
+{% include 'autocomplete_light/static.html' %}
+
+<script src="{{STATIC_URL}}js/es6-promise.min.js"></script> 
+<script src="{{STATIC_URL}}djmicrosip_inventarios/js/inventarios.manager.conteos.js"></script> 
+<script src="{{STATIC_URL}}djmicrosip_inventarios/js/inventarios.manager.js"></script> 
+<script src="{{STATIC_URL}}djmicrosip_inventarios/js/inventarios.articulo.js"></script> 
+<script src="{{STATIC_URL}}djmicrosip_inventarios/js/inventarios.articulo.clave.js"></script> 
+<script src="{{STATIC_URL}}djmicrosip_inventarios/js/inventarios.articulo.series.js" ></script> 
+<script src="{{STATIC_URL}}djmicrosip_inventarios/js/inventarios.herramientas.js" ></script> 
+<script src="{{STATIC_URL}}keyboard/js/jquery.keyboard.js" ></script> 
+<script src="{{STATIC_URL}}keyboard/js/jquery.keyboard.extension-mobile.js" ></script> 
+
+<script>
+  function is_touch_device() 
+  {  
+    try {  
+      document.createEvent("TouchEvent");  
+      return true;  
+    } catch (e) {  
+      return false;  
+    }  
+  }
+
+
+  var valid_mobildevice = $.browser.device = (/android|webos|blackberry|iemobile|opera mini/i.test(navigator.userAgent.toLowerCase()));
+
+  if(!valid_mobildevice && is_touch_device())
+  {
+    $('#id_unidades').keyboard({
+      layout: 'custom',
+      customLayout: {
+        "default": ["7 8 9 {b}", "4 5 6 {clear}", "1 2 3 {sign}", "0 {dec} {accept}"]
+      },
+      acceptValid: true,
+      validate: function(keyboard, value, isClosing){
+        if(isClosing)
+        {
+          return true;
+        }
+      }
+    });
+  }
+  $('#id_clave_articulo').focus();
+
+</script>
+{% endblock %}
+ 
+{% block breadcrumb %}
+  {{ block.super }} 
+  <li class="hidden-xs"><a href="/inventarios/almacenes/"> Almacenes </a></li> 
+  <li class='active'> {{ almacen.nombre }} </li> 
+{% endblock %}
+{% block content %}
+<form method="post" action="" onsubmit="return false;" enctype='multipart/form-data'>{% csrf_token %}
+	{{ form.errors }}
+  <div id="extra_mobile" class="row extra_mobile">
+    ubicacion
+    <input type="text" class="form-control col-lg-4" placeholder="ubicacion..." id="ubicacionMobil" required="required">
+    {% if manejar_series = '1' %}
+      <input type="checkbox" id="manejarSeriesMobil" value="modo_rapido"/>Contar series
+    {% endif %}
+  </div>
+  <div id="extra_mobile_btn" class="glyphicon glyphicon-play visible-xs extra_mobile_btn" ></div>
+    
+	<div class="row hidden-xs">
+		<div class="col-md-2">
+			<h2>Inventario Físico</h2>
+
+		</div>
+		<div class="col-md-1">
+		  <!-- Menu extra -->
+		  {% if request.user.username = 'SYSDBA' %}
+			<div class="btn-group btn-group-xs">
+			  <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+			    <i class="glyphicon glyphicon-cog"></i>
+			  </button>
+			  <ul class="dropdown-menu" role="menu">
+          
+          {% if almacen.inventario_conajustes %}
+            <li>
+              <a href="#articulosnocont_porlinea_Modal" role="button" data-toggle="modal">
+                <i class="glyphicon glyphicon-tasks"></i> Crear inventario físico con articulos no contados - por linea
+              </a>
+            </li>
+            <li>
+            	<a href="#articulosnocont_Modal" role="button" data-toggle="modal">
+            		<i class="glyphicon glyphicon-align-justify"></i> Crear inventario físico con articulos no contados
+            	</a>
+            </li>
+  			    <li class="divider"></li>
+			    {% endif %}
+			    <li><a href="#cerrarinventario_Modal" role="button" data-toggle="modal"><i class="glyphicon glyphicon-folder-close"></i> Cerrar inventario </a></li>
+			  </ul>  
+			</div>
+		  {% endif %}
+		  <!-- fin Menu extra -->
+		</div>
+  	<div class="col-md-2 col-md-offset-7"> 
+      Ent {{ entrada_folio }} <br> Sal {{ salida_folio }}
+      <input type="hidden" id="hidden_entrada_id" value="{{ entrada_id }}"/>
+      <input type="hidden" id="hidden_salida_id" value="{{ salida_id }}"/>
+      <input type="hidden" id="id_loginventario" value="{{ loginventario }}"/>
+    </div>
+	</div><input type="hidden" id="almacen_id" value="{{ almacen.ALMACEN_ID }}"/>
+  <div class="row hidden-xs">
+  	<div class="col-md-1 ">
+     <input type="text" class="form-control col-lg-4" placeholder="ubicacion..." id="ubicacion" required="required"> 
+    </div>
+    <div class="col-md-3 "> 
+      {% if manejar_series = '1' %}
+        <input type="checkbox" id="manejarSeries" value=""/>Contar series
+      {% endif %}
+     
+    </div>
+  	<div class="col-md-2 col-md-offset-6"><strong>Almacen </strong>{{ almacen.nombre }}
+      <br>
+      <span class="ajustarPrimerConteoContainer">
+        <input type="checkbox" {% if ajustar %}checked{% endif %} disabled/>Ajustar en primer conteo 
+      </span>
+    </div>
+    <input type="hidden" id="almacen_nombre" value="{{ almacen.nombre }}"/>
+
+  </div>  
+  <br>
+  
+  <div class="row">
+    <div class="col-lg-7 col-xs-12">
+      <div class="col-lg-2 col-xs-12" style="margin-bottom: 7px;">
+        <div class="input-group ">
+          {{ form.clave_articulo }}
+          <input type="text" class="form-control" id="serieArticuloId" name="serieArticulo" placeholder="Serie..." >
+          <div class="input-group-addon hidden-lg hidden-md claveSearchBtn"><i class="glyphicon glyphicon-search"></i>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-5 col-xs-12" >
+        <div class="row" id="articuloContainerId">
+          <div class="row" id="articuloContainerNormal">{{ form.articulo }}</div>          
+          <div class="row" id="articuloContainerSerie">{{form.articulo_serie}}</div>          
+          <input type="hidden" id="articuloSeguimientoUnidadesId" value=""/>
+        </div>
+        <div class="row articleDetail" id="articleDetailId">
+          <span id='span_alerta_unidades' class="articleDetailUnits text-error"> </span>
+          <span id='spanEstadoConteo' class="text-error articleDetailState"></span>
+        </div>
+      </div>
+      <div id="unidades_div" class="articleOptions">
+        <div class="col-lg-2">
+            <input type="number" class="form-control col-lg-4" placeholder="unidades" id="id_unidades" name="unidades" min="-100000" max="100000" step="1" required="required">
+        </div>
+        <div class="col-lg-2">
+          <a class="btn btn-default articuleSubmit btn-block" id="enviar_btn" href="#">Enviar</a>
+          <br/>
+          <a class="btn btn-danger articuleSubmit btn-block hidden-xl hidden-md" id="cancel_btn" href="#">Cancelar</a>
+        </div>
+      </div>
+    </div>
+  <br style="clear:both;">
+  <br>
+  <div class="panel panel-default">
+    <!-- Default panel contents -->
+    <div class="panel-heading">Ultimos articulos contados, <strong><span id="articulosContadosId">{{ articulos_contados }}</span>  articulos contados en total.</strong> </div>
+
+    <!-- Table -->
+    <table id="ultimos_articulos_contados" class="table table-striped">
+        <thead>
+          <tr>
+            <th>Clave</th>
+            <th>Articulo</th>
+            <th>Existencia</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for articulo in articulos %}
+          <tr>
+            <td> <input type="hidden" id="articulo-{{articulo.id}}" value="{{ articulo.id }}"/>    {{ articulo.clave }}</td>
+            <td>{{ articulo.articulo }}</td>
+            <td>
+              {{ articulo.unidades }}
+               {% if articulo.seguimiento == 'S' %} 
+                <a href="#">
+                {% if articulo.series_sin_contar > 0 %}
+                  <span class="badge seriesSinContar">
+                  Faltan 
+                  {{ articulo.series_sin_contar }} 
+                  </span>
+                {% else %}
+                  <span class="badge seriesContadas">
+                  Series
+                  {{ articulo.series_contadas}}
+                  </span>
+                {% endif %}
+                </a>
+              {% endif %}
+            </td>
+            
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+  </div>
+</form>
+
+<div class="modal fade" id="articulosnocont_porlinea_Modal" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+          Agregar articulos no contabilizados por linea <br>
+      </div>
+      <div class="modal-body">
+          <p>
+            Al agregar articulos no contabilizados por linea las existencias de los articulos no contabilizados en este documento se pondran en cero [0]
+          </p>
+          <p>Ejemplo</p>
+          <blockquote>
+            <p><small>El articulo lapiz tiene existencias de -7 como resultado se tendra el articulo lapiz con existencia de [0].</small></p>
+          </blockquote>
+          <p class="text-warning">Esto pueder tardar unos minutos dependiendo del numero de articulos en la base de datos.</p>Seleciona una linea por favor {{ form.linea }}
+      </div>
+      <div class="modal-footer">
+        <span id='id_agregando_span' class='hide'>
+          <label class="span">Agregando articulos </label>
+          <img class= 'imagecenter' src="{{STATIC_URL}}img\ajax-loader.gif">
+        </span>
+        <a class='btn' href="#" id='btn_agregar_articulosinexistencia_bylinea' >Aceptar</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div class="modal fade" id="articulosnocont_Modal" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        Crear inventario fisico de articulos no contados<br>
+      </div>
+      <div class="modal-body">
+        <p><span class="label label-warning" >Precaucion!</span> Al realizar esta accion 
+        Se creara un <strong> inventario fisico SIN APLICAR</strong> con los articulos NO CONTADOS en este inventario</p>        
+        <p class="text-warning">
+            Esto pueder tardar unos minutos dependiendo del numero de articulos en la base de datos.
+        </p> 
+      </div>
+      <div class="modal-footer">
+        <span id='id_agregando_span_all' class='hide'>
+          <label class="span">Agregando articulos </label>
+          <img class= 'imagecenter' src="{{STATIC_URL}}img\ajax-loader.gif">
+        </span>
+        <a class='btn' href="#" id='btn_agregar_articulosinexistencia' >Aceptar</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="opciones_clave_Modal" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button> <br>
+        <p class="text-info">No se encontró la clave indicada, Por favor selecciona una opción: </p>
+      </div>
+      <div class="modal-body">
+        <div id="id_opciones_clave">
+          
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn" id='btnCancel' data-dismiss="modal">Salir</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="cerrarinventario_Modal" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>Cerrar inventario <br>
+      </div>
+      <div class="modal-body">
+        <p class="text-warning">Seguro que desas cerrar el inventario? </p>
+      </div>
+      <div class="modal-footer">
+        <span id="id_span_info_cierre_inventario" class="hide">
+          <label class="span"> Cerrando inventario </label>
+          <img class="imagecenter" src="/static/img\ajax-loader.gif">
+        </span>
+        <button type="button" class="btn" id='btnCancel' data-dismiss="modal">Cancelar</button>
+        <a class='btn' href="#" id='cerrar_inventario_confirm'>Aceptar</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="movimiento_articulo_modal" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-headerTitle"></h4>
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button><span id="modalMovmentsTitle"></span>  <br>
+      </div>
+      <div class="modal-body">
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn" id='btnCancel' data-dismiss="modal">Aceptar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div class="modal fade" id="id_modal_ajustarseries" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button> <br>
+        <p class="text-info">Ajustar Series </p>
+      </div>
+      <div class="modal-body">
+         Se eliminaran <strong> series no contadas de inventario</strong></p>        
+        <p class="text-warning">
+            Esto pueder tardar unos minutos dependiendo del numero de articulos en la base de datos.
+        </p> 
+      </div>
+      <div class="modal-footer">
+        <a class='btn' href="#" id="btnAjustarSeriesInventario">Aceptar</a>
+        <button type="button" class="btn btn-default" id='btnCancel' data-dismiss="modal">Cancelar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
