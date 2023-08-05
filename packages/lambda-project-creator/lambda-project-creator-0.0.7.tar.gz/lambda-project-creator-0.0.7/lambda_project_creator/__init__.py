@@ -1,0 +1,5 @@
+__title__ = 'lambda_project_creator'
+#__version__ = '0.5.0'
+#__license__ = 'Apache 2.0'
+#__copyright__ = 'Copyright Rackspace US, Inc. 2015'
+#__url__ = 'https://github.com/rackerlabs/lambda-uploader'
