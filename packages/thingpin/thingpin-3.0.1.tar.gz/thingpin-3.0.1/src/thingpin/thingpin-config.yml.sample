@@ -1,0 +1,56 @@
+---
+# configure either adafruit -or- aws, not both
+notifiers:
+    adafruit:
+        username: your-adafruit-io-username
+        api_key: your-adafruit-io-api-key
+
+# To use AWS uncomment this block and comment out adafruit block.
+#    aws:
+#        host: your-aws-host.iot.us-east-1.amazonaws.com
+#        client_cert: ~/cert.pem
+#        private_key: ~/private-key.pem
+#        estimated_change_freq: .01
+
+# Pin numbering you are using
+#   see http://sourceforge.net/p/raspberry-gpio-python/wiki/BasicUsage/
+#   or Google "rpi GPIO pin mode"
+pin_mode: BCM
+#pin_mmode: BOARD
+
+
+# things describes how your GPIO pin states should be reported to
+# Adafruit IO or AWS IoT. Each key is a thing name. Each thing has a pin.
+# Each pin only appears once.
+things:
+    important-door-1:
+        # Example: a normally open reed switch connected between pin 14 and
+        # GND. When the switch is open (or if the sensor wire is cut) the pin
+        # will read HIGH thanks to the pull up resistor. When the switch is
+        # closed the pin will read LOW.
+        #
+        # Adjust these to match your sensor circuit.
+        #
+        pin: 21
+
+        # Comment out to disable the pull up/down resistor
+        # if your circuit does not need it.
+        resistor: pull_up
+
+        # debounce delay in seconds
+        # Adjust this based on your sensor. 750ms works
+        # well with the reed switch setup I have.
+        debounce_delay: 0.750
+
+        # how long to sleep after each poll in seconds
+        sleep: 0.050
+
+        # The AWS IoT states to use for each pin reading
+        # For AWS the states can be anything. For Adafruit each pin reading
+        # must have a state like "state: foo" where foo is a string
+        # or a number. Below we use the strings open and closed.
+        iot_states:
+            HIGH:
+                state: open
+            LOW:
+                state: closed
