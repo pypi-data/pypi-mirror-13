@@ -1,0 +1,53 @@
+======
+combox
+======
+
+Encrypts files and scatters them across storage provided by Google
+Drive and Dropbox.
+
+The ideas for this program is based on combobox_
+
+.. _combobox: https://bitbucket.org/bgsucodeloverslab/combobox
+
+
+etymology
+---------
+
+``combox`` is a lazy contraction of the word "combo box". ``combox``
+is pronounced as "combo box".
+
+
+canonical repo
+--------------
+
+::
+
+   $ git clone git://ricketyspace.net/combox.git
+
+
+runs on
+-------
+
+- GNU/Linux
+- OS X
+
+
+license
+-------
+
+``combox`` is licensed under the `GNU General Public License version 3
+or later`__. See COPYING.
+
+.. _gpl: https://gnu.org/licenses/gpl-3.0.txt
+.. __: gpl_
+
+The ``combox`` logo is under `Public Domain`__.
+
+.. _pd: https://creativecommons.org/publicdomain/zero/1.0/
+.. __: pd_
+
+
+contact
+-------
+
+siddharth ravikumar <sravik@bgsu.edu> (gpg id: ``0x00B252AF``)
