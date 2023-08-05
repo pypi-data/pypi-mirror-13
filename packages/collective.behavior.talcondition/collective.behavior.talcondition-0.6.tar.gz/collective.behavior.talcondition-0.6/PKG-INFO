@@ -1,0 +1,109 @@
+Metadata-Version: 1.1
+Name: collective.behavior.talcondition
+Version: 0.6
+Summary: This package contains a Dexterity behavior and AT schemaextender to add a TAL condition on a content type.
+Home-page: http://pypi.python.org/pypi/collective.behavior.talcondition
+Author: IMIO
+Author-email: dev@imio.be
+License: GPL V2
+Description: .. image:: https://travis-ci.org/collective/collective.behavior.talcondition.svg?branch=master
+            :target: https://travis-ci.org/collective/collective.behavior.talcondition
+        
+        .. image:: https://coveralls.io/repos/collective/collective.behavior.talcondition/badge.png
+          :target: https://coveralls.io/r/collective/collective.behavior.talcondition
+        
+        
+        ==========================================================================
+        collective.behavior.talcondition
+        ==========================================================================
+        
+        This package works for dexterity (behavior) and archetypes (schema extender).
+        
+        It adds two fields on a content type or class:
+        
+        * tal_condition : enter a `TAL expression <http://docs.zope.org/zope2/zope2book/AppendixC.html>`_ that once evaluated will return 'True' if content should be available. By default, elements 'member', 'context' and 'portal' are available for the expression but the TAL expression context may be extended using the 'extra_expr_ctx' parameter.
+        
+        * roles_bypassing_talcondition : choose the different roles for which the TAL condition will not be evaluated and always considered \'True\'
+        
+        It's then possible to use the 'evaluate' method to test the TAL condition.
+        
+        How to use it
+        =============
+        
+        For AT you have to provide the ITALConditionable on your class (see testing.zcml).
+        
+        For DX you just have to activate the behavior on your content type.
+        
+        
+        Contributors
+        ============
+        
+        - Franck NGAHA, franck.o.ngaha@gmail.com
+        Changelog
+        =========
+        
+        
+        0.6 (2016-01-12)
+        ----------------
+        
+        - Added parameter `empty_expr_is_true` to utils._evaluateExpression than may be True
+          or False depending that we want an empty expression to be considered True or False.
+          Previous behavior is kept in utils.evaluateExpressionFor where an empty expression
+          is considered True.  This avoid managing an empty expression in the caller method
+          [gbastien]
+        
+        
+        0.5 (2015-12-17)
+        ----------------
+        
+        - Added method utils._evaluateExpression that receives an expression
+          to evaluate, it is called by utils.evaluateExpressionFor.  This way, this
+          method may evaluate a TAL expression without getting it from the `tal_condition`
+          attribute on the context, in case we want to evaluate arbitrary expression
+          [gbastien]
+        
+        
+        0.4 (2015-09-16)
+        ----------------
+        
+        - Make the tal_condition field larger (from 30 to 80) for the
+          AT extender as well as for the DX behavior
+          [gbastien]
+        - Added possibility to extend TAL expression context by passing
+          an `extra_expr_ctx` dict to utils.evaluateExpressionFor, also
+          integrated to the `evaluate` method of the DX behavior
+          [gbastien]
+        
+        
+        0.3 (2015-07-14)
+        ----------------
+        
+        - Corrected default value
+          [sgeulette]
+        - Little optimization
+          [sgeulette]
+        
+        
+        0.2 (2015-06-18)
+        ----------------
+        
+        - Added field `role_bypassing_talcondition` to define who can bypass the condition
+          [anuyens]
+        - Added translations for new field
+          [gbastien]
+        
+        
+        0.1 (2015-06-01)
+        ----------------
+        
+        - Initial release.
+          [IMIO]
+        
+        
+Keywords: Python Zope Plone
+Platform: UNKNOWN
+Classifier: Environment :: Web Environment
+Classifier: Framework :: Plone
+Classifier: Framework :: Plone :: 4.3
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 2.7
