@@ -1,0 +1,10 @@
+__version__ = "0.4.8"
+__git_commiter_name__ = "Guy Rozendorn"
+__git_commiter_email__ = "guy@rzn.co.il"
+__git_branch__ = '(HEAD detached at v0.4.8)'
+__git_remote_tracking_branch__ = '(No remote tracking)'
+__git_remote_url__ = '(Not remote tracking)'
+__git_head_hash__ = '430e9246116abcac1c8e5501e86bb3fd01922e57'
+__git_head_subject__ = 'Finished release v0.4.8.'
+__git_head_message__ = '* release/v0.4.8:\n  STORAGEMODEL-359 bumping infi.asi\n  STORAGEMODEL-358 add is_thin_provisioned'
+__git_dirty_diff__ = ''
