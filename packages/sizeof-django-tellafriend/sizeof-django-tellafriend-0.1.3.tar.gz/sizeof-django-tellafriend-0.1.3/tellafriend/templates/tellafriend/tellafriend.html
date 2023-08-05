@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% load i18n %}
+
+{% block content %}
+<div class="content-page">
+    <h1>{% trans "Recommend" %}</h1>
+    <p>{% trans "Please enter your and the recipient's e-mail address, and an optional message." %}</p>
+
+    <form method="post" action="">
+        {% csrf_token %}
+        <div class="row" style="display: none;">
+            {{ form.url.label_tag }}
+            <a href="{{ tellafriend_url }}">{{ tellafriend_full_url }}</a>
+            {{ form.url }}
+            {{ form.url.errors }}
+        </div>
+        <div class="ctrlHolder required {% if form.sender_email.errors %} error{% endif %}">
+            {{ form.sender_email.label_tag }}
+            {{ form.sender_email }}
+            {{ form.sender_email.errors }}
+        </div>
+        <div class="ctrlHolder required {% if form.recipient_email.errors %} error{% endif %}">
+            {{ form.recipient_email.label_tag }}
+            {{ form.recipient_email }}
+            {{ form.recipient_email.errors }}
+        </div>
+        <div class="ctrlHolder required {% if form.message.errors %} error{% endif %}">
+            {{ form.message.label_tag }}
+            {{ form.message }}
+            {{ form.message.errors }}
+        </div>
+        <div class="ctrlHolder required {% if form.captcha.errors %} error{% endif %}">
+            <label for="id_captcha">{{ form.captcha.help_text }}</label></br>
+            {{ form.captcha }}
+            {{ form.captcha.errors }}
+        </div>
+        <button type="submit" class="btn btn-primary">{% trans 'Send' %}</button>
+    </form>
+</div>
+{% endblock %}
