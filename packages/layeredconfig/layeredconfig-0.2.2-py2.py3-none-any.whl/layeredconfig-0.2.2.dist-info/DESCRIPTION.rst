@@ -1,0 +1,129 @@
+.. image:: https://badge.fury.io/py/layeredconfig.png
+   :target: http://badge.fury.io/py/layeredconfig
+
+.. image:: https://travis-ci.org/staffanm/layeredconfig.png?branch=master
+   :target: https://travis-ci.org/staffanm/layeredconfig
+
+.. image:: https://ci.appveyor.com/api/projects/status/nnfqv9jhxh3afgn0/branch/master
+   :target: https://ci.appveyor.com/project/staffanm/layeredconfig/branch/master
+
+.. image:: https://coveralls.io/repos/staffanm/layeredconfig/badge.png?branch=master
+   :target: https://coveralls.io/r/staffanm/layeredconfig
+
+.. image:: https://landscape.io/github/staffanm/layeredconfig/master/landscape.png
+   :target: https://landscape.io/github/staffanm/layeredconfig/master
+   :alt: Code Health
+
+.. image:: https://pypip.in/d/layeredconfig/badge.png
+   :target: https://pypi.python.org/pypi/layeredconfig
+
+Full documentation: https://layeredconfig.readthedocs.org/
+
+
+LayeredConfig compiles configuration from files, environment
+variables, command line arguments, hard-coded default values, or other
+backends, and makes it available to your code in a simple way::
+
+    from layeredconfig import (LayeredConfig, Defaults, INIFile,
+                               Environment, Commandline)
+
+    # This represents four different way of specifying the value of the
+    # configuration option "hello":
+
+    # 1. hard-coded defaults
+    defaults = {"hello": "is it me you're looking for?"}
+
+    # 2. INI configuration file
+    with open("myapp.ini", "w") as fp:
+        fp.write("""
+    [__root__]
+    hello = kitty
+    """)
+
+    # 3. enironment variables
+    import os
+    os.environ['MYAPP_HELLO'] = 'goodbye'
+
+    # 4.command-line arguments
+    import sys
+    sys.argv = ['./myapp.py', '--hello=world']
+
+    # Create a config object that gets settings from these four
+    # sources.
+    config = LayeredConfig(Defaults(defaults),
+                           INIFile("myapp.ini"),
+                           Environment(prefix="MYAPP_"),
+                           Commandline())
+
+    # Prints "Hello world!", i.e the value provided by command-line
+    # arguments. Latter sources take precedence over earlier sources.
+    print("Hello %s!" % config.hello)
+
+* A flexible system makes it possible to specify the sources of
+  configuration information, including which source takes
+  precedence. Implementations of many common sources are included and
+  there is a API for writing new ones.
+* Included configuration sources for INI files, YAML files, JSON file,
+  PList files, etcd stores (read-write), Python source files,
+  hard-coded defaults, command line options, environment variables
+  (read-only).
+* Configuration can include subsections
+  (ie. ``config.downloading.refresh``) and if a
+  subsection does not contain a requested setting, it can optionally
+  be fetched from the main configuration (if ``config.module.retry``
+  is missing, ``config.retry`` can be used instead).
+* Configuration settings can be changed by your code (i.e. to update a
+  "lastmodified" setting or similar), and changes can be persisted
+  (saved) to the backend of your choice.
+* Configuration settings are typed (ie. if a setting should contain a
+  date, it's made available to your code as a
+  ``datetime.date`` object, not a ``str``). If
+  settings are fetched from backends that do not themselves provide
+  typed data (ie. environment variables, which by themselves are
+  strings only), a system for type coercion makes it possible to
+  specify how data should be converted.
+
+
+
+
+
+History
+=======
+
+0.2.2 (2016-01-??)
+------------------
+
+* Fixed a bug when using a class in a Default configuration for
+  automatic coercion, where the type of the class isn't type (as is
+  the case with the "newint" and other classes from the future
+  module).
+
+* Fixed a bug where loading configuration from multiple config files
+  would crash if latter configs lacked subsections present in
+  earlier. Thanks to @badkapitan!
+
+0.2.1 (2014-11-26)
+------------------
+
+* Made the Commandline source interact better with "partially
+  configured" ArgumentParser objects (parsers that has been configured
+  with some, but not all, possible arguments).
+
+0.2.0 (2014-11-22)
+------------------
+
+* Integration with argparse: The Commandline source now accepts an
+  optional parse parameter, which should be a configured
+  argparse.ArgumentParser object. Most features of argparse, such as
+  specifying the type of arguments, and automatic help text
+* A new source, PyFile, for reading configuration from python source
+  files.
+* Another new source, EtcdStore, for reading configuration from etcd
+  stores.
+
+0.1.0 (2014-11-03)
+------------------
+
+* First release on PyPI.
+
+
