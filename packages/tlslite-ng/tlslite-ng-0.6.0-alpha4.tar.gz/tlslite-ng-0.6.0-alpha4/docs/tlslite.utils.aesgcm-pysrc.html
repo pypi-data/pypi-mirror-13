@@ -1,0 +1,310 @@
+<?xml version="1.0" encoding="ascii"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>tlslite.utils.aesgcm</title>
+  <link rel="stylesheet" href="epydoc.css" type="text/css" />
+  <script type="text/javascript" src="epydoc.js"></script>
+</head>
+
+<body bgcolor="white" text="black" link="blue" vlink="#204080"
+      alink="#204080">
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+  <!-- Home link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="tlslite-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+      <th class="navbar" width="100%"></th>
+  </tr>
+</table>
+<table width="100%" cellpadding="0" cellspacing="0">
+  <tr valign="top">
+    <td width="100%">
+      <span class="breadcrumbs">
+        <a href="tlslite-module.html">Package&nbsp;tlslite</a> ::
+        <a href="tlslite.utils-module.html">Package&nbsp;utils</a> ::
+        Module&nbsp;aesgcm
+      </span>
+    </td>
+    <td>
+      <table cellpadding="0" cellspacing="0">
+        <!-- hide/show private -->
+        <tr><td align="right"><span class="options">[<a href="javascript:void(0);" class="privatelink"
+    onclick="toggle_private();">hide&nbsp;private</a>]</span></td></tr>
+        <tr><td align="right"><span class="options"
+            >[<a href="frames.html" target="_top">frames</a
+            >]&nbsp;|&nbsp;<a href="tlslite.utils.aesgcm-pysrc.html"
+            target="_top">no&nbsp;frames</a>]</span></td></tr>
+      </table>
+    </td>
+  </tr>
+</table>
+<h1 class="epydoc">Source Code for <a href="tlslite.utils.aesgcm-module.html" onclick="show_private();">Module tlslite.utils.aesgcm</a></h1>
+<pre class="py-src">
+<a name="L1"></a><tt class="py-lineno">  1</tt>  <tt class="py-line"><tt class="py-comment"># Author: Google</tt> </tt>
+<a name="L2"></a><tt class="py-lineno">  2</tt>  <tt class="py-line"><tt class="py-comment"># See the LICENSE file for legal information regarding use of this file.</tt> </tt>
+<a name="L3"></a><tt class="py-lineno">  3</tt>  <tt class="py-line"> </tt>
+<a name="L4"></a><tt class="py-lineno">  4</tt>  <tt class="py-line"><tt class="py-comment"># GCM derived from Go's implementation in crypto/cipher.</tt> </tt>
+<a name="L5"></a><tt class="py-lineno">  5</tt>  <tt class="py-line"><tt class="py-comment">#</tt> </tt>
+<a name="L6"></a><tt class="py-lineno">  6</tt>  <tt class="py-line"><tt class="py-comment"># https://golang.org/src/crypto/cipher/gcm.go</tt> </tt>
+<a name="L7"></a><tt class="py-lineno">  7</tt>  <tt class="py-line"> </tt>
+<a name="L8"></a><tt class="py-lineno">  8</tt>  <tt class="py-line"><tt class="py-comment"># GCM works over elements of the field GF(2^128), each of which is a 128-bit</tt> </tt>
+<a name="L9"></a><tt class="py-lineno">  9</tt>  <tt class="py-line"><tt class="py-comment"># polynomial. Throughout this implementation, polynomials are represented as</tt> </tt>
+<a name="L10"></a><tt class="py-lineno"> 10</tt>  <tt class="py-line"><tt class="py-comment"># Python integers with the low-order terms at the most significant bits. So a</tt> </tt>
+<a name="L11"></a><tt class="py-lineno"> 11</tt>  <tt class="py-line"><tt class="py-comment"># 128-bit polynomial is an integer from 0 to 2^128-1 with the most significant</tt> </tt>
+<a name="L12"></a><tt class="py-lineno"> 12</tt>  <tt class="py-line"><tt class="py-comment"># bit representing the x^0 term and the least significant bit representing the</tt> </tt>
+<a name="L13"></a><tt class="py-lineno"> 13</tt>  <tt class="py-line"><tt class="py-comment"># x^127 term. This bit reversal also applies to polynomials used as indices in a</tt> </tt>
+<a name="L14"></a><tt class="py-lineno"> 14</tt>  <tt class="py-line"><tt class="py-comment"># look-up table.</tt> </tt>
+<a name="L15"></a><tt class="py-lineno"> 15</tt>  <tt class="py-line"> </tt>
+<a name="L16"></a><tt class="py-lineno"> 16</tt>  <tt class="py-line"><tt class="py-keyword">from</tt> <tt class="py-name">__future__</tt> <tt class="py-keyword">import</tt> <tt class="py-name">division</tt> </tt>
+<a name="L17"></a><tt class="py-lineno"> 17</tt>  <tt class="py-line"><tt class="py-keyword">from</tt> <tt class="py-op">.</tt><tt id="link-0" class="py-name" targets="Module tlslite.utils.cryptomath=tlslite.utils.cryptomath-module.html"><a title="tlslite.utils.cryptomath" class="py-name" href="#" onclick="return doclink('link-0', 'cryptomath', 'link-0');">cryptomath</a></tt> <tt class="py-keyword">import</tt> <tt id="link-1" class="py-name" targets="Function tlslite.utils.cryptomath.bytesToNumber()=tlslite.utils.cryptomath-module.html#bytesToNumber"><a title="tlslite.utils.cryptomath.bytesToNumber" class="py-name" href="#" onclick="return doclink('link-1', 'bytesToNumber', 'link-1');">bytesToNumber</a></tt><tt class="py-op">,</tt> <tt id="link-2" class="py-name" targets="Function tlslite.utils.cryptomath.numberToByteArray()=tlslite.utils.cryptomath-module.html#numberToByteArray"><a title="tlslite.utils.cryptomath.numberToByteArray" class="py-name" href="#" onclick="return doclink('link-2', 'numberToByteArray', 'link-2');">numberToByteArray</a></tt> </tt>
+<a name="AESGCM"></a><div id="AESGCM-def"><a name="L18"></a><tt class="py-lineno"> 18</tt>  <tt class="py-line"> </tt>
+<a name="L19"></a><tt class="py-lineno"> 19</tt> <a class="py-toggle" href="#" id="AESGCM-toggle" onclick="return toggle('AESGCM');">-</a><tt class="py-line"><tt class="py-keyword">class</tt> <a class="py-def-name" href="tlslite.utils.aesgcm.AESGCM-class.html">AESGCM</a><tt class="py-op">(</tt><tt class="py-base-class">object</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="AESGCM-collapsed" style="display:none;" pad="+++" indent="++++"></div><div id="AESGCM-expanded"><a name="L20"></a><tt class="py-lineno"> 20</tt>  <tt class="py-line">    <tt class="py-docstring">"""</tt> </tt>
+<a name="L21"></a><tt class="py-lineno"> 21</tt>  <tt class="py-line"><tt class="py-docstring">    AES-GCM implementation. Note: this implementation does not attempt</tt> </tt>
+<a name="L22"></a><tt class="py-lineno"> 22</tt>  <tt class="py-line"><tt class="py-docstring">    to be side-channel resistant. It's also rather slow.</tt> </tt>
+<a name="L23"></a><tt class="py-lineno"> 23</tt>  <tt class="py-line"><tt class="py-docstring">    """</tt> </tt>
+<a name="L24"></a><tt class="py-lineno"> 24</tt>  <tt class="py-line"> </tt>
+<a name="AESGCM.__init__"></a><div id="AESGCM.__init__-def"><a name="L25"></a><tt class="py-lineno"> 25</tt> <a class="py-toggle" href="#" id="AESGCM.__init__-toggle" onclick="return toggle('AESGCM.__init__');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="tlslite.utils.aesgcm.AESGCM-class.html#__init__">__init__</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">key</tt><tt class="py-op">,</tt> <tt class="py-param">implementation</tt><tt class="py-op">,</tt> <tt class="py-param">rawAesEncrypt</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="AESGCM.__init__-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="AESGCM.__init__-expanded"><a name="L26"></a><tt class="py-lineno"> 26</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">isBlockCipher</tt> <tt class="py-op">=</tt> <tt class="py-name">False</tt> </tt>
+<a name="L27"></a><tt class="py-lineno"> 27</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">isAEAD</tt> <tt class="py-op">=</tt> <tt class="py-name">True</tt> </tt>
+<a name="L28"></a><tt class="py-lineno"> 28</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">nonceLength</tt> <tt class="py-op">=</tt> <tt class="py-number">12</tt> </tt>
+<a name="L29"></a><tt class="py-lineno"> 29</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">tagLength</tt> <tt class="py-op">=</tt> <tt class="py-number">16</tt> </tt>
+<a name="L30"></a><tt class="py-lineno"> 30</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">implementation</tt> <tt class="py-op">=</tt> <tt class="py-name">implementation</tt> </tt>
+<a name="L31"></a><tt class="py-lineno"> 31</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt class="py-name">len</tt><tt class="py-op">(</tt><tt class="py-name">key</tt><tt class="py-op">)</tt> <tt class="py-op">==</tt> <tt class="py-number">16</tt><tt class="py-op">:</tt> </tt>
+<a name="L32"></a><tt class="py-lineno"> 32</tt>  <tt class="py-line">            <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-3" class="py-name" targets="Variable tlslite.extensions.SNIExtension.ServerName.name=tlslite.extensions.SNIExtension.ServerName-class.html#name"><a title="tlslite.extensions.SNIExtension.ServerName.name" class="py-name" href="#" onclick="return doclink('link-3', 'name', 'link-3');">name</a></tt> <tt class="py-op">=</tt> <tt class="py-string">"aes128gcm"</tt> </tt>
+<a name="L33"></a><tt class="py-lineno"> 33</tt>  <tt class="py-line">        <tt class="py-keyword">elif</tt> <tt class="py-name">len</tt><tt class="py-op">(</tt><tt class="py-name">key</tt><tt class="py-op">)</tt> <tt class="py-op">==</tt> <tt class="py-number">32</tt><tt class="py-op">:</tt> </tt>
+<a name="L34"></a><tt class="py-lineno"> 34</tt>  <tt class="py-line">            <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-4" class="py-name"><a title="tlslite.extensions.SNIExtension.ServerName.name" class="py-name" href="#" onclick="return doclink('link-4', 'name', 'link-3');">name</a></tt> <tt class="py-op">=</tt> <tt class="py-string">"aes256gcm"</tt> </tt>
+<a name="L35"></a><tt class="py-lineno"> 35</tt>  <tt class="py-line">        <tt class="py-keyword">else</tt><tt class="py-op">:</tt> </tt>
+<a name="L36"></a><tt class="py-lineno"> 36</tt>  <tt class="py-line">            <tt class="py-keyword">raise</tt> <tt class="py-name">AssertionError</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L37"></a><tt class="py-lineno"> 37</tt>  <tt class="py-line"> </tt>
+<a name="L38"></a><tt class="py-lineno"> 38</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">_rawAesEncrypt</tt> <tt class="py-op">=</tt> <tt class="py-name">rawAesEncrypt</tt> </tt>
+<a name="L39"></a><tt class="py-lineno"> 39</tt>  <tt class="py-line"> </tt>
+<a name="L40"></a><tt class="py-lineno"> 40</tt>  <tt class="py-line">        <tt class="py-comment"># The GCM key is AES(0).</tt> </tt>
+<a name="L41"></a><tt class="py-lineno"> 41</tt>  <tt class="py-line">        <tt class="py-name">h</tt> <tt class="py-op">=</tt> <tt id="link-5" class="py-name"><a title="tlslite.utils.cryptomath.bytesToNumber" class="py-name" href="#" onclick="return doclink('link-5', 'bytesToNumber', 'link-1');">bytesToNumber</a></tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">_rawAesEncrypt</tt><tt class="py-op">(</tt><tt class="py-name">bytearray</tt><tt class="py-op">(</tt><tt class="py-number">16</tt><tt class="py-op">)</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+<a name="L42"></a><tt class="py-lineno"> 42</tt>  <tt class="py-line"> </tt>
+<a name="L43"></a><tt class="py-lineno"> 43</tt>  <tt class="py-line">        <tt class="py-comment"># Pre-compute all 4-bit multiples of h. Note that bits are reversed</tt> </tt>
+<a name="L44"></a><tt class="py-lineno"> 44</tt>  <tt class="py-line">        <tt class="py-comment"># because our polynomial representation places low-order terms at the</tt> </tt>
+<a name="L45"></a><tt class="py-lineno"> 45</tt>  <tt class="py-line">        <tt class="py-comment"># most significant bit. Thus x^0 * h = h is at index 0b1000 = 8 and</tt> </tt>
+<a name="L46"></a><tt class="py-lineno"> 46</tt>  <tt class="py-line">        <tt class="py-comment"># x^1 * h is at index 0b0100 = 4.</tt> </tt>
+<a name="L47"></a><tt class="py-lineno"> 47</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">_productTable</tt> <tt class="py-op">=</tt> <tt class="py-op">[</tt><tt class="py-number">0</tt><tt class="py-op">]</tt> <tt class="py-op">*</tt> <tt class="py-number">16</tt> </tt>
+<a name="L48"></a><tt class="py-lineno"> 48</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">_productTable</tt><tt class="py-op">[</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-6" class="py-name" targets="Static Method tlslite.utils.aesgcm.AESGCM._reverseBits()=tlslite.utils.aesgcm.AESGCM-class.html#_reverseBits"><a title="tlslite.utils.aesgcm.AESGCM._reverseBits" class="py-name" href="#" onclick="return doclink('link-6', '_reverseBits', 'link-6');">_reverseBits</a></tt><tt class="py-op">(</tt><tt class="py-number">1</tt><tt class="py-op">)</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-name">h</tt> </tt>
+<a name="L49"></a><tt class="py-lineno"> 49</tt>  <tt class="py-line">        <tt class="py-keyword">for</tt> <tt class="py-name">i</tt> <tt class="py-keyword">in</tt> <tt class="py-name">range</tt><tt class="py-op">(</tt><tt class="py-number">2</tt><tt class="py-op">,</tt> <tt class="py-number">16</tt><tt class="py-op">,</tt> <tt class="py-number">2</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L50"></a><tt class="py-lineno"> 50</tt>  <tt class="py-line">            <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">_productTable</tt><tt class="py-op">[</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-7" class="py-name"><a title="tlslite.utils.aesgcm.AESGCM._reverseBits" class="py-name" href="#" onclick="return doclink('link-7', '_reverseBits', 'link-6');">_reverseBits</a></tt><tt class="py-op">(</tt><tt class="py-name">i</tt><tt class="py-op">)</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> \ </tt>
+<a name="L51"></a><tt class="py-lineno"> 51</tt>  <tt class="py-line">                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-8" class="py-name" targets="Static Method tlslite.utils.aesgcm.AESGCM._gcmShift()=tlslite.utils.aesgcm.AESGCM-class.html#_gcmShift"><a title="tlslite.utils.aesgcm.AESGCM._gcmShift" class="py-name" href="#" onclick="return doclink('link-8', '_gcmShift', 'link-8');">_gcmShift</a></tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">_productTable</tt><tt class="py-op">[</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-9" class="py-name"><a title="tlslite.utils.aesgcm.AESGCM._reverseBits" class="py-name" href="#" onclick="return doclink('link-9', '_reverseBits', 'link-6');">_reverseBits</a></tt><tt class="py-op">(</tt><tt class="py-name">i</tt><tt class="py-op">//</tt><tt class="py-number">2</tt><tt class="py-op">)</tt><tt class="py-op">]</tt><tt class="py-op">)</tt> </tt>
+<a name="L52"></a><tt class="py-lineno"> 52</tt>  <tt class="py-line">            <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">_productTable</tt><tt class="py-op">[</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-10" class="py-name"><a title="tlslite.utils.aesgcm.AESGCM._reverseBits" class="py-name" href="#" onclick="return doclink('link-10', '_reverseBits', 'link-6');">_reverseBits</a></tt><tt class="py-op">(</tt><tt class="py-name">i</tt><tt class="py-op">+</tt><tt class="py-number">1</tt><tt class="py-op">)</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> \ </tt>
+<a name="L53"></a><tt class="py-lineno"> 53</tt>  <tt class="py-line">                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-11" class="py-name" targets="Static Method tlslite.utils.aesgcm.AESGCM._gcmAdd()=tlslite.utils.aesgcm.AESGCM-class.html#_gcmAdd"><a title="tlslite.utils.aesgcm.AESGCM._gcmAdd" class="py-name" href="#" onclick="return doclink('link-11', '_gcmAdd', 'link-11');">_gcmAdd</a></tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">_productTable</tt><tt class="py-op">[</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-12" class="py-name"><a title="tlslite.utils.aesgcm.AESGCM._reverseBits" class="py-name" href="#" onclick="return doclink('link-12', '_reverseBits', 'link-6');">_reverseBits</a></tt><tt class="py-op">(</tt><tt class="py-name">i</tt><tt class="py-op">)</tt><tt class="py-op">]</tt><tt class="py-op">,</tt> <tt class="py-name">h</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L54"></a><tt class="py-lineno"> 54</tt>  <tt class="py-line"> </tt>
+<a name="AESGCM._rawAesCtrEncrypt"></a><div id="AESGCM._rawAesCtrEncrypt-def"><a name="L55"></a><tt class="py-lineno"> 55</tt> <a class="py-toggle" href="#" id="AESGCM._rawAesCtrEncrypt-toggle" onclick="return toggle('AESGCM._rawAesCtrEncrypt');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="tlslite.utils.aesgcm.AESGCM-class.html#_rawAesCtrEncrypt">_rawAesCtrEncrypt</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">counter</tt><tt class="py-op">,</tt> <tt class="py-param">inp</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="AESGCM._rawAesCtrEncrypt-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="AESGCM._rawAesCtrEncrypt-expanded"><a name="L56"></a><tt class="py-lineno"> 56</tt>  <tt class="py-line">        <tt class="py-docstring">"""</tt> </tt>
+<a name="L57"></a><tt class="py-lineno"> 57</tt>  <tt class="py-line"><tt class="py-docstring">        Encrypts (or decrypts) plaintext with AES-CTR. counter is modified.</tt> </tt>
+<a name="L58"></a><tt class="py-lineno"> 58</tt>  <tt class="py-line"><tt class="py-docstring">        """</tt> </tt>
+<a name="L59"></a><tt class="py-lineno"> 59</tt>  <tt class="py-line">        <tt class="py-name">out</tt> <tt class="py-op">=</tt> <tt class="py-name">bytearray</tt><tt class="py-op">(</tt><tt class="py-name">len</tt><tt class="py-op">(</tt><tt class="py-name">inp</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+<a name="L60"></a><tt class="py-lineno"> 60</tt>  <tt class="py-line">        <tt class="py-keyword">for</tt> <tt class="py-name">i</tt> <tt class="py-keyword">in</tt> <tt class="py-name">range</tt><tt class="py-op">(</tt><tt class="py-number">0</tt><tt class="py-op">,</tt> <tt class="py-name">len</tt><tt class="py-op">(</tt><tt class="py-name">out</tt><tt class="py-op">)</tt><tt class="py-op">,</tt> <tt class="py-number">16</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L61"></a><tt class="py-lineno"> 61</tt>  <tt class="py-line">            <tt class="py-name">mask</tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">_rawAesEncrypt</tt><tt class="py-op">(</tt><tt class="py-name">counter</tt><tt class="py-op">)</tt> </tt>
+<a name="L62"></a><tt class="py-lineno"> 62</tt>  <tt class="py-line">            <tt class="py-keyword">for</tt> <tt class="py-name">j</tt> <tt class="py-keyword">in</tt> <tt class="py-name">range</tt><tt class="py-op">(</tt><tt class="py-name">i</tt><tt class="py-op">,</tt> <tt class="py-name">min</tt><tt class="py-op">(</tt><tt class="py-name">len</tt><tt class="py-op">(</tt><tt class="py-name">out</tt><tt class="py-op">)</tt><tt class="py-op">,</tt> <tt class="py-name">i</tt> <tt class="py-op">+</tt> <tt class="py-number">16</tt><tt class="py-op">)</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L63"></a><tt class="py-lineno"> 63</tt>  <tt class="py-line">                <tt class="py-name">out</tt><tt class="py-op">[</tt><tt class="py-name">j</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-name">inp</tt><tt class="py-op">[</tt><tt class="py-name">j</tt><tt class="py-op">]</tt> <tt class="py-op">^</tt> <tt class="py-name">mask</tt><tt class="py-op">[</tt><tt class="py-name">j</tt><tt class="py-op">-</tt><tt class="py-name">i</tt><tt class="py-op">]</tt> </tt>
+<a name="L64"></a><tt class="py-lineno"> 64</tt>  <tt class="py-line">            <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-13" class="py-name" targets="Static Method tlslite.utils.aesgcm.AESGCM._inc32()=tlslite.utils.aesgcm.AESGCM-class.html#_inc32"><a title="tlslite.utils.aesgcm.AESGCM._inc32" class="py-name" href="#" onclick="return doclink('link-13', '_inc32', 'link-13');">_inc32</a></tt><tt class="py-op">(</tt><tt class="py-name">counter</tt><tt class="py-op">)</tt> </tt>
+<a name="L65"></a><tt class="py-lineno"> 65</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-name">out</tt> </tt>
+</div><a name="L66"></a><tt class="py-lineno"> 66</tt>  <tt class="py-line"> </tt>
+<a name="AESGCM._auth"></a><div id="AESGCM._auth-def"><a name="L67"></a><tt class="py-lineno"> 67</tt> <a class="py-toggle" href="#" id="AESGCM._auth-toggle" onclick="return toggle('AESGCM._auth');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="tlslite.utils.aesgcm.AESGCM-class.html#_auth">_auth</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">ciphertext</tt><tt class="py-op">,</tt> <tt class="py-param">ad</tt><tt class="py-op">,</tt> <tt class="py-param">tagMask</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="AESGCM._auth-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="AESGCM._auth-expanded"><a name="L68"></a><tt class="py-lineno"> 68</tt>  <tt class="py-line">        <tt class="py-name">y</tt> <tt class="py-op">=</tt> <tt class="py-number">0</tt> </tt>
+<a name="L69"></a><tt class="py-lineno"> 69</tt>  <tt class="py-line">        <tt class="py-name">y</tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-14" class="py-name" targets="Method tlslite.utils.aesgcm.AESGCM._update()=tlslite.utils.aesgcm.AESGCM-class.html#_update"><a title="tlslite.utils.aesgcm.AESGCM._update" class="py-name" href="#" onclick="return doclink('link-14', '_update', 'link-14');">_update</a></tt><tt class="py-op">(</tt><tt class="py-name">y</tt><tt class="py-op">,</tt> <tt class="py-name">ad</tt><tt class="py-op">)</tt> </tt>
+<a name="L70"></a><tt class="py-lineno"> 70</tt>  <tt class="py-line">        <tt class="py-name">y</tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-15" class="py-name"><a title="tlslite.utils.aesgcm.AESGCM._update" class="py-name" href="#" onclick="return doclink('link-15', '_update', 'link-14');">_update</a></tt><tt class="py-op">(</tt><tt class="py-name">y</tt><tt class="py-op">,</tt> <tt class="py-name">ciphertext</tt><tt class="py-op">)</tt> </tt>
+<a name="L71"></a><tt class="py-lineno"> 71</tt>  <tt class="py-line">        <tt class="py-name">y</tt> <tt class="py-op">^=</tt> <tt class="py-op">(</tt><tt class="py-name">len</tt><tt class="py-op">(</tt><tt class="py-name">ad</tt><tt class="py-op">)</tt> <tt class="py-op">&lt;&lt;</tt> <tt class="py-op">(</tt><tt class="py-number">3</tt> <tt class="py-op">+</tt> <tt class="py-number">64</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> <tt class="py-op">|</tt> <tt class="py-op">(</tt><tt class="py-name">len</tt><tt class="py-op">(</tt><tt class="py-name">ciphertext</tt><tt class="py-op">)</tt> <tt class="py-op">&lt;&lt;</tt> <tt class="py-number">3</tt><tt class="py-op">)</tt> </tt>
+<a name="L72"></a><tt class="py-lineno"> 72</tt>  <tt class="py-line">        <tt class="py-name">y</tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-16" class="py-name" targets="Method tlslite.utils.aesgcm.AESGCM._mul()=tlslite.utils.aesgcm.AESGCM-class.html#_mul"><a title="tlslite.utils.aesgcm.AESGCM._mul" class="py-name" href="#" onclick="return doclink('link-16', '_mul', 'link-16');">_mul</a></tt><tt class="py-op">(</tt><tt class="py-name">y</tt><tt class="py-op">)</tt> </tt>
+<a name="L73"></a><tt class="py-lineno"> 73</tt>  <tt class="py-line">        <tt class="py-name">y</tt> <tt class="py-op">^=</tt> <tt id="link-17" class="py-name"><a title="tlslite.utils.cryptomath.bytesToNumber" class="py-name" href="#" onclick="return doclink('link-17', 'bytesToNumber', 'link-1');">bytesToNumber</a></tt><tt class="py-op">(</tt><tt class="py-name">tagMask</tt><tt class="py-op">)</tt> </tt>
+<a name="L74"></a><tt class="py-lineno"> 74</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt id="link-18" class="py-name"><a title="tlslite.utils.cryptomath.numberToByteArray" class="py-name" href="#" onclick="return doclink('link-18', 'numberToByteArray', 'link-2');">numberToByteArray</a></tt><tt class="py-op">(</tt><tt class="py-name">y</tt><tt class="py-op">,</tt> <tt class="py-number">16</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L75"></a><tt class="py-lineno"> 75</tt>  <tt class="py-line"> </tt>
+<a name="AESGCM._update"></a><div id="AESGCM._update-def"><a name="L76"></a><tt class="py-lineno"> 76</tt> <a class="py-toggle" href="#" id="AESGCM._update-toggle" onclick="return toggle('AESGCM._update');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="tlslite.utils.aesgcm.AESGCM-class.html#_update">_update</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">y</tt><tt class="py-op">,</tt> <tt class="py-param">data</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="AESGCM._update-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="AESGCM._update-expanded"><a name="L77"></a><tt class="py-lineno"> 77</tt>  <tt class="py-line">        <tt class="py-keyword">for</tt> <tt class="py-name">i</tt> <tt class="py-keyword">in</tt> <tt class="py-name">range</tt><tt class="py-op">(</tt><tt class="py-number">0</tt><tt class="py-op">,</tt> <tt class="py-name">len</tt><tt class="py-op">(</tt><tt class="py-name">data</tt><tt class="py-op">)</tt> <tt class="py-op">//</tt> <tt class="py-number">16</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L78"></a><tt class="py-lineno"> 78</tt>  <tt class="py-line">            <tt class="py-name">y</tt> <tt class="py-op">^=</tt> <tt id="link-19" class="py-name"><a title="tlslite.utils.cryptomath.bytesToNumber" class="py-name" href="#" onclick="return doclink('link-19', 'bytesToNumber', 'link-1');">bytesToNumber</a></tt><tt class="py-op">(</tt><tt class="py-name">data</tt><tt class="py-op">[</tt><tt class="py-number">16</tt><tt class="py-op">*</tt><tt class="py-name">i</tt><tt class="py-op">:</tt><tt class="py-number">16</tt><tt class="py-op">*</tt><tt class="py-name">i</tt><tt class="py-op">+</tt><tt class="py-number">16</tt><tt class="py-op">]</tt><tt class="py-op">)</tt> </tt>
+<a name="L79"></a><tt class="py-lineno"> 79</tt>  <tt class="py-line">            <tt class="py-name">y</tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-20" class="py-name"><a title="tlslite.utils.aesgcm.AESGCM._mul" class="py-name" href="#" onclick="return doclink('link-20', '_mul', 'link-16');">_mul</a></tt><tt class="py-op">(</tt><tt class="py-name">y</tt><tt class="py-op">)</tt> </tt>
+<a name="L80"></a><tt class="py-lineno"> 80</tt>  <tt class="py-line">        <tt class="py-name">extra</tt> <tt class="py-op">=</tt> <tt class="py-name">len</tt><tt class="py-op">(</tt><tt class="py-name">data</tt><tt class="py-op">)</tt> <tt class="py-op">%</tt> <tt class="py-number">16</tt> </tt>
+<a name="L81"></a><tt class="py-lineno"> 81</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt class="py-name">extra</tt> <tt class="py-op">!=</tt> <tt class="py-number">0</tt><tt class="py-op">:</tt> </tt>
+<a name="L82"></a><tt class="py-lineno"> 82</tt>  <tt class="py-line">            <tt class="py-name">block</tt> <tt class="py-op">=</tt> <tt class="py-name">bytearray</tt><tt class="py-op">(</tt><tt class="py-number">16</tt><tt class="py-op">)</tt> </tt>
+<a name="L83"></a><tt class="py-lineno"> 83</tt>  <tt class="py-line">            <tt class="py-name">block</tt><tt class="py-op">[</tt><tt class="py-op">:</tt><tt class="py-name">extra</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-name">data</tt><tt class="py-op">[</tt><tt class="py-op">-</tt><tt class="py-name">extra</tt><tt class="py-op">:</tt><tt class="py-op">]</tt> </tt>
+<a name="L84"></a><tt class="py-lineno"> 84</tt>  <tt class="py-line">            <tt class="py-name">y</tt> <tt class="py-op">^=</tt> <tt id="link-21" class="py-name"><a title="tlslite.utils.cryptomath.bytesToNumber" class="py-name" href="#" onclick="return doclink('link-21', 'bytesToNumber', 'link-1');">bytesToNumber</a></tt><tt class="py-op">(</tt><tt class="py-name">block</tt><tt class="py-op">)</tt> </tt>
+<a name="L85"></a><tt class="py-lineno"> 85</tt>  <tt class="py-line">            <tt class="py-name">y</tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-22" class="py-name"><a title="tlslite.utils.aesgcm.AESGCM._mul" class="py-name" href="#" onclick="return doclink('link-22', '_mul', 'link-16');">_mul</a></tt><tt class="py-op">(</tt><tt class="py-name">y</tt><tt class="py-op">)</tt> </tt>
+<a name="L86"></a><tt class="py-lineno"> 86</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-name">y</tt> </tt>
+</div><a name="L87"></a><tt class="py-lineno"> 87</tt>  <tt class="py-line"> </tt>
+<a name="AESGCM._mul"></a><div id="AESGCM._mul-def"><a name="L88"></a><tt class="py-lineno"> 88</tt> <a class="py-toggle" href="#" id="AESGCM._mul-toggle" onclick="return toggle('AESGCM._mul');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="tlslite.utils.aesgcm.AESGCM-class.html#_mul">_mul</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">y</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="AESGCM._mul-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="AESGCM._mul-expanded"><a name="L89"></a><tt class="py-lineno"> 89</tt>  <tt class="py-line">        <tt class="py-docstring">""" Returns y*H, where H is the GCM key. """</tt> </tt>
+<a name="L90"></a><tt class="py-lineno"> 90</tt>  <tt class="py-line">        <tt class="py-name">ret</tt> <tt class="py-op">=</tt> <tt class="py-number">0</tt> </tt>
+<a name="L91"></a><tt class="py-lineno"> 91</tt>  <tt class="py-line">        <tt class="py-comment"># Multiply H by y 4 bits at a time, starting with the highest power</tt> </tt>
+<a name="L92"></a><tt class="py-lineno"> 92</tt>  <tt class="py-line">        <tt class="py-comment"># terms.</tt> </tt>
+<a name="L93"></a><tt class="py-lineno"> 93</tt>  <tt class="py-line">        <tt class="py-keyword">for</tt> <tt class="py-name">i</tt> <tt class="py-keyword">in</tt> <tt class="py-name">range</tt><tt class="py-op">(</tt><tt class="py-number">0</tt><tt class="py-op">,</tt> <tt class="py-number">128</tt><tt class="py-op">,</tt> <tt class="py-number">4</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L94"></a><tt class="py-lineno"> 94</tt>  <tt class="py-line">            <tt class="py-comment"># Multiply by x^4. The reduction for the top four terms is</tt> </tt>
+<a name="L95"></a><tt class="py-lineno"> 95</tt>  <tt class="py-line">            <tt class="py-comment"># precomputed.</tt> </tt>
+<a name="L96"></a><tt class="py-lineno"> 96</tt>  <tt class="py-line">            <tt class="py-name">retHigh</tt> <tt class="py-op">=</tt> <tt class="py-name">ret</tt> <tt class="py-op">&amp;</tt> <tt class="py-number">0xf</tt> </tt>
+<a name="L97"></a><tt class="py-lineno"> 97</tt>  <tt class="py-line">            <tt class="py-name">ret</tt> <tt class="py-op">&gt;&gt;=</tt> <tt class="py-number">4</tt> </tt>
+<a name="L98"></a><tt class="py-lineno"> 98</tt>  <tt class="py-line">            <tt class="py-name">ret</tt> <tt class="py-op">^=</tt> <tt class="py-op">(</tt><tt id="link-23" class="py-name" targets="Class tlslite.utils.aesgcm.AESGCM=tlslite.utils.aesgcm.AESGCM-class.html"><a title="tlslite.utils.aesgcm.AESGCM" class="py-name" href="#" onclick="return doclink('link-23', 'AESGCM', 'link-23');">AESGCM</a></tt><tt class="py-op">.</tt><tt id="link-24" class="py-name" targets="Variable tlslite.utils.aesgcm.AESGCM._gcmReductionTable=tlslite.utils.aesgcm.AESGCM-class.html#_gcmReductionTable"><a title="tlslite.utils.aesgcm.AESGCM._gcmReductionTable" class="py-name" href="#" onclick="return doclink('link-24', '_gcmReductionTable', 'link-24');">_gcmReductionTable</a></tt><tt class="py-op">[</tt><tt class="py-name">retHigh</tt><tt class="py-op">]</tt> <tt class="py-op">&lt;&lt;</tt> <tt class="py-op">(</tt><tt class="py-number">128</tt><tt class="py-op">-</tt><tt class="py-number">16</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+<a name="L99"></a><tt class="py-lineno"> 99</tt>  <tt class="py-line"> </tt>
+<a name="L100"></a><tt class="py-lineno">100</tt>  <tt class="py-line">            <tt class="py-comment"># Add in y' * H where y' are the next four terms of y, shifted down</tt> </tt>
+<a name="L101"></a><tt class="py-lineno">101</tt>  <tt class="py-line">            <tt class="py-comment"># to the x^0..x^4. This is one of the pre-computed multiples of</tt> </tt>
+<a name="L102"></a><tt class="py-lineno">102</tt>  <tt class="py-line">            <tt class="py-comment"># H. The multiplication by x^4 shifts them back into place.</tt> </tt>
+<a name="L103"></a><tt class="py-lineno">103</tt>  <tt class="py-line">            <tt class="py-name">ret</tt> <tt class="py-op">^=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">_productTable</tt><tt class="py-op">[</tt><tt class="py-name">y</tt> <tt class="py-op">&amp;</tt> <tt class="py-number">0xf</tt><tt class="py-op">]</tt> </tt>
+<a name="L104"></a><tt class="py-lineno">104</tt>  <tt class="py-line">            <tt class="py-name">y</tt> <tt class="py-op">&gt;&gt;=</tt> <tt class="py-number">4</tt> </tt>
+<a name="L105"></a><tt class="py-lineno">105</tt>  <tt class="py-line">        <tt class="py-keyword">assert</tt> <tt class="py-name">y</tt> <tt class="py-op">==</tt> <tt class="py-number">0</tt> </tt>
+<a name="L106"></a><tt class="py-lineno">106</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-name">ret</tt> </tt>
+</div><a name="L107"></a><tt class="py-lineno">107</tt>  <tt class="py-line"> </tt>
+<a name="AESGCM.seal"></a><div id="AESGCM.seal-def"><a name="L108"></a><tt class="py-lineno">108</tt> <a class="py-toggle" href="#" id="AESGCM.seal-toggle" onclick="return toggle('AESGCM.seal');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="tlslite.utils.aesgcm.AESGCM-class.html#seal">seal</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">nonce</tt><tt class="py-op">,</tt> <tt class="py-param">plaintext</tt><tt class="py-op">,</tt> <tt class="py-param">data</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="AESGCM.seal-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="AESGCM.seal-expanded"><a name="L109"></a><tt class="py-lineno">109</tt>  <tt class="py-line">        <tt class="py-docstring">"""</tt> </tt>
+<a name="L110"></a><tt class="py-lineno">110</tt>  <tt class="py-line"><tt class="py-docstring">        Encrypts and authenticates plaintext using nonce and data. Returns the</tt> </tt>
+<a name="L111"></a><tt class="py-lineno">111</tt>  <tt class="py-line"><tt class="py-docstring">        ciphertext, consisting of the encrypted plaintext and tag concatenated.</tt> </tt>
+<a name="L112"></a><tt class="py-lineno">112</tt>  <tt class="py-line"><tt class="py-docstring">        """</tt> </tt>
+<a name="L113"></a><tt class="py-lineno">113</tt>  <tt class="py-line"> </tt>
+<a name="L114"></a><tt class="py-lineno">114</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt class="py-name">len</tt><tt class="py-op">(</tt><tt class="py-name">nonce</tt><tt class="py-op">)</tt> <tt class="py-op">!=</tt> <tt class="py-number">12</tt><tt class="py-op">:</tt> </tt>
+<a name="L115"></a><tt class="py-lineno">115</tt>  <tt class="py-line">            <tt class="py-keyword">raise</tt> <tt class="py-name">ValueError</tt><tt class="py-op">(</tt><tt class="py-string">"Bad nonce length"</tt><tt class="py-op">)</tt> </tt>
+<a name="L116"></a><tt class="py-lineno">116</tt>  <tt class="py-line"> </tt>
+<a name="L117"></a><tt class="py-lineno">117</tt>  <tt class="py-line">        <tt class="py-comment"># The initial counter value is the nonce, followed by a 32-bit counter</tt> </tt>
+<a name="L118"></a><tt class="py-lineno">118</tt>  <tt class="py-line">        <tt class="py-comment"># that starts at 1. It's used to compute the tag mask.</tt> </tt>
+<a name="L119"></a><tt class="py-lineno">119</tt>  <tt class="py-line">        <tt class="py-name">counter</tt> <tt class="py-op">=</tt> <tt class="py-name">bytearray</tt><tt class="py-op">(</tt><tt class="py-number">16</tt><tt class="py-op">)</tt> </tt>
+<a name="L120"></a><tt class="py-lineno">120</tt>  <tt class="py-line">        <tt class="py-name">counter</tt><tt class="py-op">[</tt><tt class="py-op">:</tt><tt class="py-number">12</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-name">nonce</tt> </tt>
+<a name="L121"></a><tt class="py-lineno">121</tt>  <tt class="py-line">        <tt class="py-name">counter</tt><tt class="py-op">[</tt><tt class="py-op">-</tt><tt class="py-number">1</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-number">1</tt> </tt>
+<a name="L122"></a><tt class="py-lineno">122</tt>  <tt class="py-line">        <tt class="py-name">tagMask</tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">_rawAesEncrypt</tt><tt class="py-op">(</tt><tt class="py-name">counter</tt><tt class="py-op">)</tt> </tt>
+<a name="L123"></a><tt class="py-lineno">123</tt>  <tt class="py-line"> </tt>
+<a name="L124"></a><tt class="py-lineno">124</tt>  <tt class="py-line">        <tt class="py-comment"># The counter starts at 2 for the actual encryption.</tt> </tt>
+<a name="L125"></a><tt class="py-lineno">125</tt>  <tt class="py-line">        <tt class="py-name">counter</tt><tt class="py-op">[</tt><tt class="py-op">-</tt><tt class="py-number">1</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-number">2</tt> </tt>
+<a name="L126"></a><tt class="py-lineno">126</tt>  <tt class="py-line">        <tt class="py-name">ciphertext</tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-25" class="py-name" targets="Method tlslite.utils.aesgcm.AESGCM._rawAesCtrEncrypt()=tlslite.utils.aesgcm.AESGCM-class.html#_rawAesCtrEncrypt"><a title="tlslite.utils.aesgcm.AESGCM._rawAesCtrEncrypt" class="py-name" href="#" onclick="return doclink('link-25', '_rawAesCtrEncrypt', 'link-25');">_rawAesCtrEncrypt</a></tt><tt class="py-op">(</tt><tt class="py-name">counter</tt><tt class="py-op">,</tt> <tt class="py-name">plaintext</tt><tt class="py-op">)</tt> </tt>
+<a name="L127"></a><tt class="py-lineno">127</tt>  <tt class="py-line"> </tt>
+<a name="L128"></a><tt class="py-lineno">128</tt>  <tt class="py-line">        <tt class="py-name">tag</tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-26" class="py-name" targets="Method tlslite.utils.aesgcm.AESGCM._auth()=tlslite.utils.aesgcm.AESGCM-class.html#_auth"><a title="tlslite.utils.aesgcm.AESGCM._auth" class="py-name" href="#" onclick="return doclink('link-26', '_auth', 'link-26');">_auth</a></tt><tt class="py-op">(</tt><tt class="py-name">ciphertext</tt><tt class="py-op">,</tt> <tt class="py-name">data</tt><tt class="py-op">,</tt> <tt class="py-name">tagMask</tt><tt class="py-op">)</tt> </tt>
+<a name="L129"></a><tt class="py-lineno">129</tt>  <tt class="py-line"> </tt>
+<a name="L130"></a><tt class="py-lineno">130</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-name">ciphertext</tt> <tt class="py-op">+</tt> <tt class="py-name">tag</tt> </tt>
+</div><a name="L131"></a><tt class="py-lineno">131</tt>  <tt class="py-line"> </tt>
+<a name="AESGCM.open"></a><div id="AESGCM.open-def"><a name="L132"></a><tt class="py-lineno">132</tt> <a class="py-toggle" href="#" id="AESGCM.open-toggle" onclick="return toggle('AESGCM.open');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="tlslite.utils.aesgcm.AESGCM-class.html#open">open</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">nonce</tt><tt class="py-op">,</tt> <tt class="py-param">ciphertext</tt><tt class="py-op">,</tt> <tt class="py-param">data</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="AESGCM.open-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="AESGCM.open-expanded"><a name="L133"></a><tt class="py-lineno">133</tt>  <tt class="py-line">        <tt class="py-docstring">"""</tt> </tt>
+<a name="L134"></a><tt class="py-lineno">134</tt>  <tt class="py-line"><tt class="py-docstring">        Decrypts and authenticates ciphertext using nonce and data. If the</tt> </tt>
+<a name="L135"></a><tt class="py-lineno">135</tt>  <tt class="py-line"><tt class="py-docstring">        tag is valid, the plaintext is returned. If the tag is invalid,</tt> </tt>
+<a name="L136"></a><tt class="py-lineno">136</tt>  <tt class="py-line"><tt class="py-docstring">        returns None.</tt> </tt>
+<a name="L137"></a><tt class="py-lineno">137</tt>  <tt class="py-line"><tt class="py-docstring">        """</tt> </tt>
+<a name="L138"></a><tt class="py-lineno">138</tt>  <tt class="py-line"> </tt>
+<a name="L139"></a><tt class="py-lineno">139</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt class="py-name">len</tt><tt class="py-op">(</tt><tt class="py-name">nonce</tt><tt class="py-op">)</tt> <tt class="py-op">!=</tt> <tt class="py-number">12</tt><tt class="py-op">:</tt> </tt>
+<a name="L140"></a><tt class="py-lineno">140</tt>  <tt class="py-line">            <tt class="py-keyword">raise</tt> <tt class="py-name">ValueError</tt><tt class="py-op">(</tt><tt class="py-string">"Bad nonce length"</tt><tt class="py-op">)</tt> </tt>
+<a name="L141"></a><tt class="py-lineno">141</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt class="py-name">len</tt><tt class="py-op">(</tt><tt class="py-name">ciphertext</tt><tt class="py-op">)</tt> <tt class="py-op">&lt;</tt> <tt class="py-number">16</tt><tt class="py-op">:</tt> </tt>
+<a name="L142"></a><tt class="py-lineno">142</tt>  <tt class="py-line">            <tt class="py-keyword">return</tt> <tt class="py-name">None</tt> </tt>
+<a name="L143"></a><tt class="py-lineno">143</tt>  <tt class="py-line"> </tt>
+<a name="L144"></a><tt class="py-lineno">144</tt>  <tt class="py-line">        <tt class="py-name">tag</tt> <tt class="py-op">=</tt> <tt class="py-name">ciphertext</tt><tt class="py-op">[</tt><tt class="py-op">-</tt><tt class="py-number">16</tt><tt class="py-op">:</tt><tt class="py-op">]</tt> </tt>
+<a name="L145"></a><tt class="py-lineno">145</tt>  <tt class="py-line">        <tt class="py-name">ciphertext</tt> <tt class="py-op">=</tt> <tt class="py-name">ciphertext</tt><tt class="py-op">[</tt><tt class="py-op">:</tt><tt class="py-op">-</tt><tt class="py-number">16</tt><tt class="py-op">]</tt> </tt>
+<a name="L146"></a><tt class="py-lineno">146</tt>  <tt class="py-line"> </tt>
+<a name="L147"></a><tt class="py-lineno">147</tt>  <tt class="py-line">        <tt class="py-comment"># The initial counter value is the nonce, followed by a 32-bit counter</tt> </tt>
+<a name="L148"></a><tt class="py-lineno">148</tt>  <tt class="py-line">        <tt class="py-comment"># that starts at 1. It's used to compute the tag mask.</tt> </tt>
+<a name="L149"></a><tt class="py-lineno">149</tt>  <tt class="py-line">        <tt class="py-name">counter</tt> <tt class="py-op">=</tt> <tt class="py-name">bytearray</tt><tt class="py-op">(</tt><tt class="py-number">16</tt><tt class="py-op">)</tt> </tt>
+<a name="L150"></a><tt class="py-lineno">150</tt>  <tt class="py-line">        <tt class="py-name">counter</tt><tt class="py-op">[</tt><tt class="py-op">:</tt><tt class="py-number">12</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-name">nonce</tt> </tt>
+<a name="L151"></a><tt class="py-lineno">151</tt>  <tt class="py-line">        <tt class="py-name">counter</tt><tt class="py-op">[</tt><tt class="py-op">-</tt><tt class="py-number">1</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-number">1</tt> </tt>
+<a name="L152"></a><tt class="py-lineno">152</tt>  <tt class="py-line">        <tt class="py-name">tagMask</tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">_rawAesEncrypt</tt><tt class="py-op">(</tt><tt class="py-name">counter</tt><tt class="py-op">)</tt> </tt>
+<a name="L153"></a><tt class="py-lineno">153</tt>  <tt class="py-line"> </tt>
+<a name="L154"></a><tt class="py-lineno">154</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt class="py-name">tag</tt> <tt class="py-op">!=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-27" class="py-name"><a title="tlslite.utils.aesgcm.AESGCM._auth" class="py-name" href="#" onclick="return doclink('link-27', '_auth', 'link-26');">_auth</a></tt><tt class="py-op">(</tt><tt class="py-name">ciphertext</tt><tt class="py-op">,</tt> <tt class="py-name">data</tt><tt class="py-op">,</tt> <tt class="py-name">tagMask</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L155"></a><tt class="py-lineno">155</tt>  <tt class="py-line">            <tt class="py-keyword">return</tt> <tt class="py-name">None</tt> </tt>
+<a name="L156"></a><tt class="py-lineno">156</tt>  <tt class="py-line"> </tt>
+<a name="L157"></a><tt class="py-lineno">157</tt>  <tt class="py-line">        <tt class="py-comment"># The counter starts at 2 for the actual decryption.</tt> </tt>
+<a name="L158"></a><tt class="py-lineno">158</tt>  <tt class="py-line">        <tt class="py-name">counter</tt><tt class="py-op">[</tt><tt class="py-op">-</tt><tt class="py-number">1</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-number">2</tt> </tt>
+<a name="L159"></a><tt class="py-lineno">159</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-28" class="py-name"><a title="tlslite.utils.aesgcm.AESGCM._rawAesCtrEncrypt" class="py-name" href="#" onclick="return doclink('link-28', '_rawAesCtrEncrypt', 'link-25');">_rawAesCtrEncrypt</a></tt><tt class="py-op">(</tt><tt class="py-name">counter</tt><tt class="py-op">,</tt> <tt class="py-name">ciphertext</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L160"></a><tt class="py-lineno">160</tt>  <tt class="py-line"> </tt>
+<a name="L161"></a><tt class="py-lineno">161</tt>  <tt class="py-line">    <tt class="py-decorator">@</tt><tt class="py-decorator">staticmethod</tt> </tt>
+<a name="AESGCM._reverseBits"></a><div id="AESGCM._reverseBits-def"><a name="L162"></a><tt class="py-lineno">162</tt> <a class="py-toggle" href="#" id="AESGCM._reverseBits-toggle" onclick="return toggle('AESGCM._reverseBits');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="tlslite.utils.aesgcm.AESGCM-class.html#_reverseBits">_reverseBits</a><tt class="py-op">(</tt><tt class="py-param">i</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="AESGCM._reverseBits-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="AESGCM._reverseBits-expanded"><a name="L163"></a><tt class="py-lineno">163</tt>  <tt class="py-line">        <tt class="py-keyword">assert</tt> <tt class="py-name">i</tt> <tt class="py-op">&lt;</tt> <tt class="py-number">16</tt> </tt>
+<a name="L164"></a><tt class="py-lineno">164</tt>  <tt class="py-line">        <tt class="py-name">i</tt> <tt class="py-op">=</tt> <tt class="py-op">(</tt><tt class="py-op">(</tt><tt class="py-name">i</tt> <tt class="py-op">&lt;&lt;</tt> <tt class="py-number">2</tt><tt class="py-op">)</tt> <tt class="py-op">&amp;</tt> <tt class="py-number">0xc</tt><tt class="py-op">)</tt> <tt class="py-op">|</tt> <tt class="py-op">(</tt><tt class="py-op">(</tt><tt class="py-name">i</tt> <tt class="py-op">&gt;&gt;</tt> <tt class="py-number">2</tt><tt class="py-op">)</tt> <tt class="py-op">&amp;</tt> <tt class="py-number">0x3</tt><tt class="py-op">)</tt> </tt>
+<a name="L165"></a><tt class="py-lineno">165</tt>  <tt class="py-line">        <tt class="py-name">i</tt> <tt class="py-op">=</tt> <tt class="py-op">(</tt><tt class="py-op">(</tt><tt class="py-name">i</tt> <tt class="py-op">&lt;&lt;</tt> <tt class="py-number">1</tt><tt class="py-op">)</tt> <tt class="py-op">&amp;</tt> <tt class="py-number">0xa</tt><tt class="py-op">)</tt> <tt class="py-op">|</tt> <tt class="py-op">(</tt><tt class="py-op">(</tt><tt class="py-name">i</tt> <tt class="py-op">&gt;&gt;</tt> <tt class="py-number">1</tt><tt class="py-op">)</tt> <tt class="py-op">&amp;</tt> <tt class="py-number">0x5</tt><tt class="py-op">)</tt> </tt>
+<a name="L166"></a><tt class="py-lineno">166</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-name">i</tt> </tt>
+</div><a name="L167"></a><tt class="py-lineno">167</tt>  <tt class="py-line"> </tt>
+<a name="L168"></a><tt class="py-lineno">168</tt>  <tt class="py-line">    <tt class="py-decorator">@</tt><tt class="py-decorator">staticmethod</tt> </tt>
+<a name="AESGCM._gcmAdd"></a><div id="AESGCM._gcmAdd-def"><a name="L169"></a><tt class="py-lineno">169</tt> <a class="py-toggle" href="#" id="AESGCM._gcmAdd-toggle" onclick="return toggle('AESGCM._gcmAdd');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="tlslite.utils.aesgcm.AESGCM-class.html#_gcmAdd">_gcmAdd</a><tt class="py-op">(</tt><tt class="py-param">x</tt><tt class="py-op">,</tt> <tt class="py-param">y</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="AESGCM._gcmAdd-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="AESGCM._gcmAdd-expanded"><a name="L170"></a><tt class="py-lineno">170</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-name">x</tt> <tt class="py-op">^</tt> <tt class="py-name">y</tt> </tt>
+</div><a name="L171"></a><tt class="py-lineno">171</tt>  <tt class="py-line"> </tt>
+<a name="L172"></a><tt class="py-lineno">172</tt>  <tt class="py-line">    <tt class="py-decorator">@</tt><tt class="py-decorator">staticmethod</tt> </tt>
+<a name="AESGCM._gcmShift"></a><div id="AESGCM._gcmShift-def"><a name="L173"></a><tt class="py-lineno">173</tt> <a class="py-toggle" href="#" id="AESGCM._gcmShift-toggle" onclick="return toggle('AESGCM._gcmShift');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="tlslite.utils.aesgcm.AESGCM-class.html#_gcmShift">_gcmShift</a><tt class="py-op">(</tt><tt class="py-param">x</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="AESGCM._gcmShift-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="AESGCM._gcmShift-expanded"><a name="L174"></a><tt class="py-lineno">174</tt>  <tt class="py-line">        <tt class="py-comment"># Multiplying by x is a right shift, due to bit order.</tt> </tt>
+<a name="L175"></a><tt class="py-lineno">175</tt>  <tt class="py-line">        <tt class="py-name">highTermSet</tt> <tt class="py-op">=</tt> <tt class="py-name">x</tt> <tt class="py-op">&amp;</tt> <tt class="py-number">1</tt> </tt>
+<a name="L176"></a><tt class="py-lineno">176</tt>  <tt class="py-line">        <tt class="py-name">x</tt> <tt class="py-op">&gt;&gt;=</tt> <tt class="py-number">1</tt> </tt>
+<a name="L177"></a><tt class="py-lineno">177</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt class="py-name">highTermSet</tt><tt class="py-op">:</tt> </tt>
+<a name="L178"></a><tt class="py-lineno">178</tt>  <tt class="py-line">            <tt class="py-comment"># The x^127 term was shifted up to x^128, so subtract a 1+x+x^2+x^7</tt> </tt>
+<a name="L179"></a><tt class="py-lineno">179</tt>  <tt class="py-line">            <tt class="py-comment"># term. This is 0b11100001 or 0xe1 when represented as an 8-bit</tt> </tt>
+<a name="L180"></a><tt class="py-lineno">180</tt>  <tt class="py-line">            <tt class="py-comment"># polynomial.</tt> </tt>
+<a name="L181"></a><tt class="py-lineno">181</tt>  <tt class="py-line">            <tt class="py-name">x</tt> <tt class="py-op">^=</tt> <tt class="py-number">0xe1</tt> <tt class="py-op">&lt;&lt;</tt> <tt class="py-op">(</tt><tt class="py-number">128</tt><tt class="py-op">-</tt><tt class="py-number">8</tt><tt class="py-op">)</tt> </tt>
+<a name="L182"></a><tt class="py-lineno">182</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-name">x</tt> </tt>
+</div><a name="L183"></a><tt class="py-lineno">183</tt>  <tt class="py-line"> </tt>
+<a name="L184"></a><tt class="py-lineno">184</tt>  <tt class="py-line">    <tt class="py-decorator">@</tt><tt class="py-decorator">staticmethod</tt> </tt>
+<a name="AESGCM._inc32"></a><div id="AESGCM._inc32-def"><a name="L185"></a><tt class="py-lineno">185</tt> <a class="py-toggle" href="#" id="AESGCM._inc32-toggle" onclick="return toggle('AESGCM._inc32');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="tlslite.utils.aesgcm.AESGCM-class.html#_inc32">_inc32</a><tt class="py-op">(</tt><tt class="py-param">counter</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="AESGCM._inc32-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="AESGCM._inc32-expanded"><a name="L186"></a><tt class="py-lineno">186</tt>  <tt class="py-line">        <tt class="py-keyword">for</tt> <tt class="py-name">i</tt> <tt class="py-keyword">in</tt> <tt class="py-name">range</tt><tt class="py-op">(</tt><tt class="py-name">len</tt><tt class="py-op">(</tt><tt class="py-name">counter</tt><tt class="py-op">)</tt><tt class="py-op">-</tt><tt class="py-number">1</tt><tt class="py-op">,</tt> <tt class="py-name">len</tt><tt class="py-op">(</tt><tt class="py-name">counter</tt><tt class="py-op">)</tt><tt class="py-op">-</tt><tt class="py-number">5</tt><tt class="py-op">,</tt> <tt class="py-op">-</tt><tt class="py-number">1</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L187"></a><tt class="py-lineno">187</tt>  <tt class="py-line">            <tt class="py-name">counter</tt><tt class="py-op">[</tt><tt class="py-name">i</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-op">(</tt><tt class="py-name">counter</tt><tt class="py-op">[</tt><tt class="py-name">i</tt><tt class="py-op">]</tt> <tt class="py-op">+</tt> <tt class="py-number">1</tt><tt class="py-op">)</tt> <tt class="py-op">%</tt> <tt class="py-number">256</tt> </tt>
+<a name="L188"></a><tt class="py-lineno">188</tt>  <tt class="py-line">            <tt class="py-keyword">if</tt> <tt class="py-name">counter</tt><tt class="py-op">[</tt><tt class="py-name">i</tt><tt class="py-op">]</tt> <tt class="py-op">!=</tt> <tt class="py-number">0</tt><tt class="py-op">:</tt> </tt>
+<a name="L189"></a><tt class="py-lineno">189</tt>  <tt class="py-line">                <tt class="py-keyword">break</tt> </tt>
+<a name="L190"></a><tt class="py-lineno">190</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-name">counter</tt> </tt>
+</div><a name="L191"></a><tt class="py-lineno">191</tt>  <tt class="py-line"> </tt>
+<a name="L192"></a><tt class="py-lineno">192</tt>  <tt class="py-line">    <tt class="py-comment"># _gcmReductionTable[i] is i * (1+x+x^2+x^7) for all 4-bit polynomials i. The</tt> </tt>
+<a name="L193"></a><tt class="py-lineno">193</tt>  <tt class="py-line">    <tt class="py-comment"># result is stored as a 16-bit polynomial. This is used in the reduction step to</tt> </tt>
+<a name="L194"></a><tt class="py-lineno">194</tt>  <tt class="py-line">    <tt class="py-comment"># multiply elements of GF(2^128) by x^4.</tt> </tt>
+<a name="L195"></a><tt class="py-lineno">195</tt>  <tt class="py-line">    <tt id="link-29" class="py-name"><a title="tlslite.utils.aesgcm.AESGCM._gcmReductionTable" class="py-name" href="#" onclick="return doclink('link-29', '_gcmReductionTable', 'link-24');">_gcmReductionTable</a></tt> <tt class="py-op">=</tt> <tt class="py-op">[</tt> </tt>
+<a name="L196"></a><tt class="py-lineno">196</tt>  <tt class="py-line">        <tt class="py-number">0x0000</tt><tt class="py-op">,</tt> <tt class="py-number">0x1c20</tt><tt class="py-op">,</tt> <tt class="py-number">0x3840</tt><tt class="py-op">,</tt> <tt class="py-number">0x2460</tt><tt class="py-op">,</tt> <tt class="py-number">0x7080</tt><tt class="py-op">,</tt> <tt class="py-number">0x6ca0</tt><tt class="py-op">,</tt> <tt class="py-number">0x48c0</tt><tt class="py-op">,</tt> <tt class="py-number">0x54e0</tt><tt class="py-op">,</tt> </tt>
+<a name="L197"></a><tt class="py-lineno">197</tt>  <tt class="py-line">        <tt class="py-number">0xe100</tt><tt class="py-op">,</tt> <tt class="py-number">0xfd20</tt><tt class="py-op">,</tt> <tt class="py-number">0xd940</tt><tt class="py-op">,</tt> <tt class="py-number">0xc560</tt><tt class="py-op">,</tt> <tt class="py-number">0x9180</tt><tt class="py-op">,</tt> <tt class="py-number">0x8da0</tt><tt class="py-op">,</tt> <tt class="py-number">0xa9c0</tt><tt class="py-op">,</tt> <tt class="py-number">0xb5e0</tt><tt class="py-op">,</tt> </tt>
+<a name="L198"></a><tt class="py-lineno">198</tt>  <tt class="py-line">    <tt class="py-op">]</tt> </tt>
+</div><a name="L199"></a><tt class="py-lineno">199</tt>  <tt class="py-line"> </tt><script type="text/javascript">
+<!--
+expandto(location.href);
+// -->
+</script>
+</pre>
+<br />
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+  <!-- Home link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="tlslite-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+      <th class="navbar" width="100%"></th>
+  </tr>
+</table>
+<table border="0" cellpadding="0" cellspacing="0" width="100%%">
+  <tr>
+    <td align="left" class="footer">
+    Generated by Epydoc 3.0.1 on Thu Jan 14 19:33:33 2016
+    </td>
+    <td align="right" class="footer">
+      <a target="mainFrame" href="http://epydoc.sourceforge.net"
+        >http://epydoc.sourceforge.net</a>
+    </td>
+  </tr>
+</table>
+
+<script type="text/javascript">
+  <!--
+  // Private objects are initially displayed (because if
+  // javascript is turned off then we want them to be
+  // visible); but by default, we want to hide them.  So hide
+  // them unless we have a cookie that says to show them.
+  checkCookie();
+  // -->
+</script>
+</body>
+</html>

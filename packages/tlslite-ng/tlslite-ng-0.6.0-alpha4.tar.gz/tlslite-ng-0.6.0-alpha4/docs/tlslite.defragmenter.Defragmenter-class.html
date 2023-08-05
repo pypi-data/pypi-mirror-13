@@ -1,0 +1,383 @@
+<?xml version="1.0" encoding="ascii"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>tlslite.defragmenter.Defragmenter</title>
+  <link rel="stylesheet" href="epydoc.css" type="text/css" />
+  <script type="text/javascript" src="epydoc.js"></script>
+</head>
+
+<body bgcolor="white" text="black" link="blue" vlink="#204080"
+      alink="#204080">
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+  <!-- Home link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="tlslite-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+      <th class="navbar" width="100%"></th>
+  </tr>
+</table>
+<table width="100%" cellpadding="0" cellspacing="0">
+  <tr valign="top">
+    <td width="100%">
+      <span class="breadcrumbs">
+        <a href="tlslite-module.html">Package&nbsp;tlslite</a> ::
+        <a href="tlslite.defragmenter-module.html">Module&nbsp;defragmenter</a> ::
+        Class&nbsp;Defragmenter
+      </span>
+    </td>
+    <td>
+      <table cellpadding="0" cellspacing="0">
+        <!-- hide/show private -->
+        <tr><td align="right"><span class="options">[<a href="javascript:void(0);" class="privatelink"
+    onclick="toggle_private();">hide&nbsp;private</a>]</span></td></tr>
+        <tr><td align="right"><span class="options"
+            >[<a href="frames.html" target="_top">frames</a
+            >]&nbsp;|&nbsp;<a href="tlslite.defragmenter.Defragmenter-class.html"
+            target="_top">no&nbsp;frames</a>]</span></td></tr>
+      </table>
+    </td>
+  </tr>
+</table>
+<!-- ==================== CLASS DESCRIPTION ==================== -->
+<h1 class="epydoc">Class Defragmenter</h1><p class="nomargin-top"><span class="codelink"><a href="tlslite.defragmenter-pysrc.html#Defragmenter">source&nbsp;code</a></span></p>
+<center>
+<center>  <map id="uml_class_diagram_for_tlslite__13" name="uml_class_diagram_for_tlslite__13">
+<area shape="rect" id="node1_9" href="tlslite.defragmenter.Defragmenter-class.html#buffers" title="data buffers for message types" alt="" coords="17,29,353,49"/>
+<area shape="rect" id="node1_10" href="tlslite.defragmenter.Defragmenter-class.html#decoders" title="functions which check buffers if a message of given type is complete" alt="" coords="17,49,353,69"/>
+<area shape="rect" id="node1_11" href="tlslite.defragmenter.Defragmenter-class.html#priorities" title="order in which messages from given types should be returned." alt="" coords="17,69,353,89"/>
+<area shape="rect" id="node1_12" href="tlslite.defragmenter.Defragmenter-class.html#__init__" title="Set up empty defregmenter" alt="" coords="17,92,353,112"/>
+<area shape="rect" id="node1_13" href="tlslite.defragmenter.Defragmenter-class.html#addData" title="Adds data to buffers" alt="" coords="17,112,353,132"/>
+<area shape="rect" id="node1_14" href="tlslite.defragmenter.Defragmenter-class.html#addDynamicSize" title="Add a message type which has a dynamic size set in a header" alt="" coords="17,132,353,152"/>
+<area shape="rect" id="node1_15" href="tlslite.defragmenter.Defragmenter-class.html#addStaticSize" title="Add a message type which all messages are of same length" alt="" coords="17,152,353,172"/>
+<area shape="rect" id="node1_16" href="tlslite.defragmenter.Defragmenter-class.html#clearBuffers" title="Remove all data from buffers" alt="" coords="17,172,353,192"/>
+<area shape="rect" id="node1_17" href="tlslite.defragmenter.Defragmenter-class.html#getMessage" title="Extract the highest priority complete message from buffer" alt="" coords="17,192,353,212"/>
+<area shape="rect" id="node1" href="tlslite.defragmenter.Defragmenter-class.html" title="Class for demultiplexing TLS messages." alt="" coords="5,5,365,219"/>
+</map>
+  <img src="uml_class_diagram_for_tlslite__13.png" alt='' usemap="#uml_class_diagram_for_tlslite__13" ismap="ismap" class="graph-without-title" />
+</center>
+</center>
+<hr />
+<p>Class for demultiplexing TLS messages.</p>
+  <p>Since the messages can be interleaved and fragmented between each 
+  other we need to cache not complete ones and return in order of 
+  urgency.</p>
+  <p>Supports messages with given size (like Alerts) or with a length 
+  header in specific place (like Handshake messages).</p>
+
+<!-- ==================== INSTANCE METHODS ==================== -->
+<a name="section-InstanceMethods"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Instance Methods</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-InstanceMethods"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="tlslite.defragmenter.Defragmenter-class.html#__init__" class="summary-sig-name">__init__</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Set up empty defregmenter</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="tlslite.defragmenter-pysrc.html#Defragmenter.__init__">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="addData"></a><span class="summary-sig-name">addData</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">msgType</span>,
+        <span class="summary-sig-arg">data</span>)</span><br />
+      Adds data to buffers</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="tlslite.defragmenter-pysrc.html#Defragmenter.addData">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="addDynamicSize"></a><span class="summary-sig-name">addDynamicSize</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">msgType</span>,
+        <span class="summary-sig-arg">sizeOffset</span>,
+        <span class="summary-sig-arg">sizeOfSize</span>)</span><br />
+      Add a message type which has a dynamic size set in a header</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="tlslite.defragmenter-pysrc.html#Defragmenter.addDynamicSize">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="addStaticSize"></a><span class="summary-sig-name">addStaticSize</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">msgType</span>,
+        <span class="summary-sig-arg">size</span>)</span><br />
+      Add a message type which all messages are of same length</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="tlslite.defragmenter-pysrc.html#Defragmenter.addStaticSize">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="clearBuffers"></a><span class="summary-sig-name">clearBuffers</span>(<span class="summary-sig-arg">self</span>)</span><br />
+      Remove all data from buffers</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="tlslite.defragmenter-pysrc.html#Defragmenter.clearBuffers">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="getMessage"></a><span class="summary-sig-name">getMessage</span>(<span class="summary-sig-arg">self</span>)</span><br />
+      Extract the highest priority complete message from buffer</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="tlslite.defragmenter-pysrc.html#Defragmenter.getMessage">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2" class="summary">
+    <p class="indent-wrapped-lines"><b>Inherited from <code>object</code></b>:
+      <code>__delattr__</code>,
+      <code>__format__</code>,
+      <code>__getattribute__</code>,
+      <code>__hash__</code>,
+      <code>__new__</code>,
+      <code>__reduce__</code>,
+      <code>__reduce_ex__</code>,
+      <code>__repr__</code>,
+      <code>__setattr__</code>,
+      <code>__sizeof__</code>,
+      <code>__str__</code>,
+      <code>__subclasshook__</code>
+      </p>
+    </td>
+  </tr>
+</table>
+<!-- ==================== INSTANCE VARIABLES ==================== -->
+<a name="section-InstanceVariables"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Instance Variables</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-InstanceVariables"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="buffers"></a><span class="summary-name">buffers</span><br />
+      data buffers for message types
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="decoders"></a><span class="summary-name">decoders</span><br />
+      functions which check buffers if a message of given type is complete
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="priorities"></a><span class="summary-name">priorities</span><br />
+      order in which messages from given types should be returned.
+    </td>
+  </tr>
+</table>
+<!-- ==================== PROPERTIES ==================== -->
+<a name="section-Properties"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Properties</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-Properties"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+  <tr>
+    <td colspan="2" class="summary">
+    <p class="indent-wrapped-lines"><b>Inherited from <code>object</code></b>:
+      <code>__class__</code>
+      </p>
+    </td>
+  </tr>
+</table>
+<!-- ==================== METHOD DETAILS ==================== -->
+<a name="section-MethodDetails"></a>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Method Details</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-MethodDetails"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+</table>
+<a name="__init__"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">__init__</span>(<span class="sig-arg">self</span>)</span>
+    <br /><em class="fname">(Constructor)</em>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="tlslite.defragmenter-pysrc.html#Defragmenter.__init__">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Set up empty defregmenter</p>
+  <dl class="fields">
+    <dt>Overrides:
+        object.__init__
+    </dt>
+  </dl>
+</td></tr></table>
+</div>
+<br />
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+  <!-- Home link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="tlslite-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+      <th class="navbar" width="100%"></th>
+  </tr>
+</table>
+<table border="0" cellpadding="0" cellspacing="0" width="100%%">
+  <tr>
+    <td align="left" class="footer">
+    Generated by Epydoc 3.0.1 on Thu Jan 14 19:33:27 2016
+    </td>
+    <td align="right" class="footer">
+      <a target="mainFrame" href="http://epydoc.sourceforge.net"
+        >http://epydoc.sourceforge.net</a>
+    </td>
+  </tr>
+</table>
+
+<script type="text/javascript">
+  <!--
+  // Private objects are initially displayed (because if
+  // javascript is turned off then we want them to be
+  // visible); but by default, we want to hide them.  So hide
+  // them unless we have a cookie that says to show them.
+  checkCookie();
+  // -->
+</script>
+</body>
+</html>

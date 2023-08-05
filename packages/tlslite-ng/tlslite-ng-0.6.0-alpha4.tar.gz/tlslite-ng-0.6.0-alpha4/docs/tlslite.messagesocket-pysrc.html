@@ -1,0 +1,450 @@
+<?xml version="1.0" encoding="ascii"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>tlslite.messagesocket</title>
+  <link rel="stylesheet" href="epydoc.css" type="text/css" />
+  <script type="text/javascript" src="epydoc.js"></script>
+</head>
+
+<body bgcolor="white" text="black" link="blue" vlink="#204080"
+      alink="#204080">
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+  <!-- Home link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="tlslite-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+      <th class="navbar" width="100%"></th>
+  </tr>
+</table>
+<table width="100%" cellpadding="0" cellspacing="0">
+  <tr valign="top">
+    <td width="100%">
+      <span class="breadcrumbs">
+        <a href="tlslite-module.html">Package&nbsp;tlslite</a> ::
+        Module&nbsp;messagesocket
+      </span>
+    </td>
+    <td>
+      <table cellpadding="0" cellspacing="0">
+        <!-- hide/show private -->
+        <tr><td align="right"><span class="options">[<a href="javascript:void(0);" class="privatelink"
+    onclick="toggle_private();">hide&nbsp;private</a>]</span></td></tr>
+        <tr><td align="right"><span class="options"
+            >[<a href="frames.html" target="_top">frames</a
+            >]&nbsp;|&nbsp;<a href="tlslite.messagesocket-pysrc.html"
+            target="_top">no&nbsp;frames</a>]</span></td></tr>
+      </table>
+    </td>
+  </tr>
+</table>
+<h1 class="epydoc">Source Code for <a href="tlslite.messagesocket-module.html">Module tlslite.messagesocket</a></h1>
+<pre class="py-src">
+<a name="L1"></a><tt class="py-lineno">  1</tt>  <tt class="py-line"><tt class="py-comment"># vim: set fileencoding=utf8</tt> </tt>
+<a name="L2"></a><tt class="py-lineno">  2</tt>  <tt class="py-line"><tt class="py-comment">#</tt> </tt>
+<a name="L3"></a><tt class="py-lineno">  3</tt>  <tt class="py-line"><tt class="py-comment"># Copyright &#169; 2015, Hubert Kario</tt> </tt>
+<a name="L4"></a><tt class="py-lineno">  4</tt>  <tt class="py-line"><tt class="py-comment">#</tt> </tt>
+<a name="L5"></a><tt class="py-lineno">  5</tt>  <tt class="py-line"><tt class="py-comment"># See the LICENSE file for legal information regarding use of this file.</tt> </tt>
+<a name="L6"></a><tt class="py-lineno">  6</tt>  <tt class="py-line"> </tt>
+<a name="L7"></a><tt class="py-lineno">  7</tt>  <tt class="py-line"><tt class="py-docstring">"""Wrapper of TLS RecordLayer providing message-level abstraction"""</tt> </tt>
+<a name="L8"></a><tt class="py-lineno">  8</tt>  <tt class="py-line"> </tt>
+<a name="L9"></a><tt class="py-lineno">  9</tt>  <tt class="py-line"><tt class="py-keyword">from</tt> <tt class="py-op">.</tt><tt id="link-0" class="py-name" targets="Module tlslite.recordlayer=tlslite.recordlayer-module.html"><a title="tlslite.recordlayer" class="py-name" href="#" onclick="return doclink('link-0', 'recordlayer', 'link-0');">recordlayer</a></tt> <tt class="py-keyword">import</tt> <tt id="link-1" class="py-name" targets="Class tlslite.recordlayer.RecordLayer=tlslite.recordlayer.RecordLayer-class.html"><a title="tlslite.recordlayer.RecordLayer" class="py-name" href="#" onclick="return doclink('link-1', 'RecordLayer', 'link-1');">RecordLayer</a></tt> </tt>
+<a name="L10"></a><tt class="py-lineno"> 10</tt>  <tt class="py-line"><tt class="py-keyword">from</tt> <tt class="py-op">.</tt><tt id="link-2" class="py-name" targets="Module tlslite.constants=tlslite.constants-module.html,Variable tlslite.utils.chacha.ChaCha.constants=tlslite.utils.chacha.ChaCha-class.html#constants"><a title="tlslite.constants
+tlslite.utils.chacha.ChaCha.constants" class="py-name" href="#" onclick="return doclink('link-2', 'constants', 'link-2');">constants</a></tt> <tt class="py-keyword">import</tt> <tt id="link-3" class="py-name" targets="Class tlslite.constants.ContentType=tlslite.constants.ContentType-class.html"><a title="tlslite.constants.ContentType" class="py-name" href="#" onclick="return doclink('link-3', 'ContentType', 'link-3');">ContentType</a></tt> </tt>
+<a name="L11"></a><tt class="py-lineno"> 11</tt>  <tt class="py-line"><tt class="py-keyword">from</tt> <tt class="py-op">.</tt><tt id="link-4" class="py-name" targets="Module tlslite.messages=tlslite.messages-module.html"><a title="tlslite.messages" class="py-name" href="#" onclick="return doclink('link-4', 'messages', 'link-4');">messages</a></tt> <tt class="py-keyword">import</tt> <tt id="link-5" class="py-name" targets="Class tlslite.messages.RecordHeader3=tlslite.messages.RecordHeader3-class.html"><a title="tlslite.messages.RecordHeader3" class="py-name" href="#" onclick="return doclink('link-5', 'RecordHeader3', 'link-5');">RecordHeader3</a></tt><tt class="py-op">,</tt> <tt id="link-6" class="py-name" targets="Class mimetools.Message=mimetools.Message-class.html,Class tlslite.messages.Message=tlslite.messages.Message-class.html"><a title="mimetools.Message
+tlslite.messages.Message" class="py-name" href="#" onclick="return doclink('link-6', 'Message', 'link-6');">Message</a></tt> </tt>
+<a name="L12"></a><tt class="py-lineno"> 12</tt>  <tt class="py-line"><tt class="py-keyword">from</tt> <tt class="py-op">.</tt><tt id="link-7" class="py-name" targets="Package tlslite.utils=tlslite.utils-module.html"><a title="tlslite.utils" class="py-name" href="#" onclick="return doclink('link-7', 'utils', 'link-7');">utils</a></tt><tt class="py-op">.</tt><tt id="link-8" class="py-name" targets="Module tlslite.utils.codec=tlslite.utils.codec-module.html"><a title="tlslite.utils.codec" class="py-name" href="#" onclick="return doclink('link-8', 'codec', 'link-8');">codec</a></tt> <tt class="py-keyword">import</tt> <tt id="link-9" class="py-name" targets="Class tlslite.utils.codec.Parser=tlslite.utils.codec.Parser-class.html"><a title="tlslite.utils.codec.Parser" class="py-name" href="#" onclick="return doclink('link-9', 'Parser', 'link-9');">Parser</a></tt> </tt>
+<a name="L13"></a><tt class="py-lineno"> 13</tt>  <tt class="py-line"> </tt>
+<a name="MessageSocket"></a><div id="MessageSocket-def"><a name="L14"></a><tt class="py-lineno"> 14</tt> <a class="py-toggle" href="#" id="MessageSocket-toggle" onclick="return toggle('MessageSocket');">-</a><tt class="py-line"><tt class="py-keyword">class</tt> <a class="py-def-name" href="tlslite.messagesocket.MessageSocket-class.html">MessageSocket</a><tt class="py-op">(</tt><tt class="py-base-class">RecordLayer</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="MessageSocket-collapsed" style="display:none;" pad="+++" indent="++++"></div><div id="MessageSocket-expanded"><a name="L15"></a><tt class="py-lineno"> 15</tt>  <tt class="py-line"> </tt>
+<a name="L16"></a><tt class="py-lineno"> 16</tt>  <tt class="py-line">    <tt class="py-docstring">"""TLS Record Layer socket that provides Message level abstraction</tt> </tt>
+<a name="L17"></a><tt class="py-lineno"> 17</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L18"></a><tt class="py-lineno"> 18</tt>  <tt class="py-line"><tt class="py-docstring">    Because the record layer has a hard size limit on sent messages, they need</tt> </tt>
+<a name="L19"></a><tt class="py-lineno"> 19</tt>  <tt class="py-line"><tt class="py-docstring">    to be fragmented before sending. Similarly, a single record layer record</tt> </tt>
+<a name="L20"></a><tt class="py-lineno"> 20</tt>  <tt class="py-line"><tt class="py-docstring">    can include multiple handshake protocol messages (very common with</tt> </tt>
+<a name="L21"></a><tt class="py-lineno"> 21</tt>  <tt class="py-line"><tt class="py-docstring">    ServerHello, Certificate and ServerHelloDone), as such, the user of</tt> </tt>
+<a name="L22"></a><tt class="py-lineno"> 22</tt>  <tt class="py-line"><tt class="py-docstring">    RecordLayer needs to fragment those records into multiple messages.</tt> </tt>
+<a name="L23"></a><tt class="py-lineno"> 23</tt>  <tt class="py-line"><tt class="py-docstring">    Unfortunately, fragmentation of messages requires some degree of</tt> </tt>
+<a name="L24"></a><tt class="py-lineno"> 24</tt>  <tt class="py-line"><tt class="py-docstring">    knowledge about the messages passed and as such is outside scope of pure</tt> </tt>
+<a name="L25"></a><tt class="py-lineno"> 25</tt>  <tt class="py-line"><tt class="py-docstring">    record layer implementation.</tt> </tt>
+<a name="L26"></a><tt class="py-lineno"> 26</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L27"></a><tt class="py-lineno"> 27</tt>  <tt class="py-line"><tt class="py-docstring">    This class tries to provide a useful abstraction for handling Handshake</tt> </tt>
+<a name="L28"></a><tt class="py-lineno"> 28</tt>  <tt class="py-line"><tt class="py-docstring">    protocol messages.</tt> </tt>
+<a name="L29"></a><tt class="py-lineno"> 29</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L30"></a><tt class="py-lineno"> 30</tt>  <tt class="py-line"><tt class="py-docstring">    @type recordSize: int</tt> </tt>
+<a name="L31"></a><tt class="py-lineno"> 31</tt>  <tt class="py-line"><tt class="py-docstring">    @ivar recordSize: maximum size of records sent through socket. Messages</tt> </tt>
+<a name="L32"></a><tt class="py-lineno"> 32</tt>  <tt class="py-line"><tt class="py-docstring">    bigger than this size will be fragmented to smaller chunks. Setting it</tt> </tt>
+<a name="L33"></a><tt class="py-lineno"> 33</tt>  <tt class="py-line"><tt class="py-docstring">    to higher value than the default 2^14 will make the implementation</tt> </tt>
+<a name="L34"></a><tt class="py-lineno"> 34</tt>  <tt class="py-line"><tt class="py-docstring">    non RFC compliant and likely not interoperable with other peers.</tt> </tt>
+<a name="L35"></a><tt class="py-lineno"> 35</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L36"></a><tt class="py-lineno"> 36</tt>  <tt class="py-line"><tt class="py-docstring">    @type defragmenter: L{Defragmenter}</tt> </tt>
+<a name="L37"></a><tt class="py-lineno"> 37</tt>  <tt class="py-line"><tt class="py-docstring">    @ivar defragmenter: defragmenter used for read records</tt> </tt>
+<a name="L38"></a><tt class="py-lineno"> 38</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L39"></a><tt class="py-lineno"> 39</tt>  <tt class="py-line"><tt class="py-docstring">    @type unfragmentedDataTypes: tuple</tt> </tt>
+<a name="L40"></a><tt class="py-lineno"> 40</tt>  <tt class="py-line"><tt class="py-docstring">    @ivar unfragmentedDataTypes: data types which will be passed as-read,</tt> </tt>
+<a name="L41"></a><tt class="py-lineno"> 41</tt>  <tt class="py-line"><tt class="py-docstring">    TLS application_data by default</tt> </tt>
+<a name="L42"></a><tt class="py-lineno"> 42</tt>  <tt class="py-line"><tt class="py-docstring">    """</tt> </tt>
+<a name="L43"></a><tt class="py-lineno"> 43</tt>  <tt class="py-line"> </tt>
+<a name="MessageSocket.__init__"></a><div id="MessageSocket.__init__-def"><a name="L44"></a><tt class="py-lineno"> 44</tt> <a class="py-toggle" href="#" id="MessageSocket.__init__-toggle" onclick="return toggle('MessageSocket.__init__');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="tlslite.messagesocket.MessageSocket-class.html#__init__">__init__</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">sock</tt><tt class="py-op">,</tt> <tt class="py-param">defragmenter</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="MessageSocket.__init__-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="MessageSocket.__init__-expanded"><a name="L45"></a><tt class="py-lineno"> 45</tt>  <tt class="py-line">        <tt class="py-docstring">"""Apply TLS Record Layer abstraction to raw network socket.</tt> </tt>
+<a name="L46"></a><tt class="py-lineno"> 46</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L47"></a><tt class="py-lineno"> 47</tt>  <tt class="py-line"><tt class="py-docstring">        @type sock: L{socket.socket}</tt> </tt>
+<a name="L48"></a><tt class="py-lineno"> 48</tt>  <tt class="py-line"><tt class="py-docstring">        @param sock: network socket to wrap</tt> </tt>
+<a name="L49"></a><tt class="py-lineno"> 49</tt>  <tt class="py-line"><tt class="py-docstring">        @type defragmenter: L{Defragmenter}</tt> </tt>
+<a name="L50"></a><tt class="py-lineno"> 50</tt>  <tt class="py-line"><tt class="py-docstring">        @param defragmenter: defragmenter to apply on the records read</tt> </tt>
+<a name="L51"></a><tt class="py-lineno"> 51</tt>  <tt class="py-line"><tt class="py-docstring">        """</tt> </tt>
+<a name="L52"></a><tt class="py-lineno"> 52</tt>  <tt class="py-line">        <tt class="py-name">super</tt><tt class="py-op">(</tt><tt id="link-10" class="py-name" targets="Class tlslite.messagesocket.MessageSocket=tlslite.messagesocket.MessageSocket-class.html"><a title="tlslite.messagesocket.MessageSocket" class="py-name" href="#" onclick="return doclink('link-10', 'MessageSocket', 'link-10');">MessageSocket</a></tt><tt class="py-op">,</tt> <tt class="py-name">self</tt><tt class="py-op">)</tt><tt class="py-op">.</tt><tt id="link-11" class="py-name" targets="Method tlslite.basedb.BaseDB.__init__()=tlslite.basedb.BaseDB-class.html#__init__,Method tlslite.checker.Checker.__init__()=tlslite.checker.Checker-class.html#__init__,Method tlslite.defragmenter.Defragmenter.__init__()=tlslite.defragmenter.Defragmenter-class.html#__init__,Method tlslite.errors.TLSLocalAlert.__init__()=tlslite.errors.TLSLocalAlert-class.html#__init__,Method tlslite.errors.TLSRemoteAlert.__init__()=tlslite.errors.TLSRemoteAlert-class.html#__init__,Method tlslite.errors.TLSValidationError.__init__()=tlslite.errors.TLSValidationError-class.html#__init__,Method tlslite.extensions.ClientCertTypeExtension.__init__()=tlslite.extensions.ClientCertTypeExtension-class.html#__init__,Method tlslite.extensions.ECPointFormatsExtension.__init__()=tlslite.extensions.ECPointFormatsExtension-class.html#__init__,Method tlslite.extensions.NPNExtension.__init__()=tlslite.extensions.NPNExtension-class.html#__init__,Method tlslite.extensions.PaddingExtension.__init__()=tlslite.extensions.PaddingExtension-class.html#__init__,Method tlslite.extensions.SNIExtension.__init__()=tlslite.extensions.SNIExtension-class.html#__init__,Method tlslite.extensions.SRPExtension.__init__()=tlslite.extensions.SRPExtension-class.html#__init__,Method tlslite.extensions.ServerCertTypeExtension.__init__()=tlslite.extensions.ServerCertTypeExtension-class.html#__init__,Method tlslite.extensions.SignatureAlgorithmsExtension.__init__()=tlslite.extensions.SignatureAlgorithmsExtension-class.html#__init__,Method tlslite.extensions.SupportedGroupsExtension.__init__()=tlslite.extensions.SupportedGroupsExtension-class.html#__init__,Method tlslite.extensions.TACKExtension.TACK.__init__()=tlslite.extensions.TACKExtension.TACK-class.html#__init__,Method tlslite.extensions.TACKExtension.__init__()=tlslite.extensions.TACKExtension-class.html#__init__,Method tlslite.extensions.TLSExtension.__init__()=tlslite.extensions.TLSExtension-class.html#__init__,Method tlslite.extensions.VarListExtension.__init__()=tlslite.extensions.VarListExtension-class.html#__init__,Method tlslite.handshakehashes.HandshakeHashes.__init__()=tlslite.handshakehashes.HandshakeHashes-class.html#__init__,Method tlslite.handshakesettings.HandshakeSettings.__init__()=tlslite.handshakesettings.HandshakeSettings-class.html#__init__,Method tlslite.integration.asyncstatemachine.AsyncStateMachine.__init__()=tlslite.integration.asyncstatemachine.AsyncStateMachine-class.html#__init__,Method tlslite.integration.clienthelper.ClientHelper.__init__()=tlslite.integration.clienthelper.ClientHelper-class.html#__init__,Method tlslite.integration.httptlsconnection.HTTPTLSConnection.__init__()=tlslite.integration.httptlsconnection.HTTPTLSConnection-class.html#__init__,Method tlslite.integration.imap4_tls.IMAP4_TLS.__init__()=tlslite.integration.imap4_tls.IMAP4_TLS-class.html#__init__,Method tlslite.integration.pop3_tls.POP3_TLS.__init__()=tlslite.integration.pop3_tls.POP3_TLS-class.html#__init__,Method tlslite.integration.tlsasyncdispatchermixin.TLSAsyncDispatcherMixIn.__init__()=tlslite.integration.tlsasyncdispatchermixin.TLSAsyncDispatcherMixIn-class.html#__init__,Method tlslite.integration.xmlrpcserver.MultiPathTLSXMLRPCServer.__init__()=tlslite.integration.xmlrpcserver.MultiPathTLSXMLRPCServer-class.html#__init__,Method tlslite.integration.xmlrpcserver.TLSXMLRPCServer.__init__()=tlslite.integration.xmlrpcserver.TLSXMLRPCServer-class.html#__init__,Method tlslite.integration.xmlrpctransport.XMLRPCTransport.__init__()=tlslite.integration.xmlrpctransport.XMLRPCTransport-class.html#__init__,Method tlslite.keyexchange.DHE_RSAKeyExchange.__init__()=tlslite.keyexchange.DHE_RSAKeyExchange-class.html#__init__,Method tlslite.keyexchange.ECDHE_RSAKeyExchange.__init__()=tlslite.keyexchange.ECDHE_RSAKeyExchange-class.html#__init__,Method tlslite.keyexchange.KeyExchange.__init__()=tlslite.keyexchange.KeyExchange-class.html#__init__,Method tlslite.keyexchange.RSAKeyExchange.__init__()=tlslite.keyexchange.RSAKeyExchange-class.html#__init__,Method tlslite.keyexchange.SRPKeyExchange.__init__()=tlslite.keyexchange.SRPKeyExchange-class.html#__init__,Method tlslite.messages.Alert.__init__()=tlslite.messages.Alert-class.html#__init__,Method tlslite.messages.ApplicationData.__init__()=tlslite.messages.ApplicationData-class.html#__init__,Method tlslite.messages.Certificate.__init__()=tlslite.messages.Certificate-class.html#__init__,Method tlslite.messages.CertificateRequest.__init__()=tlslite.messages.CertificateRequest-class.html#__init__,Method tlslite.messages.CertificateVerify.__init__()=tlslite.messages.CertificateVerify-class.html#__init__,Method tlslite.messages.ChangeCipherSpec.__init__()=tlslite.messages.ChangeCipherSpec-class.html#__init__,Method tlslite.messages.ClientHello.__init__()=tlslite.messages.ClientHello-class.html#__init__,Method tlslite.messages.ClientKeyExchange.__init__()=tlslite.messages.ClientKeyExchange-class.html#__init__,Method tlslite.messages.Finished.__init__()=tlslite.messages.Finished-class.html#__init__,Method tlslite.messages.HandshakeMsg.__init__()=tlslite.messages.HandshakeMsg-class.html#__init__,Method tlslite.messages.Message.__init__()=tlslite.messages.Message-class.html#__init__,Method tlslite.messages.NextProtocol.__init__()=tlslite.messages.NextProtocol-class.html#__init__,Method tlslite.messages.RecordHeader.__init__()=tlslite.messages.RecordHeader-class.html#__init__,Method tlslite.messages.RecordHeader2.__init__()=tlslite.messages.RecordHeader2-class.html#__init__,Method tlslite.messages.RecordHeader3.__init__()=tlslite.messages.RecordHeader3-class.html#__init__,Method tlslite.messages.ServerHello.__init__()=tlslite.messages.ServerHello-class.html#__init__,Method tlslite.messages.ServerHelloDone.__init__()=tlslite.messages.ServerHelloDone-class.html#__init__,Method tlslite.messages.ServerKeyExchange.__init__()=tlslite.messages.ServerKeyExchange-class.html#__init__,Method tlslite.messagesocket.MessageSocket.__init__()=tlslite.messagesocket.MessageSocket-class.html#__init__,Method tlslite.recordlayer.ConnectionState.__init__()=tlslite.recordlayer.ConnectionState-class.html#__init__,Method tlslite.recordlayer.RecordLayer.__init__()=tlslite.recordlayer.RecordLayer-class.html#__init__,Method tlslite.recordlayer.RecordSocket.__init__()=tlslite.recordlayer.RecordSocket-class.html#__init__,Method tlslite.session.Session.__init__()=tlslite.session.Session-class.html#__init__,Method tlslite.sessioncache.SessionCache.__init__()=tlslite.sessioncache.SessionCache-class.html#__init__,Method tlslite.tlsconnection.TLSConnection.__init__()=tlslite.tlsconnection.TLSConnection-class.html#__init__,Method tlslite.tlsrecordlayer.TLSRecordLayer.__init__()=tlslite.tlsrecordlayer.TLSRecordLayer-class.html#__init__,Method tlslite.utils.aes.AES.__init__()=tlslite.utils.aes.AES-class.html#__init__,Method tlslite.utils.aesgcm.AESGCM.__init__()=tlslite.utils.aesgcm.AESGCM-class.html#__init__,Method tlslite.utils.asn1parser.ASN1Parser.__init__()=tlslite.utils.asn1parser.ASN1Parser-class.html#__init__,Method tlslite.utils.chacha.ChaCha.__init__()=tlslite.utils.chacha.ChaCha-class.html#__init__,Method tlslite.utils.chacha20_poly1305.CHACHA20_POLY1305.__init__()=tlslite.utils.chacha20_poly1305.CHACHA20_POLY1305-class.html#__init__,Method tlslite.utils.codec.Parser.__init__()=tlslite.utils.codec.Parser-class.html#__init__,Method tlslite.utils.codec.Writer.__init__()=tlslite.utils.codec.Writer-class.html#__init__,Method tlslite.utils.openssl_aes.OpenSSL_AES.__init__()=tlslite.utils.openssl_aes.OpenSSL_AES-class.html#__init__,Method tlslite.utils.openssl_rc4.OpenSSL_RC4.__init__()=tlslite.utils.openssl_rc4.OpenSSL_RC4-class.html#__init__,Method tlslite.utils.openssl_rsakey.OpenSSL_RSAKey.__init__()=tlslite.utils.openssl_rsakey.OpenSSL_RSAKey-class.html#__init__,Method tlslite.utils.openssl_tripledes.OpenSSL_TripleDES.__init__()=tlslite.utils.openssl_tripledes.OpenSSL_TripleDES-class.html#__init__,Method tlslite.utils.poly1305.Poly1305.__init__()=tlslite.utils.poly1305.Poly1305-class.html#__init__,Method tlslite.utils.pycrypto_aes.PyCrypto_AES.__init__()=tlslite.utils.pycrypto_aes.PyCrypto_AES-class.html#__init__,Method tlslite.utils.pycrypto_rc4.PyCrypto_RC4.__init__()=tlslite.utils.pycrypto_rc4.PyCrypto_RC4-class.html#__init__,Method tlslite.utils.pycrypto_rsakey.PyCrypto_RSAKey.__init__()=tlslite.utils.pycrypto_rsakey.PyCrypto_RSAKey-class.html#__init__,Method tlslite.utils.pycrypto_tripledes.PyCrypto_TripleDES.__init__()=tlslite.utils.pycrypto_tripledes.PyCrypto_TripleDES-class.html#__init__,Method tlslite.utils.python_aes.Python_AES.__init__()=tlslite.utils.python_aes.Python_AES-class.html#__init__,Method tlslite.utils.python_rc4.Python_RC4.__init__()=tlslite.utils.python_rc4.Python_RC4-class.html#__init__,Method tlslite.utils.python_rsakey.Python_RSAKey.__init__()=tlslite.utils.python_rsakey.Python_RSAKey-class.html#__init__,Method tlslite.utils.rc4.RC4.__init__()=tlslite.utils.rc4.RC4-class.html#__init__,Method tlslite.utils.rijndael.rijndael.__init__()=tlslite.utils.rijndael.rijndael-class.html#__init__,Method tlslite.utils.rsakey.RSAKey.__init__()=tlslite.utils.rsakey.RSAKey-class.html#__init__,Method tlslite.utils.tripledes.TripleDES.__init__()=tlslite.utils.tripledes.TripleDES-class.html#__init__,Method tlslite.verifierdb.VerifierDB.__init__()=tlslite.verifierdb.VerifierDB-class.html#__init__,Method tlslite.x509.X509.__init__()=tlslite.x509.X509-class.html#__init__,Method tlslite.x509certchain.X509CertChain.__init__()=tlslite.x509certchain.X509CertChain-class.html#__init__"><a title="tlslite.basedb.BaseDB.__init__
+tlslite.checker.Checker.__init__
+tlslite.defragmenter.Defragmenter.__init__
+tlslite.errors.TLSLocalAlert.__init__
+tlslite.errors.TLSRemoteAlert.__init__
+tlslite.errors.TLSValidationError.__init__
+tlslite.extensions.ClientCertTypeExtension.__init__
+tlslite.extensions.ECPointFormatsExtension.__init__
+tlslite.extensions.NPNExtension.__init__
+tlslite.extensions.PaddingExtension.__init__
+tlslite.extensions.SNIExtension.__init__
+tlslite.extensions.SRPExtension.__init__
+tlslite.extensions.ServerCertTypeExtension.__init__
+tlslite.extensions.SignatureAlgorithmsExtension.__init__
+tlslite.extensions.SupportedGroupsExtension.__init__
+tlslite.extensions.TACKExtension.TACK.__init__
+tlslite.extensions.TACKExtension.__init__
+tlslite.extensions.TLSExtension.__init__
+tlslite.extensions.VarListExtension.__init__
+tlslite.handshakehashes.HandshakeHashes.__init__
+tlslite.handshakesettings.HandshakeSettings.__init__
+tlslite.integration.asyncstatemachine.AsyncStateMachine.__init__
+tlslite.integration.clienthelper.ClientHelper.__init__
+tlslite.integration.httptlsconnection.HTTPTLSConnection.__init__
+tlslite.integration.imap4_tls.IMAP4_TLS.__init__
+tlslite.integration.pop3_tls.POP3_TLS.__init__
+tlslite.integration.tlsasyncdispatchermixin.TLSAsyncDispatcherMixIn.__init__
+tlslite.integration.xmlrpcserver.MultiPathTLSXMLRPCServer.__init__
+tlslite.integration.xmlrpcserver.TLSXMLRPCServer.__init__
+tlslite.integration.xmlrpctransport.XMLRPCTransport.__init__
+tlslite.keyexchange.DHE_RSAKeyExchange.__init__
+tlslite.keyexchange.ECDHE_RSAKeyExchange.__init__
+tlslite.keyexchange.KeyExchange.__init__
+tlslite.keyexchange.RSAKeyExchange.__init__
+tlslite.keyexchange.SRPKeyExchange.__init__
+tlslite.messages.Alert.__init__
+tlslite.messages.ApplicationData.__init__
+tlslite.messages.Certificate.__init__
+tlslite.messages.CertificateRequest.__init__
+tlslite.messages.CertificateVerify.__init__
+tlslite.messages.ChangeCipherSpec.__init__
+tlslite.messages.ClientHello.__init__
+tlslite.messages.ClientKeyExchange.__init__
+tlslite.messages.Finished.__init__
+tlslite.messages.HandshakeMsg.__init__
+tlslite.messages.Message.__init__
+tlslite.messages.NextProtocol.__init__
+tlslite.messages.RecordHeader.__init__
+tlslite.messages.RecordHeader2.__init__
+tlslite.messages.RecordHeader3.__init__
+tlslite.messages.ServerHello.__init__
+tlslite.messages.ServerHelloDone.__init__
+tlslite.messages.ServerKeyExchange.__init__
+tlslite.messagesocket.MessageSocket.__init__
+tlslite.recordlayer.ConnectionState.__init__
+tlslite.recordlayer.RecordLayer.__init__
+tlslite.recordlayer.RecordSocket.__init__
+tlslite.session.Session.__init__
+tlslite.sessioncache.SessionCache.__init__
+tlslite.tlsconnection.TLSConnection.__init__
+tlslite.tlsrecordlayer.TLSRecordLayer.__init__
+tlslite.utils.aes.AES.__init__
+tlslite.utils.aesgcm.AESGCM.__init__
+tlslite.utils.asn1parser.ASN1Parser.__init__
+tlslite.utils.chacha.ChaCha.__init__
+tlslite.utils.chacha20_poly1305.CHACHA20_POLY1305.__init__
+tlslite.utils.codec.Parser.__init__
+tlslite.utils.codec.Writer.__init__
+tlslite.utils.openssl_aes.OpenSSL_AES.__init__
+tlslite.utils.openssl_rc4.OpenSSL_RC4.__init__
+tlslite.utils.openssl_rsakey.OpenSSL_RSAKey.__init__
+tlslite.utils.openssl_tripledes.OpenSSL_TripleDES.__init__
+tlslite.utils.poly1305.Poly1305.__init__
+tlslite.utils.pycrypto_aes.PyCrypto_AES.__init__
+tlslite.utils.pycrypto_rc4.PyCrypto_RC4.__init__
+tlslite.utils.pycrypto_rsakey.PyCrypto_RSAKey.__init__
+tlslite.utils.pycrypto_tripledes.PyCrypto_TripleDES.__init__
+tlslite.utils.python_aes.Python_AES.__init__
+tlslite.utils.python_rc4.Python_RC4.__init__
+tlslite.utils.python_rsakey.Python_RSAKey.__init__
+tlslite.utils.rc4.RC4.__init__
+tlslite.utils.rijndael.rijndael.__init__
+tlslite.utils.rsakey.RSAKey.__init__
+tlslite.utils.tripledes.TripleDES.__init__
+tlslite.verifierdb.VerifierDB.__init__
+tlslite.x509.X509.__init__
+tlslite.x509certchain.X509CertChain.__init__" class="py-name" href="#" onclick="return doclink('link-11', '__init__', 'link-11');">__init__</a></tt><tt class="py-op">(</tt><tt class="py-name">sock</tt><tt class="py-op">)</tt> </tt>
+<a name="L53"></a><tt class="py-lineno"> 53</tt>  <tt class="py-line"> </tt>
+<a name="L54"></a><tt class="py-lineno"> 54</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-12" class="py-name" targets="Module tlslite.defragmenter=tlslite.defragmenter-module.html"><a title="tlslite.defragmenter" class="py-name" href="#" onclick="return doclink('link-12', 'defragmenter', 'link-12');">defragmenter</a></tt> <tt class="py-op">=</tt> <tt id="link-13" class="py-name"><a title="tlslite.defragmenter" class="py-name" href="#" onclick="return doclink('link-13', 'defragmenter', 'link-12');">defragmenter</a></tt> </tt>
+<a name="L55"></a><tt class="py-lineno"> 55</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">unfragmentedDataTypes</tt> <tt class="py-op">=</tt> <tt class="py-name">tuple</tt><tt class="py-op">(</tt><tt class="py-op">(</tt><tt id="link-14" class="py-name"><a title="tlslite.constants.ContentType" class="py-name" href="#" onclick="return doclink('link-14', 'ContentType', 'link-3');">ContentType</a></tt><tt class="py-op">.</tt><tt id="link-15" class="py-name" targets="Variable tlslite.constants.ContentType.application_data=tlslite.constants.ContentType-class.html#application_data"><a title="tlslite.constants.ContentType.application_data" class="py-name" href="#" onclick="return doclink('link-15', 'application_data', 'link-15');">application_data</a></tt><tt class="py-op">,</tt> <tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+<a name="L56"></a><tt class="py-lineno"> 56</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">_lastRecordVersion</tt> <tt class="py-op">=</tt> <tt class="py-op">(</tt><tt class="py-number">0</tt><tt class="py-op">,</tt> <tt class="py-number">0</tt><tt class="py-op">)</tt> </tt>
+<a name="L57"></a><tt class="py-lineno"> 57</tt>  <tt class="py-line"> </tt>
+<a name="L58"></a><tt class="py-lineno"> 58</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">_sendBuffer</tt> <tt class="py-op">=</tt> <tt class="py-name">bytearray</tt><tt class="py-op">(</tt><tt class="py-number">0</tt><tt class="py-op">)</tt> </tt>
+<a name="L59"></a><tt class="py-lineno"> 59</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">_sendBufferType</tt> <tt class="py-op">=</tt> <tt class="py-name">None</tt> </tt>
+<a name="L60"></a><tt class="py-lineno"> 60</tt>  <tt class="py-line"> </tt>
+<a name="L61"></a><tt class="py-lineno"> 61</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">recordSize</tt> <tt class="py-op">=</tt> <tt class="py-number">2</tt><tt class="py-op">**</tt><tt class="py-number">14</tt> </tt>
+</div><a name="L62"></a><tt class="py-lineno"> 62</tt>  <tt class="py-line"> </tt>
+<a name="MessageSocket.recvMessage"></a><div id="MessageSocket.recvMessage-def"><a name="L63"></a><tt class="py-lineno"> 63</tt> <a class="py-toggle" href="#" id="MessageSocket.recvMessage-toggle" onclick="return toggle('MessageSocket.recvMessage');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="tlslite.messagesocket.MessageSocket-class.html#recvMessage">recvMessage</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="MessageSocket.recvMessage-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="MessageSocket.recvMessage-expanded"><a name="L64"></a><tt class="py-lineno"> 64</tt>  <tt class="py-line">        <tt class="py-docstring">"""</tt> </tt>
+<a name="L65"></a><tt class="py-lineno"> 65</tt>  <tt class="py-line"><tt class="py-docstring">        Read next message in queue</tt> </tt>
+<a name="L66"></a><tt class="py-lineno"> 66</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L67"></a><tt class="py-lineno"> 67</tt>  <tt class="py-line"><tt class="py-docstring">        will return a 0 or 1 if the read is blocking, a tuple of</tt> </tt>
+<a name="L68"></a><tt class="py-lineno"> 68</tt>  <tt class="py-line"><tt class="py-docstring">        L{RecordHeader3} and L{Parser} in case a message was received.</tt> </tt>
+<a name="L69"></a><tt class="py-lineno"> 69</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L70"></a><tt class="py-lineno"> 70</tt>  <tt class="py-line"><tt class="py-docstring">        @rtype: generator</tt> </tt>
+<a name="L71"></a><tt class="py-lineno"> 71</tt>  <tt class="py-line"><tt class="py-docstring">        """</tt> </tt>
+<a name="L72"></a><tt class="py-lineno"> 72</tt>  <tt class="py-line">        <tt class="py-keyword">while</tt> <tt class="py-name">True</tt><tt class="py-op">:</tt> </tt>
+<a name="L73"></a><tt class="py-lineno"> 73</tt>  <tt class="py-line">            <tt class="py-keyword">while</tt> <tt class="py-name">True</tt><tt class="py-op">:</tt> </tt>
+<a name="L74"></a><tt class="py-lineno"> 74</tt>  <tt class="py-line">                <tt class="py-name">ret</tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-16" class="py-name"><a title="tlslite.defragmenter" class="py-name" href="#" onclick="return doclink('link-16', 'defragmenter', 'link-12');">defragmenter</a></tt><tt class="py-op">.</tt><tt id="link-17" class="py-name" targets="Method tlslite.defragmenter.Defragmenter.getMessage()=tlslite.defragmenter.Defragmenter-class.html#getMessage"><a title="tlslite.defragmenter.Defragmenter.getMessage" class="py-name" href="#" onclick="return doclink('link-17', 'getMessage', 'link-17');">getMessage</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L75"></a><tt class="py-lineno"> 75</tt>  <tt class="py-line">                <tt class="py-keyword">if</tt> <tt class="py-name">ret</tt> <tt class="py-keyword">is</tt> <tt class="py-name">None</tt><tt class="py-op">:</tt> </tt>
+<a name="L76"></a><tt class="py-lineno"> 76</tt>  <tt class="py-line">                    <tt class="py-keyword">break</tt> </tt>
+<a name="L77"></a><tt class="py-lineno"> 77</tt>  <tt class="py-line">                <tt class="py-name">header</tt> <tt class="py-op">=</tt> <tt id="link-18" class="py-name"><a title="tlslite.messages.RecordHeader3" class="py-name" href="#" onclick="return doclink('link-18', 'RecordHeader3', 'link-5');">RecordHeader3</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">.</tt><tt id="link-19" class="py-name" targets="Method tlslite.basedb.BaseDB.create()=tlslite.basedb.BaseDB-class.html#create,Method tlslite.extensions.NPNExtension.create()=tlslite.extensions.NPNExtension-class.html#create,Method tlslite.extensions.PaddingExtension.create()=tlslite.extensions.PaddingExtension-class.html#create,Method tlslite.extensions.SNIExtension.create()=tlslite.extensions.SNIExtension-class.html#create,Method tlslite.extensions.SRPExtension.create()=tlslite.extensions.SRPExtension-class.html#create,Method tlslite.extensions.ServerCertTypeExtension.create()=tlslite.extensions.ServerCertTypeExtension-class.html#create,Method tlslite.extensions.SignatureAlgorithmsExtension.create()=tlslite.extensions.SignatureAlgorithmsExtension-class.html#create,Method tlslite.extensions.TACKExtension.TACK.create()=tlslite.extensions.TACKExtension.TACK-class.html#create,Method tlslite.extensions.TACKExtension.create()=tlslite.extensions.TACKExtension-class.html#create,Method tlslite.extensions.TLSExtension.create()=tlslite.extensions.TLSExtension-class.html#create,Method tlslite.extensions.VarListExtension.create()=tlslite.extensions.VarListExtension-class.html#create,Method tlslite.mathtls.MAC_SSL.create()=tlslite.mathtls.MAC_SSL-class.html#create,Method tlslite.messages.Alert.create()=tlslite.messages.Alert-class.html#create,Method tlslite.messages.ApplicationData.create()=tlslite.messages.ApplicationData-class.html#create,Method tlslite.messages.Certificate.create()=tlslite.messages.Certificate-class.html#create,Method tlslite.messages.CertificateRequest.create()=tlslite.messages.CertificateRequest-class.html#create,Method tlslite.messages.CertificateVerify.create()=tlslite.messages.CertificateVerify-class.html#create,Method tlslite.messages.ChangeCipherSpec.create()=tlslite.messages.ChangeCipherSpec-class.html#create,Method tlslite.messages.ClientHello.create()=tlslite.messages.ClientHello-class.html#create,Method tlslite.messages.Finished.create()=tlslite.messages.Finished-class.html#create,Method tlslite.messages.NextProtocol.create()=tlslite.messages.NextProtocol-class.html#create,Method tlslite.messages.RecordHeader3.create()=tlslite.messages.RecordHeader3-class.html#create,Method tlslite.messages.ServerHello.create()=tlslite.messages.ServerHello-class.html#create,Method tlslite.messages.ServerHelloDone.create()=tlslite.messages.ServerHelloDone-class.html#create,Method tlslite.session.Session.create()=tlslite.session.Session-class.html#create"><a title="tlslite.basedb.BaseDB.create
+tlslite.extensions.NPNExtension.create
+tlslite.extensions.PaddingExtension.create
+tlslite.extensions.SNIExtension.create
+tlslite.extensions.SRPExtension.create
+tlslite.extensions.ServerCertTypeExtension.create
+tlslite.extensions.SignatureAlgorithmsExtension.create
+tlslite.extensions.TACKExtension.TACK.create
+tlslite.extensions.TACKExtension.create
+tlslite.extensions.TLSExtension.create
+tlslite.extensions.VarListExtension.create
+tlslite.mathtls.MAC_SSL.create
+tlslite.messages.Alert.create
+tlslite.messages.ApplicationData.create
+tlslite.messages.Certificate.create
+tlslite.messages.CertificateRequest.create
+tlslite.messages.CertificateVerify.create
+tlslite.messages.ChangeCipherSpec.create
+tlslite.messages.ClientHello.create
+tlslite.messages.Finished.create
+tlslite.messages.NextProtocol.create
+tlslite.messages.RecordHeader3.create
+tlslite.messages.ServerHello.create
+tlslite.messages.ServerHelloDone.create
+tlslite.session.Session.create" class="py-name" href="#" onclick="return doclink('link-19', 'create', 'link-19');">create</a></tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">_lastRecordVersion</tt><tt class="py-op">,</tt> </tt>
+<a name="L78"></a><tt class="py-lineno"> 78</tt>  <tt class="py-line">                                                <tt class="py-name">ret</tt><tt class="py-op">[</tt><tt class="py-number">0</tt><tt class="py-op">]</tt><tt class="py-op">,</tt> </tt>
+<a name="L79"></a><tt class="py-lineno"> 79</tt>  <tt class="py-line">                                                <tt class="py-number">0</tt><tt class="py-op">)</tt> </tt>
+<a name="L80"></a><tt class="py-lineno"> 80</tt>  <tt class="py-line">                <tt class="py-keyword">yield</tt> <tt class="py-name">header</tt><tt class="py-op">,</tt> <tt id="link-20" class="py-name"><a title="tlslite.utils.codec.Parser" class="py-name" href="#" onclick="return doclink('link-20', 'Parser', 'link-9');">Parser</a></tt><tt class="py-op">(</tt><tt class="py-name">ret</tt><tt class="py-op">[</tt><tt class="py-number">1</tt><tt class="py-op">]</tt><tt class="py-op">)</tt> </tt>
+<a name="L81"></a><tt class="py-lineno"> 81</tt>  <tt class="py-line"> </tt>
+<a name="L82"></a><tt class="py-lineno"> 82</tt>  <tt class="py-line">            <tt class="py-keyword">for</tt> <tt class="py-name">ret</tt> <tt class="py-keyword">in</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-21" class="py-name" targets="Method tlslite.recordlayer.RecordLayer.recvRecord()=tlslite.recordlayer.RecordLayer-class.html#recvRecord"><a title="tlslite.recordlayer.RecordLayer.recvRecord" class="py-name" href="#" onclick="return doclink('link-21', 'recvRecord', 'link-21');">recvRecord</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L83"></a><tt class="py-lineno"> 83</tt>  <tt class="py-line">                <tt class="py-keyword">if</tt> <tt class="py-name">ret</tt> <tt class="py-keyword">in</tt> <tt class="py-op">(</tt><tt class="py-number">0</tt><tt class="py-op">,</tt> <tt class="py-number">1</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L84"></a><tt class="py-lineno"> 84</tt>  <tt class="py-line">                    <tt class="py-keyword">yield</tt> <tt class="py-name">ret</tt> </tt>
+<a name="L85"></a><tt class="py-lineno"> 85</tt>  <tt class="py-line">                <tt class="py-keyword">else</tt><tt class="py-op">:</tt> </tt>
+<a name="L86"></a><tt class="py-lineno"> 86</tt>  <tt class="py-line">                    <tt class="py-keyword">break</tt> </tt>
+<a name="L87"></a><tt class="py-lineno"> 87</tt>  <tt class="py-line"> </tt>
+<a name="L88"></a><tt class="py-lineno"> 88</tt>  <tt class="py-line">            <tt class="py-name">header</tt><tt class="py-op">,</tt> <tt class="py-name">parser</tt> <tt class="py-op">=</tt> <tt class="py-name">ret</tt> </tt>
+<a name="L89"></a><tt class="py-lineno"> 89</tt>  <tt class="py-line">            <tt class="py-keyword">if</tt> <tt class="py-name">header</tt><tt class="py-op">.</tt><tt class="py-name">type</tt> <tt class="py-keyword">in</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">unfragmentedDataTypes</tt><tt class="py-op">:</tt> </tt>
+<a name="L90"></a><tt class="py-lineno"> 90</tt>  <tt class="py-line">                <tt class="py-keyword">yield</tt> <tt class="py-name">ret</tt> </tt>
+<a name="L91"></a><tt class="py-lineno"> 91</tt>  <tt class="py-line">            <tt class="py-comment"># TODO probably needs a bit better handling...</tt> </tt>
+<a name="L92"></a><tt class="py-lineno"> 92</tt>  <tt class="py-line">            <tt class="py-keyword">if</tt> <tt class="py-name">header</tt><tt class="py-op">.</tt><tt class="py-name">ssl2</tt><tt class="py-op">:</tt> </tt>
+<a name="L93"></a><tt class="py-lineno"> 93</tt>  <tt class="py-line">                <tt class="py-keyword">yield</tt> <tt class="py-name">ret</tt> </tt>
+<a name="L94"></a><tt class="py-lineno"> 94</tt>  <tt class="py-line"> </tt>
+<a name="L95"></a><tt class="py-lineno"> 95</tt>  <tt class="py-line">            <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-22" class="py-name"><a title="tlslite.defragmenter" class="py-name" href="#" onclick="return doclink('link-22', 'defragmenter', 'link-12');">defragmenter</a></tt><tt class="py-op">.</tt><tt id="link-23" class="py-name" targets="Method tlslite.defragmenter.Defragmenter.addData()=tlslite.defragmenter.Defragmenter-class.html#addData"><a title="tlslite.defragmenter.Defragmenter.addData" class="py-name" href="#" onclick="return doclink('link-23', 'addData', 'link-23');">addData</a></tt><tt class="py-op">(</tt><tt class="py-name">header</tt><tt class="py-op">.</tt><tt class="py-name">type</tt><tt class="py-op">,</tt> <tt class="py-name">parser</tt><tt class="py-op">.</tt><tt class="py-name">bytes</tt><tt class="py-op">)</tt> </tt>
+<a name="L96"></a><tt class="py-lineno"> 96</tt>  <tt class="py-line">            <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">_lastRecordVersion</tt> <tt class="py-op">=</tt> <tt class="py-name">header</tt><tt class="py-op">.</tt><tt id="link-24" class="py-name" targets="Variable tlslite.recordlayer.RecordLayer.version=tlslite.recordlayer.RecordLayer-class.html#version,Variable tlslite.tlsrecordlayer.TLSRecordLayer.version=tlslite.tlsrecordlayer.TLSRecordLayer-class.html#version"><a title="tlslite.recordlayer.RecordLayer.version
+tlslite.tlsrecordlayer.TLSRecordLayer.version" class="py-name" href="#" onclick="return doclink('link-24', 'version', 'link-24');">version</a></tt> </tt>
+</div><a name="L97"></a><tt class="py-lineno"> 97</tt>  <tt class="py-line"> </tt>
+<a name="MessageSocket.recvMessageBlocking"></a><div id="MessageSocket.recvMessageBlocking-def"><a name="L98"></a><tt class="py-lineno"> 98</tt> <a class="py-toggle" href="#" id="MessageSocket.recvMessageBlocking-toggle" onclick="return toggle('MessageSocket.recvMessageBlocking');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="tlslite.messagesocket.MessageSocket-class.html#recvMessageBlocking">recvMessageBlocking</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="MessageSocket.recvMessageBlocking-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="MessageSocket.recvMessageBlocking-expanded"><a name="L99"></a><tt class="py-lineno"> 99</tt>  <tt class="py-line">        <tt class="py-docstring">"""Blocking variant of L{recvMessage}"""</tt> </tt>
+<a name="L100"></a><tt class="py-lineno">100</tt>  <tt class="py-line">        <tt class="py-keyword">for</tt> <tt class="py-name">res</tt> <tt class="py-keyword">in</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-25" class="py-name" targets="Method tlslite.messagesocket.MessageSocket.recvMessage()=tlslite.messagesocket.MessageSocket-class.html#recvMessage"><a title="tlslite.messagesocket.MessageSocket.recvMessage" class="py-name" href="#" onclick="return doclink('link-25', 'recvMessage', 'link-25');">recvMessage</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L101"></a><tt class="py-lineno">101</tt>  <tt class="py-line">            <tt class="py-keyword">if</tt> <tt class="py-name">res</tt> <tt class="py-keyword">in</tt> <tt class="py-op">(</tt><tt class="py-number">0</tt><tt class="py-op">,</tt> <tt class="py-number">1</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L102"></a><tt class="py-lineno">102</tt>  <tt class="py-line">                <tt class="py-keyword">pass</tt> </tt>
+<a name="L103"></a><tt class="py-lineno">103</tt>  <tt class="py-line">            <tt class="py-keyword">else</tt><tt class="py-op">:</tt> </tt>
+<a name="L104"></a><tt class="py-lineno">104</tt>  <tt class="py-line">                <tt class="py-keyword">return</tt> <tt class="py-name">res</tt> </tt>
+</div><a name="L105"></a><tt class="py-lineno">105</tt>  <tt class="py-line"> </tt>
+<a name="MessageSocket.flush"></a><div id="MessageSocket.flush-def"><a name="L106"></a><tt class="py-lineno">106</tt> <a class="py-toggle" href="#" id="MessageSocket.flush-toggle" onclick="return toggle('MessageSocket.flush');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="tlslite.messagesocket.MessageSocket-class.html#flush">flush</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="MessageSocket.flush-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="MessageSocket.flush-expanded"><a name="L107"></a><tt class="py-lineno">107</tt>  <tt class="py-line">        <tt class="py-docstring">"""</tt> </tt>
+<a name="L108"></a><tt class="py-lineno">108</tt>  <tt class="py-line"><tt class="py-docstring">        Empty the queue of messages to write</tt> </tt>
+<a name="L109"></a><tt class="py-lineno">109</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L110"></a><tt class="py-lineno">110</tt>  <tt class="py-line"><tt class="py-docstring">        Will fragment the messages and write them in as little records as</tt> </tt>
+<a name="L111"></a><tt class="py-lineno">111</tt>  <tt class="py-line"><tt class="py-docstring">        possible.</tt> </tt>
+<a name="L112"></a><tt class="py-lineno">112</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L113"></a><tt class="py-lineno">113</tt>  <tt class="py-line"><tt class="py-docstring">        @rtype: generator</tt> </tt>
+<a name="L114"></a><tt class="py-lineno">114</tt>  <tt class="py-line"><tt class="py-docstring">        """</tt> </tt>
+<a name="L115"></a><tt class="py-lineno">115</tt>  <tt class="py-line">        <tt class="py-keyword">while</tt> <tt class="py-name">len</tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">_sendBuffer</tt><tt class="py-op">)</tt> <tt class="py-op">&gt;</tt> <tt class="py-number">0</tt><tt class="py-op">:</tt> </tt>
+<a name="L116"></a><tt class="py-lineno">116</tt>  <tt class="py-line">            <tt class="py-name">recordPayload</tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">_sendBuffer</tt><tt class="py-op">[</tt><tt class="py-op">:</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">recordSize</tt><tt class="py-op">]</tt> </tt>
+<a name="L117"></a><tt class="py-lineno">117</tt>  <tt class="py-line">            <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">_sendBuffer</tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">_sendBuffer</tt><tt class="py-op">[</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">recordSize</tt><tt class="py-op">:</tt><tt class="py-op">]</tt> </tt>
+<a name="L118"></a><tt class="py-lineno">118</tt>  <tt class="py-line">            <tt class="py-name">msg</tt> <tt class="py-op">=</tt> <tt id="link-26" class="py-name"><a title="mimetools.Message
+tlslite.messages.Message" class="py-name" href="#" onclick="return doclink('link-26', 'Message', 'link-6');">Message</a></tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">_sendBufferType</tt><tt class="py-op">,</tt> <tt class="py-name">recordPayload</tt><tt class="py-op">)</tt> </tt>
+<a name="L119"></a><tt class="py-lineno">119</tt>  <tt class="py-line">            <tt class="py-keyword">for</tt> <tt class="py-name">res</tt> <tt class="py-keyword">in</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-27" class="py-name" targets="Method tlslite.recordlayer.RecordLayer.sendRecord()=tlslite.recordlayer.RecordLayer-class.html#sendRecord"><a title="tlslite.recordlayer.RecordLayer.sendRecord" class="py-name" href="#" onclick="return doclink('link-27', 'sendRecord', 'link-27');">sendRecord</a></tt><tt class="py-op">(</tt><tt class="py-name">msg</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L120"></a><tt class="py-lineno">120</tt>  <tt class="py-line">                <tt class="py-keyword">yield</tt> <tt class="py-name">res</tt> </tt>
+<a name="L121"></a><tt class="py-lineno">121</tt>  <tt class="py-line"> </tt>
+<a name="L122"></a><tt class="py-lineno">122</tt>  <tt class="py-line">        <tt class="py-keyword">assert</tt> <tt class="py-name">len</tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">_sendBuffer</tt><tt class="py-op">)</tt> <tt class="py-op">==</tt> <tt class="py-number">0</tt> </tt>
+<a name="L123"></a><tt class="py-lineno">123</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">_sendBufferType</tt> <tt class="py-op">=</tt> <tt class="py-name">None</tt> </tt>
+</div><a name="L124"></a><tt class="py-lineno">124</tt>  <tt class="py-line"> </tt>
+<a name="MessageSocket.flushBlocking"></a><div id="MessageSocket.flushBlocking-def"><a name="L125"></a><tt class="py-lineno">125</tt> <a class="py-toggle" href="#" id="MessageSocket.flushBlocking-toggle" onclick="return toggle('MessageSocket.flushBlocking');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="tlslite.messagesocket.MessageSocket-class.html#flushBlocking">flushBlocking</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="MessageSocket.flushBlocking-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="MessageSocket.flushBlocking-expanded"><a name="L126"></a><tt class="py-lineno">126</tt>  <tt class="py-line">        <tt class="py-docstring">"""Blocking variant of L{flush}"""</tt> </tt>
+<a name="L127"></a><tt class="py-lineno">127</tt>  <tt class="py-line">        <tt class="py-keyword">for</tt> <tt class="py-name">_</tt> <tt class="py-keyword">in</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-28" class="py-name" targets="Method tlslite.messagesocket.MessageSocket.flush()=tlslite.messagesocket.MessageSocket-class.html#flush"><a title="tlslite.messagesocket.MessageSocket.flush" class="py-name" href="#" onclick="return doclink('link-28', 'flush', 'link-28');">flush</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L128"></a><tt class="py-lineno">128</tt>  <tt class="py-line">            <tt class="py-keyword">pass</tt> </tt>
+</div><a name="L129"></a><tt class="py-lineno">129</tt>  <tt class="py-line"> </tt>
+<a name="MessageSocket.queueMessage"></a><div id="MessageSocket.queueMessage-def"><a name="L130"></a><tt class="py-lineno">130</tt> <a class="py-toggle" href="#" id="MessageSocket.queueMessage-toggle" onclick="return toggle('MessageSocket.queueMessage');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="tlslite.messagesocket.MessageSocket-class.html#queueMessage">queueMessage</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">msg</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="MessageSocket.queueMessage-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="MessageSocket.queueMessage-expanded"><a name="L131"></a><tt class="py-lineno">131</tt>  <tt class="py-line">        <tt class="py-docstring">"""</tt> </tt>
+<a name="L132"></a><tt class="py-lineno">132</tt>  <tt class="py-line"><tt class="py-docstring">        Queue message for sending</tt> </tt>
+<a name="L133"></a><tt class="py-lineno">133</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L134"></a><tt class="py-lineno">134</tt>  <tt class="py-line"><tt class="py-docstring">        If the message is of same type as messages in queue, the message is</tt> </tt>
+<a name="L135"></a><tt class="py-lineno">135</tt>  <tt class="py-line"><tt class="py-docstring">        just added to queue.</tt> </tt>
+<a name="L136"></a><tt class="py-lineno">136</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L137"></a><tt class="py-lineno">137</tt>  <tt class="py-line"><tt class="py-docstring">        If the message is of different type as messages in queue, the queue is</tt> </tt>
+<a name="L138"></a><tt class="py-lineno">138</tt>  <tt class="py-line"><tt class="py-docstring">        flushed and then the message is queued.</tt> </tt>
+<a name="L139"></a><tt class="py-lineno">139</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L140"></a><tt class="py-lineno">140</tt>  <tt class="py-line"><tt class="py-docstring">        @rtype: generator</tt> </tt>
+<a name="L141"></a><tt class="py-lineno">141</tt>  <tt class="py-line"><tt class="py-docstring">        """</tt> </tt>
+<a name="L142"></a><tt class="py-lineno">142</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">_sendBufferType</tt> <tt class="py-keyword">is</tt> <tt class="py-name">None</tt><tt class="py-op">:</tt> </tt>
+<a name="L143"></a><tt class="py-lineno">143</tt>  <tt class="py-line">            <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">_sendBufferType</tt> <tt class="py-op">=</tt> <tt class="py-name">msg</tt><tt class="py-op">.</tt><tt class="py-name">contentType</tt> </tt>
+<a name="L144"></a><tt class="py-lineno">144</tt>  <tt class="py-line"> </tt>
+<a name="L145"></a><tt class="py-lineno">145</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt class="py-name">msg</tt><tt class="py-op">.</tt><tt class="py-name">contentType</tt> <tt class="py-op">==</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">_sendBufferType</tt><tt class="py-op">:</tt> </tt>
+<a name="L146"></a><tt class="py-lineno">146</tt>  <tt class="py-line">            <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">_sendBuffer</tt> <tt class="py-op">+=</tt> <tt class="py-name">msg</tt><tt class="py-op">.</tt><tt id="link-29" class="py-name" targets="Method tlslite.extensions.SNIExtension.write()=tlslite.extensions.SNIExtension-class.html#write,Method tlslite.extensions.TACKExtension.TACK.write()=tlslite.extensions.TACKExtension.TACK-class.html#write,Method tlslite.extensions.TLSExtension.write()=tlslite.extensions.TLSExtension-class.html#write,Method tlslite.messages.Alert.write()=tlslite.messages.Alert-class.html#write,Method tlslite.messages.ApplicationData.write()=tlslite.messages.ApplicationData-class.html#write,Method tlslite.messages.Certificate.write()=tlslite.messages.Certificate-class.html#write,Method tlslite.messages.CertificateRequest.write()=tlslite.messages.CertificateRequest-class.html#write,Method tlslite.messages.CertificateVerify.write()=tlslite.messages.CertificateVerify-class.html#write,Method tlslite.messages.ChangeCipherSpec.write()=tlslite.messages.ChangeCipherSpec-class.html#write,Method tlslite.messages.ClientHello.write()=tlslite.messages.ClientHello-class.html#write,Method tlslite.messages.ClientKeyExchange.write()=tlslite.messages.ClientKeyExchange-class.html#write,Method tlslite.messages.Finished.write()=tlslite.messages.Finished-class.html#write,Method tlslite.messages.Message.write()=tlslite.messages.Message-class.html#write,Method tlslite.messages.NextProtocol.write()=tlslite.messages.NextProtocol-class.html#write,Method tlslite.messages.RecordHeader3.write()=tlslite.messages.RecordHeader3-class.html#write,Method tlslite.messages.ServerHello.write()=tlslite.messages.ServerHello-class.html#write,Method tlslite.messages.ServerHelloDone.write()=tlslite.messages.ServerHelloDone-class.html#write,Method tlslite.messages.ServerKeyExchange.write()=tlslite.messages.ServerKeyExchange-class.html#write,Method tlslite.tlsrecordlayer.TLSRecordLayer.write()=tlslite.tlsrecordlayer.TLSRecordLayer-class.html#write,Method tlslite.utils.openssl_rsakey.OpenSSL_RSAKey.write()=tlslite.utils.openssl_rsakey.OpenSSL_RSAKey-class.html#write,Method tlslite.utils.rsakey.RSAKey.write()=tlslite.utils.rsakey.RSAKey-class.html#write"><a title="tlslite.extensions.SNIExtension.write
+tlslite.extensions.TACKExtension.TACK.write
+tlslite.extensions.TLSExtension.write
+tlslite.messages.Alert.write
+tlslite.messages.ApplicationData.write
+tlslite.messages.Certificate.write
+tlslite.messages.CertificateRequest.write
+tlslite.messages.CertificateVerify.write
+tlslite.messages.ChangeCipherSpec.write
+tlslite.messages.ClientHello.write
+tlslite.messages.ClientKeyExchange.write
+tlslite.messages.Finished.write
+tlslite.messages.Message.write
+tlslite.messages.NextProtocol.write
+tlslite.messages.RecordHeader3.write
+tlslite.messages.ServerHello.write
+tlslite.messages.ServerHelloDone.write
+tlslite.messages.ServerKeyExchange.write
+tlslite.tlsrecordlayer.TLSRecordLayer.write
+tlslite.utils.openssl_rsakey.OpenSSL_RSAKey.write
+tlslite.utils.rsakey.RSAKey.write" class="py-name" href="#" onclick="return doclink('link-29', 'write', 'link-29');">write</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L147"></a><tt class="py-lineno">147</tt>  <tt class="py-line">            <tt class="py-keyword">return</tt> </tt>
+<a name="L148"></a><tt class="py-lineno">148</tt>  <tt class="py-line"> </tt>
+<a name="L149"></a><tt class="py-lineno">149</tt>  <tt class="py-line">        <tt class="py-keyword">for</tt> <tt class="py-name">res</tt> <tt class="py-keyword">in</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-30" class="py-name"><a title="tlslite.messagesocket.MessageSocket.flush" class="py-name" href="#" onclick="return doclink('link-30', 'flush', 'link-28');">flush</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L150"></a><tt class="py-lineno">150</tt>  <tt class="py-line">            <tt class="py-keyword">yield</tt> <tt class="py-name">res</tt> </tt>
+<a name="L151"></a><tt class="py-lineno">151</tt>  <tt class="py-line"> </tt>
+<a name="L152"></a><tt class="py-lineno">152</tt>  <tt class="py-line">        <tt class="py-keyword">assert</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">_sendBufferType</tt> <tt class="py-keyword">is</tt> <tt class="py-name">None</tt> </tt>
+<a name="L153"></a><tt class="py-lineno">153</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">_sendBufferType</tt> <tt class="py-op">=</tt> <tt class="py-name">msg</tt><tt class="py-op">.</tt><tt class="py-name">contentType</tt> </tt>
+<a name="L154"></a><tt class="py-lineno">154</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">_sendBuffer</tt> <tt class="py-op">+=</tt> <tt class="py-name">msg</tt><tt class="py-op">.</tt><tt id="link-31" class="py-name"><a title="tlslite.extensions.SNIExtension.write
+tlslite.extensions.TACKExtension.TACK.write
+tlslite.extensions.TLSExtension.write
+tlslite.messages.Alert.write
+tlslite.messages.ApplicationData.write
+tlslite.messages.Certificate.write
+tlslite.messages.CertificateRequest.write
+tlslite.messages.CertificateVerify.write
+tlslite.messages.ChangeCipherSpec.write
+tlslite.messages.ClientHello.write
+tlslite.messages.ClientKeyExchange.write
+tlslite.messages.Finished.write
+tlslite.messages.Message.write
+tlslite.messages.NextProtocol.write
+tlslite.messages.RecordHeader3.write
+tlslite.messages.ServerHello.write
+tlslite.messages.ServerHelloDone.write
+tlslite.messages.ServerKeyExchange.write
+tlslite.tlsrecordlayer.TLSRecordLayer.write
+tlslite.utils.openssl_rsakey.OpenSSL_RSAKey.write
+tlslite.utils.rsakey.RSAKey.write" class="py-name" href="#" onclick="return doclink('link-31', 'write', 'link-29');">write</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L155"></a><tt class="py-lineno">155</tt>  <tt class="py-line"> </tt>
+<a name="MessageSocket.queueMessageBlocking"></a><div id="MessageSocket.queueMessageBlocking-def"><a name="L156"></a><tt class="py-lineno">156</tt> <a class="py-toggle" href="#" id="MessageSocket.queueMessageBlocking-toggle" onclick="return toggle('MessageSocket.queueMessageBlocking');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="tlslite.messagesocket.MessageSocket-class.html#queueMessageBlocking">queueMessageBlocking</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">msg</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="MessageSocket.queueMessageBlocking-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="MessageSocket.queueMessageBlocking-expanded"><a name="L157"></a><tt class="py-lineno">157</tt>  <tt class="py-line">        <tt class="py-docstring">"""Blocking variant of L{queueMessage}"""</tt> </tt>
+<a name="L158"></a><tt class="py-lineno">158</tt>  <tt class="py-line">        <tt class="py-keyword">for</tt> <tt class="py-name">_</tt> <tt class="py-keyword">in</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-32" class="py-name" targets="Method tlslite.messagesocket.MessageSocket.queueMessage()=tlslite.messagesocket.MessageSocket-class.html#queueMessage"><a title="tlslite.messagesocket.MessageSocket.queueMessage" class="py-name" href="#" onclick="return doclink('link-32', 'queueMessage', 'link-32');">queueMessage</a></tt><tt class="py-op">(</tt><tt class="py-name">msg</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L159"></a><tt class="py-lineno">159</tt>  <tt class="py-line">            <tt class="py-keyword">pass</tt> </tt>
+</div><a name="L160"></a><tt class="py-lineno">160</tt>  <tt class="py-line"> </tt>
+<a name="MessageSocket.sendMessage"></a><div id="MessageSocket.sendMessage-def"><a name="L161"></a><tt class="py-lineno">161</tt> <a class="py-toggle" href="#" id="MessageSocket.sendMessage-toggle" onclick="return toggle('MessageSocket.sendMessage');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="tlslite.messagesocket.MessageSocket-class.html#sendMessage">sendMessage</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">msg</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="MessageSocket.sendMessage-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="MessageSocket.sendMessage-expanded"><a name="L162"></a><tt class="py-lineno">162</tt>  <tt class="py-line">        <tt class="py-docstring">"""</tt> </tt>
+<a name="L163"></a><tt class="py-lineno">163</tt>  <tt class="py-line"><tt class="py-docstring">        Fragment and send a message.</tt> </tt>
+<a name="L164"></a><tt class="py-lineno">164</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L165"></a><tt class="py-lineno">165</tt>  <tt class="py-line"><tt class="py-docstring">        If a messages already of same type reside in queue, the message if</tt> </tt>
+<a name="L166"></a><tt class="py-lineno">166</tt>  <tt class="py-line"><tt class="py-docstring">        first added to it and then the queue is flushed.</tt> </tt>
+<a name="L167"></a><tt class="py-lineno">167</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L168"></a><tt class="py-lineno">168</tt>  <tt class="py-line"><tt class="py-docstring">        If the message is of different type than the queue, the queue is</tt> </tt>
+<a name="L169"></a><tt class="py-lineno">169</tt>  <tt class="py-line"><tt class="py-docstring">        flushed, the message is added to queue and the queue is flushed again.</tt> </tt>
+<a name="L170"></a><tt class="py-lineno">170</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L171"></a><tt class="py-lineno">171</tt>  <tt class="py-line"><tt class="py-docstring">        Use the sendRecord() message if you want to send a message outside</tt> </tt>
+<a name="L172"></a><tt class="py-lineno">172</tt>  <tt class="py-line"><tt class="py-docstring">        the queue, or a message of zero size.</tt> </tt>
+<a name="L173"></a><tt class="py-lineno">173</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L174"></a><tt class="py-lineno">174</tt>  <tt class="py-line"><tt class="py-docstring">        @rtype: generator</tt> </tt>
+<a name="L175"></a><tt class="py-lineno">175</tt>  <tt class="py-line"><tt class="py-docstring">        """</tt> </tt>
+<a name="L176"></a><tt class="py-lineno">176</tt>  <tt class="py-line">        <tt class="py-keyword">for</tt> <tt class="py-name">res</tt> <tt class="py-keyword">in</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-33" class="py-name"><a title="tlslite.messagesocket.MessageSocket.queueMessage" class="py-name" href="#" onclick="return doclink('link-33', 'queueMessage', 'link-32');">queueMessage</a></tt><tt class="py-op">(</tt><tt class="py-name">msg</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L177"></a><tt class="py-lineno">177</tt>  <tt class="py-line">            <tt class="py-keyword">yield</tt> <tt class="py-name">res</tt> </tt>
+<a name="L178"></a><tt class="py-lineno">178</tt>  <tt class="py-line"> </tt>
+<a name="L179"></a><tt class="py-lineno">179</tt>  <tt class="py-line">        <tt class="py-keyword">for</tt> <tt class="py-name">res</tt> <tt class="py-keyword">in</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-34" class="py-name"><a title="tlslite.messagesocket.MessageSocket.flush" class="py-name" href="#" onclick="return doclink('link-34', 'flush', 'link-28');">flush</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L180"></a><tt class="py-lineno">180</tt>  <tt class="py-line">            <tt class="py-keyword">yield</tt> <tt class="py-name">res</tt> </tt>
+</div><a name="L181"></a><tt class="py-lineno">181</tt>  <tt class="py-line"> </tt>
+<a name="MessageSocket.sendMessageBlocking"></a><div id="MessageSocket.sendMessageBlocking-def"><a name="L182"></a><tt class="py-lineno">182</tt> <a class="py-toggle" href="#" id="MessageSocket.sendMessageBlocking-toggle" onclick="return toggle('MessageSocket.sendMessageBlocking');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="tlslite.messagesocket.MessageSocket-class.html#sendMessageBlocking">sendMessageBlocking</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">msg</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="MessageSocket.sendMessageBlocking-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="MessageSocket.sendMessageBlocking-expanded"><a name="L183"></a><tt class="py-lineno">183</tt>  <tt class="py-line">        <tt class="py-docstring">"""Blocking variant of L{sendMessage}"""</tt> </tt>
+<a name="L184"></a><tt class="py-lineno">184</tt>  <tt class="py-line">        <tt class="py-keyword">for</tt> <tt class="py-name">_</tt> <tt class="py-keyword">in</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-35" class="py-name" targets="Method tlslite.messagesocket.MessageSocket.sendMessage()=tlslite.messagesocket.MessageSocket-class.html#sendMessage"><a title="tlslite.messagesocket.MessageSocket.sendMessage" class="py-name" href="#" onclick="return doclink('link-35', 'sendMessage', 'link-35');">sendMessage</a></tt><tt class="py-op">(</tt><tt class="py-name">msg</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L185"></a><tt class="py-lineno">185</tt>  <tt class="py-line">            <tt class="py-keyword">pass</tt> </tt>
+</div></div><a name="L186"></a><tt class="py-lineno">186</tt>  <tt class="py-line"> </tt><script type="text/javascript">
+<!--
+expandto(location.href);
+// -->
+</script>
+</pre>
+<br />
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+  <!-- Home link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="tlslite-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+      <th class="navbar" width="100%"></th>
+  </tr>
+</table>
+<table border="0" cellpadding="0" cellspacing="0" width="100%%">
+  <tr>
+    <td align="left" class="footer">
+    Generated by Epydoc 3.0.1 on Thu Jan 14 19:33:33 2016
+    </td>
+    <td align="right" class="footer">
+      <a target="mainFrame" href="http://epydoc.sourceforge.net"
+        >http://epydoc.sourceforge.net</a>
+    </td>
+  </tr>
+</table>
+
+<script type="text/javascript">
+  <!--
+  // Private objects are initially displayed (because if
+  // javascript is turned off then we want them to be
+  // visible); but by default, we want to hide them.  So hide
+  // them unless we have a cookie that says to show them.
+  checkCookie();
+  // -->
+</script>
+</body>
+</html>
