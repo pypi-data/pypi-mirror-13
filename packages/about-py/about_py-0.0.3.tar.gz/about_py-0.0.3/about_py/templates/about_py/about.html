@@ -1,0 +1,105 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>About this project</title>
+    <link rel="stylesheet" href="{% static "about_py/css/grid.css" %}" type="text/css"/>
+    <link rel="stylesheet" href="{% static "about_py/css/style.css" %}" type="text/css"/>
+</head>
+<body>
+<div class="section group">
+    <div class="col span_8_of_8">
+        <h1>About</h1>
+    </div>
+</div>
+<div class="section group">
+    <div class="col span_8_of_8">
+        <table class="about-table" >
+            <thead>
+            <tr>
+                <th colspan="2">VCS</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td class="name_column">name</td>
+                <td scope="col">
+                    {% if vcs.name %}
+                        {{ vcs.name }}
+                    {% else %}
+                        <span>No Vesioning Control System found.</span>
+                    {% endif %}
+
+                </td>
+            </tr>
+            <tr>
+                <td>Origin</td>
+                <td><a href="{{ vcs.origin_url }}" target="_blank">{{ vcs.origin_url }}</a></td>
+            </tr>
+            <tr>
+                <td>Last pull requests</td>
+                <td>
+                    <ol>
+                        {% for pull_request in vcs.last_pull_requests %}
+                            <li>
+                                <a href="{{ pull_request.pull_request_url }}" target="_blank">{{ pull_request.message }}</a>
+                                <div class="small_date">{{ pull_request.date|date:"D d M Y  G:i" }}</div>
+                            </li>
+                        {% empty %}
+                            No pull requests found
+                        {% endfor %}
+                    </ol>
+                </td>
+            </tr>
+            <tr>
+                <td>Last Commit</td>
+                <td>
+                    <a href="{{ vcs.last_commit.url }}" target="_blank">{{ vcs.last_commit.message }}</a>
+                    <div class="small_date">{{ vcs.last_commit.date|date:"D d M Y  G:i" }}</div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+<div class="section group">
+    <div class="col span_2_of_8">
+        <table class="about-table" >
+            <thead>
+            <tr>
+                <th colspan="2">Python</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td class="key_column">Version</td>
+                <td class="version_column">
+                    {{ python.version }}
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="col span_2_of_8">
+        <table class="about-table" >
+            <thead>
+            <tr>
+                <th colspan="2">Libraries</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for lib, version in libs.iteritems %}
+                <tr>
+                    <td class="key_column">{{ lib }}</td>
+                    <td class="version_column">
+                        {{ version }}
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+</body>
+</html>
