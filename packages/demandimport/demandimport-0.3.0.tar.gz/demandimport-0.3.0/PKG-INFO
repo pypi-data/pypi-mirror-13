@@ -1,0 +1,88 @@
+Metadata-Version: 1.1
+Name: demandimport
+Version: 0.3.0
+Summary: On-demand imports, taken from mercurial
+Home-page: http://github.com/bwesterb/py-demandimport/
+Author: Bas Westerbaan
+Author-email: bas@westerbaan.name
+License: GPL 2.0
+Description: demandimport
+        ************
+        
+        Delays loading of modules until they are actually used.  Perfect for Python
+        apps that need to be snappy like command-line utils.  Source-code derived
+        from mercurial.
+        
+        To enable, write::
+        
+           import demandimport; demandimport.enable()
+        
+        Imports of the following form will be delayed::
+        
+           import a, b.c
+           import a.b as c
+           from a import b, c # a will be loaded immediately, though
+        
+        These imports with not be delay::
+        
+           from a import *
+           b = __import__(a)
+        
+        Delayed loading will confuse some third-party modules.  In that case you
+        can disable the delay for just that module.  For example::
+        
+           demandimport.ignore('Crypto.PublicKey._fastmath')
+        
+        There are also versions that can be used with ``with``::
+        
+           with demandimport.enabled():
+              # do something
+              with demandimport.disabled():
+                 import troublesome.module
+              with demandimport.ignored('test'):
+                 import other.troublemaker
+        
+        Installation
+        ============
+        
+        To install ``demandimport``, simply run::
+        
+           pip install demandimport
+        
+        Attribution
+        ===========
+        
+        Matt Mackall <mpm@selenic.com> is the original author of the module in
+        Mercurial on which this module is based.  Bas Westerbaan <bas@westerbaan.name>
+        maintains it now.
+        
+        py-demandimport Changelog
+        *************************
+        
+        0.3.0 (2015-12-21)
+        ==================
+        
+        - Do not delay ImportError in a special case.
+        - Add optional logging (for debugging)
+        - Fixed issue #1: ``import a.b`` in a module ``a.c`` was incorrectly executed
+          as a relative ``import c``.
+        - Improve thread safety
+        
+        
+        0.2.2 (2015-12-05)
+        ==================
+        
+        - Moved to zest.releaser
+        - Add some basic unittests
+        - Python 3 support
+        
+Platform: UNKNOWN
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: License :: OSI Approved :: GNU General Public License v2 (GPLv2)
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Programming Language :: Python :: 3.2
+Classifier: Programming Language :: Python :: 3.3
+Classifier: Programming Language :: Python :: 3.4
+Classifier: Programming Language :: Python :: 3.5
+Classifier: Topic :: Software Development :: Libraries
