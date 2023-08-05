@@ -1,0 +1,259 @@
+#!/usr/bin/env python3
+"""
+Copyright (C) 2015 Mattias Ugelvik
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+"""
+
+import aka, sys, contex, os, re, shlex, subprocess, tempfile, argparse
+from importlib.machinery import SourceFileLoader
+
+# Windows seems to always crash when I print hearts. That's because Windows is against love.
+EXAMPLES = '{0}Examples{0}:'.format("" if sys.platform == "win32" else " ♥ ♥ ♥ ") + '''
+
+Append ".jpg" to all files in the current directory:
+ $ aka -p 'fn + ".jpg"'
+
+aka will not rename automatically, it will ask you first to confirm that the
+changes look right. If you want to test your expression first without the risk
+of hitting the wrong button, you can replace -p with -t.
+
+  Turn all filenames in ~/Documents such as File3.txt into File4.txt:
+    $ aka -p 'rules(r"File(?P<num>\d+)\.txt", {"num": lambda num: int(num) + 1})' ~/Documents
+
+The above example works because `rules` returns a unary `callable`. Any files that do not
+match will be ignored, because `rules` returns `None` in that case, which is a falsy value.
+
+  Open an editor to write more complicated renaming functions:
+    $ aka -e 'emacs -nw'
+
+I passed in the `-nw` option to emacs so that it doesn't open a graphical window. Because
+aka recognized emacs, the actual command launched was `emacs -nw +9:14 /tmp/aka_4e1lydcf.py`.
+'''
+
+HELP = {
+    'python_expr': """
+    A python expression that will be evaluated for each filename. The old name of the file will be stored in the
+    variable `fn`. `re` (the python regex module), and `rules` (from the contex package) will also be in scope.
+    It should evaluate to the new filename, or to a unary function taking `fn` as an argument that evalues to the
+    new filename (this makes it more practical to use `rules`).""",
+
+    'test_expr': """
+    Works like -p but will not change any files, it will only show what changes would take place; it will
+    also report conflicts""",
+
+    'editor': """
+    This will open a new temporary file in the editor of your choice where you can create a renaming function,
+    this is handy when you want to rename files in complicated ways. This is basically how the editor will be
+    launched: subprocess.call(shlex.split(EDITOR) + ['/tmp/file.py']). If aka recognizes the editor
+    it will try to inject line:column information into the command as well. {}""".format(
+        "Windows note: `shlex.split` isn't used on Windows." if sys.platform == "win32" else ""),
+
+    'dir': "Directories in which to rename files. Defaults to the current working directory.",
+
+    'inject': "don't inject arguments to the editor; used with -e.",
+
+    'prompt': "Rename files without first consulting the user. Useful if you want to use aka in a script.",
+
+    'rollback': """
+    Automatically roll back changes in the event of an emergency. The exit code will still be 1 if that happens.
+    Could be useful in a script as the --yes option has no effect on the emergency mode.""",
+
+    'copy': "Copy files instead of renaming them.",
+
+    'file': """
+    If used in conjunction with -e it will open that file instead of creating a new temporary file. If used
+    alone it will work exactly the same, it just won't open an editor first. The file must have a `rename`
+    function taking two arguments `fn` and `dirname`. The file doesn't necessarily need to exist, editors
+    like emacs will create it when you save the changes."""}
+
+
+
+EDITOR_TEXT = '''import re
+from os.path import join
+from contex import rules
+
+{}
+
+def rename(fn, dirname):
+    return fn
+
+"""
+The function above should return the new filename. If it returns None (or any other
+falsy falue), then that particular file will be ignored (i.e. not renamed). The
+arguments `fn` and `dirname` are of type `str`. `dirname` is the absolute path to
+the directory in which `fn` is located.
+
+This code will be executed in Python 3.
+
+If you're running `python-mode` in emacs, then you can test out your code in the
+interpreter by running `C-c C-c`, then switch to the new buffer with `C-x b`.
+"""
+'''
+
+def args_for_editor(editor):
+    """
+    Returns a tuple of cmd line args to `editor`.
+    
+    The tuple returned is of the form (<line/col-args>, <extra>) where <line/col-args> are the args
+    needed to place the cursor at the right place in the file, while <extra> are unrelated arguments
+    which are deemed necessary. It is specifically needed for passing -f to `gvim` so that it stays
+    in the foreground thus blocking this process.
+    """
+    matches = lambda reg: re.match(r"({})[\d.]*(\.exe)?".format(reg), editor)
+    return ((["+{line}:{col}"], [])             if matches("emacs|gedit") else
+            (["+{line},{col}"], [])             if matches("nano") else
+            (["+normal {line}G{col}|"], [])     if matches("vim?") else
+            (["+normal {line}G{col}|"], ["-f"]) if matches("gvim") else
+            (["+{line}"], [])                   if matches("(xe|j)macs|zile|r?joe|jstar|jpico") else
+            (["--jump={line}"], [])             if matches("leafpad") else
+            (["-l {line}", "-c {col}"], [])     if matches("kate") else
+            (["-n{line}", "-c{col}"], [])       if matches("notepad\+\+")
+            else ([], []))
+
+
+def eval_module(text, VARS=None):
+    if VARS is None:
+        VARS = {'re': re, 'contex': contex, 'rules': contex.rules}
+    eval(compile(text, '<string>', 'exec'), VARS)
+    return VARS
+
+def rename_with_code(text, args):
+    module = eval_module(text, {})
+        
+    if not 'rename' in module:
+        print("You need to make a `rename` function in the file.")
+        exit()
+    else:
+        exit(rename_files(args.dir, module['rename'], args.prompt,
+                          args.rollback, args.copy, dirname=True))
+
+make_rename_func = """
+EXPR = compile({!r}, '<python-expr>', 'eval')
+def rename_func(fn):
+  result = eval(EXPR)
+  return result(fn) if callable(result) else result"""
+
+
+def rename_files(dirs, machine, prompt, emergency, copy, dirname=False):
+    " Renames/Copies files in all `dirs`, returning True if any of them fails "
+    method = aka.copy if copy else aka.rename
+    failures = False
+    for directory in dirs:
+        print("\n -- {} FILES IN {} --\n".format("COPYING" if copy else "RENAMING", directory))
+        result = method(machine, directory, prompt, emergency, dirname)
+        failures = failures or not result
+    return failures
+
+def content(fname):
+    with open(fname) as fh:
+        return fh.read()
+
+def rename_line_number(text):
+    index = text.find("def rename(")
+    if index == -1:
+        return 0
+    else:
+        return text[:index].count('\n') + 1
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter,
+                                     description="Renames files with python code; it does so in two passes so as to avoid collisions.\nYou must provide either -p, -t, -e or -f. The exit code for aka is 1 if any failures\noccur.",
+                                     epilog=EXAMPLES)
+    parser.add_argument('-p',  help=HELP['python_expr'], dest='python_expr')
+    parser.add_argument('-t',  help=HELP['test_expr'], dest='test_expr')
+    parser.add_argument('-e',  help=HELP['editor'], dest='editor')
+    parser.add_argument('-f',  help=HELP['file'], dest='file')
+    parser.add_argument('dir', help=HELP['dir'], nargs='*', default=['.'])
+    parser.add_argument('--dont-inject',  help=HELP['inject'], dest='inject', action='store_false')
+    parser.add_argument('-y', '--yes',    help=HELP['prompt'], dest='prompt', action='store_false')
+    parser.add_argument('-r', '--rollback', help=HELP['rollback'], dest='rollback', action='store_const',
+                        const="rollback", default=None)
+    parser.add_argument('-c', '--copy',    help=HELP['copy'], dest='copy', action='store_true')
+
+    args = parser.parse_args()
+
+    if args.test_expr is not None:
+        vars = eval_module(make_rename_func.format(args.test_expr))
+        for directory in args.dir:
+            class_ = aka.actions.CopyActions if args.copy else aka.actions.RenameActions
+            actions = class_(vars['rename_func'], directory, "/dummy/value")
+            if not actions.report_conflicts():
+                actions.show_actions()
+        
+    elif ((args.python_expr, args.editor, args.file) == (None, None, None) or
+          args.python_expr and (args.editor or args.file)):
+        parser.print_help()
+        exit()
+    elif args.python_expr:
+        vars = eval_module(make_rename_func.format(args.python_expr))
+        exit(rename_files(args.dir, vars['rename_func'], args.prompt, args.rollback, args.copy))
+        
+    elif args.editor:
+        base_command = [args.editor] if sys.platform == "win32" else shlex.split(args.editor)
+        line_col_args, extra_args = args_for_editor(os.path.basename(base_command[0]).lower())
+
+        if args.file:
+            filename = args.file
+
+            if args.inject and os.path.exists(filename): # Hm.. It exists. Lets help the user.
+                linum = rename_line_number(content(filename))
+                if linum:
+                    line_col_args = [arg.format(line=linum, col=0) for arg in line_col_args]
+                else:
+                    line_col_args = []
+            else:
+                line_col_args = []
+                
+        else:
+            fh = tempfile.NamedTemporaryFile(mode='w', suffix='.py', prefix='aka_', delete=False)
+            filename = fh.name
+            
+            custom_text = EDITOR_TEXT.format(
+                '# Directories in which to perform changes:\n' +
+                '\n'.join('#   ' + os.path.abspath(d) for d in args.dir))
+            
+            fh.write(custom_text)
+            fh.close()
+
+            line = rename_line_number(custom_text) + 1
+            col  = 14 # I've counted the columns and lines. Trust me.
+            line_col_args = [arg.format(line=line, col=col) for arg in line_col_args]
+
+        if args.inject:
+            full_command = base_command + line_col_args + extra_args + [filename]
+        else:
+            full_command = base_command + [filename]
+            
+        if sys.platform == "win32":
+            print('running >', full_command)
+        else:
+            print('running $', ' '.join(map(shlex.quote, full_command)))
+
+        subprocess.call(full_command) # Should block this process
+    
+        result = content(args.file or filename)
+        
+        if not args.file:
+            os.remove(filename)
+            
+            if result == custom_text:
+                print("You didn't change the file; aborting.")
+                exit()
+    
+        if not aka.utils.yes_no_prompt("Aka: Proceed?"):
+            print("As you wish.")
+            exit()
+            
+        rename_with_code(result, args)
+
+    elif args.file:
+        rename_with_code(content(args.file), args)

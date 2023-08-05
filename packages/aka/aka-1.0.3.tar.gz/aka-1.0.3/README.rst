@@ -1,0 +1,302 @@
+Aka - Rename files in complicated ways easily
+=============================================
+Abstract
+--------
+
+This package provides a command line utility called ``aka`` for swiftly renaming (or copying) files using Python code.
+This makes it easy to rename files even when the changes you are making are quite complicated. It always
+renames files in two passes to avoid collisions; it tries to detect miscellaneous errors in advance; and
+if errors occur underways it will put you in an emergency mode to resolve the problem or roll back changes.
+It also provides the functions ``aka.rename`` and ``aka.copy``, which is the underlying interface.
+
+The problem being solved
+------------------------
+
+Lets say you have a directory with the files ``File0``, ``File1``, and ``File2``. Then some people comes along and complains
+(rightly or wrongly) that the numbering starts at zero. So you decide to write a program to rename all those files, but a
+problem arises. You cannot do it in any order you like, you have to start with ``File2 -> File3`` in order to avoid conflicts.
+It'd be nice to just write a function that knows how to change the names of individual files and let another program sort out the rest.
+This is what ``aka.rename`` is about:
+
+.. code-block:: pycon
+
+   >>> import aka
+   >>> from contex import rules
+   >>> def machine(fn):
+           return rules(r'File(\d+)', {1: lambda digit: int(digit) + 1}).apply(fn)
+   >>> machine('File42')
+   'File43'
+   >>> aka.rename(machine)
+   Actions to be taken (simplified; doesn't show the temporary stage):
+     /home/uglemat/Documents/File0           -> /home/uglemat/Documents/File1
+     /home/uglemat/Documents/File1           -> /home/uglemat/Documents/File2
+     /home/uglemat/Documents/File2           -> /home/uglemat/Documents/File3
+   Target directories:
+     /home/uglemat/Documents
+   
+   The files will be renamed as shown above (in two passes though, in order to avoid
+   collisions). This program searched for name conflicts in all target directories
+   and did not find any. If errors do pop up, you'll be taken to an emergency mode
+   where you can roll back changes. Continue? [N/y]: y
+   Renaming /home/uglemat/Documents/File0 -> /tmp/aka_maok91r8/File0
+   Renaming /home/uglemat/Documents/File1 -> /tmp/aka_maok91r8/File1
+   Renaming /home/uglemat/Documents/File2 -> /tmp/aka_maok91r8/File2
+   Renaming /tmp/aka_maok91r8/File0 -> /home/uglemat/Documents/File1
+   Renaming /tmp/aka_maok91r8/File1 -> /home/uglemat/Documents/File2
+   Renaming /tmp/aka_maok91r8/File2 -> /home/uglemat/Documents/File3
+   True
+
+I used `contex.rules <https://pypi.python.org/pypi/contex/>`_ to manipulate the string, but you can do whatever you like inside ``machine``, you
+just need to return the new name of the file.
+
+By default it renames files in the current working directory, but that can be changed with the ``location`` argument to ``aka.rename``. ``aka.copy``
+is basically the same, it just copies files instead. Read the docstrings of those functions to learn the details.
+
+Command line utility
+--------------------
+
+That's all fine and dandy, but when you just have some files and you need to rename them, you want to do it with a command line utility. This is the basics:
+
+.. code-block:: bash
+   
+   $ aka --help
+   Useful information ...
+   $ aka -p 'fn+".jpg"'
+
+That will add a ".jpg" suffix to all files in the working directory. But lets do what we did above with ``aka.rename``:
+
+.. code-block:: bash
+   
+   $ aka -p 'rules(r"File(\d+)", {1: lambda digit: int(digit) + 1})'
+
+The expression after ``-p`` doesn't need to be a new filename, it can also be a unary callable (like ``machine`` above) that returns the new filename.
+That is why the example above works; ``contex.rules`` returns a callable. If you want to copy instead of rename, just add in the ``-c`` option:
+
+.. code-block:: bash
+   
+   $ aka -c -p 'rules(r"File(\d+)", {1: lambda digit: int(digit) + 1})'
+   
+    -- COPYING FILES IN . --
+   
+   ERROR: /home/uglemat/Documents/File1 -> /home/uglemat/Documents/File2 is a conflict!
+   ERROR: /home/uglemat/Documents/File2 -> /home/uglemat/Documents/File3 is a conflict!
+   Aborting...
+
+Err, yes, that won't work, of course. Good thing ``aka`` detects naming conflicts in advance!
+
+More complicated renaming schemes
+---------------------------------
+
+That's great, but what if it's not a simple one-liner? Then you need to create a new file,
+write some python code, launch the python interpreter, import the stuff you need... It's cumbersome, which is why ``aka`` can help with that:
+
+.. code-block:: bash
+   
+   $ aka -e emacs
+
+This will launch emacs and take you to a temporary file which looks kind of like this:
+
+.. code-block:: python
+   
+   import re
+   from os.path import join
+   from contex import rules
+   
+   # Directories in which to perform changes:
+   #   /home/uglemat/Documents
+   
+   def rename(fn, dirname):
+       return fn
+
+
+Your job is to complete ``rename``, and when you exit the editor it will do the job (after asking you if you want to continue).
+   
+Lets do something more advanced, say you have lots of files in ``~/Documents/files`` of the format ``File<num>`` and you want to split
+them into the folders ``odd`` and ``even``, like this:
+
+.. code-block:: bash
+   
+   ~/Documents/files $ for i in {0..20}; do touch "File$i"; done
+   ~/Documents/files $ ls
+   File0  File1  File10  File11  File12  File13  File14  File15  File16  File17  File18  File19  File2  File20  File3  File4  File5  File6  File7  File8  File9
+   ~/Documents/files $ mkdir odd even
+   
+There is a slight problem in that you can't rename ``odd`` and ``even``, but they are in the same directory. You just
+got to make sure that the rename function returns a falsy value for those filenames (btw, aka treats directories like files and
+will rename them too). Lets go to the editor with ``aka -e 'emacs -nw'`` and write this:
+
+.. code-block:: python
+
+   import re
+   from os.path import join
+   from contex import rules
+
+   # Directories in which to perform changes:
+   #   /home/uglemat/Documents/files
+
+   def rename(fn, dirname):
+       match = re.search(r'\d+', fn)
+       if match:
+           digit = int(match.group(0))
+           return join('even' if even(digit) else 'odd', fn)
+   
+
+   def even(d):
+       return (d % 2) == 0
+
+The directories ``odd`` and ``even`` doesn't match, so ``rename`` returns ``None`` for those names and thus they are ignored, and
+the code above works as expected:
+
+.. code-block:: shell-session
+   
+   ~/Documents/files $ aka -e 'emacs -nw'
+   running $ emacs -nw +9:14 /tmp/aka_3uvuyn8c.py
+   Aka: Proceed? [Y/n]: y
+   
+    -- RENAMING FILES IN . --
+   
+   Actions to be taken (simplified; doesn't show the temporary stage):
+     /home/uglemat/Documents/files/File3           -> /home/uglemat/Documents/files/odd/File3
+     /home/uglemat/Documents/files/File18          -> /home/uglemat/Documents/files/even/File18
+     /home/uglemat/Documents/files/File13          -> /home/uglemat/Documents/files/odd/File13
+     ...
+   Target directories:
+     /home/uglemat/Documents/files/odd
+     /home/uglemat/Documents/files/even
+   
+   The files will be renamed as shown above (in two passes though, in order to avoid
+   collisions). This program searched for name conflicts in all target directories
+   and did not find any. If errors do pop up, you'll be taken to an emergency mode
+   where you can roll back changes. Continue? [N/y]: y
+   Renaming /home/uglemat/Documents/files/File3 -> /tmp/aka_st72r5jp/File3
+   Renaming /home/uglemat/Documents/files/File18 -> /tmp/aka_st72r5jp/File18
+   Renaming /home/uglemat/Documents/files/File13 -> /tmp/aka_st72r5jp/File13
+   ...
+   Renaming /tmp/aka_st72r5jp/File3 -> /home/uglemat/Documents/files/odd/File3
+   Renaming /tmp/aka_st72r5jp/File18 -> /home/uglemat/Documents/files/even/File18
+   Renaming /tmp/aka_st72r5jp/File13 -> /home/uglemat/Documents/files/odd/File13
+   ~/Documents/files $ ls *
+   even:
+   File0  File10  File12  File14  File16  File18  File2  File20  File4  File6  File8
+   
+   odd:
+   File1  File11  File13  File15  File17  File19  File3  File5  File7  File9
+
+
+Rollbacks
+---------
+
+To test the rollback feature of ``aka``, lets first launch this command:
+
+.. code-block:: shell-session
+
+    $ aka -p 'rules(r"File(\d+)", {1: lambda digit: int(digit) + 1})'
+    
+     -- RENAMING FILES IN . --
+    
+    Actions to be taken (simplified; doesn't show the temporary stage):
+      /home/uglemat/Documents/File3           -> /home/uglemat/Documents/File4
+      /home/uglemat/Documents/File1           -> /home/uglemat/Documents/File2
+      /home/uglemat/Documents/File2           -> /home/uglemat/Documents/File3
+    Target directories:
+      /home/uglemat/Documents
+    
+    The files will be renamed as shown above (in two passes though, in order to avoid
+    collisions). This program searched for name conflicts in all target directories
+    and did not find any. If errors do pop up, you'll be taken to an emergency mode
+    where you can roll back changes. Continue? [N/y]:
+    
+Now it's waiting for confirmation from the user. So we have time to do some sabotage in another shell:
+                
+.. code-block:: bash
+   
+   $ touch File4
+   $ ls
+   File1  File2  File3  File4
+
+In the first shell, lets enter ``y`` to see how it fails:
+                
+.. code-block:: shell-session
+                
+   Renaming /home/uglemat/Documents/File3 -> /tmp/aka_1ozr4w4b/File3
+   Renaming /home/uglemat/Documents/File1 -> /tmp/aka_1ozr4w4b/File1
+   Renaming /home/uglemat/Documents/File2 -> /tmp/aka_1ozr4w4b/File2
+   Renaming /tmp/aka_1ozr4w4b/File3 -> /home/uglemat/Documents/File4
+   
+   
+   EMERGENCY MODE: File /home/uglemat/Documents/File4 already exists!
+   ERROR: Error happened when trying to rename /tmp/aka_1ozr4w4b/File3 -> /home/uglemat/Documents/File4
+   
+   What should the program do?
+   retry    : try again (presumably you've fixed something in the meantime)
+   rollback : attempt to undo changes (except for the ones previously continue'd)
+   showroll : show which actions will be taken if you choose `rollback`
+   exit     : exit the program
+   continue : ignore the error and move on
+   > 
+
+Oh my, looks like things didn't go as planned. You're now in the emergency prompt of ``aka``. You can easily fix the problem
+by deleting ``File4`` and entering ``retry``, but that's boring. Let's first see what happens when you select ``continue``:
+                
+.. code-block:: shell-session
+   
+   > continue
+   Renaming /tmp/aka_1ozr4w4b/File1 -> /home/uglemat/Documents/File2
+   Renaming /tmp/aka_1ozr4w4b/File2 -> /home/uglemat/Documents/File3
+   LOST FILES IN TEMP DIR: '/tmp/aka_1ozr4w4b'
+   $ ls /tmp/aka_1ozr4w4b
+   File3
+
+It's not very nice that it just left the file in the temp dir. ``continue`` is probably rarely a good option. Lets be more sophisticated
+and choose ``rollback``:
+
+.. code-block:: shell-session
+   
+   > showroll
+   Rollback actions:
+     /tmp/aka_1ozr4w4b/File2              -> /home/uglemat/Documents/File2
+     /tmp/aka_1ozr4w4b/File1              -> /home/uglemat/Documents/File1
+     /tmp/aka_1ozr4w4b/File3              -> /home/uglemat/Documents/File3
+   What should the program do?
+   retry    : try again (presumably you've fixed something in the meantime)
+   rollback : attempt to undo changes (except for the ones previously continue'd)
+   showroll : show which actions will be taken if you choose `rollback`
+   exit     : exit the program
+   continue : ignore the error and move on
+   > rollback
+   Rollback renaming /tmp/aka_1ozr4w4b/File2 -> /home/uglemat/Documents/File2
+   Rollback renaming /tmp/aka_1ozr4w4b/File1 -> /home/uglemat/Documents/File1
+   Rollback renaming /tmp/aka_1ozr4w4b/File3 -> /home/uglemat/Documents/File3
+   $ ls
+   File1  File2  File3  File4
+
+
+Rollback will "undo" all previous actions, in the reverse order that they were "done'd". If you use the ``--copy`` option then the undoing
+consists of deleting files already copied. If any of the rollback actions fails, then ``aka`` will ignore it and try to undo as much as possible.
+
+Installing
+----------
+
+``aka`` works only in Python 3. 
+
+Install with ``$ pip3 install aka``. You might want to replace ``pip3`` with ``pip``, depending on how your system is configured.
+
+Windows Compatability
+---------------------
+
+I developed this program on GNU/Linux, but it should be working on Windows as well. It understands that filenames are
+case insensitive on Windows when checking for naming conflicts, yet the case sensitivity is preserved when the actual renames are done.
+
+Developing
+----------
+
+Aka has some tests. Run ``$ nosetests`` or
+``$ python3 setup.py test`` to run the tests. The code is hosted at https://notabug.org/Uglemat/aka
+
+You can install in development mode with ``$ python3 setup.py develop``, then your changes to aka will take effect immediately. Launch the same command with the ``--uninstall`` option to (kind of) remove.
+
+License
+-------
+
+The code is licensed under the GNU General Public License 3 or later.
+This README file is public domain.
