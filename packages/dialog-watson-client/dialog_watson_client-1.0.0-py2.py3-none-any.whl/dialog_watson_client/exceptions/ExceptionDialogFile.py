@@ -1,0 +1,2 @@
+def ExceptionDialogFile(Exception):
+    pass
