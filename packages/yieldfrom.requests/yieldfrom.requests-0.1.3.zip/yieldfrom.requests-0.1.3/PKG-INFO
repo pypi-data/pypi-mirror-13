@@ -1,0 +1,69 @@
+Metadata-Version: 1.1
+Name: yieldfrom.requests
+Version: 0.1.3
+Summary: asyncio port of Requests: "Python HTTP for Humans".
+Home-page: https://github.com/rdbhost/yieldfromrequests
+Author: David Keeney
+Author-email: dkeeney@rdbhost.com
+License: Apache 2.0
+Description: yieldfrom.Requests: Requests for asyncio
+        ========================================
+        
+        Requests is an Apache2 Licensed HTTP library, written in Python, for human
+        beings.
+        
+        yieldfrom.Requests is the same library, ported to run under Python's asyncio.
+        
+        Where in regular Requests you would write:
+        
+        .. code-block:: pycon
+        
+            >>> r = requests.get('https://api.github.com', auth=('user', 'pass'))
+            >>> r.status_code
+            204
+            >>> r.headers['content-type']
+            'application/json'
+            >>> r.text
+            ...
+        
+        
+        in yieldfrom.Requests you write:
+        
+        .. code-block:: pycon
+        
+            >>> r = yield from requests.get('https://api.github.com', auth=('user', 'pass'))
+            >>> r.status_code
+            204
+            >>> r.headers['content-type']
+            'application/json'
+            >>> yield from r.text
+            ...
+        
+        The *get* method and the *text* property involve I/O latency, hence are called as coroutines.
+        The headers and status_code attributes are still plain attributes.
+        
+        
+        The feature set is the same as the original, though a few methods work slightly differently.
+        
+        The .stream() method does not stream, but preloads all data, and simulates a stream, so existing
+        dependencies can work with minimal conversion.
+        
+        
+        
+        .. :changelog:
+        
+        Release History
+        ---------------
+        
+        0.1.1 (2014-10-1)
+        ++++++++++++++++++
+        
+        Ported to Asyncio
+        
+Platform: UNKNOWN
+Classifier: b'Intended Audience :: Developers'
+Classifier: b'Natural Language :: English'
+Classifier: b'License :: OSI Approved :: Apache Software License'
+Classifier: b'Programming Language :: Python'
+Classifier: b'Programming Language :: Python :: 3.3'
+Classifier: b'Programming Language :: Python :: 3.4'
