@@ -1,0 +1,1625 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="Docutils 0.6: http://docutils.sourceforge.net/" />
+<title>PythonReports Templates</title>
+<meta name="date" content="21-dec-2015" />
+<style type="text/css">
+
+html body {
+  line-height:1.4em;
+  font-family:"Lucida Grande", verdana, lucida, helvetica, sans-serif;
+  background-color:#f8f8f8;
+}
+
+:link { color: #900; }
+
+h1, h2 {
+  line-height:1.3em;
+  margin:0.2em 0;
+  background-color:#F3EDE7;
+}
+h1 { font-size:160%; }
+h2 { font-size:130%; }
+h3 { font-size:120%; }
+h4 { font-size:115%; }
+h5 { font-size:110%; }
+h6 { font-size:95%; }
+
+pre, code, tt {
+  line-height:1.2em;
+  font-size:120%;
+  color:#7A4707;
+}
+
+table {
+  border-collapse:collapse;
+}
+
+th.head {
+  padding:0.2em 0.6em;
+  text-align:left;
+  background-color:#F3EDE7;
+}
+
+td {
+  padding:0.2em 0.6em;
+}
+
+</style>
+</head>
+<body>
+<div class="document" id="pythonreports-templates">
+<h1 class="title">PythonReports Templates</h1>
+<table class="docinfo" frame="void" rules="none">
+<col class="docinfo-name" />
+<col class="docinfo-content" />
+<tbody valign="top">
+<tr><th class="docinfo-name">Version:</th>
+<td>0.6.8</td></tr>
+<tr><th class="docinfo-name">Date:</th>
+<td>21-dec-2015</td></tr>
+</tbody>
+</table>
+<!-- TODO: outline tags, class names in <style> -->
+<div class="contents topic" id="contents">
+<p class="topic-title first">Contents</p>
+<ul class="simple">
+<li><a class="reference internal" href="#introduction" id="id17">Introduction</a></li>
+<li><a class="reference internal" href="#types-of-element-attributes" id="id18">Types of element attributes</a><ul>
+<li><a class="reference internal" href="#booleans" id="id19">Booleans</a></li>
+<li><a class="reference internal" href="#colors" id="id20">Colors</a></li>
+<li><a class="reference internal" href="#dimensions" id="id21">Dimensions</a></li>
+<li><a class="reference internal" href="#expressions" id="id22">Expressions</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#template-elements" id="id23">Template elements</a><ul>
+<li><a class="reference internal" href="#report" id="id24"><tt class="docutils literal">report</tt></a></li>
+<li><a class="reference internal" href="#parameter" id="id25"><tt class="docutils literal">parameter</tt></a></li>
+<li><a class="reference internal" href="#variable" id="id26"><tt class="docutils literal">variable</tt></a></li>
+<li><a class="reference internal" href="#import" id="id27"><tt class="docutils literal">import</tt></a></li>
+<li><a class="reference internal" href="#font" id="id28"><tt class="docutils literal">font</tt></a></li>
+<li><a class="reference internal" href="#data" id="id29"><tt class="docutils literal">data</tt></a></li>
+<li><a class="reference internal" href="#style" id="id30"><tt class="docutils literal">style</tt></a></li>
+<li><a class="reference internal" href="#box" id="id31"><tt class="docutils literal">box</tt></a></li>
+<li><a class="reference internal" href="#eject" id="id32"><tt class="docutils literal">eject</tt></a></li>
+<li><a class="reference internal" href="#arg" id="id33"><tt class="docutils literal">arg</tt></a></li>
+<li><a class="reference internal" href="#subreport" id="id34"><tt class="docutils literal">subreport</tt></a></li>
+<li><a class="reference internal" href="#title" id="id35"><tt class="docutils literal">title</tt></a></li>
+<li><a class="reference internal" href="#summary" id="id36"><tt class="docutils literal">summary</tt></a></li>
+<li><a class="reference internal" href="#header" id="id37"><tt class="docutils literal">header</tt></a></li>
+<li><a class="reference internal" href="#footer" id="id38"><tt class="docutils literal">footer</tt></a></li>
+<li><a class="reference internal" href="#layout" id="id39"><tt class="docutils literal">layout</tt></a></li>
+<li><a class="reference internal" href="#columns" id="id40"><tt class="docutils literal">columns</tt></a></li>
+<li><a class="reference internal" href="#group" id="id41"><tt class="docutils literal">group</tt></a></li>
+<li><a class="reference internal" href="#detail" id="id42"><tt class="docutils literal">detail</tt></a></li>
+<li><a class="reference internal" href="#field" id="id43"><tt class="docutils literal">field</tt></a></li>
+<li><a class="reference internal" href="#line" id="id44"><tt class="docutils literal">line</tt></a></li>
+<li><a class="reference internal" href="#rectangle" id="id45"><tt class="docutils literal">rectangle</tt></a></li>
+<li><a class="reference internal" href="#image" id="id46"><tt class="docutils literal">image</tt></a></li>
+<li><a class="reference internal" href="#barcode" id="id47"><tt class="docutils literal">barcode</tt></a></li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section" id="introduction">
+<h1><a class="toc-backref" href="#id17">Introduction</a></h1>
+<p>Report definitions for PythonReports (<span class="target" id="report-templates">report templates</span>) are
+used to control database report layouts.  Report builder applies
+a template to a sequence of <a class="reference internal" href="#report-data">report data</a> objects and produces a
+<a class="reference external" href="prp.html">printout</a> file that can be rendered by one of the front-end
+drivers to screen, printer, HTML, PDF etc.</p>
+<p>Report templates are files in XML format.
+By convention, these files use extension <tt class="docutils literal">.PRT</tt>.</p>
+<p>This document describes the structure of the template files.</p>
+<p>Let's start with some terminology:</p>
+<ul class="simple">
+<li><span class="target" id="body-elements">body elements</span>: elements that produce primitive printable content,
+i.e. <a class="reference internal" href="#field">field</a>, <a class="reference internal" href="#line">line</a>, <a class="reference internal" href="#rectangle">rectangle</a>, <a class="reference internal" href="#image">image</a> and <a class="reference internal" href="#barcode">barcode</a>.</li>
+<li><span class="target" id="section-elements">section elements</span>: <a class="reference internal" href="#detail">detail</a>, <a class="reference internal" href="#header">header</a>, <a class="reference internal" href="#footer">footer</a>, <a class="reference internal" href="#title">title</a>
+and <a class="reference internal" href="#summary">summary</a>.</li>
+<li><span class="target" id="report-elements">report elements</span>: <a class="reference internal" href="#section-elements">section elements</a> and <a class="reference internal" href="#body-elements">body elements</a>.</li>
+<li><a class="reference internal" href="#box">box</a>: rectangular area controlling the placement
+of <a class="reference internal" href="#report-elements">report elements</a>.</li>
+<li><a class="reference internal" href="#style">style</a>: element controlling the appearance of <a class="reference internal" href="#report-elements">report elements</a> -
+fonts, colors and such.</li>
+<li><span class="target" id="report-data">report data</span>: a sequence (iterable) of structure-like (fields
+are attributes) or mapping-like (fields are items) objects.</li>
+</ul>
+<p>The root of the template structure is <a class="reference internal" href="#report">report</a> element.  It must
+contain exactly one <a class="reference internal" href="#layout">layout</a> element and may contain and arbitrary
+number of <a class="reference internal" href="#font">font</a>, <a class="reference internal" href="#parameter">parameter</a>, <a class="reference internal" href="#variable">variable</a> and <a class="reference internal" href="#data">data</a> elements.</p>
+<p>The <a class="reference internal" href="#layout">layout</a> element contains one <a class="reference internal" href="#group">group</a> or <a class="reference internal" href="#detail">detail</a> element
+and may contain a sequence of <a class="reference internal" href="#style">style</a> elements and possible
+<a class="reference internal" href="#columns">columns</a>, <a class="reference internal" href="#header">header</a>, <a class="reference internal" href="#footer">footer</a>, <a class="reference internal" href="#title">title</a> and <a class="reference internal" href="#summary">summary</a> elements.</p>
+<p>The <a class="reference internal" href="#columns">columns</a> element may contain a sequence of <a class="reference internal" href="#style">style</a> elements
+and possible <a class="reference internal" href="#header">header</a> and <a class="reference internal" href="#footer">footer</a> elements.</p>
+<p>The <a class="reference internal" href="#group">group</a> element contains one <a class="reference internal" href="#group">group</a> or <a class="reference internal" href="#detail">detail</a> element and
+may contain a sequence of <a class="reference internal" href="#style">style</a> elements and possible <a class="reference internal" href="#columns">columns</a>,
+<a class="reference internal" href="#title">title</a> and <a class="reference internal" href="#summary">summary</a> elements.</p>
+<p>Report template may contain only one <a class="reference internal" href="#detail">detail</a> section (innermost
+in the <a class="reference internal" href="#layout">layout</a>/<a class="reference internal" href="#group">group</a> hierarchy).</p>
+<p>All <a class="reference internal" href="#section-elements">section elements</a> may contain one <a class="reference internal" href="#box">box</a> element, a sequence
+of <a class="reference internal" href="#eject">eject</a> variants and <a class="reference internal" href="#style">style</a> definitions and any <a class="reference internal" href="#body-elements">body elements</a>.
+The order of <a class="reference internal" href="#body-elements">body elements</a> is important: elements appearing later
+in the template sequence are laid out on top of previous elements.</p>
+<p>All <a class="reference internal" href="#section-elements">section elements</a> may contain arbitrary number of <a class="reference internal" href="#subreport">subreport</a>
+elements.</p>
+<p>All <a class="reference internal" href="#body-elements">body elements</a> must contain one <a class="reference internal" href="#box">box</a> element and may contain
+a sequence of <a class="reference internal" href="#style">style</a> elements.</p>
+<p>In each sequence of the <a class="reference internal" href="#style">style</a> and <a class="reference internal" href="#eject">eject</a> specifications only
+one will apply: <tt class="docutils literal">when</tt> expressions are evaluated in order of the
+element appearance in the report template, and the first match will
+stop the search.</p>
+<p>Styles are inherited; when <a class="reference internal" href="#body-elements">body elements</a> do not have an applicable
+style, style search continues up the template hierarchy: containing
+parent section first, then all containing <a class="reference internal" href="#group">group</a> elements, and
+finally the <a class="reference internal" href="#layout">layout</a> element.  Styles set in <a class="reference internal" href="#columns">columns</a> are checked
+immediately before the styles of parent <a class="reference internal" href="#group">group</a> or <a class="reference internal" href="#layout">layout</a> element.</p>
+</div>
+<div class="section" id="types-of-element-attributes">
+<h1><a class="toc-backref" href="#id18">Types of element attributes</a></h1>
+<p>This section explains special attribute types used in element descriptions.</p>
+<div class="section" id="booleans">
+<h2><a class="toc-backref" href="#id19">Booleans</a></h2>
+<p>Values <tt class="docutils literal">true</tt>, <tt class="docutils literal">yes</tt> and <tt class="docutils literal">1</tt> stand for boolean true,
+values <tt class="docutils literal">false</tt>, <tt class="docutils literal">no</tt> and <tt class="docutils literal">0</tt> stand for boolean false.
+Recommended form is <tt class="docutils literal">true</tt> and <tt class="docutils literal">false</tt>.</p>
+</div>
+<div class="section" id="colors">
+<h2><a class="toc-backref" href="#id20">Colors</a></h2>
+<p>Color values may be specified in one of the following forms:</p>
+<ul class="simple">
+<li>6-digit hexadecimal number prefixed by a hash mark (HTML format),</li>
+<li>color name from the following dictionary (case insensitive),</li>
+<li>three integer values: red, green, blue (0..255),</li>
+<li>three float values: red, green, blue (0..1),</li>
+<li>single integer value, where<ul>
+<li>the red component is in bits 16-23,</li>
+<li>the green component is in bits 8-15,</li>
+<li>the blue component is in bits 0-7.</li>
+</ul>
+</li>
+</ul>
+<p>Recommended form is the first one.</p>
+<p>Standard color names:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="28%" />
+<col width="22%" />
+<col width="28%" />
+<col width="22%" />
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head">Name</th>
+<th class="head">Value</th>
+<th class="head">Name</th>
+<th class="head">Value</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td>BLACK</td>
+<td>#000000</td>
+<td>YELLOW</td>
+<td>#FFFF00</td>
+</tr>
+<tr><td>SILVER</td>
+<td>#C0C0C0</td>
+<td>NAVY</td>
+<td>#000080</td>
+</tr>
+<tr><td>GRAY</td>
+<td>#808080</td>
+<td>BLUE</td>
+<td>#0000FF</td>
+</tr>
+<tr><td>WHITE</td>
+<td>#FFFFFF</td>
+<td>TEAL</td>
+<td>#008080</td>
+</tr>
+<tr><td>MAROON</td>
+<td>#800000</td>
+<td>AQUA</td>
+<td>#00FFFF</td>
+</tr>
+<tr><td>RED</td>
+<td>#FF0000</td>
+<td>CYAN</td>
+<td>#00FFFF</td>
+</tr>
+<tr><td>PURPLE</td>
+<td>#800080</td>
+<td>DARKGRAY</td>
+<td>#404040</td>
+</tr>
+<tr><td>FUCHSIA</td>
+<td>#FF00FF</td>
+<td>LIGHTGRAY</td>
+<td>#C0C0C0</td>
+</tr>
+<tr><td>GREEN</td>
+<td>#008000</td>
+<td>MAGENTA</td>
+<td>#FF00FF</td>
+</tr>
+<tr><td>LIME</td>
+<td>#00FF00</td>
+<td>ORANGE</td>
+<td>#FFC800</td>
+</tr>
+<tr><td>OLIVE</td>
+<td>#808000</td>
+<td>PINK</td>
+<td>#FFAFAF</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="dimensions">
+<h2><a class="toc-backref" href="#id21">Dimensions</a></h2>
+<p>All report dimensions (page and field sizes, margins etc.) are expressed
+as integer or floating point numbers with optional suffix:</p>
+<ul class="simple">
+<li><tt class="docutils literal">mm</tt> - millimeters,</li>
+<li><tt class="docutils literal">cm</tt> - centimeters,</li>
+<li><tt class="docutils literal">in</tt> - inches,</li>
+<li><tt class="docutils literal">pt</tt> - points (1/72 inch).</li>
+</ul>
+<p>If suffix is omitted, dimension is in points.</p>
+<p>It is recommended to always use integral points for all dimensions
+to avoid rounding errors.</p>
+<p>The origin of the coordinate system (0,0) is always in the left upper
+corner of a container (page or section).</p>
+</div>
+<div class="section" id="expressions">
+<h2><a class="toc-backref" href="#id22">Expressions</a></h2>
+<p>All expressions are evaluated in the context of current result set row,
+i.e. result set fields may be referred directly as python variables.
+In addition, expressions can use names defined by <a class="reference internal" href="#import">import</a>, <a class="reference internal" href="#parameter">parameter</a>
+and <a class="reference internal" href="#variable">variable</a> elements and the following <span class="target" id="predefined-variables">predefined variables</span>:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="27%" />
+<col width="73%" />
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head">Name</th>
+<th class="head">Meaning</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td><tt class="docutils literal">THIS</tt></td>
+<td>Current row object from <a class="reference internal" href="#report-data">report data</a>.</td>
+</tr>
+<tr><td><tt class="docutils literal">ITEM_NUMBER</tt></td>
+<td>Zero-based index of current row object in <a class="reference internal" href="#report-data">report
+data</a> sequence.  May differ from <tt class="docutils literal">REPORT_COUNT</tt>
+if some <a class="reference internal" href="#detail">detail</a> sections are suppressed by
+<tt class="docutils literal">printwhen</tt>.</td>
+</tr>
+<tr><td><tt class="docutils literal">DATA_COUNT</tt></td>
+<td>Total length of the <a class="reference internal" href="#report-data">report data</a> sequence.</td>
+</tr>
+<tr><td><tt class="docutils literal">REPORT_COUNT</tt></td>
+<td>Number of detail sections from start of the report.</td>
+</tr>
+<tr><td><tt class="docutils literal">PAGE_COUNT</tt></td>
+<td>Number of detail sections from start of the page.</td>
+</tr>
+<tr><td><tt class="docutils literal">COLUMN_COUNT</tt></td>
+<td>Number of detail sections from start of the column.</td>
+</tr>
+<tr><td><em>group</em> <tt class="docutils literal">_COUNT</tt></td>
+<td>Number of detail sections from start of named group.</td>
+</tr>
+<tr><td><tt class="docutils literal">PAGE_NUMBER</tt></td>
+<td>Current page number.</td>
+</tr>
+<tr><td><tt class="docutils literal">COLUMN_NUMBER</tt></td>
+<td>Current column number.</td>
+</tr>
+</tbody>
+</table>
+<p>Evaluation context performs name lookup in the following order:</p>
+<ol class="arabic simple">
+<li><a class="reference internal" href="#predefined-variables">Predefined variables</a>.</li>
+<li>Names created by <a class="reference internal" href="#import">import</a> elements.</li>
+<li><a class="reference internal" href="#parameter">parameter</a> names.</li>
+<li><a class="reference internal" href="#variable">variable</a> names.</li>
+<li>Items of the row object (dictionary-like).</li>
+<li>Attributes of the row object (structure-like).</li>
+</ol>
+</div>
+</div>
+<div class="section" id="template-elements">
+<h1><a class="toc-backref" href="#id23">Template elements</a></h1>
+<p>This chapter contains informal descriptions of the template elements.</p>
+<p>In element attribute tables, the second column (<strong>Req</strong>) shows whether
+the attribute is required: <strong>M</strong> for mandatory attributes, <strong>O</strong> for
+optional ones.</p>
+<p>All elements and attributes not mentioned here are ignored by PythonReports.
+Element contents (text) are ignored except for the <a class="reference internal" href="#data">data</a> elements.</p>
+<!-- TODO: group element descriptions: create document sections
+for body elements, section elements and others... -->
+<div class="section" id="report">
+<h2><a class="toc-backref" href="#id24"><tt class="docutils literal">report</tt></a></h2>
+<p>The root element of template.  Contains a sequence of <a class="reference internal" href="#parameter">parameter</a>,
+<a class="reference internal" href="#variable">variable</a>, <a class="reference internal" href="#import">import</a> and <a class="reference internal" href="#font">font</a> elements and exactly one <a class="reference internal" href="#layout">layout</a>
+element.</p>
+<p>Attributes:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="25%" />
+<col width="7%" />
+<col width="13%" />
+<col width="55%" />
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head">Name</th>
+<th class="head">Req</th>
+<th class="head">Type</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td><tt class="docutils literal">name</tt></td>
+<td>O</td>
+<td>string</td>
+<td>Report name.</td>
+</tr>
+<tr><td><tt class="docutils literal">description</tt></td>
+<td>O</td>
+<td>string</td>
+<td>Description of the report.</td>
+</tr>
+<tr><td><tt class="docutils literal">version</tt></td>
+<td>O</td>
+<td>string</td>
+<td>Report version.</td>
+</tr>
+<tr><td><tt class="docutils literal">author</tt></td>
+<td>O</td>
+<td>string</td>
+<td>Author name.</td>
+</tr>
+<tr><td><tt class="docutils literal">basedir</tt></td>
+<td>O</td>
+<td>string</td>
+<td>Base directory for image file paths.
+Default: directory containing template
+file.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="parameter">
+<h2><a class="toc-backref" href="#id25"><tt class="docutils literal">parameter</tt></a></h2>
+<p>This element sets parameter values for report generation.</p>
+<p>Attributes:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="25%" />
+<col width="7%" />
+<col width="13%" />
+<col width="55%" />
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head">Name</th>
+<th class="head">Req</th>
+<th class="head">Type</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td><tt class="docutils literal">name</tt></td>
+<td>M</td>
+<td>string</td>
+<td>Variable name.</td>
+</tr>
+<tr><td><tt class="docutils literal">default</tt></td>
+<td>M</td>
+<td>expr</td>
+<td>Default value.</td>
+</tr>
+<tr><td><tt class="docutils literal">prompt</tt></td>
+<td>O</td>
+<td>boolean</td>
+<td>If set to <tt class="docutils literal">yes</tt>, report builder
+will prompt for parameter value.
+If value is <tt class="docutils literal">no</tt>, report builder
+will use default value.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="variable">
+<h2><a class="toc-backref" href="#id26"><tt class="docutils literal">variable</tt></a></h2>
+<p>Report variable.  Used to run counters, sums and such.</p>
+<p>Attributes:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="25%" />
+<col width="7%" />
+<col width="13%" />
+<col width="55%" />
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head">Name</th>
+<th class="head">Req</th>
+<th class="head">Type</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td><tt class="docutils literal">name</tt></td>
+<td>M</td>
+<td>string</td>
+<td>Variable name.</td>
+</tr>
+<tr><td><tt class="docutils literal">expr</tt></td>
+<td>M</td>
+<td>expr</td>
+<td>Expression used to compute value.</td>
+</tr>
+<tr><td><tt class="docutils literal">init</tt></td>
+<td>O</td>
+<td>expr</td>
+<td>Initial value for calculations.</td>
+</tr>
+<tr><td><tt class="docutils literal">calc</tt></td>
+<td>O</td>
+<td>string</td>
+<td>Calculation function.
+See <a class="reference internal" href="#calculation-types">calculation types</a> below.
+Default: <tt class="docutils literal">first</tt>.</td>
+</tr>
+<tr><td><tt class="docutils literal">iter</tt></td>
+<td>O</td>
+<td>string</td>
+<td>How often the expression is evaluated:
+<tt class="docutils literal">report</tt>, <tt class="docutils literal">page</tt>, <tt class="docutils literal">column</tt>,
+<tt class="docutils literal">group</tt>, <tt class="docutils literal">detail</tt>, or
+<tt class="docutils literal">item</tt>. <a class="footnote-reference" href="#a" id="id1">[1]</a>
+Default: <tt class="docutils literal">detail</tt>.</td>
+</tr>
+<tr><td><tt class="docutils literal">itergrp</tt></td>
+<td><a class="footnote-reference" href="#b" id="id2">[2]</a></td>
+<td>string</td>
+<td>Group name for <tt class="docutils literal"><span class="pre">iter=&quot;group&quot;</span></tt>.</td>
+</tr>
+<tr><td><tt class="docutils literal">reset</tt></td>
+<td>O</td>
+<td>string</td>
+<td>How often the expression is reset
+to initial value: <tt class="docutils literal">report</tt>,
+<tt class="docutils literal">page</tt>, <tt class="docutils literal">column</tt>, <tt class="docutils literal">group</tt>,
+<tt class="docutils literal">detail</tt>, or <tt class="docutils literal">item</tt>.
+Default: <tt class="docutils literal">report</tt>.</td>
+</tr>
+<tr><td><tt class="docutils literal">resetgrp</tt></td>
+<td><a class="footnote-reference" href="#c" id="id3">[3]</a></td>
+<td>string</td>
+<td>Group name for <tt class="docutils literal"><span class="pre">reset=&quot;group&quot;</span></tt>.</td>
+</tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="a" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id1">[1]</a></td><td>Both <tt class="docutils literal">item</tt> and <tt class="docutils literal">detail</tt> iterate for each element
+of the <a class="reference internal" href="#report-data">report data</a> sequence, but <tt class="docutils literal">item</tt> variables
+iterate as soon as new element comes into the evaluation
+context (i.e. when <tt class="docutils literal">THIS</tt> changes), and <tt class="docutils literal">detail</tt> iterate
+at the start of the <tt class="docutils literal">detail</tt> section – it means that
+<tt class="docutils literal">detail</tt> variables will not iterate until all <tt class="docutils literal">header</tt>
+and <tt class="docutils literal">title</tt> sections are built.  For variables that are
+neither <tt class="docutils literal">detail</tt> nor <tt class="docutils literal">item</tt>, the expression is evaluated
+after build of the corresponding <tt class="docutils literal">footer</tt> or <tt class="docutils literal">summary</tt>
+section (if any).</td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="b" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id2">[2]</a></td><td>Required when <tt class="docutils literal">iter</tt> is <tt class="docutils literal">group</tt>, otherwise ignored.</td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="c" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id3">[3]</a></td><td>Required when <tt class="docutils literal">reset</tt> is <tt class="docutils literal">group</tt>, otherwise ignored.</td></tr>
+</tbody>
+</table>
+<p><span class="target" id="calculation-types">Calculation types</span>:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="12%" />
+<col width="88%" />
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head">Name</th>
+<th class="head">Meaning</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td><tt class="docutils literal">count</tt></td>
+<td><div class="first last line-block">
+<div class="line">Count distinct values.</div>
+<div class="line">Hint: for iteration counter, use <tt class="docutils literal">sum</tt> with <tt class="docutils literal"><span class="pre">expression=&quot;1&quot;</span></tt></div>
+<div class="line">or one of the <a class="reference internal" href="#predefined-variables">predefined variables</a>.</div>
+</div>
+</td>
+</tr>
+<tr><td><tt class="docutils literal">list</tt></td>
+<td>A list containing all values.</td>
+</tr>
+<tr><td><tt class="docutils literal">set</tt></td>
+<td>A set containing distinct values.</td>
+</tr>
+<tr><td><tt class="docutils literal">chain</tt></td>
+<td>Similar to <a class="reference external" href="http://docs.python.org/2/library/itertools.html#itertools.chain">itertools.chain</a>, a list composed of elements
+of sequences produced by <tt class="docutils literal">expr</tt>. <a class="footnote-reference" href="#chain" id="id4">[5]</a>
+The <tt class="docutils literal">expr</tt> must evaluate to an iterable or <tt class="docutils literal">None</tt>.</td>
+</tr>
+<tr><td><tt class="docutils literal">sum</tt></td>
+<td>Sum of all values.</td>
+</tr>
+<tr><td><tt class="docutils literal">avg</tt></td>
+<td>Average value. <a class="footnote-reference" href="#float-value" id="id5">[4]</a></td>
+</tr>
+<tr><td><tt class="docutils literal">min</tt></td>
+<td>Lowest value.</td>
+</tr>
+<tr><td><tt class="docutils literal">max</tt></td>
+<td>Highest value.</td>
+</tr>
+<tr><td><tt class="docutils literal">std</tt></td>
+<td>Standard deviation. <a class="footnote-reference" href="#float-value" id="id6">[4]</a></td>
+</tr>
+<tr><td><tt class="docutils literal">var</tt></td>
+<td>Variance from the average. <a class="footnote-reference" href="#float-value" id="id7">[4]</a></td>
+</tr>
+<tr><td><tt class="docutils literal">first</tt></td>
+<td>Keeps the first value calculated after reset.</td>
+</tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="float-value" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[4]</td><td><em>(<a class="fn-backref" href="#id5">1</a>, <a class="fn-backref" href="#id6">2</a>, <a class="fn-backref" href="#id7">3</a>)</em> The expression must be compatible with float type.</td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="chain" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id4">[5]</a></td><td>Note: this is a shortcut.  Same result would be produced
+by <tt class="docutils literal"><span class="pre">init=&quot;[]&quot;</span> <span class="pre">calc=&quot;sum&quot;</span></tt> and <tt class="docutils literal">expr</tt> evaluating
+to list.</td></tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="import">
+<h2><a class="toc-backref" href="#id27"><tt class="docutils literal">import</tt></a></h2>
+<p>Import a symbol from Python module.</p>
+<p>Attributes:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="25%" />
+<col width="7%" />
+<col width="13%" />
+<col width="55%" />
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head">Name</th>
+<th class="head">Req</th>
+<th class="head">Type</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td><tt class="docutils literal">path</tt></td>
+<td>M</td>
+<td>string</td>
+<td>A dot-delimited path in python package
+namespace.  The last component of the
+path will be available for use in
+expressions.
+E.g. <tt class="docutils literal">&lt;import <span class="pre">path=&quot;a.b.c.d&quot;</span> /&gt;</tt> has
+the same effect as Python statement
+<tt class="docutils literal">from a.b.c import d</tt>.</td>
+</tr>
+<tr><td><tt class="docutils literal">alias</tt></td>
+<td>O</td>
+<td>string</td>
+<td>Alternate local name for imported
+symbol.
+E.g. <tt class="docutils literal">&lt;import <span class="pre">path=&quot;a&quot;</span> <span class="pre">alias=&quot;b&quot;</span> /&gt;</tt>
+has the same effect as Python
+statement <tt class="docutils literal">import a as b</tt>.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="font">
+<h2><a class="toc-backref" href="#id28"><tt class="docutils literal">font</tt></a></h2>
+<p>Font definition for use in text fields and as a default font in sections
+and whole report.</p>
+<p>Attributes:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="25%" />
+<col width="7%" />
+<col width="13%" />
+<col width="55%" />
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head">Name</th>
+<th class="head">Req</th>
+<th class="head">Type</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td><tt class="docutils literal">name</tt></td>
+<td>M</td>
+<td>string</td>
+<td>Local name of font definition.  Used
+as font reference in <a class="reference internal" href="#field">field</a>
+elements.</td>
+</tr>
+<tr><td><tt class="docutils literal">typeface</tt></td>
+<td>M</td>
+<td>string</td>
+<td>Typeface name.</td>
+</tr>
+<tr><td><tt class="docutils literal">size</tt></td>
+<td>M</td>
+<td>integer</td>
+<td>Font size in points.</td>
+</tr>
+<tr><td><tt class="docutils literal">bold</tt></td>
+<td>O</td>
+<td>boolean</td>
+<td>True for bold fonts.</td>
+</tr>
+<tr><td><tt class="docutils literal">italic</tt></td>
+<td>O</td>
+<td>boolean</td>
+<td>True for italic fonts.</td>
+</tr>
+<tr><td><tt class="docutils literal">underline</tt></td>
+<td>O</td>
+<td>boolean</td>
+<td>True for underlined text.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="data">
+<h2><a class="toc-backref" href="#id29"><tt class="docutils literal">data</tt></a></h2>
+<p>Contains arbitrary data for use in <a class="reference internal" href="#field">field</a>, <a class="reference internal" href="#image">image</a> and <a class="reference internal" href="#barcode">barcode</a>
+elements.</p>
+<p>This is the only element in PythonReports templates that has significant
+body text; for all other elements body text is ignored.</p>
+<!-- Discussion: for easier processing, `data`_ elements may be restricted
+to be immediate children of the `report`_ element (named data) or
+`field`_, `image`_ and `barcode`_ elements (anonymous data). -->
+<p>Attributes:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="25%" />
+<col width="7%" />
+<col width="13%" />
+<col width="55%" />
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head">Name</th>
+<th class="head">Req</th>
+<th class="head">Type</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td><tt class="docutils literal">name</tt></td>
+<td><a class="footnote-reference" href="#d" id="id8">[6]</a></td>
+<td>string</td>
+<td>Data reference needed to use the data
+in elements other than immediate
+parent element.</td>
+</tr>
+<tr><td><tt class="docutils literal">pickle</tt></td>
+<td>O</td>
+<td>boolean</td>
+<td>if set to True, data is pickled
+Python object.</td>
+</tr>
+<tr><td><tt class="docutils literal">compress</tt></td>
+<td>O</td>
+<td>string</td>
+<td><tt class="docutils literal">zlib</tt> or <tt class="docutils literal">bz2</tt>.</td>
+</tr>
+<tr><td><tt class="docutils literal">encoding</tt></td>
+<td>O</td>
+<td>string</td>
+<td><tt class="docutils literal">base64</tt>, <tt class="docutils literal">uu</tt> or <tt class="docutils literal">qp</tt>.</td>
+</tr>
+<tr><td><tt class="docutils literal">expr</tt></td>
+<td>O</td>
+<td>expr</td>
+<td>Expression used to compute value.
+The expression is evaluated in current
+builder context and takes precedence
+over the body text of the <tt class="docutils literal">data</tt>
+element.  With <tt class="docutils literal">expr</tt>, attributes
+<tt class="docutils literal">pickle</tt>, <tt class="docutils literal">compress</tt> and
+<tt class="docutils literal">encoding</tt> are ignored.</td>
+</tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="d" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id8">[6]</a></td><td>Optional when immediate parent element is <a class="reference internal" href="#field">field</a>, <a class="reference internal" href="#image">image</a>
+or <a class="reference internal" href="#barcode">barcode</a>; required otherwise.</td></tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="style">
+<h2><a class="toc-backref" href="#id30"><tt class="docutils literal">style</tt></a></h2>
+<p>The <a class="reference internal" href="#style">style</a> elements may be contained in all <a class="reference internal" href="#section-elements">section elements</a>
+and <a class="reference internal" href="#body-elements">body elements</a>.  Style attributes <tt class="docutils literal">printwhen</tt>, <tt class="docutils literal">font</tt>,
+<tt class="docutils literal">color</tt> and <tt class="docutils literal">bgcolor</tt> propagate to inner elements, i.e. if an
+element does not have these attributes in the applicable style,
+they are searched up the layout hierarchy.</p>
+<p>Attributes:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="25%" />
+<col width="7%" />
+<col width="13%" />
+<col width="55%" />
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head">Name</th>
+<th class="head">Req</th>
+<th class="head">Type</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td><tt class="docutils literal">when</tt></td>
+<td>O</td>
+<td>expr</td>
+<td>When this style is applicable.
+The styles are checked in order of
+their appearance in the template.
+Style search stops when this
+expression evaluates to boolean True.
+Default: True.</td>
+</tr>
+<tr><td><tt class="docutils literal">printwhen</tt></td>
+<td>O</td>
+<td>expr</td>
+<td>If False, this element is suppressed.</td>
+</tr>
+<tr><td><tt class="docutils literal">font</tt></td>
+<td>O</td>
+<td>string</td>
+<td>Name of <a class="reference internal" href="#font">font</a> definition.</td>
+</tr>
+<tr><td><tt class="docutils literal">color</tt></td>
+<td>O</td>
+<td>color</td>
+<td>Foreground or pen color.</td>
+</tr>
+<tr><td><tt class="docutils literal">bgcolor</tt></td>
+<td>O</td>
+<td>color</td>
+<td>Background or fill color.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="box">
+<h2><a class="toc-backref" href="#id31"><tt class="docutils literal">box</tt></a></h2>
+<p>Defines rectangular space occupied by <a class="reference internal" href="#report-elements">report elements</a>.</p>
+<p>Attributes:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="25%" />
+<col width="7%" />
+<col width="13%" />
+<col width="55%" />
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head">Name</th>
+<th class="head">Req</th>
+<th class="head">Type</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td><tt class="docutils literal">x</tt></td>
+<td>O</td>
+<td>dimension</td>
+<td>Horizontal position.  Negative values
+are offset from the right margin.
+<a class="footnote-reference" href="#negative-position" id="id9">[7]</a></td>
+</tr>
+<tr><td><tt class="docutils literal">y</tt></td>
+<td>O</td>
+<td>dimension</td>
+<td>Vertical position.  Negative values
+are relative to the bottom of section.
+<a class="footnote-reference" href="#negative-position" id="id10">[7]</a></td>
+</tr>
+<tr><td><tt class="docutils literal">float</tt></td>
+<td>O</td>
+<td>boolean</td>
+<td>If True, <tt class="docutils literal">y</tt> position (must be
+positive) is adjusted according to
+heights of elements laid out higher
+in the same section.  Ignored for
+negative <tt class="docutils literal">y</tt> values.</td>
+</tr>
+<tr><td><tt class="docutils literal">width</tt></td>
+<td>O</td>
+<td>dimension</td>
+<td>Element width.  Negative values
+are offset from the right margin.
+<a class="footnote-reference" href="#negative-size" id="id11">[8]</a>  Default: -1.</td>
+</tr>
+<tr><td><tt class="docutils literal">height</tt></td>
+<td>O</td>
+<td>dimension</td>
+<td>Element height. <a class="footnote-reference" href="#minheight" id="id12">[9]</a>
+Negative values are offset from the
+bottom of section. <a class="footnote-reference" href="#negative-size" id="id13">[8]</a>
+Default: -1.</td>
+</tr>
+<tr><td><tt class="docutils literal">halign</tt></td>
+<td>O</td>
+<td>string</td>
+<td>Horizontal alignment for <a class="reference internal" href="#field">field</a>,
+<a class="reference internal" href="#image">image</a> and <a class="reference internal" href="#barcode">barcode</a> elements:
+<tt class="docutils literal">left</tt>, <tt class="docutils literal">right</tt> or <tt class="docutils literal">center</tt>.
+Default: <tt class="docutils literal">left</tt>.</td>
+</tr>
+<tr><td><tt class="docutils literal">valign</tt></td>
+<td>O</td>
+<td>string</td>
+<td>Vertical alignment for <a class="reference internal" href="#field">field</a>,
+<a class="reference internal" href="#image">image</a> and <a class="reference internal" href="#barcode">barcode</a> elements:
+<tt class="docutils literal">top</tt>, <tt class="docutils literal">bottom</tt> or <tt class="docutils literal">center</tt>.
+Default: <tt class="docutils literal">bottom</tt>.</td>
+</tr>
+</tbody>
+</table>
+<!-- Note: ``valign`` defaults to ``bottom`` to align in line texts
+of different font sizes. -->
+<!-- XXX should there be ``baseline`` valign? -->
+<table class="docutils footnote" frame="void" id="negative-position" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[7]</td><td><em>(<a class="fn-backref" href="#id9">1</a>, <a class="fn-backref" href="#id10">2</a>)</em> Element position is calculated
+as <em>margin + 1 + offset</em>, i.e.
+an element with <tt class="docutils literal"><span class="pre">y=&quot;-1&quot;</span></tt> will be
+placed right at the bottom margin
+(and hence will have zero height).</td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="negative-size" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[8]</td><td><em>(<a class="fn-backref" href="#id11">1</a>, <a class="fn-backref" href="#id13">2</a>)</em> Element size is calculated as
+<em>margin + 1 + offset - position</em>,
+i.e. an element with <tt class="docutils literal"><span class="pre">width=&quot;-1&quot;</span></tt>
+will use all space remaining
+till right margin of the section.</td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="minheight" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id12">[9]</a></td><td>For text fields, minimal box height is determined
+by font metrics.  If box height in a template is
+non-negative but less than the height of the text line,
+height of the printout box is made big enough for at
+least one line of text.</td></tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="eject">
+<h2><a class="toc-backref" href="#id32"><tt class="docutils literal">eject</tt></a></h2>
+<p>Tells when <a class="reference internal" href="#section-elements">section elements</a> must be started on a new page or column.</p>
+<p>For the <a class="reference internal" href="#title">title</a> section, <a class="reference internal" href="#eject">eject</a> is evaluated at the end of the section,
+for all other sections - at the beginning of the section.</p>
+<p>Attributes:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="25%" />
+<col width="7%" />
+<col width="13%" />
+<col width="55%" />
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head">Name</th>
+<th class="head">Req</th>
+<th class="head">Type</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td><tt class="docutils literal">type</tt></td>
+<td>O</td>
+<td>string</td>
+<td><tt class="docutils literal">page</tt> or <tt class="docutils literal">column</tt>.
+Default: <tt class="docutils literal">page</tt>.</td>
+</tr>
+<tr><td><tt class="docutils literal">require</tt></td>
+<td>O</td>
+<td>dimension</td>
+<td>Required vertical space on current
+page or column.  If there is enough
+available space, the section continues
+current page or column.  If omitted,
+eject is unconditional.</td>
+</tr>
+<tr><td><tt class="docutils literal">when</tt></td>
+<td>O</td>
+<td>expr</td>
+<td>If the expression evaluates to False,
+<a class="reference internal" href="#eject">eject</a> is ignored.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="arg">
+<h2><a class="toc-backref" href="#id33"><tt class="docutils literal">arg</tt></a></h2>
+<p>Actual argument value passed to <a class="reference internal" href="#subreport">subreport</a> to fill a <a class="reference internal" href="#parameter">parameter</a> slot.</p>
+<p>Attributes:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="25%" />
+<col width="7%" />
+<col width="13%" />
+<col width="55%" />
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head">Name</th>
+<th class="head">Req</th>
+<th class="head">Type</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td><tt class="docutils literal">name</tt></td>
+<td>M</td>
+<td>string</td>
+<td>Parameter name.</td>
+</tr>
+<tr><td><tt class="docutils literal">value</tt></td>
+<td>M</td>
+<td>expr</td>
+<td>Parameter value.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="subreport">
+<h2><a class="toc-backref" href="#id34"><tt class="docutils literal">subreport</tt></a></h2>
+<p>Sets an embedded report to run on an inner data sequence.</p>
+<p>For example, imagine you have a team of successful encyclopaedia
+salesmans each selling a really fine set of modern encyclopaedias.
+Common way to make a report on encyclopedia sales in RDBMS world
+would be to run the report on the list of all sold encyclopedias
+and use report groups to print name and total earnings for each
+salesman.  Subreports allow you to do it the other way round -
+pass a sequence of salesmans to main report template and then run
+an encyclopedia subreport for each detail section of the main report.
+It could be especially useful if some of the team members work in
+a different ways - say, sell something to break the ice at parties -
+and thus require a totally different layout for their parts.</p>
+<p><a class="reference internal" href="#subreport">subreport</a> element may contain a set of <a class="reference internal" href="#arg">arg</a> elements.</p>
+<p>Subreports <strong>must not</strong> be placed inside columns.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="25%" />
+<col width="7%" />
+<col width="13%" />
+<col width="55%" />
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head">Name</th>
+<th class="head">Req</th>
+<th class="head">Type</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td><tt class="docutils literal">template</tt></td>
+<td>M</td>
+<td>string</td>
+<td>Name of the template file.</td>
+</tr>
+<tr><td><tt class="docutils literal">seq</tt></td>
+<td>M</td>
+<td>integer</td>
+<td><p class="first">Subreport sequence indicator.
+Subreports for a section will be run
+in the order of <tt class="docutils literal">seq</tt> numbers.
+Subreports with negative <tt class="docutils literal">seq</tt>
+values are printed before the section
+contents, ones with positive <tt class="docutils literal">seq</tt>
+values - after section contents.
+Zero value is reserved and should
+not be used.</p>
+<p class="last"><tt class="docutils literal">seq</tt> values for subreports of the
+same section are not required to be
+successive.</p>
+</td>
+</tr>
+<tr><td><tt class="docutils literal">data</tt></td>
+<td>M</td>
+<td>expr</td>
+<td>Data sequence for the subreport.</td>
+</tr>
+<tr><td><tt class="docutils literal">when</tt></td>
+<td>O</td>
+<td>expr</td>
+<td>If this expression evaluates to False,
+the subreport is not run.</td>
+</tr>
+<tr><td><tt class="docutils literal">inline</tt></td>
+<td>O</td>
+<td>boolean</td>
+<td><p class="first">If set to True, the subreport is
+formatted as an integral part of the
+main report, without page eject before
+or after it. <a class="footnote-reference" href="#inlined" id="id14">[10]</a></p>
+<p class="last">If False (default), the subreport is
+printed on separate pages.</p>
+</td>
+</tr>
+<tr><td><tt class="docutils literal">ownpageno</tt></td>
+<td>O</td>
+<td>boolean</td>
+<td>If set to True, pages in the subreport
+are numbered as in standalone report.
+If False (default), page numbers in
+the subreport continue the sequence of
+the main report page numbers.  Cannot
+be set to True for inline subreports.</td>
+</tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="inlined" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id14">[10]</a></td><td><p class="first">Inline reports start at current page position.
+When inline report ends, containing report continues
+from current page position.</p>
+<p>Inline reports may define page <a class="reference internal" href="#header">header</a> and <a class="reference internal" href="#footer">footer</a>.
+The first header for inline report is printed where
+the report starts; following pages will have it printed
+below page header inherited from containing report.
+The last footer for inline report is printed where
+the report ends; other footers will appear above
+page footer inherited from containing report.</p>
+<p>Subreports with different paper size or page orientation
+cannot be inlined.</p>
+<p class="last">Page margins of an inline report must match margins
+of the containing report; if they don't, a warning
+is issued and inline report margins are overwritten.</p>
+</td></tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="title">
+<h2><a class="toc-backref" href="#id35"><tt class="docutils literal">title</tt></a></h2>
+<p>A child element of <a class="reference internal" href="#layout">layout</a> or <a class="reference internal" href="#group">group</a> element containing a summary
+printed before report data.</p>
+<p>While report <a class="reference internal" href="#title">title</a> is processed, all <tt class="docutils literal">*_COUNT</tt> values are set to
+zero (see <a class="reference internal" href="#predefined-variables">predefined variables</a>.)</p>
+<p>Attributes:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="25%" />
+<col width="7%" />
+<col width="13%" />
+<col width="55%" />
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head">Name</th>
+<th class="head">Req</th>
+<th class="head">Type</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td><tt class="docutils literal">swapheader</tt></td>
+<td>O</td>
+<td>boolean</td>
+<td>When used in report title section,
+value of True lets the title section
+be printed before the first page
+header.  Ignored for group titles.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="summary">
+<h2><a class="toc-backref" href="#id36"><tt class="docutils literal">summary</tt></a></h2>
+<p>A child element of <a class="reference internal" href="#layout">layout</a> or <a class="reference internal" href="#group">group</a> element containing a summary
+printed after report data.</p>
+<p>Attributes:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="25%" />
+<col width="7%" />
+<col width="13%" />
+<col width="55%" />
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head">Name</th>
+<th class="head">Req</th>
+<th class="head">Type</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td><tt class="docutils literal">swapfooter</tt></td>
+<td>O</td>
+<td>boolean</td>
+<td>When used in report summary section,
+True means that the last page footer
+is printed before the report summary.
+Ignored for group summaries.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="header">
+<h2><a class="toc-backref" href="#id37"><tt class="docutils literal">header</tt></a></h2>
+<p>A child element of <a class="reference internal" href="#layout">layout</a> or <a class="reference internal" href="#columns">columns</a> describing header layout
+for report page or column respectively.</p>
+</div>
+<div class="section" id="footer">
+<h2><a class="toc-backref" href="#id38"><tt class="docutils literal">footer</tt></a></h2>
+<p>A child element of <a class="reference internal" href="#layout">layout</a> or <a class="reference internal" href="#columns">columns</a> describing footer layout
+for report page or column respectively.</p>
+</div>
+<div class="section" id="layout">
+<h2><a class="toc-backref" href="#id39"><tt class="docutils literal">layout</tt></a></h2>
+<p>Topmost element of report layout definition.</p>
+<p>Attributes:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="25%" />
+<col width="7%" />
+<col width="13%" />
+<col width="55%" />
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head">Name</th>
+<th class="head">Req</th>
+<th class="head">Type</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td><tt class="docutils literal">pagesize</tt></td>
+<td>O</td>
+<td>string</td>
+<td>Standard page size, like <tt class="docutils literal">A4</tt>,
+<tt class="docutils literal">Letter</tt>, <tt class="docutils literal">Envelope#10</tt> or
+<tt class="docutils literal">EnvelopeDL</tt>.</td>
+</tr>
+<tr><td><tt class="docutils literal">width</tt></td>
+<td><a class="footnote-reference" href="#e" id="id15">[11]</a></td>
+<td>dimension</td>
+<td>Page width.</td>
+</tr>
+<tr><td><tt class="docutils literal">height</tt></td>
+<td><a class="footnote-reference" href="#e" id="id16">[11]</a></td>
+<td>dimension</td>
+<td>Page height.</td>
+</tr>
+<tr><td><tt class="docutils literal">landscape</tt></td>
+<td>O</td>
+<td>boolean</td>
+<td>If True, page dimensions are swapped
+(landscape orientation).</td>
+</tr>
+<tr><td><tt class="docutils literal">leftmargin</tt></td>
+<td>O</td>
+<td>dimension</td>
+<td>Left page margin.</td>
+</tr>
+<tr><td><tt class="docutils literal">rightmargin</tt></td>
+<td>O</td>
+<td>dimension</td>
+<td>Right page margin.</td>
+</tr>
+<tr><td><tt class="docutils literal">topmargin</tt></td>
+<td>O</td>
+<td>dimension</td>
+<td>Top page margin.</td>
+</tr>
+<tr><td><tt class="docutils literal">bottommargin</tt></td>
+<td>O</td>
+<td>dimension</td>
+<td>Bottom page margin.</td>
+</tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="e" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[11]</td><td><em>(<a class="fn-backref" href="#id15">1</a>, <a class="fn-backref" href="#id16">2</a>)</em> Required when <tt class="docutils literal">pagesize</tt> is not specified;
+ignored when <tt class="docutils literal">pagesize</tt> is set.</td></tr>
+</tbody>
+</table>
+<!-- TODO: `layout`_ should have target resolution to compute image box
+dimensions and draw bar codes...  perhaps the resolution can be
+overridden by a builder parameter.  vertical and horizontal dpi must
+be separate values. -->
+</div>
+<div class="section" id="columns">
+<h2><a class="toc-backref" href="#id40"><tt class="docutils literal">columns</tt></a></h2>
+<p>Arranges report data for multi-column output.  May be used in <a class="reference internal" href="#layout">layout</a>
+and <a class="reference internal" href="#group">group</a> elements.</p>
+<p><strong>Please note</strong>: although it is possible to make nested column templates
+(you may have <a class="reference internal" href="#columns">columns</a> in <a class="reference internal" href="#layout">layout</a> and then in data <a class="reference internal" href="#group">group</a> and again
+in a nested <a class="reference internal" href="#group">group</a>), that does not work well.  It is highly recommended
+to have only one (or none) <a class="reference internal" href="#columns">columns</a> element per report template.</p>
+<p>Attributes:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="25%" />
+<col width="7%" />
+<col width="13%" />
+<col width="55%" />
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head">Name</th>
+<th class="head">Req</th>
+<th class="head">Type</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td><tt class="docutils literal">count</tt></td>
+<td>M</td>
+<td>integer</td>
+<td>Number of output columns.  All columns
+have equal widths and equal space
+between them.</td>
+</tr>
+<tr><td><tt class="docutils literal">gap</tt></td>
+<td>O</td>
+<td>dimension</td>
+<td>Space between columns.</td>
+</tr>
+</tbody>
+</table>
+<!-- TODO: line between columns. -->
+</div>
+<div class="section" id="group">
+<h2><a class="toc-backref" href="#id41"><tt class="docutils literal">group</tt></a></h2>
+<p>Defines a data-based group of report records.</p>
+<p>Attributes:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="25%" />
+<col width="7%" />
+<col width="13%" />
+<col width="55%" />
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head">Name</th>
+<th class="head">Req</th>
+<th class="head">Type</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td><tt class="docutils literal">name</tt></td>
+<td>M</td>
+<td>string</td>
+<td>Group name.</td>
+</tr>
+<tr><td><tt class="docutils literal">expr</tt></td>
+<td>M</td>
+<td>expr</td>
+<td>Grouping expression.  When value of
+this expression changes, current group
+is closed and new group starts.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="detail">
+<h2><a class="toc-backref" href="#id42"><tt class="docutils literal">detail</tt></a></h2>
+<p>The detail section.  Built once for each item in the <a class="reference internal" href="#report-data">report data</a> set.</p>
+</div>
+<div class="section" id="field">
+<h2><a class="toc-backref" href="#id43"><tt class="docutils literal">field</tt></a></h2>
+<p>Output a text field.</p>
+<p>Contents of the field may be set by <tt class="docutils literal">expr</tt> or <tt class="docutils literal">data</tt> attributes
+or by child <a class="reference internal" href="#data">data</a> element.  Data may be set (either by attribute
+or by child element) along with <tt class="docutils literal">expr</tt> to estimate field size when
+<tt class="docutils literal">expr</tt> evaluation is delayed by non-empty <tt class="docutils literal">evaltime</tt>.
+When evaluation time arrives, the field is filled with <tt class="docutils literal">expr</tt> result.</p>
+<p>Attributes:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="25%" />
+<col width="7%" />
+<col width="13%" />
+<col width="55%" />
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head">Name</th>
+<th class="head">Req</th>
+<th class="head">Type</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td><tt class="docutils literal">expr</tt></td>
+<td>O</td>
+<td>string</td>
+<td>Field expression.</td>
+</tr>
+<tr><td><tt class="docutils literal">evaltime</tt></td>
+<td>O</td>
+<td>string</td>
+<td>When the expression is evaluated:
+<tt class="docutils literal">report</tt>, <tt class="docutils literal">page</tt>, <tt class="docutils literal">column</tt>
+or group name.  Evaluation is delayed
+until the end of this section.</td>
+</tr>
+<tr><td><tt class="docutils literal">data</tt></td>
+<td>O</td>
+<td>string</td>
+<td>Name of a <a class="reference internal" href="#data">data</a> section defined as
+a child of the <a class="reference internal" href="#report">report</a> element.</td>
+</tr>
+<tr><td><tt class="docutils literal">align</tt></td>
+<td>O</td>
+<td>string</td>
+<td>Text alignment: <tt class="docutils literal">left</tt>, <tt class="docutils literal">center</tt>,
+<tt class="docutils literal">right</tt> or <tt class="docutils literal">justified</tt>.</td>
+</tr>
+<tr><td><tt class="docutils literal">format</tt></td>
+<td>O</td>
+<td>string</td>
+<td>Formatting expression.
+Default: <tt class="docutils literal">%s</tt> (unicode conversion).</td>
+</tr>
+<tr><td><tt class="docutils literal">stretch</tt></td>
+<td>O</td>
+<td>boolean</td>
+<td>Stretch with overflow.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="line">
+<h2><a class="toc-backref" href="#id44"><tt class="docutils literal">line</tt></a></h2>
+<p>Draw a line.</p>
+<p>Attributes:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="25%" />
+<col width="7%" />
+<col width="13%" />
+<col width="55%" />
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head">Name</th>
+<th class="head">Req</th>
+<th class="head">Type</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td><tt class="docutils literal">pen</tt></td>
+<td>M</td>
+<td>dimension
+or string</td>
+<td>Line style: width of the line or one
+of <tt class="docutils literal">dot</tt>, <tt class="docutils literal">dash</tt>, <tt class="docutils literal">dashdot</tt>.</td>
+</tr>
+<tr><td><tt class="docutils literal">backslant</tt></td>
+<td>O</td>
+<td>boolean</td>
+<td>When both box dimensions are non-zero,
+draw the line from upper left corner
+to lower right one - \ instead of /.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="rectangle">
+<h2><a class="toc-backref" href="#id45"><tt class="docutils literal">rectangle</tt></a></h2>
+<p>Draw a rectangle.</p>
+<p>Attributes:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="25%" />
+<col width="7%" />
+<col width="13%" />
+<col width="55%" />
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head">Name</th>
+<th class="head">Req</th>
+<th class="head">Type</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td><tt class="docutils literal">pen</tt></td>
+<td>M</td>
+<td>dimension
+or string</td>
+<td>Outline style: width of the line or
+one of <tt class="docutils literal">dot</tt>, <tt class="docutils literal">dash</tt>, <tt class="docutils literal">dashdot</tt>.
+Use <tt class="docutils literal">0</tt> to disable outline.</td>
+</tr>
+<tr><td><tt class="docutils literal">radius</tt></td>
+<td>O</td>
+<td>dimension</td>
+<td>Corner radius for rounded rectangles.
+Default: 0</td>
+</tr>
+<tr><td><tt class="docutils literal">opaque</tt></td>
+<td>O</td>
+<td>boolean</td>
+<td>If set to False, the rectangle will be
+drawn transparent.  Default: True.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="image">
+<h2><a class="toc-backref" href="#id46"><tt class="docutils literal">image</tt></a></h2>
+<p>Place bitmap image.  The bitmap may be loaded from a file
+or from a <a class="reference internal" href="#data">data</a> element (either put in the <a class="reference internal" href="#image">image</a> element
+or referred by the <tt class="docutils literal">data</tt> attribute.)</p>
+<p>Attributes:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="25%" />
+<col width="7%" />
+<col width="13%" />
+<col width="55%" />
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head">Name</th>
+<th class="head">Req</th>
+<th class="head">Type</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td><tt class="docutils literal">type</tt></td>
+<td>M</td>
+<td>string</td>
+<td>Image type, e.g. <tt class="docutils literal">jpeg</tt> or <tt class="docutils literal">png</tt>.</td>
+</tr>
+<tr><td><tt class="docutils literal">file</tt></td>
+<td>O</td>
+<td>string</td>
+<td>Image file path.  If specified,
+the data is ignored unless the file
+cannot be loaded.</td>
+</tr>
+<tr><td><tt class="docutils literal">data</tt></td>
+<td>O</td>
+<td>string</td>
+<td>Name of a <a class="reference internal" href="#data">data</a> section defined as
+a child of the <a class="reference internal" href="#report">report</a> element.</td>
+</tr>
+<tr><td><tt class="docutils literal">scale</tt></td>
+<td>O</td>
+<td>string</td>
+<td>Scaling mode: <tt class="docutils literal">cut</tt>, <tt class="docutils literal">fill</tt>
+(adjust image to the <a class="reference internal" href="#box">box</a>) or
+<tt class="docutils literal">grow</tt> (adjust the <a class="reference internal" href="#box">box</a> to the
+image.)</td>
+</tr>
+<tr><td><tt class="docutils literal">proportional</tt></td>
+<td>O</td>
+<td>boolean</td>
+<td>If True (default), image or <a class="reference internal" href="#box">box</a>
+proportions are kept with <tt class="docutils literal">fill</tt>
+and <tt class="docutils literal">grow</tt> scaling modes.</td>
+</tr>
+<tr><td><tt class="docutils literal">embed</tt></td>
+<td>O</td>
+<td>boolean</td>
+<td>If True (default), the image is
+embedded in the <a class="reference external" href="prp.html">PRP file</a>.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="barcode">
+<h2><a class="toc-backref" href="#id47"><tt class="docutils literal">barcode</tt></a></h2>
+<p>Print a bar code image.  The <a class="reference internal" href="#box">box</a> of the <a class="reference internal" href="#barcode">barcode</a> elements always
+grows in the direction of coding (vertically if <tt class="docutils literal"><span class="pre">vertical=&quot;true&quot;</span></tt>,
+horizontally otherwise) and is filled in the opposite direction.
+Bar code images are always embedded in the <a class="reference external" href="prp.html">PRP file</a>.</p>
+<p>Code contents may be set by <tt class="docutils literal">expr</tt> or <tt class="docutils literal">data</tt> attributes
+or by child <a class="reference internal" href="#data">data</a> element.  Data may be set (either by attribute
+or by child element) along with <tt class="docutils literal">expr</tt> to estimate image size when
+<tt class="docutils literal">expr</tt> evaluation is delayed by non-empty <tt class="docutils literal">evaltime</tt>.  When
+evaluation time arrives, <tt class="docutils literal">expr</tt> result produces the bar code image.</p>
+<p>Characters that cannot be encoded with selected code <tt class="docutils literal">type</tt> are ignored.</p>
+<p>Attributes:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="25%" />
+<col width="7%" />
+<col width="13%" />
+<col width="55%" />
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head">Name</th>
+<th class="head">Req</th>
+<th class="head">Type</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td><tt class="docutils literal">type</tt></td>
+<td>M</td>
+<td>string</td>
+<td><tt class="docutils literal">Code128</tt>, <tt class="docutils literal">Code39</tt> or <tt class="docutils literal">2of5i</tt>.</td>
+</tr>
+<tr><td><tt class="docutils literal">module</tt></td>
+<td>O</td>
+<td>number</td>
+<td>X dimension, in mils (1/1000inch).
+Default: 10.0.</td>
+</tr>
+<tr><td><tt class="docutils literal">vertical</tt></td>
+<td>O</td>
+<td>boolean</td>
+<td>If True, the image is rotated
+90 degrees clockwise.</td>
+</tr>
+<tr><td><tt class="docutils literal">expr</tt></td>
+<td>O</td>
+<td>string</td>
+<td>Value expression.</td>
+</tr>
+<tr><td><tt class="docutils literal">evaltime</tt></td>
+<td>O</td>
+<td>string</td>
+<td>When the expression is evaluated:
+<tt class="docutils literal">report</tt>, <tt class="docutils literal">page</tt>, <tt class="docutils literal">column</tt>
+or group name.  Evaluation is delayed
+until the end of this section.</td>
+</tr>
+<tr><td><tt class="docutils literal">data</tt></td>
+<td>O</td>
+<td>string</td>
+<td>Name of a <a class="reference internal" href="#data">data</a> section defined as
+a child of the <a class="reference internal" href="#report">report</a> element.</td>
+</tr>
+</tbody>
+</table>
+<!-- vim: set et ft=rst sts=2 sw=2 : -->
+</div>
+</div>
+</div>
+</body>
+</html>
