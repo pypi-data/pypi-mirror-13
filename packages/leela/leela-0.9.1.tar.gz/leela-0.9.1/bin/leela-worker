@@ -1,0 +1,106 @@
+#!/usr/bin/python
+
+import os
+import sys
+import logging
+import logging.config
+import asyncio
+import signal
+import json
+import functools
+import copy
+
+from leela.core.application import Application
+from leela.utils.logger import logger
+
+
+def main(name, project_home, conf, logger_config_file, services,
+         is_ssl, bind_addr, is_unixsocket, static_path):
+
+    sys.path.append(os.path.join(project_home, 'services'))
+
+    if logger_config_file != '--noconf':
+        app.set_logger_config(logger_config_file)
+
+    logger.info('[{}] starting service...'.format(name))
+
+    mw_configs = conf.get('middlewares', [])
+    mw_list = []
+    for mw_config in mw_configs:
+        mw = loop.run_until_complete(app.init_middleware(mw_config))
+        mw_list.append(mw)
+
+    for service in services:
+        service_mw_list = copy.copy(mw_list)
+        for mw_config in service.get('srv_middlewares', []):
+            mw = loop.run_until_complete(app.init_middleware(mw_config))
+            service_mw_list.append(mw)
+
+        future = app.init_service(service['srv_endpoint'],
+                                  service['srv_config'],
+                                  service_mw_list)
+        loop.run_until_complete(future)
+
+    if not static_path:
+        static_path = os.path.join(project_home, 'www')
+    app.handle_static(static_path)
+
+    if is_unixsocket:
+        app.make_unix_server(bind_addr)
+    else:
+        parts = bind_addr.split(':')
+        parts.append(80)
+        host, port = parts[:2]
+        app.make_tcp_server(host, port)
+        bind_addr = '{}://{}:{}'.format('https' if is_ssl else 'http',
+                                        host, port)
+
+    logger.info('[{}] service started at {}'.format(name, bind_addr))
+
+    try:
+        loop.run_forever()
+    except KeyboardInterrupt:
+        pass
+
+
+@asyncio.coroutine
+def stop(s='', n=''):
+    global stopped
+    if stopped:
+        return
+    stopped = True
+
+    logger.info('[{}] destroing service...'.format(name))
+    try:
+        yield from app.destroy()
+    except Exception as err:
+        logger.error('[{}] destroy routine failed: {}'.format(name, err))
+
+    loop.stop()
+    logger.info('[{}] finished'.format(name))
+
+
+if __name__ == '__main__':
+    if len(sys.argv) != 2:
+        print('DONT RUN THIS SCRIPT MANUALLY!')
+        sys.exit(1)
+
+    try:
+        stopped = False
+        loop = asyncio.get_event_loop()
+        loop.add_signal_handler(signal.SIGINT,
+                                lambda: asyncio.async(stop(signal.SIGINT)))
+
+        app = Application()
+        name = sys.argv[1]
+
+        args = json.loads(input())
+        mode = args.pop(0)
+        if mode == 'services':
+            main(name, args[0], args[1], args[2],
+                 args[3], args[4], args[5], args[6], args[7])
+        else:
+            raise Exception('Unknown leela-worker mode!')
+    except Exception as err:
+        logger.error('[{}] global exception: {}'.format(name, err), exc_info=1)
+        sys.exit(3)

@@ -1,0 +1,185 @@
+#!/usr/bin/python
+
+import os
+import sys
+import yaml
+import tempfile
+import shutil
+import zipfile
+import urllib.request
+
+import asyncio
+import leela
+from leela.utils import dispatcher_daemon
+from leela.utils.config import LeelaConfig
+
+
+def start_project(base_path, project_name):
+    if not os.path.exists(base_path):
+        raise RuntimeError('Path {} does not found'.format(base_path))
+
+    P_URL = 'https://github.com/fabregas/leela-init-project/archive/master.zip'
+    P_NAME = 'leela-init-project-master'
+
+    try:
+        print('- downloading init project structure ...')
+        resp = urllib.request.urlopen(P_URL)
+        zip_arch = resp.read()#.decode()
+    except urllib.error.URLError as e:
+        raise RuntimeError('<leela-init-project> does not found!')
+
+    tmp_dir = tempfile.mkdtemp()
+    zip_source = os.path.join(tmp_dir, 'master.zip')
+
+    open(zip_source, 'wb').write(zip_arch)
+
+    zip_source = zipfile.ZipFile(zip_source)
+
+    dest_path = os.path.join(base_path, project_name)
+    if os.path.exists(dest_path):
+        raise RuntimeError('Path {} is already exists'.format(dest_path))
+
+    zip_source.extractall(tmp_dir)
+    zip_source.close()
+
+    shutil.move(os.path.join(tmp_dir, P_NAME), dest_path)
+
+    shutil.rmtree(tmp_dir)
+
+    print('='*80)
+    print('New Leela project is started at {}'.format(dest_path))
+    print('='*80)
+    print(' -> write your home HTML in www/index.html file')
+    print(' -> save your HTML templates (for angularjs) '
+          'in www/templates directory')
+    print(' -> save your javascript scripts in www/js directory')
+    print(' -> save your css files in www/css directory')
+    print(' -> save your static images into www/img directory')
+    print('\n Build/rebuild your front-end dependencies using commands:')
+    print('\t\t# leela build')
+    print('\n Run your project in test mode using command:')
+    print('\t\t# leela start test')
+    print('='*80)
+
+
+def _check_param(config, param):
+    if type(config) != dict or param not in config:
+        raise ValueError('<{}> scope is expected in YAML file.'.format(param))
+
+
+def start_server(project_path, config_name):
+    if not os.path.exists(project_path):
+        raise RuntimeError('Project directory "{}" does not exists'
+                           .format(project_path))
+
+    if config_name.endswith('.yaml'):
+        config_file = config_name
+    else:
+        config_file = os.path.join(project_path, 'config',
+                                   config_name + '.yaml')
+    if not os.path.exists(config_file):
+        raise RuntimeError('Config file "{}" does not exists'
+                           .format(config_file))
+
+    try:
+        config = yaml.load(open(config_file))
+        lconfig = LeelaConfig(project_path)
+        lconfig.parse(config)
+    except Exception as err:
+        raise RuntimeError('Config file parse error: {}'.format(err))
+
+    bin_dir = os.path.abspath(os.path.dirname(__file__))
+
+    loop = asyncio.get_event_loop()
+    retcode = dispatcher_daemon.RC_NEEDREBUILD # need to rebuild web
+    try:
+        while True:
+            if lconfig.monitor_changes and \
+                    retcode == dispatcher_daemon.RC_NEEDREBUILD:
+                ret = os.system('gulp')
+                if ret:
+                    raise RuntimeError('<gulp> failed!')
+
+            retcode = dispatcher_daemon.start(
+                bin_dir, project_path, lconfig, loop=loop)
+            if lconfig.monitor_changes and retcode > 0:
+                continue
+            break
+    except RuntimeError as err:
+        print(err)
+    except KeyboardInterrupt as err:
+        pass
+    finally:
+        loop.close()
+
+def stop_server(project_path):
+    dispatcher_daemon.stop(project_path)
+
+
+def build_proj(project_path):
+    os.chdir(project_path)
+    ret = os.system('npm install')
+    if ret:
+        raise RuntimeError('<npm install> failed!')
+
+    ret = os.system('bower install')
+    if ret:
+        raise RuntimeError('<bower install> failed!')
+
+    ret = os.system('gulp')
+    if ret:
+        raise RuntimeError('<gulp> failed!')
+
+    print('Done.')
+
+
+def usage():
+    print('Usage:')
+    print('leela new-project <project name> [<base path>]')
+    print('  or')
+    print('leela build [<project path>]')
+    print('  or')
+    print('leela start <configuration name> [<project path>]')
+    print('  or')
+    print('leela stop [<project path>]')
+
+    sys.exit(1)
+
+if __name__ == '__main__':
+    if len(sys.argv) < 2:
+        usage()
+
+    if sys.argv[1] not in ['stop', 'build'] and len(sys.argv) < 3:
+        usage()
+
+    cur = os.path.abspath('.')
+
+    try:
+        if sys.argv[1] == 'new-project':
+            if len(sys.argv) > 3:
+                cur = sys.argv[3]
+
+            start_project(cur, sys.argv[2])
+        elif sys.argv[1] == 'start':
+            if len(sys.argv) > 3:
+                cur = sys.argv[3]
+
+            start_server(cur, sys.argv[2])
+        elif sys.argv[1] == 'stop':
+            if len(sys.argv) > 2:
+                cur = sys.argv[2]
+
+            stop_server(cur)
+        elif sys.argv[1] == 'build':
+            if len(sys.argv) > 2:
+                cur = sys.argv[2]
+
+            build_proj(cur)
+        else:
+            usage()
+        sys.exit(0)
+    except Exception as err:
+        print('ERROR: {}'.format(err))
+        sys.exit(1)
+    finally:
+        pass
