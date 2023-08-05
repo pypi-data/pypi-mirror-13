@@ -1,0 +1,98 @@
+Metadata-Version: 1.1
+Name: myks-contact
+Version: 1.1
+Summary: Simple contact form
+Home-page: https://github.com/aaugustin/myks-contact
+Author: Aymeric Augustin
+Author-email: aymeric.augustin@m4x.org
+License: BSD
+Download-URL: http://pypi.python.org/pypi/myks-contact
+Description: Goals
+        =====
+        
+        `myks-contact`_ is a simple contact form. It's adequate for a personal home
+        page. It features a basic CAPTCHA_.
+        
+        .. _myks-contact: https://github.com/aaugustin/myks-contact
+        .. _CAPTCHA: http://en.wikipedia.org/wiki/Captcha
+        
+        Setup
+        =====
+        
+        myks-contact is a pluggable Django application. It works with Python >= 2.7 and
+        Django >= 1.8.
+        
+        1.  Download and install the package from PyPI::
+        
+                $ pip install myks-contact
+        
+        2.  Add ``contact`` to ``INSTALLED_APPS``::
+        
+                INSTALLED_APPS += 'contact',
+        
+            This allows Django to discover the built-in templates and translations.
+        
+        3. Define the list of recipients in the ``CONTACT_EMAILS`` setting::
+        
+                CONTACT_EMAILS = ['you@example.com']
+        
+        4.  Add the application to your URLconf with the ``contact`` application
+            namespace::
+        
+                urlpatterns += [
+                    url(r'^contact/', include('contact.urls', namespace='contact', app_name='contact')),
+                ]
+        
+        To use the built-in templates, your project's ``base.html`` template must
+        provide three blocks: ``title``, ``extrahead`` and ``content``, as shown in
+        this `example`_, and you must be using the staticfiles contrib app.
+        
+        If these conditions are inconvenient, you can override the
+        ``contact/form.html`` and ``contact/thanks.html`` templates.
+        
+        .. _example: https://github.com/aaugustin/myks-contact/blob/master/contact/tests/templates/base.html
+        
+        Changelog
+        =========
+        
+        1.1
+        ---
+        
+        * Update for Django 1.8 and later.
+        
+        1.0
+        ---
+        
+        * Stable release.
+        
+        0.3
+        ---
+        
+        * Refactored tests for Django 1.6.
+        
+        0.2
+        ---
+        
+        * Bundled stylesheet.
+        
+        0.1
+        ---
+        
+        * Initial public release, extracted from my private repository.
+        * Switched the implementation to class-based generic views.
+        * Added documentation (README file).
+        
+Platform: all
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: Environment :: Web Environment
+Classifier: Framework :: Django
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: BSD License
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 2
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.2
+Classifier: Programming Language :: Python :: 3.3
+Classifier: Programming Language :: Python :: 3.4
