@@ -1,0 +1,25 @@
+from setuptools import setup, find_packages
+
+
+requirements = ['pycrypto>=2.6.1']
+
+
+setup(
+    name="ziggeo",
+    version="1.6",
+    description="Ziggeo SDK for python",
+    long_description="Ziggeo API (http://ziggeo.com) allows you to integrate video recording and playback with only two lines of code in your site, service or app. This is the Python Server SDK repository.",
+    url="http://github.com/Ziggeo/ZiggeoPythonSdk",
+    license="Apache 2.0",
+    classifiers=[
+        "Intended Audience :: Developers",
+        "License :: OSI Approved :: Apache Software License",
+        "Programming Language :: Python :: 2.7",
+    ],
+    keywords=("Ziggeo video-upload"),
+    packages=["."],
+    package_dir={'ziggeo': '.'},
+    install_requires=requirements,
+    author="Ziggeo",
+    author_email="support@ziggeo.com"
+)
