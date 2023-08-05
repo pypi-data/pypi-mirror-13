@@ -1,0 +1,92 @@
+Metadata-Version: 1.1
+Name: sqoopy
+Version: 0.0.8.5
+Summary: UNKNOWN
+Home-page: http://github.com/voxmedia/sqoopy
+Author: Brian Abelson
+Author-email: brian.abelson@voxmedia.com
+License: MIT
+Description: sqoopy
+        ======
+        
+        Python CLI to generate custom [sqoop](http://sqoop.apache.org/) import statements. 
+        Modified from [https://github.com/wikimedia/sqoopy/](https://github.com/wikimedia/sqoopy/).
+        
+        
+        ## Installation
+        
+        You can install `sqoopy` via `pip`:
+        
+        ```bash
+        $ pip install sqoopy
+        ```
+        
+        ## Usage 
+        
+        `sqoopy` will generate custom [sqoop](http://sqoop.apache.org/) import statements given a few simple options:
+        
+        ```bash
+        usage: sqoopy [-h] [-c CONNECT] [-d TARGET_DIR] [-t TABLES] [-x EXCL_TABLES]
+                      [--generate] [--pool-size POOL_SIZE]
+                      [--max-pool-maps MAX_POOL_MAPS] [--min-mbs MIN_MBS]
+                      [--max-mbs MAX_MBS]
+        
+        Python CLI to generate custom sqoop import statements.
+        
+        optional arguments:
+          -h, --help            show this help message and exit
+          -c CONNECT, --connect CONNECT
+                                A jdbc connection string.
+          -d TARGET_DIR, --target-dir TARGET_DIR
+                                The directory to send output to. If sending to s3, use
+                                "{table}" to insert the table name into the directory.
+                                EG: s3://my-bucket/{table}/
+          -t TABLES, --tables TABLES
+                                (Optional) comma-separated list of tables that need to
+                                be inspected. If not supplied, all tables will be
+                                imported.
+          -x EXCL_TABLES, --excl-tables EXCL_TABLES
+                                (Optional) comma-separated list of tables to exclude.
+                                If not supplied and --tables not specified, all tables
+                                will be imported.
+          --generate            Just generate the sqoop commands and print them to the
+                                console.
+          --pool-size POOL_SIZE
+                                The number of commands to execute concurrently
+          --max-pool-maps MAX_POOL_MAPS
+                                The number of mappers at which the import of a table
+                                will occur serially, after all other pooled imports
+                                are complete
+          --min-mbs MIN_MBS     The minimim chunk size (in MBs). Used to determine the
+                                number of mappers needed for a given table
+          --max-mbs MAX_MBS     The maximum chunk size (in MBs). Used to determine the
+                                number of mappers needed for a given table
+        ```
+        
+        You can also passthrough any other `sqoop import` arguments:
+        
+        ```bash
+        $ sqoopy --connect=sqlite:///tests/test.db --target-dir=s3://foo-bar/{table} --tables=test --split-by id --num-mappers 4
+        ```
+        
+        This will output:
+        
+        ```
+        sqoop import --connect=sqlite:///tests/test.db --table=test --target-dir=s3://foo-bar/test/ --split-by id --num-mappers 4
+        ```
+        
+        ## Tests
+        
+        You can run tests by first installing `nose`:
+        
+        ```
+        $ pip install nose
+        $ nosetests
+        ```
+Keywords: sqoop,mysql,import,hadoop
+Platform: UNKNOWN
+Classifier: Development Status :: 3 - Alpha
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python
