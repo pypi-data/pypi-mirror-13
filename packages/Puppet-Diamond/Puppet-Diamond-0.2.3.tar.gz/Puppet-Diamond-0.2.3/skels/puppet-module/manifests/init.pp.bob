@@ -1,0 +1,25 @@
+class {{{ module }}}($some_flag="") {
+
+    Package['libfreetype6-dev'] ->
+        File["$name.conf"] ->
+        File["simple.conf"]
+
+    ensure_packages(['libfreetype6-dev'])
+
+    file {
+        "$name.conf":
+            path => "/etc/$name.conf",
+            ensure => file,
+            owner => "root",
+    		group => "root",
+            mode => 400,
+            content => template("$name/default.conf.erb");
+        "simple.conf":
+            path => "/etc/simple.conf",
+            ensure => file,
+        	owner => "root",
+    		group => "root",
+            mode => 400,
+            source => "puppet:///modules/$name/simple.conf";
+        }
+}
