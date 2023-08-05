@@ -1,0 +1,36 @@
+!Pipeline
+nodes:
+  INPUT: !Node
+    importance: normal
+    input_ports: {}
+    output_ports:
+      dataset: ${input_dataset}
+      document_text: ${input_document_text}
+    type: I/O
+  OUTPUT: !Node
+    importance: normal
+    input_ports:
+      document_to_dataset: ${output_document_to_dataset}
+    output_ports: {}
+    type: I/O
+  consumer: !Node
+    importance: normal
+    input_ports:
+      data: ${output_document_to_dataset}
+    output_ports: {}
+    type: JavaAction
+  referenceextraction_dataset: !Node
+    importance: normal
+    input_ports:
+      dataset: ${input_dataset}
+      document_text: ${input_document_text}
+    output_ports:
+      document_to_dataset: ${output_document_to_dataset}
+    type: SubworkflowAction
+  skip-referenceextraction_dataset: !Node
+    importance: lowest
+    input_ports: {}
+    output_ports:
+      referenceextraction_dataset: ${output_document_to_dataset}
+    type: JavaAction
+
