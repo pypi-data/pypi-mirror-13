@@ -1,0 +1,100 @@
+Metadata-Version: 1.1
+Name: mailsend
+Version: 0.1.1
+Summary: Fork of tinysmtp with bug fixes and python 3 compatibility
+Home-page: https://bitbucket.org/ollyc/mailsend
+Author: Oliver Cope
+Author-email: oliver@redgecko.org
+License: BSD
+Description: ========
+        mailsend
+        ========
+        
+        This is a fork of
+        `Rick Harris's tinysmtp package <http://github.com/rconradharris/tinysmtp>`_
+        with a few fixes and Python 3 compatibility.
+        
+        Example::
+        
+            with Mail().connect() as mail:
+                msg = Message(
+                    'alice@example.com', 'Subject', ['bob@example.com'], body='body')
+                mail.send(msg)
+        
+        
+        Connections may be configured from a URL specified in an environment variable::
+        
+          export MAILSEND_URL="smtp+tls://user:password@server.example.org/"
+        
+        
+        Or as individual variables::
+        
+          export MAILSEND_HOSTNAME=server.example.org
+          export MAILSEND_PORT=25
+        
+        
+        Or in code::
+        
+            mail = Mail('smtp://server.example.org/')
+            mail2 = Mail('server.example.org',
+                         port=25,
+                         ssl=True,
+                         username='x',
+                         password='x')
+        
+        
+        Call ``mail.send`` to send a message::
+        
+            mail = Mail('smtp://server.example.org/')
+            mail.send(sender='alice@example.com',
+                      recipients=['bob@example.com', 'charlie@example.com'],
+                      body='Hello everyone!',
+                      html='<p>Hello everyone!</p>',
+                      subject='Hello')
+        
+        Or use the message class to construct messages piecemeal::
+        
+            msg = Message('alice@example.com', 'Hello!')
+            msg.body = 'Hello'
+            msg.recipients = ['bob@example.com']
+            msg.cc = ['charlie@example.org']
+            msg.bcc = ['dina@example.org']
+        
+            mail = Mail('smtp://server.example.org/')
+            mail.send(msg)
+        
+        To send multiple messages in a single connection, use ``Mail.connect``::
+        
+            with mail.connect() as conn:
+                conn.send(msg1)
+                conn.send(msg2)
+        
+        
+        0.1.1 (released 2015-12-21)
+        ---------------------------
+        
+        - Fixes for compatibility with envparse-0.2
+        
+        0.1 (released 2015-12-19)
+        -------------------------
+        
+        - Forked from https://github.com/rconradharris/tinysmtp
+        - Added configuration via URL (eg ``Connection('smtp://user@example.org')``)
+        - Various bug fixes
+        - Added ``rewrite_to`` argument to Mail class constructor method. This causes
+          all messages to be rewritten to the given address(es), and is
+          expected to be used for development/testing.
+        - Added ``bcc`` argument to Mail class constructor method. This causes
+          all messages to be bcc'd to the given address(es).
+        - Added ``suppress_send`` argument to the Mail class constructor. This
+          causes messages to not be sent (but may be still accessed via
+          ``Mail.subscribe``)
+        
+Platform: any
+Classifier: Environment :: Web Environment
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: BSD License
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python
+Classifier: Topic :: Internet :: WWW/HTTP :: Dynamic Content
+Classifier: Topic :: Software Development :: Libraries :: Python Modules
