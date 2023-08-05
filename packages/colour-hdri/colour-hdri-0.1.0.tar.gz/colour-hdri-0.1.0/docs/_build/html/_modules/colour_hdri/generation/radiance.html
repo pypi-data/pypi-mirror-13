@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>colour_hdri.generation.radiance &mdash; Colour - HDRI 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/bootswatch-3.3.4/colour/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/styles.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="../../../_static/js/jquery-1.11.0.min.js"></script>
+    <script type="text/javascript" src="../../../_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="../../../_static/bootstrap-3.3.4/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../../../_static/bootstrap-sphinx.js"></script>
+    <link rel="top" title="Colour - HDRI 0.1.0 documentation" href="../../../index.html" />
+    <link rel="up" title="colour_hdri.generation" href="../generation.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  </head>
+  <body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../../index.html">
+          Colour - HDRI&nbsp;0.1</a>
+        <!--<span class="navbar-text navbar-version pull-left"><b>0.1</b></span>-->
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            <li class="divider-vertical"></li>
+            
+                <li><a href="http://colour-science.org">colour-science.org</a></li>
+            
+              <li class="dropdown">
+                  <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-life-ring">&nbsp;Documentation</i><b class="caret"></b></a>
+                  <ul class="dropdown-menu">
+                      <li>
+                          <a href="api.html" class="fa fa-life-ring">&nbsp;API Reference</a>
+                      </li>
+                      <li>
+                          <a href="http://nbviewer.ipython.org/github/colour-science/colour-ipython/blob/master/notebooks/colour.ipynb', True)" class="fa fa-book">&nbsp;IPython Notebooks</a>
+                      </li>
+                      <li>
+                          <a href="http://colour-science.org/features.php" class="fa fa-lightbulb-o">&nbsp;Features</a>
+                      </li>
+                      <li>
+                          <a href="http://colour-science.org/contributing.php"><span class="fa fa-gears">&nbsp;Contributing</span></a>
+                      </li>
+                  </ul>
+              </li>
+            
+              
+                
+              
+            
+            
+            
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-12">
+      
+  <h1>Source code for colour_hdri.generation.radiance</h1><div class="highlight"><pre>
+<span class="c">#!/usr/bin/env python</span>
+<span class="c"># -*- coding: utf-8 -*-</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">HDRI / Radiance Image Generation</span>
+<span class="sd">================================</span>
+
+<span class="sd">Defines HDRI / radiance image generation objects:</span>
+
+<span class="sd">-   :func:`image_stack_to_radiance_image`</span>
+
+<span class="sd">See Also</span>
+<span class="sd">--------</span>
+<span class="sd">`Colour - HDRI - Examples IPython Notebooks</span>
+<span class="sd">&lt;https://github.com/colour-science/colour-hdri/tree/master/colour_hdri/examples&gt;`_  # noqa</span>
+
+<span class="sd">References</span>
+<span class="sd">----------</span>
+<span class="sd">.. [1]  Banterle, F., Artusi, A., Debattista, K., &amp; Chalmers, A. (2011). 2.1.1</span>
+<span class="sd">        Generating HDR Content by Combining Multiple Exposures. Advanced High</span>
+<span class="sd">        Dynamic Range Imaging. A K Peters/CRC Press. ISBN:978-1568817194</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">division</span><span class="p">,</span> <span class="n">unicode_literals</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">colour</span> <span class="kn">import</span> <span class="n">tsplit</span><span class="p">,</span> <span class="n">tstack</span>
+
+<span class="kn">from</span> <span class="nn">colour_hdri.generation</span> <span class="kn">import</span> <span class="n">weighting_function_Debevec1997</span>
+<span class="kn">from</span> <span class="nn">colour_hdri.utilities</span> <span class="kn">import</span> <span class="n">average_luminance</span>
+
+<span class="n">__author__</span> <span class="o">=</span> <span class="s">&#39;Colour Developers&#39;</span>
+<span class="n">__copyright__</span> <span class="o">=</span> <span class="s">&#39;Copyright (C) 2015 - Colour Developers&#39;</span>
+<span class="n">__license__</span> <span class="o">=</span> <span class="s">&#39;New BSD License - http://opensource.org/licenses/BSD-3-Clause&#39;</span>
+<span class="n">__maintainer__</span> <span class="o">=</span> <span class="s">&#39;Colour Developers&#39;</span>
+<span class="n">__email__</span> <span class="o">=</span> <span class="s">&#39;colour-science@googlegroups.com&#39;</span>
+<span class="n">__status__</span> <span class="o">=</span> <span class="s">&#39;Production&#39;</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;image_stack_to_radiance_image&#39;</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="image_stack_to_radiance_image"><a class="viewcode-back" href="../../../colour_hdri.generation.radiance.html#colour_hdri.generation.radiance.image_stack_to_radiance_image">[docs]</a><span class="k">def</span> <span class="nf">image_stack_to_radiance_image</span><span class="p">(</span><span class="n">image_stack</span><span class="p">,</span>
+                                  <span class="n">weighting_function</span><span class="o">=</span><span class="n">weighting_function_Debevec1997</span><span class="p">,</span>
+                                  <span class="n">weighting_average</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                                  <span class="n">camera_response_functions</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generates a HDRI / radiance image from given image stack.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    image_stack : ImageStack</span>
+<span class="sd">        Stack of single channel or multi-channel floating point images. The</span>
+<span class="sd">        stack is assumed to be representing linear values except if</span>
+<span class="sd">        ``camera_response_functions`` argument is provided.</span>
+<span class="sd">    weighting_function : callable, optional</span>
+<span class="sd">        Weighting function :math:`w`.</span>
+<span class="sd">    weighting_average : bool, optional</span>
+<span class="sd">         Enables weighting function :math:`w` computation on channels average</span>
+<span class="sd">         instead of on a per channel basis.</span>
+<span class="sd">    camera_response_functions : array_like, optional</span>
+<span class="sd">        Camera response functions :math:`g(z)` of the imaging system / camera</span>
+<span class="sd">        if the stack is representing non linear values.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    ndarray</span>
+<span class="sd">        Radiance image.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">image_c</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="n">weight_c</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="k">for</span> <span class="n">image</span> <span class="ow">in</span> <span class="n">image_stack</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">image_c</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">image_c</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+            <span class="n">weight_c</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+
+        <span class="n">L</span> <span class="o">=</span> <span class="n">average_luminance</span><span class="p">(</span>
+            <span class="n">image</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">f_number</span><span class="p">,</span>
+            <span class="n">image</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">exposure_time</span><span class="p">,</span>
+            <span class="n">image</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">iso</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">weighting_average</span> <span class="ow">and</span> <span class="n">image</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="n">weight</span> <span class="o">=</span> <span class="n">weighting_function</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">average</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">))</span>
+            <span class="n">weight</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">rollaxis</span><span class="p">(</span><span class="n">weight</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">],</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">weight</span> <span class="o">=</span> <span class="n">weighting_function</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+
+        <span class="n">image_data</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">data</span>
+        <span class="k">if</span> <span class="n">camera_response_functions</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">samples</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">camera_response_functions</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+            <span class="n">R</span><span class="p">,</span> <span class="n">G</span><span class="p">,</span> <span class="n">B</span> <span class="o">=</span> <span class="n">tsplit</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+            <span class="n">R</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">R</span><span class="p">,</span> <span class="n">samples</span><span class="p">,</span> <span class="n">camera_response_functions</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+            <span class="n">G</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">samples</span><span class="p">,</span> <span class="n">camera_response_functions</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+            <span class="n">B</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="n">samples</span><span class="p">,</span> <span class="n">camera_response_functions</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
+            <span class="n">image_data</span> <span class="o">=</span> <span class="n">tstack</span><span class="p">((</span><span class="n">R</span><span class="p">,</span> <span class="n">G</span><span class="p">,</span> <span class="n">B</span><span class="p">))</span>
+
+        <span class="n">image_c</span> <span class="o">+=</span> <span class="n">weight</span> <span class="o">*</span> <span class="n">image_data</span> <span class="o">/</span> <span class="n">L</span>
+        <span class="n">weight_c</span> <span class="o">+=</span> <span class="n">weight</span>
+
+    <span class="k">if</span> <span class="n">image_c</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">image_c</span> <span class="o">/=</span> <span class="n">weight_c</span>
+        <span class="n">image_c</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">image_c</span><span class="p">)]</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">return</span> <span class="n">image_c</span></div>
+</pre></div>
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2015, Colour Developers.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

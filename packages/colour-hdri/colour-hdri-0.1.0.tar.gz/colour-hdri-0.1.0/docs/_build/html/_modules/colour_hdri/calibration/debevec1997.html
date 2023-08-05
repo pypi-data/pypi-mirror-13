@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>colour_hdri.calibration.debevec1997 &mdash; Colour - HDRI 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/bootswatch-3.3.4/colour/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/styles.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="../../../_static/js/jquery-1.11.0.min.js"></script>
+    <script type="text/javascript" src="../../../_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="../../../_static/bootstrap-3.3.4/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../../../_static/bootstrap-sphinx.js"></script>
+    <link rel="top" title="Colour - HDRI 0.1.0 documentation" href="../../../index.html" />
+    <link rel="up" title="colour_hdri.calibration" href="../calibration.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  </head>
+  <body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../../index.html">
+          Colour - HDRI&nbsp;0.1</a>
+        <!--<span class="navbar-text navbar-version pull-left"><b>0.1</b></span>-->
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            <li class="divider-vertical"></li>
+            
+                <li><a href="http://colour-science.org">colour-science.org</a></li>
+            
+              <li class="dropdown">
+                  <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-life-ring">&nbsp;Documentation</i><b class="caret"></b></a>
+                  <ul class="dropdown-menu">
+                      <li>
+                          <a href="api.html" class="fa fa-life-ring">&nbsp;API Reference</a>
+                      </li>
+                      <li>
+                          <a href="http://nbviewer.ipython.org/github/colour-science/colour-ipython/blob/master/notebooks/colour.ipynb', True)" class="fa fa-book">&nbsp;IPython Notebooks</a>
+                      </li>
+                      <li>
+                          <a href="http://colour-science.org/features.php" class="fa fa-lightbulb-o">&nbsp;Features</a>
+                      </li>
+                      <li>
+                          <a href="http://colour-science.org/contributing.php"><span class="fa fa-gears">&nbsp;Contributing</span></a>
+                      </li>
+                  </ul>
+              </li>
+            
+              
+                
+              
+            
+            
+            
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-12">
+      
+  <h1>Source code for colour_hdri.calibration.debevec1997</h1><div class="highlight"><pre>
+<span class="c">#!/usr/bin/env python</span>
+<span class="c"># -*- coding: utf-8 -*-</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Debevec (1997) Camera Response Function Computation</span>
+<span class="sd">===================================================</span>
+
+<span class="sd">Defines Debevec (1997) camera responses computation objects:</span>
+
+<span class="sd">-   :func:`g_solve`</span>
+<span class="sd">-   :func:`camera_response_functions_Debevec1997`</span>
+
+<span class="sd">See Also</span>
+<span class="sd">--------</span>
+<span class="sd">`Colour - HDRI - Example: Merge from Low Dynamic Range Files IPython Notebook</span>
+<span class="sd">&lt;https://github.com/colour-science/colour-hdri/blob/master/colour_hdri/examples/examples_merge_from_ldr_files.ipynb&gt;`_  # noqa</span>
+
+<span class="sd">References</span>
+<span class="sd">----------</span>
+<span class="sd">.. [1]  Debevec, P., &amp; Malik, J. (1997). Recovering High Dynamic Range Radiance</span>
+<span class="sd">        Maps from Photographs, (August), 1–10. doi:10.1145/258734.258884</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">division</span><span class="p">,</span> <span class="n">unicode_literals</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">colour</span> <span class="kn">import</span> <span class="n">tstack</span>
+
+<span class="kn">from</span> <span class="nn">colour_hdri.generation</span> <span class="kn">import</span> <span class="n">weighting_function_Debevec1997</span>
+<span class="kn">from</span> <span class="nn">colour_hdri.sampling</span> <span class="kn">import</span> <span class="n">samples_Grossberg2003</span>
+<span class="kn">from</span> <span class="nn">colour_hdri.utilities</span> <span class="kn">import</span> <span class="n">average_luminance</span>
+
+<span class="n">__author__</span> <span class="o">=</span> <span class="s">&#39;Colour Developers&#39;</span>
+<span class="n">__copyright__</span> <span class="o">=</span> <span class="s">&#39;Copyright (C) 2015 - Colour Developers&#39;</span>
+<span class="n">__license__</span> <span class="o">=</span> <span class="s">&#39;New BSD License - http://opensource.org/licenses/BSD-3-Clause&#39;</span>
+<span class="n">__maintainer__</span> <span class="o">=</span> <span class="s">&#39;Colour Developers&#39;</span>
+<span class="n">__email__</span> <span class="o">=</span> <span class="s">&#39;colour-science@googlegroups.com&#39;</span>
+<span class="n">__status__</span> <span class="o">=</span> <span class="s">&#39;Production&#39;</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;g_solve&#39;</span><span class="p">,</span>
+           <span class="s">&#39;camera_response_functions_Debevec1997&#39;</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="g_solve"><a class="viewcode-back" href="../../../colour_hdri.calibration.debevec1997.html#colour_hdri.calibration.debevec1997.g_solve">[docs]</a><span class="k">def</span> <span class="nf">g_solve</span><span class="p">(</span><span class="n">Z</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">l</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">w</span><span class="o">=</span><span class="n">weighting_function_Debevec1997</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">256</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Given a set of pixel values observed for several pixels in several images</span>
+<span class="sd">    with different exposure times, this function returns the imaging system’s</span>
+<span class="sd">    response function :math:`g` as well as the log film irradiance values</span>
+<span class="sd">    :math:`lE` for the observed pixels.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    Z : array_like</span>
+<span class="sd">        Set of pixel values observed for several pixels in several images.</span>
+<span class="sd">    B : array_like</span>
+<span class="sd">        Log :math:`\Delta t`, or log shutter speed for images.</span>
+<span class="sd">    l : numeric, optional</span>
+<span class="sd">        :math:`\lambda` smoothing term.</span>
+<span class="sd">    w : callable, optional</span>
+<span class="sd">        Weighting function :math:`w`.</span>
+<span class="sd">    n : int, optional</span>
+<span class="sd">        :math:`n` constant.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    tuple</span>
+<span class="sd">        Camera response functions :math:`g(z)` and log film irradiance values</span>
+<span class="sd">        :math:`lE`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">Z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">Z</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+    <span class="n">B</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">B</span><span class="p">)</span>
+    <span class="n">l</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">l</span><span class="p">)</span>
+
+    <span class="n">Z_x</span><span class="p">,</span> <span class="n">Z_y</span> <span class="o">=</span> <span class="n">Z</span><span class="o">.</span><span class="n">shape</span>
+
+    <span class="n">A</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">Z_x</span> <span class="o">*</span> <span class="n">Z_y</span> <span class="o">+</span> <span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">n</span> <span class="o">+</span> <span class="n">Z_x</span><span class="p">))</span>
+    <span class="n">b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">A</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">1</span><span class="p">))</span>
+    <span class="n">w</span> <span class="o">=</span> <span class="n">w</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">n</span><span class="p">))</span>
+
+    <span class="n">k</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">Z_x</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">Z_y</span><span class="p">):</span>
+            <span class="n">Z_c</span> <span class="o">=</span> <span class="n">Z</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span>
+            <span class="n">w_ij</span> <span class="o">=</span> <span class="n">w</span><span class="p">[</span><span class="n">Z_c</span><span class="p">]</span>
+            <span class="n">A</span><span class="p">[</span><span class="n">k</span><span class="p">,</span> <span class="n">Z_c</span><span class="p">]</span> <span class="o">=</span> <span class="n">w_ij</span>
+            <span class="n">A</span><span class="p">[</span><span class="n">k</span><span class="p">,</span> <span class="n">n</span> <span class="o">+</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">w_ij</span>
+            <span class="n">b</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">w_ij</span> <span class="o">*</span> <span class="n">B</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
+            <span class="n">k</span> <span class="o">+=</span> <span class="mi">1</span>
+
+    <span class="n">A</span><span class="p">[</span><span class="n">k</span><span class="p">,</span> <span class="n">n</span> <span class="o">/</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">k</span> <span class="o">+=</span> <span class="mi">1</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="n">A</span><span class="p">[</span><span class="n">k</span><span class="p">,</span> <span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">l</span> <span class="o">*</span> <span class="n">w</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="n">A</span><span class="p">[</span><span class="n">k</span><span class="p">,</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">l</span> <span class="o">*</span> <span class="n">w</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">*</span> <span class="o">-</span><span class="mi">2</span>
+        <span class="n">A</span><span class="p">[</span><span class="n">k</span><span class="p">,</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">l</span> <span class="o">*</span> <span class="n">w</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="n">k</span> <span class="o">+=</span> <span class="mi">1</span>
+
+    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">lstsq</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
+
+    <span class="n">g</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">n</span><span class="p">]</span>
+    <span class="n">lE</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="n">n</span><span class="p">:</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+
+    <span class="k">return</span> <span class="n">g</span><span class="p">,</span> <span class="n">lE</span>
+
+</div>
+<div class="viewcode-block" id="camera_response_functions_Debevec1997"><a class="viewcode-back" href="../../../colour_hdri.calibration.debevec1997.html#colour_hdri.calibration.debevec1997.camera_response_functions_Debevec1997">[docs]</a><span class="k">def</span> <span class="nf">camera_response_functions_Debevec1997</span><span class="p">(</span><span class="n">image_stack</span><span class="p">,</span>
+                                          <span class="n">s</span><span class="o">=</span><span class="n">samples_Grossberg2003</span><span class="p">,</span>
+                                          <span class="n">samples</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
+                                          <span class="n">l</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span>
+                                          <span class="n">w</span><span class="o">=</span><span class="n">weighting_function_Debevec1997</span><span class="p">,</span>
+                                          <span class="n">n</span><span class="o">=</span><span class="mi">256</span><span class="p">,</span>
+                                          <span class="n">normalise</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Returns the camera response functions for given image stack using Debevec</span>
+<span class="sd">    (1997) method.</span>
+
+<span class="sd">    Image channels are sampled with :math:`s` sampling function and the output</span>
+<span class="sd">    samples are passed to :func:`g_solve`.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    image_stack : ImageStack</span>
+<span class="sd">        Stack of single channel or multi-channel floating point images.</span>
+<span class="sd">    s : callable, optional</span>
+<span class="sd">        Sampling function :math:`s`.</span>
+<span class="sd">    samples : int, optional</span>
+<span class="sd">        Samples count per images.</span>
+<span class="sd">    l : numeric, optional</span>
+<span class="sd">        :math:`\lambda` smoothing term.</span>
+<span class="sd">    w : callable, optional</span>
+<span class="sd">        Weighting function :math:`w`.</span>
+<span class="sd">    n : int, optional</span>
+<span class="sd">        :math:`n` constant.</span>
+<span class="sd">    normalise : bool, optional</span>
+<span class="sd">        Enables the camera response functions normalisation. Uncertain camera</span>
+<span class="sd">        response functions values resulting from :math:`w` function are</span>
+<span class="sd">        set to zero.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    ndarray</span>
+<span class="sd">        Camera response functions :math:`g(z)`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">samples</span> <span class="o">=</span> <span class="n">s</span><span class="p">(</span><span class="n">image_stack</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">samples</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
+
+    <span class="n">L_l</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">average_luminance</span><span class="p">(</span><span class="n">image_stack</span><span class="o">.</span><span class="n">f_number</span><span class="p">,</span>
+                                   <span class="n">image_stack</span><span class="o">.</span><span class="n">exposure_time</span><span class="p">,</span>
+                                   <span class="n">image_stack</span><span class="o">.</span><span class="n">iso</span><span class="p">))</span>
+
+    <span class="n">crfs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">tstack</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">g_solve</span><span class="p">(</span><span class="n">samples</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">x</span><span class="p">],</span> <span class="n">L_l</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">n</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+                                   <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">samples</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])])))</span>
+
+    <span class="k">if</span> <span class="n">normalise</span><span class="p">:</span>
+        <span class="c"># TODO: Investigate if the normalisation value should account for the</span>
+        <span class="c"># percentage of uncertain camera response functions values or be</span>
+        <span class="c"># correlated to it and scaled accordingly. As an alternative of setting</span>
+        <span class="c"># the uncertain camera response functions values to zero, it would be</span>
+        <span class="c"># interesting to explore extrapolation as the camera response functions</span>
+        <span class="c"># are essentially smooth. It is important to note that camera sensors</span>
+        <span class="c"># are usually acting non linearly when reaching saturation level.</span>
+        <span class="n">crfs</span><span class="p">[</span><span class="n">w</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">crfs</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span> <span class="o">==</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">crfs</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">crfs</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">crfs</span></div>
+</pre></div>
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2015, Colour Developers.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>
