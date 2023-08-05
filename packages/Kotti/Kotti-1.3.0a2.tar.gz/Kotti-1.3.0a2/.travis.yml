@@ -1,0 +1,33 @@
+language: python
+sudo: false
+cache:
+  directories:
+    - $HOME/.cache/pip
+    - $HOME/.pip-accel
+before_cache:
+  - rm -f $HOME/.cache/pip/log/debug.log
+python:
+  - "2.6"
+  - "2.7"
+env:
+  - KOTTI_TEST_DB_STRING=postgresql://postgres@localhost:5432/kotti_testing
+  - KOTTI_TEST_DB_STRING=mysql+oursql://root@localhost:3306/kotti_testing
+  - KOTTI_TEST_DB_STRING=sqlite://
+install:
+  - travis_retry pip install --cache-dir $HOME/.cache/pip -U pip setuptools pip-accel
+  - travis_retry pip-accel install psycopg2 oursql python-coveralls codecov
+  - travis_retry pip-accel install -e . -r requirements.txt
+  - pip uninstall -y Kotti
+  - python setup.py develop
+  - python setup.py dev
+before_script:
+  - psql -c 'create database kotti_testing;' -U postgres
+  - mysql -e 'create database kotti_testing;'
+script:
+  - py.test --runslow --tb=native --cov=kotti --cov-report=term-missing
+after_success:
+  - coveralls
+  - codecov
+notifications:
+  irc: "irc.freenode.org#kotti"
+  email: false
