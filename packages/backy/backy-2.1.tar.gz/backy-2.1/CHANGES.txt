@@ -1,0 +1,99 @@
+=========
+Changelog
+=========
+
+2.1 (2016-01-08)
+================
+
+- Add optional regex filter to the `jobs` command in the telnet shell.
+
+- Provide list of failed jobs in check output, not only the total number.
+
+- Add `status-interval`, `telnet-addrs`, and `telnet-port` configuration
+  options.
+
+- Automatically recover from missing/damaged last or last.rev symlinks (#19532).
+
+- Use `{BASE_DIR}/.lock` as daemon lock file instead of the status file.
+
+- Usability improvements: count jobs, more informative log output.
+
+- Support restoring to block special files like LVM volumes (#31).
+
+
+2.0 (2015-11-06)
+================
+
+- backy now accepts a `-l` option to specify a log file. If no such option is
+  given, it logs to stdout.
+
+- Add `backy find -r REVISION` subcommand to query image paths from shell scripts.
+
+- Fix monitoring bug where partially written images made the check go green
+  (#30).
+
+- Greatly improve error handling and detection of failed jobs.
+
+- Performance improvement: turn off line buffering in bulk file operations
+  (#20).
+
+- The scheduler reports child failures (exit status > 0) now in the main log.
+
+- Fix fallocate() behaviour on 32 bit systems.
+
+- The `flyingcircus` source type now requires 3 arguments: vm, pool, image.
+
+
+2.0b3 (2015-10-02)
+==================
+
+- Improve telnet console.
+
+- Provide Nix build script.
+
+- Generate `requirements.txt` automatically from buildout's `versions.cfg`.
+
+
+2.0b2 (2015-09-15)
+==================
+
+- Introduce scheduler and rework the main backup command. The backy
+  command is now only responsible for dealing with individual backups.
+
+  It does no longer care about scheduling.
+
+  A new daemon and a central configuration file is responsible for that
+  now. However, it simply calls out to the existing backy command
+  so we can still manually interact with the system even if we do not
+  use the daemon.
+
+- Add consul integration for backing up Flying Circus root disk images
+  with clean snapshots (by asking fc.qemu to use fs-freeze before preparing
+  a Ceph snapshot).
+
+- Switch to shorter UUIDs. Existing files with old UUIDs are compatible.
+
+- Turn the configuration format into YAML. Old files are still compatible.
+  New configs will be generated as YAML.
+
+- Performance: defrag all new files automatically to avoid btrfs degrading
+  extent performance. It appears this doesn't completely duplicate all CoW
+  data. Will have to monitor this in the future.
+
+2.0b1 (2014-07-07)
+==================
+
+- Clean up docs.
+
+- Add classifiers in setup.py.
+
+- More or less complete rewrite expecting a copy-on-write filesystem as the
+  target.
+
+- Flexible backup scheduling using free-form tags.
+
+- Compatible with Python 3.2-3.4.
+
+- Initial open source import as provided by Daniel Kraft (D9T).
+
+.. vim: set ft=rst spell spelllang=en:
