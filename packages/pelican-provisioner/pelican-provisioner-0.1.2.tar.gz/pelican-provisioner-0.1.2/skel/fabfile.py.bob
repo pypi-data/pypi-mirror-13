@@ -1,0 +1,152 @@
+# -*- coding: utf-8 -*-
+# pelican-provisioner (c) 2014-2016 Ian Dennis Miller
+
+import os
+import fnmatch
+import subprocess
+import re
+import datetime
+from fabric.api import local
+import BaseHTTPServer
+from SimpleHTTPServer import SimpleHTTPRequestHandler
+
+
+template = """category: uncategorized
+date: {datestamp}
+title: {title}
+status: draft
+
+This is just a template.
+"""
+
+
+def new(title="untitled"):
+    "create a new article; fab new:'some title'"
+    now = datetime.datetime.now()
+    datestamp = "%d-%0.2d-%0.2d" % (now.year, now.month, now.day)
+    filename = "blog/content/posts/%s.md" % (title)
+    with open(filename, "w") as f:
+        f.write(template.format(datestamp=datestamp, title=title))
+
+
+def shell():
+    "open a shell on the remote system"
+    os.system("ssh idmiller_idm@ssh.phx.nearlyfreespeech.net")
+
+
+def pics(folder="content/assets"):
+    "recursively compress and strip images"
+
+    # http://stackoverflow.com/questions/2186525
+    def recursive_find(folder, ext):
+        matches = []
+        for root, dirnames, filenames in os.walk(folder):
+            for filename in fnmatch.filter(filenames, ext):
+                matches.append(os.path.join(root, filename))
+        return matches
+
+    local("find {0} -type f -print0 | xargs -0 chmod 644".format(folder))
+
+    magick_cmd = 'convert "{file}" {flags} "{file}"'
+    pngcrush_cmd = 'pngcrush "{file}" "{file}-crushed" && mv "{file}-crushed" "{file}"'
+
+    # process PNGs
+    for filename in recursive_find(folder, "*.png"):
+        local(pngcrush_cmd.format(file=filename))
+
+    # process JPEG files
+    for ext in ["*.jpeg", "*.jpg"]:
+        for filename in recursive_find(folder, ext):
+            info = subprocess.check_output(["identify", "-verbose", filename])
+            flags = ""
+
+            # determine if the image needs to be recompressed
+            m = re.search(r'Quality: (\d+)', info, re.MULTILINE)
+            if m:
+                quality = int(m.group(1))
+                if os.path.getsize(filename) > 100000 and quality > 40:
+                    flags += " -quality 40 "
+                elif os.path.getsize(filename) < 100000 and quality > 50:
+                    flags += " -quality 50 "
+
+            # does image need to be resized
+            m = re.search(r'Geometry: (\d+)x(\d+)\+0\+0', info, re.MULTILINE)
+            if m:
+                width = int(m.group(1))
+                height = int(m.group(2))
+
+                if height < width and (height > 480 or width > 640):
+                    flags += " -resize 640x480 "
+
+                if height > width and (width > 480 or height > 640):
+                    flags += " -resize 480x640 "
+
+            # does image EXIF need to be stripped
+            m = re.search(r'exif', info, re.MULTILINE)
+            if m:
+                flags += " -strip "
+
+            if flags != "":
+                local(magick_cmd.format(file=filename, flags=flags))
+
+    # for any files with _full on the end, for which there is not an accompanying _thumb, create one
+    for filename in recursive_find(folder, "*_full.png"):
+        # flags += " -resize 70x70 "
+        # local(magick_cmd.format(file=filename, flags=flags))
+        pass
+
+
+def qr():
+    "create a QR code for a URL"
+    url = "http://www.iandennismiller.com/pages/contact.html"
+    cmd = "qrencode -l H -t PNG -o {file} '{url}'"
+    local(cmd.format(file="content/assets/qr.png", url=url))
+
+
+def vcard():
+    "make vcard"
+    pass
+    #qrencode -l M -t PNG -o $(VCARD_PNG) < $(VCARD_VCF)
+    #mogrify -fill 'rgb(240,240,240)' -opaque white $(VCARD_PNG)
+
+
+def tidy():
+    "clean up output dir"
+    local("find blog/output/ -name '.DS_Store' -delete")
+
+    # delete specific files
+    file_list = [
+        "blog/output/archives.html",
+        "blog/output/authors.html",
+        "blog/output/categories.html",
+        "blog/output/tags.html",
+    ]
+    local("rm -f {0}".format(" ".join(file_list)))
+
+    # delete entire paths
+    dir_list = [
+        "blog/output/author",
+        "blog/output/drafts",
+        "blog/output/theme/.webassets-cache",
+        "blog/output/theme/css",
+        "blog/output/theme/js"
+    ]
+    local("rm -rf {0}".format(" ".join(dir_list)))
+
+
+def serve(port=8000, path="blog/output"):
+    # https://gist.github.com/gerjantd/3121258
+
+    HandlerClass = SimpleHTTPRequestHandler
+    ServerClass = BaseHTTPServer.HTTPServer
+    Protocol = "HTTP/1.0"
+    server_address = ('127.0.0.1', port)
+
+    os.chdir(path)
+
+    HandlerClass.protocol_version = Protocol
+    httpd = ServerClass(server_address, HandlerClass)
+
+    sa = httpd.socket.getsockname()
+    print "Serving HTTP on", sa[0], "port", sa[1], "..."
+    httpd.serve_forever()
