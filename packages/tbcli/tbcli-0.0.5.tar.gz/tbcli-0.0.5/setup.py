@@ -1,0 +1,67 @@
+#!/usr/bin/env python
+
+from __future__ import with_statement
+
+import sys
+
+from setuptools import setup, find_packages
+
+from fabric.version import get_version
+
+
+with open('README.rst') as f:
+    readme = f.read()
+
+long_description = """
+----
+
+%s
+
+----
+""" % (readme)
+
+if sys.version_info[:2] < (2, 6):
+    install_requires=['paramiko>=1.10,<1.13', 'ansible<=1.9.4']
+else:
+    install_requires=['paramiko>=1.10', 'ansible<=1.9.4']
+
+
+setup(
+    name='tbcli',
+    version=get_version('short'),
+    description='Based on Fabric, use ansible-like config files.',
+    long_description=long_description,
+    author='Lethe',
+    author_email='lethe30003000@gmail.com',
+    url='http://testbird.com',
+    packages=find_packages(),
+    test_suite='nose.collector',
+    tests_require=['nose', 'fudge<1.0', 'jinja2', 'ansible'],
+    install_requires=install_requires,
+    entry_points={
+        'console_scripts': [
+            'tbcli = fabric.main:main',
+        ]
+    },
+    classifiers=[
+          'Development Status :: 5 - Production/Stable',
+          'Environment :: Console',
+          'Intended Audience :: Developers',
+          'Intended Audience :: System Administrators',
+          'License :: OSI Approved :: BSD License',
+          'Operating System :: MacOS :: MacOS X',
+          'Operating System :: Unix',
+          'Operating System :: POSIX',
+          'Programming Language :: Python',
+          'Programming Language :: Python :: 2.5',
+          'Programming Language :: Python :: 2.6',
+          'Programming Language :: Python :: 2.7',
+          'Topic :: Software Development',
+          'Topic :: Software Development :: Build Tools',
+          'Topic :: Software Development :: Libraries',
+          'Topic :: Software Development :: Libraries :: Python Modules',
+          'Topic :: System :: Clustering',
+          'Topic :: System :: Software Distribution',
+          'Topic :: System :: Systems Administration',
+    ],
+)
