@@ -1,0 +1,36 @@
+#!/usr/bin/env python3
+"""Blackhole.
+
+Start a TCP server that will accept connections and then read and discard anything sent to it until it is stopped. Optionally can be run to echo any data received.
+
+Usage:
+  blackhole <host> <port> [--echo]
+
+Options:
+  -h --help     Show this screen.
+  --version     Show version.
+"""
+
+from docopt import docopt
+from tcp_blackhole import TcpBlackhole
+
+# Parse args from the docblock
+args = docopt(__doc__)
+
+# Repeat the arguments back to the user
+print("===== Blackhole =====")
+print('| Host:', args['<host>'])
+print('| Port:', args['<port>'])
+print("| Echo:", args['--echo'])
+print("=====================")
+
+# Start the blackhole server
+blackhole = TcpBlackhole(host=args['<host>'], port=args['<port>'], echo=args['--echo'])
+try:
+    blackhole.start()
+except KeyboardInterrupt as e:
+    print('\nKeyboard interrupt received. Shutting down. This might hang if there are'
+          ' active connections. Another CTRL-C may be required.')
+    exit(1)
+
+
