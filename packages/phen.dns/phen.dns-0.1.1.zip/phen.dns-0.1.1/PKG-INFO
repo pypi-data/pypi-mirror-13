@@ -1,0 +1,79 @@
+Metadata-Version: 1.1
+Name: phen.dns
+Version: 0.1.1
+Summary: Domain Name Server for Phen
+Home-page: https://phen.eu
+Author: Daniel Monteiro Basso
+Author-email: daniel@basso.inf.br
+License: AGPLv3+
+Description: DNS Plugin for Phen
+        ===================
+        
+        Simple DNS server for sites based on Phen, or for keeping track of
+        computers with dynamic IP addresses. Other plugins can use the internal
+        extension mechanism to add records, e.g. the mail plugin can add MX and
+        SPF records.
+        
+        Example configuration file ``/device-id/system/dns.jcfg``:
+        
+        ::
+        
+            {
+              "verbose": false,     # log requests (default false)
+              "http-path": "dns",   # for IP update through http(s) request (requires the
+                                    # http plugin to be loaded; default "", i.e. disabled)
+              # file that keeps the dynamic IP associations:
+              "dyn-state": "/path/to/state file",  # default /device-id/system/dns.state
+              "recursive": false,   # for non-authoritative servers (default false)
+              "zones": {
+                "phen.eu": [
+                  {
+                    "mname": "ns1.phen.eu",         # type SOA implied
+                    "rname": "contact.phen.eu",
+                    "serial": 201512150,            # if -1, makes a serial based on date
+                    "refresh": "20 min",
+                    "retry": "5 min",
+                    "expire": "14 days",
+                    "minimum": "5 min"
+                  },
+                  {"type": "A", "address": "78.47.100.138"},
+                  {"type": "AAAA", "address": "2a01:4f8:c17:1bff::2"},
+                  {"type": "NS", "name": "ns1.phen.eu"},
+                  {"subdomain": "ns1", "type": "A", "address": "78.47.100.138"},
+                  {"subdomain": "www", "type": "A", "address": "78.47.100.138"},
+                  {"subdomain": "opo",
+                   "type": "CNAME", "name": "some.dyndns.moo", "ttl": "5 min"},
+        
+                  {"subdomain": "cxs", "type": "A",
+                   # identity fingerprint to retrieve the IP address:
+                   "dynamic": "mlUDK5IPJYwAD0D6aINCAIbcc20QFqw4CHqwaUSJSIk",
+                   "ttl": 300},
+        
+                  {"subdomain": "poa", "type": "A",
+                   # sha256(my-secret-password) for updates through http:
+            "dynamic": ">a9c90c47c231afb31950169ccb89951337eb0689d31660e32c34835bb7018c0c",
+                   "ttl": 300}
+                ]
+              }
+            }
+        
+        Phen's shell has the ``sha256`` command that can be used to calculate
+        the value for the ``dynamic`` attribute. The to update the dynamic dns
+        entry, you can use a tool such as w3m or wget:
+        
+        ::
+        
+            wget "https://phen.eu/dns?pwd=my-secret-password&domain=poa.phen.eu&ip=4.3.2.1"
+        
+        If you are using a self-signed certificate, use the
+        ``--no-check-certificate`` option. You only have to inform the IP
+        address explicitly if it is different than the one from the originating
+        request.
+        
+Platform: UNKNOWN
+Classifier: Development Status :: 3 - Alpha
+Classifier: Intended Audience :: Developers
+Classifier: Topic :: Internet :: Name Service (DNS)
+Classifier: Framework :: Twisted
+Classifier: License :: OSI Approved :: GNU Affero General Public License v3 or later (AGPLv3+)
+Classifier: Programming Language :: Python :: 2
