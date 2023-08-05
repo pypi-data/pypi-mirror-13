@@ -1,0 +1,23 @@
+---
+name: lambda-cruddy
+environments:
+  dev:
+    profile: cloudnative-dev
+    region: us-west-2
+    policy:
+      resources:
+        - arn: arn:aws:dynamodb:us-west-2:860421987956:table/lambda-cruddy
+          actions:
+          - "*"
+        - arn: arn:aws:dynamodb:us-west-2:860421987956:table/lambda-cruddy/index/*
+          actions:
+          - "Query"
+        - arn: arn:aws:logs:*:*:*
+          actions:
+          - "*"
+lambda:
+  description: A sample Lambda CRUD handler
+  handler: lambda_cruddy.handler
+  runtime: python2.7
+  memory_size: 128
+  timeout: 3
