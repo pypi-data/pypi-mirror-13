@@ -1,0 +1,97 @@
+{% load staticfiles %}
+
+<script src="{% static 'js/leaflet.js' %}" /></script>
+<script type="text/javascript" src="http://maps.stamen.com/js/tile.stamen.js?v1.3.0"></script>
+
+<script>
+
+    var map = L.map('map', {
+        scrollWheelZoom: false,
+        center: {{MAP_CONFIG.center}},
+        zoom: {{MAP_CONFIG.zoom}}
+    });
+
+    var layer = new L.StamenTileLayer("toner-lite");
+    map.addLayer(layer);
+
+    var infoBox = L.control({'position': 'bottomleft'});
+
+    infoBox.onAdd = function() {
+        this._div = L.DomUtil.create('div', 'infobox');
+        this.update();
+        return this._div;
+    }
+
+    infoBox.update = function(properties){
+        if(properties){
+            var info = '<h4>' + properties.district + '</h4>';
+            info += '<p>' + properties.council_member + '</p>';
+            this._div.innerHTML = info;
+        }
+    }
+
+    infoBox.clear = function(){
+        this._div.innerHTML = '<h4>{{CITY_NAME_SHORT}} Council Districts</h4><p><i class="fa fa-hand-pointer-o fa-fw"></i>Hover for details</p>';
+    }
+
+    infoBox.addTo(map);
+    infoBox.clear();
+
+    var customOptions =
+        {
+        'className' : 'custom'
+        }
+    function onEachFeature(feature, layer) {
+        if (feature.properties) {
+
+            var center = layer.getBounds().getCenter();
+
+            if (map){
+                layer.layerPopup = L.popup(customOptions, layer)
+                                    .setLatLng(center)
+                                    .setContent(feature.properties.popupContent);
+
+                layer.on('click', function(e){
+                    window.location = feature.properties.detail_link
+                });
+
+                layer.on('mouseover', function(e){
+                    infoBox.update(e.target.feature.properties);
+                    e.target.setStyle({'fillOpacity': 0.6, 'color': "{{MAP_CONFIG.highlight_color}}"});
+                });
+
+                layer.on('mouseout', function(e){
+                    infoBox.clear();
+                    e.target.setStyle({'fillOpacity': 0.2, 'color': "{{MAP_CONFIG.color}}"});
+                })
+
+                layer.on('tableover', function(e){
+                    infoBox.update(e.target.feature.properties);
+                    e.target.setStyle({'fillOpacity': 0.6, 'color': "{{MAP_CONFIG.highlight_color}}"})
+                });
+
+                layer.on('tableout', function(e){
+                    infoBox.clear();
+                    map.closePopup(e.target.layerPopup);
+                    e.target.setStyle({'fillOpacity': 0.2, 'color': "{{MAP_CONFIG.color}}"});
+                });
+            }
+        }
+    }
+
+    var geojson = L.geoJson({{ map_geojson|safe }}, {
+        style: {
+                "color": "{{MAP_CONFIG.color}}",
+                "weight": 1,
+                "opacity": 1,
+                "fillOpacity": .2
+            },
+        onEachFeature: onEachFeature
+    });
+
+    $(function() {
+        geojson.addTo(map);
+        map.fitBounds(geojson.getBounds(), {padding: [50,50]});
+    });
+
+</script>
