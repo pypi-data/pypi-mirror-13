@@ -1,0 +1,38 @@
+<configure
+    xmlns="http://namespaces.zope.org/zope"
+    xmlns:browser="http://namespaces.zope.org/browser"
+    xmlns:plone="http://namespaces.plone.org/plone"
+    i18n_domain="collective.querynextprev">
+
+  <!-- Publish static files -->
+  <browser:resourceDirectory
+      name="collective.querynextprev"
+      directory="static"
+      />
+
+  <browser:viewlet
+      for="Products.CMFCore.interfaces.IContentish"
+      view="plone.app.layout.globals.interfaces.IViewView"
+      layer="collective.querynextprev.interfaces.ICollectiveQuerynextprevLayer"
+      name="collective.querynextprev.nextprevnavigation"
+      class=".viewlets.NextPrevNavigationViewlet"
+      manager="plone.app.layout.viewlets.interfaces.IAboveContentTitle"
+      permission="zope2.View"
+      template="templates/nextprev.pt"
+      />
+
+  <browser:page
+      name="go_to_next_item"
+      for="zope.interface.Interface"
+      class=".views.GoToNextItem"
+      permission="zope2.View"
+      />
+
+  <browser:page
+      name="go_to_previous_item"
+      for="zope.interface.Interface"
+      class=".views.GoToPreviousItem"
+      permission="zope2.View"
+      />
+
+</configure>

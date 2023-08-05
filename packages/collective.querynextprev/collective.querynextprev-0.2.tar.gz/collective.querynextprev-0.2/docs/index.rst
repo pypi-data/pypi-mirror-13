@@ -1,0 +1,5 @@
+====================
+collective.querynextprev
+====================
+
+User documentation
