@@ -1,0 +1,16 @@
+# -*- coding: utf-8 -*-
+import copy
+
+
+MONGO_HOST = 'localhost'
+MONGO_PORT = 27017
+MONGO_USERNAME = MONGO1_USERNAME = 'test_user'
+MONGO_PASSWORD = MONGO1_PASSWORD = 'test_pw'
+MONGO_DBNAME, MONGO1_DBNAME = 'aerate_test', 'aerate_test1'
+ID_FIELD = '_id'
+
+RESOURCE_METHODS = ['GET', 'POST', 'DELETE']
+ITEM_METHODS = ['GET', 'PATCH', 'DELETE', 'PUT']
+ITEM_CACHE_CONTROL = ''
+ITEM_LOOKUP = True
+ITEM_LOOKUP_FIELD = ID_FIELD
