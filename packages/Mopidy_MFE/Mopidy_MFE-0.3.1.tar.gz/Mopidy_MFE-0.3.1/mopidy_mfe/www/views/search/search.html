@@ -1,0 +1,142 @@
+<div class="main">
+	<div style="height: 60px"></div>
+	
+	<div ng-if="viewResults === 'loading'" class="searchResults">
+		<br><br><br>
+		<i class="fa fa-spinner fa-2x fa-pulse"></i>
+		<br><br><br>
+		<h1>Fetching results for: "{{ searchTerm }}"</h1>
+		<br><br><br>
+	</div>
+		
+	<div ng-if="viewResults === 'ready'" class="searchResults">
+		<div class="minbox" style="text-align: right;">
+			<i class="fa fa-filter"></i>
+			<select ng-model="q2">
+				<option value="">View All</option>
+				<option ng-repeat="backend in backends" value="{{backend}}">{{backend}}</option>
+			</select>
+		</div>
+		
+		<div class="box3" ng-init="artistLimit = 6">
+			<h1>ARTISTS</h1>
+		</div>	
+		<div ng-repeat="artist in artists | filter:{backend:q2} | limitTo: artistLimit as artistresults">
+			
+			<div class="box">
+				<a href="" ng-click="contextMenu(artist);">
+					<div class="boxRight">
+						<i class="fa fa-ellipsis-v fa-2x"></i>
+					</div>
+				</a>
+				<a href="#/artist/{{ artist.name | urlEncode }}/{{ artist.uri | urlEncode }}">						
+					<div class="boxLeft"> 
+						<img ng-src="{{artist.lfmImage}}" width=50 height=50 />
+					</div>
+					<div class="boxCenter"><div style="display: table; height: 56px;"><div style="display: table-cell; vertical-align: middle;">
+						<h1> {{artist.name}}	</h1>
+						<h3> ({{artist.backend | uppercase }})</h3>
+					</div></div></div>
+				</a>
+			</div>
+				
+		</div>
+		<div class="box" ng-hide="artistresults.length === artists.length">
+			<a href="" ng-click="artistLimit = artistLimit + 6">				
+				<div class="boxCenter"><div style="display: table; height: 56px;"><div style="display: table-cell; vertical-align: middle;">
+					<h3>Show more...</h3>
+				</div></div></div>
+			</a>
+		</div>
+		
+		<div class="box3" ng-init="albumLimit = 6">
+			<h1>ALBUMS</h1>
+		</div>		
+		<div ng-repeat="album in albums | filter:{backend:q2} | limitTo: albumLimit as albumresults">
+			
+			<div class="box">
+				<a href="" ng-click="contextMenu(album);">
+					<div class="boxRight">
+						<i class="fa fa-ellipsis-v fa-2x"></i>
+					</div>
+				</a>
+				<a href="#/album/{{ album.name | urlEncode }}/{{ album.uri | urlEncode }}">						
+					<div class="boxLeft"> 
+						<img ng-src="{{album.lfmImage}}" width=50 height=50 />
+					</div>
+					<div class="boxCenter"><div style="display: table; height: 56px;"><div style="display: table-cell; vertical-align: middle; ">
+						<h1>{{ album.name | shorten:'':0 }}</h1>
+						<h3> ({{ album.backend | uppercase }}) {{ album.artists[0].name }}&nbsp;&nbsp;{{album.date}}</h3>
+						
+					</div></div></div>
+				</a>
+			</div>		
+				
+		</div>
+		<div class="box" ng-hide="albumresults.length === albums.length">
+			<a href="" ng-click="albumLimit = albumLimit + 6">				
+				<div class="boxCenter"><div style="display: table; height: 56px;"><div style="display: table-cell; vertical-align: middle;">
+					<h3>Show more...</h3>
+				</div></div></div>
+			</a>
+		</div>
+		
+		<div class="box3">
+			<h1>TRACKS</h1>
+		</div>
+		<div ng-repeat="track in tracks  | filter:{backend:q2} as results track by track.uri">
+			
+			<div class="box">
+				<a href="" ng-click="contextMenu(track);">
+					<div class="boxRight">
+						<i class="fa fa-ellipsis-v fa-2x"></i>
+					</div>
+				</a>
+				<a href="" ng-click="appendTrack( track.uri )">					
+					<div class="boxCenter"><div style="display: table; height: 56px;"><div style="display: table-cell; vertical-align: middle;">
+						<h1>{{ track.name | shorten:'':0 }}</h1>
+						<h3>({{ track.uri | split:':':0 | uppercase  }}) {{ track.artists[0].name }} - {{ track.album.name  | shorten:'':0 }}</h3>
+					</div></div></div>
+				</a>
+			</div>		
+
+		</div>
+		
+		<br><br><br>
+	
+	</div>
+	
+	<div ng-if="viewResults === 'history'">
+		<div class="box3">
+			<h1>RECENT SEARCHES</h1>
+		</div>
+		
+		<div ng-repeat="history in searchHistory">	
+			<div class="box">
+				<!--
+				<a href="" ng-click="removeHistory(history);">
+					<div class="boxRight">
+						<i class="fa fa-times fa-2x"></i>
+					</div>
+				</a>
+				--> 
+				<a href="#/search/{{ history.query }}">				
+					<div class="boxCenter"><div style="display: table; height: 56px;"><div style="display: table-cell; vertical-align: middle;">
+						<h1>{{ history.query }}</h1>
+					</div></div></div>
+				</a>
+			</div>
+		</div>
+		
+		<div class="box">
+			<a href="" ng-click="removeHistory();">				
+				<div class="boxCenter"><div style="display: table; height: 56px;"><div style="display: table-cell; vertical-align: middle;">
+					<h3>CLEAR SEARCH HISTORY</h3>
+				</div></div></div>
+			</a>
+		</div>
+		<br><br><br><br>
+	</div>
+	
+	
+</div>
