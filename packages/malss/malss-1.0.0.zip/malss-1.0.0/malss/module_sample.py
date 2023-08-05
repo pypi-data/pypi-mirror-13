@@ -1,0 +1,71 @@
+import pandas as pd
+import numpy as np
+from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import LabelEncoder, OneHotEncoder
+from sklearn.linear_model import LogisticRegression
+
+
+class SampleClass(object):
+    def __init__(self, random_state=0):
+        self.random_state = random_state
+        self.fill = None
+
+    def fit(self, X, y):
+        if isinstance(X, np.ndarray):
+            X = pd.DataFrame(X)
+            y = pd.Series(y)
+
+        X = self.imputer(X)
+        X = self.encoder(X, False)
+        self.scaler = StandardScaler().fit(X)
+        X = self.scaler.transform(X)
+
+        self.clf = LogisticRegression(
+            penalty='l2',
+            C=0.1,
+            class_weight='balanced',
+            random_state=self.random_state
+        )
+
+        self.clf.fit(X, y)
+
+    def predict(self, X):
+        if isinstance(X, np.ndarray):
+            X = pd.DataFrame(X)
+
+        X = self.imputer(X)
+        X = self.encoder(X, True)
+        X = self.scaler.transform(X)
+        return self.clf.predict(X)
+
+    def imputer(self, X):
+        if self.fill is None:
+            self.fill = pd.Series([X[c].value_counts().index[0]
+                                   if X[c].dtype == np.dtype('O')
+                                   else X[c].median()
+                                   if X[c].dtype == np.dtype('int')
+                                   else X[c].mean()
+                                   for c in X],
+                                  index=X.columns)
+        return X.fillna(self.fill)
+    def encoder(self, X, has_encoder=True):
+        del_columns = []
+        if not has_encoder:
+            self.encs = [None for i in range(len(X.columns))]
+        for i in range(len(X.columns)):
+            if X.dtypes[i] == np.dtype('O'):
+                if not has_encoder:
+                    self.encs[i] = LabelEncoder().fit(X.icol(i))
+                col_enc = self.encs[i].transform(X.icol(i))
+                col_onehot = np.array(
+                    OneHotEncoder().fit_transform(
+                        col_enc.reshape(-1, 1)).todense())
+                col_names = [str(X.columns[i]) + '_' + c
+                             for c in self.encs[i].classes_]
+                col_onehot = pd.DataFrame(col_onehot, columns=col_names,
+                                          index=X.index)
+                X = pd.concat([X, col_onehot], axis=1)
+                del_columns.append(X.columns[i])
+        for col in del_columns:
+            del X[col]
+        return X
