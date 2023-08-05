@@ -1,0 +1,1 @@
+{"": "", "Could not load directory": "", "Up one level": "", "File name": "", "File transfer": "", "Select this directory": "", "Cancel": "", "Write to the filesystem": "", "Save": "", "Deleting": "", "Read from the filesystem": ""}
