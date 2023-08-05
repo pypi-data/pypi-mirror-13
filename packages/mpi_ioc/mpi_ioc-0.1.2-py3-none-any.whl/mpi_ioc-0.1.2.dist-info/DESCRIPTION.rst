@@ -1,0 +1,42 @@
+===============================
+mpi_ioc A combination of MPI and IoC
+===============================
+
+.. image:: https://img.shields.io/pypi/v/mpi_ioc.svg
+        :target: https://pypi.python.org/pypi/mpi_ioc
+
+.. image:: https://img.shields.io/travis/rchuso/mpi_ioc.svg
+        :target: https://travis-ci.org/rchuso/mpi_ioc
+
+.. image:: https://readthedocs.org/projects/mpi_ioc/badge/?version=latest
+        :target: https://readthedocs.org/projects/mpi_ioc/?badge=latest
+        :alt: Documentation Status
+
+
+Framework for demonstrating the use of such for MPI applications.
+
+The goal of this framework is to exploit the similarities between user-interface events and the receipt of MPI messages,
+and to allow software applications to be developed that abstract the complexities of MPI while presenting a simple
+interface to developers. This framework should be sufficient to demonstrate that the cost of development and maintenance
+of MPI applications can be reduced.
+
+I also created a C version of this project and successfully used it for several MPI applications that run on some
+of the largest supercomputer clusters in the world. I recommend the creation of an open-source version of the same, and
+this Python3 version is just to get the discussion going in the community.
+
+There is a simple presentation of the idea on YouTube - search for it under Kiwi PyCon 2015.
+
+* Free software: ISC license
+* Documentation: https://mpi_ioc.readthedocs.org.
+
+
+=======
+History
+=======
+
+0.1.0 (2015-09-05)
+------------------
+
+* First release on PyPI.
+
+
