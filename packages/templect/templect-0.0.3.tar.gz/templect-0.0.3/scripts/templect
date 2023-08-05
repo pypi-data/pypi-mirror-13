@@ -1,0 +1,82 @@
+#! /usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+.. module:: TODO
+   :platform: Unix
+   :synopsis: TODO.
+
+.. moduleauthor:: Aljosha Friemann <aljosha.friemann@gmail.com>
+
+"""
+
+import os, logging, sys
+
+import click
+
+from templect import templates, exceptions, configs
+
+log = logging.getLogger('templect')
+
+CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
+
+def build_kwd_string_(keywords):
+    str_keywords = []
+    for kwd in keywords:
+        str_keywords.append('"%s"' % kwd)
+    return ','.join(str_keywords)
+
+if os.geteuid() != 0:
+    prefix = os.path.expanduser('~/.local')
+else:
+    prefix = sys.prefix
+
+datadir = os.path.join(prefix, 'share','templect')
+
+@click.command(short_help='foo', context_settings=CONTEXT_SETTINGS)
+@click.option('--config-path', type=click.Path(exists=True, dir_okay=False, resolve_path=True),
+        default=os.path.expanduser('~/.templect'), show_default=True)
+@click.option('--template-dir', type=click.Path(exists=True, file_okay=False, resolve_path=True),
+        default=os.path.join(datadir, 'templates'), show_default=True)
+@click.option('--list-templates', is_flag=True, default=False)
+@click.option('-c', '--category', default='general', show_default=True)
+@click.option('-t', '--template', default='default', show_default=True)
+@click.option('-n', '--name')
+@click.option('-r', '--requires', multiple=True)
+@click.option('-k', '--keyword', multiple=True)
+@click.option('-d', '--description', default='')
+@click.option('-f', '--force/--no-force', default=False)
+@click.argument('path')
+def cli(config_path, template_dir, list_templates, category, name, requires, keyword, description, force, template, path):
+    """TODO: Docstring for templect."""
+    logging.basicConfig(level=logging.DEBUG)
+
+    if list_templates:
+        if os.path.isdir(template_dir):
+            for dir in os.listdir(template_dir):
+                print(dir)
+        sys.exit(0)
+
+    path = os.path.abspath(path)
+    name = os.path.split(path)[1] if not name else name
+
+    template_dictionary = configs.read_category_from_config(config_path, category)
+    template_dictionary.update({'NAME': name})
+    template_dictionary.update({'DESCRIPTION': description})
+    template_dictionary.update({'REQUIREMENTS': '\n'.join(requires)})
+    template_dictionary.update({'KEYWORDS': build_kwd_string_(keyword)})
+
+    if not os.path.exists(path):
+        os.makedirs(path)
+
+    try:
+        template = templates.Template(template_dir, template)
+        template.copy_to(path, force, template_dictionary)
+    except exceptions.InvalidTemplateException as e:
+        log.error('not a valid template: %s' % e)
+    except exceptions.InvalidConfigCategoryException as e:
+        log.error('not a valid config category: %s' % e)
+
+if __name__ == '__main__':
+    cli()
+
+# vim: tabstop=8 expandtab shiftwidth=4 softtabstop=4 fenc=utf-8
