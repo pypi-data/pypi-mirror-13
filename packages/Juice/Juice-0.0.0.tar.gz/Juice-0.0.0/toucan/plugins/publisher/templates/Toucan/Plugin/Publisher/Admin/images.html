@@ -1,0 +1,111 @@
+{% import "Toucan/macros/master.html" as master with context %}
+{% import "Toucan/macros/forms.html" as f with context %}
+{% include "Toucan/Plugin/Publisher/Admin/_include.html" %}
+
+<div id="images-page">
+
+    <form action="{{ url_for('PublisherAdmin:upload_image') }}" class="form-inline"
+          method="post"
+          enctype="multipart/form-data">
+
+    {{ f.csrf_field() }}
+
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="input-group">
+                        <span class="input-group-addon">Add New Image</span>
+                        <div class="form-control" style="padding-bottom: 50px;">
+                            <div class="form-group">
+                                <input type="file" name="file" id="fileToUpload">
+                            </div>
+                            <div class="form-group">
+                                <button type="submit" class="btn btn-info" >Upload</button>
+                            </div>
+                        </div>
+                    </div>
+                    <br>
+                </div>
+            </div>
+    </form>
+
+    <hr>
+
+    <div class="row">
+        {% for img in images %}
+        <div class="col-md-3 col-sm-6 col-xs-12">
+            <div class="image-container">
+                <div class="image">
+                    <a href="javascript:"
+                            data-toggle="modal"
+                            data-target="#modal-edit-image"
+                            data-id="{{ img.id }}"
+                            data-name="{{ img.name }}"
+                            data-object_url="{{ img.object_url }}"
+                            data-description="{{ img.description | default('', true)}}"
+                            >
+                            <img src="{{ img.object_url }}">
+                        </a>
+                </div>
+                <div class="info">
+                        {{ img.description | default('', true)}}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+
+    <div class="row">
+        <div class="col-md-12">
+            {{ master.pagination(images) }}
+        </div>
+    </div>
+
+
+
+
+
+<!-- MODAL -->
+<div class="modal fade" id="modal-edit-image" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+
+  <form method="POST" action="{{url_for('PublisherAdmin:images')}}">
+    {{- f.csrf_field() -}}
+
+    <input type="hidden" name="id" value="">
+    <input type="hidden" name="action" value="">
+
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+        <h4 class="modal-title" id="myModalLabel">Image</h4>
+      </div>
+      <div class="modal-body">
+
+            <div class="modal-image-preview">
+              <img id="modal-image-preview">
+            </div>
+
+            <div class="form-group">
+                <label>Name</label>
+                <input type="text" class="form-control" name="description" placeholder="Name" value="">
+            </div>
+
+            <div class="form-group">
+                <label>Url</label>
+                <input type="text" class="form-control" name="object_url">
+            </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-danger pull-left delete-btn" data-dismiss="modal"><i class="fa fa-trash"></i> Delete</button>
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        <button type="submit" class="btn btn-success"><i class="fa fa-check"></i> SAVE</button>
+      </div>
+    </div>
+
+  </form>
+  </div>
+</div>
+
+</div>

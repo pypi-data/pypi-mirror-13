@@ -1,0 +1,129 @@
+{% import "Toucan/macros/master.html" as master with context %}
+{% import "Toucan/macros/forms.html" as f with context %}
+
+<div>
+    <div class="btn btn-info pull-right"
+            data-toggle="modal"
+            data-target="#modal-new-user"
+            data-id=""
+            data-name=""
+            data-description=""
+            data-per_hour=""
+            data-per_minute=""
+            ><i class="fa fa-plus"></i> New User</div>
+    <div class="clearfix"></div>
+</div>
+<br>
+
+<div class="well">
+
+<form class="form-inline" method="GET" action="{{url_for('UserAdmin:index')}}" role="form">
+    {{- f.csrf_field() -}}
+
+  {{ f.group('input', label="Name", name='name', value=search_query["name"] ) }}
+
+  {{ f.group('input', label="Email", name='email', value=search_query["email"] ) }}
+
+  {{ f.group('select', label="Roles", name='role', options=user_roles_options, selected=search_query["role"] ) }}
+
+  {{ f.group('select', label="Sort By", name='sorting', options=sorting_options, selected=search_query["sorting"] ) }}
+
+  <div class="checkbox">
+    <label>
+        <input type="checkbox" name="include-deleted" value="y"
+               {% if search_query["include-deleted"] == "y" %} checked="checked" {% endif %}> Include Deleted
+    </label>
+  </div>
+
+  <button type="submit" class="btn btn-default">Search</button>
+</form>
+</div>
+
+<div class="table-responsive">
+
+    <table class="table table-bordered">
+        <thead>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Active</th>
+            <th>Last Login</th>
+            <th>Signup Date</th>
+        </thead>
+
+        <tbody>
+            {% for user in users %}
+            <tr class="{% if not user.active %} warning {% endif %}">
+                <td>{{ user.id }}</td>
+                <td><a href="{{ url_for('UserAdmin:get', id=user.id) }}">{{ user.full_name }}</a></td>
+                <td>{{ user.email }}</td>
+                <td>{{ user.role.name | capitalize }}</td>
+                <td>{{ user.active | bool_to_yes }}</td>
+                <td>{{ user.last_login }}</td>
+                <td>{{ user.created_at }}</td>
+            </tr>
+
+            {% else %}
+
+            <tr>
+                <td colspan="7">
+                    <div class="alert alert-warning">No Results Found!</div>
+                </td>
+            </tr>
+
+
+            {% endfor %}
+
+        </tbody>
+
+    </table>
+
+{{ master.pagination(users, **search_query) }}
+
+</div>
+
+<div class="modal fade" id="modal-new-user" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+
+  <form method="POST" action="{{url_for('UserAdmin:create')}}">
+    {{- f.csrf_field() -}}
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+        <h4 class="modal-title" id="myModalLabel">Create New User</h4>
+      </div>
+      <div class="modal-body">
+
+            <div class="form-group">
+                <label>First Name</label>
+                <input type="text" class="form-control"  name="first_name" placeholder="First Name">
+            </div>
+
+            <div class="form-group">
+                <label>Last Name</label>
+                <input type="text" class="form-control"  name="last_name" placeholder="Last Name">
+            </div>
+
+            <div class="form-group">
+                <label>Email</label>
+                <input type="text" class="form-control"  name="email" placeholder="Email">
+            </div>
+
+            <div class="form-group">
+                <label>User Role</label>
+                {{ f.tag('radio', 'user_role', options=user_roles_options, checked=[]) }}
+            </div>
+
+      </div>
+
+      <div class="modal-footer">
+
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        <button type="submit" class="btn btn-success"><i class="fa fa-check"></i> CREATE</button>
+      </div>
+    </div>
+
+  </form>
+  </div>
+</div>

@@ -1,0 +1,34 @@
+{% import "Toucan/macros/forms.html" as f with context %}
+{% import "Toucan/macros/master.html" as master with context %}
+
+{% if my_object %}
+
+    {{ master.flash_message('Upload result') }}
+
+    Name: {{ my_object.name }} <br><br>
+    Url: {{ my_object.url }} <br><br>
+    Size: {{ my_object.size }} bytes <br><br>
+    Download Url:  <a href="{{ my_object.download_url() }}">{{ my_object.download_url() }}</a>
+    <br><br>
+
+    <div>
+    <img src="{{ my_object.url }}">
+    </div>
+
+    <br>
+    <hr>
+
+{%  endif %}
+
+<form action="{{ url_for('Account:upload') }}" method="post" enctype="multipart/form-data">
+    {{ f.csrf_field() }}
+    <h2>Select image to upload:</h2>
+
+    <input type="file" name="file" id="fileToUpload">
+
+    <br><br>
+
+    <input type="submit" class="btn btn-info" value="Upload Image" name="submit">
+</form>
+
+

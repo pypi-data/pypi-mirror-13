@@ -1,0 +1,112 @@
+
+{% import "Toucan/macros/forms.html" as f with context %}
+{% import "Toucan/macros/bootstrap.html" as bs with context %}
+
+
+<div class="row">
+
+    <div class="col-md-offset-3 col-md-6">
+
+        <h2>{{ login_title | default('My Account Settings')}}</h2>
+
+        {%  call bs.collapsible_accordion() %}
+
+            {% call bs.collapsible('You') %}
+                  <div class="" style="text-align: center">
+                    <h4>{{ current_user.name }}</h4>
+                    <div class="">
+                        <img class="wm-profile-avatar-150" src="{{ current_user.profile_image_url }}">
+                    </div>
+                  </div>
+            {% endcall %}
+
+            {% call bs.collapsible('Basic Info', collapse=true) %}
+
+                <form method="POST" action="{{url_for(endpoint_namespace % 'account_settings')}}">
+                    {{- f.csrf_field() -}}
+                    <input type="hidden" name="action" value="info">
+
+                    <label>First Name</label>
+                    <div class="form-group">
+                        <input type="text" class="form-control"  name="first_name" value="{{current_user.first_name | default('', true)}}" placeholder="First Name">
+                    </div>
+                    <label>Last Name</label>
+                    <div class="form-group">
+                        <input type="text" class="form-control"  name="last_name" value="{{current_user.last_name | default('', true) }}" placeholder="Last Name">
+                    </div>
+                    <button type="submit" class="btn btn-info">Save</button>
+
+                </form>
+
+            {%  endcall %}
+
+            {% call bs.collapsible('Change Profile Photo', collapse=true) %}
+                <form method="POST" action="{{url_for(endpoint_namespace % 'account_settings')}}" enctype="multipart/form-data">
+                    {{- f.csrf_field() -}}
+                    <input type="hidden" name="action" value="profile-photo">
+
+                    <label>Select image to upload</label>
+                    <div class="form-group">
+                        <input type="file" name="file" id="fileToUpload">
+                    </div>
+                    <button type="submit" class="btn btn-info">Save</button>
+
+                </form>
+
+            {%  endcall %}
+
+
+            {% call bs.collapsible('Change Login', collapse=true) %}
+                <form method="POST" action="{{url_for(endpoint_namespace % 'account_settings')}}">
+                    {{- f.csrf_field() -}}
+                    <input type="hidden" name="action" value="login">
+
+                    <div class="form-group">
+                        <label>Change Email:</label>
+                        <input type="email" class="form-control"  name="email" value="{{current_user.email}}" placeholder="Email">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Verify Current Password:</label>
+                        <input type="password" class="form-control"  name="confirm-password" placeholder="Current Password">
+                    </div>
+
+                    <button type="submit" class="btn btn-info">Save</button>
+                </form>
+
+            {%  endcall %}
+
+
+
+            {% call bs.collapsible('Change Password', collapse=true) %}
+
+                    <form method="POST" action="{{url_for(endpoint_namespace % 'account_settings')}}">
+                        {{- f.csrf_field() -}}
+                        <input type="hidden" name="action" value="password">
+
+                        <div class="form-group">
+                            <label>Old Password:</label>
+                            <input type="password" class="form-control"  name="confirm-password"  placeholder="Old Password">
+                        </div>
+
+                        <div class="form-group">
+                            <label>New Password:</label>
+                            <input type="password" class="form-control" name="password" placeholder="New Password">
+                        </div>
+                        <div class="form-group">
+                            <label>Retype New Password:</label>
+                            <input type="password" class="form-control" name="password2" placeholder="Retype New Password">
+                        </div>
+
+                        <button type="submit" class="btn btn-info">Save</button>
+                    </form>
+            {%  endcall %}
+
+
+        {%  endcall %}
+    </div>
+
+</div>
+
+
+

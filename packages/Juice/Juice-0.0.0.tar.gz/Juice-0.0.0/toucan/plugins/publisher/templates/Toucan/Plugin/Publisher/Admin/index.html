@@ -1,0 +1,88 @@
+{% import "Toucan/macros/master.html" as m with context %}
+{% import "Toucan/macros/forms.html" as f with context %}
+{% include "Toucan/Plugin/Publisher/Admin/_include.html" %}
+
+{% if types %}
+    <ul class="nav nav-tabs">
+        <li class="{% if not selected_type %}active{% endif %}">
+            <a href="{{ url_for('PublisherAdmin:index') }}">All Posts</a>
+        </li>
+        {% for type in types %}
+            <li role="presentation" class="{% if selected_type and selected_type.id == type.id %}active{% endif %}">
+                <a href="{{ url_for('PublisherAdmin:index', type_id=type.id) }}">{{ type.name }}</a>
+            </li>
+        {% endfor %}
+    </ul>
+
+    <div class="hidden">Published - Drafts</div>
+
+    <p></p>
+
+    <div class="well well-sm text-center">
+        <a
+            href="{{ url_for('PublisherAdmin:new', type_id=selected_type.id) }}"
+            class=" btn btn-info btn-lg btn-block">
+            <i class="fa fa-pencil"></i>
+            Write New <strong>{{ selected_type.name | default('', true) }}</strong> Post
+        </a>
+    </div>
+
+{% endif %}
+
+
+{% if posts | length %}
+
+<div class="table-responsive">
+    <table class="table table-hover table-condensed sorted_table">
+    <thead>
+        {% if not selected_type %}
+            <th>Type</th>
+        {% endif %}
+
+        <th>Title</th>
+        <th>Author</th>
+        <th>Categories</th>
+        <th>Date</th>
+        <th></th>
+    </thead>
+
+    <tbody>
+        {% for post in posts %}
+            <tr>
+                {% if not selected_type %}
+                    <td>{{ post.type.name }}</td>
+                {% endif %}
+
+                <td>
+                    <a href="{{ url_for("PublisherAdmin:edit", id=post.id) }}">{{ post.title }}</a>
+                    {% if not post.is_published %}
+                     <small> - {{ post.status }}</small>
+                    {% endif %}
+                </td>
+                <td>{{ post.author.name }}</td>
+                <td>{% for cat in post.categories %}{{ cat.name}} - {% endfor %}</td>
+                <td>
+                    {% if post.is_published %}
+                        <div class="date">{{ post.published_at }}</div>
+                        <div class="date-status">Published</div>
+                    {% else %}
+                        <div class="date">{{ post.updated_at }}</div>
+                        <div class="date-status">Last modified</div>
+
+                    {% endif %}
+                </td>
+
+                <td>
+                    <a href="{{ url_for("PublisherAdmin:preview", id=post.id) }}" class=""><i class="fa fa-eye"></i></a>
+                </td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</div>
+
+
+{{ master.pagination(posts, **query_vars) }}
+
+{% endif %}
+
