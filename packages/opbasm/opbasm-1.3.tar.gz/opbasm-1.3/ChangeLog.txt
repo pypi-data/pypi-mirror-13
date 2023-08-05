@@ -1,0 +1,98 @@
+=================
+Opbasm change log
+=================
+
+v1.3 / 2015-12-??
+=================
+
+  Changes
+  -------
+  * Added notice that the default target will change to PB6 in 1.4 release
+  * New command line simulator opbsim is included along with an automated test suite
+  * New syntax: local labels starting with a "." and use of labels in
+    address directives
+  * New macros for handling scratchpad arrays: memcopy, memset, memwrite, hexwrite, bcdwrite
+  * General purpose BCD conversion macros: ascii2bcd, int2bcd, and bcd2int
+  * New generic string and packed string handler macros for both PB3 and PB6
+  * High-level procedure and ISR macros with stack management of arguments and
+    return values.
+  * Added multilingual support with German and French translations
+  * More efficient 16-bit shifts and rotates when the shift is greater than 8.
+  * New, more compact delay_cycles() macro
+  * Improved reporting of error line numbers when macros have been expanded in the original source.
+    You will now see a mostly accurate indication of the original source line as well as the line
+    numbers in the expanded source code. They are still off when errors occur inside nested macros
+    and when C-style syntax is used with a line break before the "{".
+  * Error messages now include the original source file. This works even when m4's include() macro is
+    used instead of the PicoBlaze INCLUDE directive.
+  * Removed the Pyparsing based parser. There are now no required external library dependencies.
+  * Unreferenced constants, strings, and tables are reported in the log.
+  * Added cstr() and estr() macros to generate numeric strings with C character escapes and an
+    optional NUL terminator.
+  * Added qstr() macro to wrap macros in double quotes.
+  * ANSI escape code macros for color text
+  * PRNG macros for 8 and 16-bit random numbers
+  * Simple string hashing macro (Useful for building static PRNG seeds)
+  * Added DATE_STAMP and TIME_STAMP macros for use within m4.
+  * Add -D option to allow definition of m4 macros from the command line
+  * Add automatic "keep" pragma to jump tables (2 or more consecutive unconditional jumps)
+  * Support for KCPSM6 ECC template for 7-series devices
+  * Support reading input source from stdin
+  * Add support for Altera MIF output
+  * Windows m4 binary is included
+    
+  Bug fixes
+  ---------
+  * Templates with multiple implementations containing larger memories than the memory map file would
+    be generated with leftover {INIT...} fields. These are now filled in with assembled DEFAULT_JUMP
+	instructions.
+  * Spartan-3 XDL parsing in pb_update was not properly extracting the memory size parameters.
+  * Nested for() loops had a bug that caused infinite looping.
+  * Uppercase macros for shift and rotate operations were not working properly.
+  * m4 complains about missing newline on the last line of a file. This has been eliminated.
+  * Macro text inside quoted strings no longer expands.
+  * Fixed leftover "const()" macros in commented out constant declarations.
+  * Unicode text mode (cp65001) now works properly on Windows console. ANSI color does not work however.
+  * Fix bug causing instructions allocated to the same address
+  * Fix bugs in signed multiply and divide macros
+
+v1.2 / 2014-12-12
+=================
+
+  Changes
+  -------
+  * Add static code analysis to identify dead code and optionally remove it
+    ~ Suggested by Patrick Lehmann ~
+  * New high-level macros: relational if(), for(), while(), dowhile(), named variables
+  * C-style syntax for control flow macros: if(foo) { bar } else { baz }
+  * PL360-style expressions including signed and unsigned mul/div among varying
+    operand sizes
+  * New cycle accurate delay macros
+  * Add PRAGMA meta-comments with support for keeping dead code and arbitrary
+    user-defined pragmas reported in the log file
+  * Add UTF-8 support for comments
+  * The pb_update script now supports memories split across multiple BRAMs
+  * Picoblaze constants can be passed as arguments to most m4 macros
+
+  Bug fixes
+  -------
+  * Fix error parsing include statements with relative paths and Windows-style paths
+  * Fix bug with formatting label fields in colorized log
+  * Fix bug with OUTPUTK instructions containing punctuation char constants
+
+
+v1.1 / 2014-08-18
+=================
+
+  Changes
+  -------
+  * Add new regex based parser that is 6x faster than original pyparsing parser
+  * New m4 preprocessor support and built-in macro package
+  * Add support for undocumented STAR sX, kk instruction
+  * New output directory command line option
+  * Log file has phony addresses for non-instruction statements to match KCPSM behavior
+
+  Bug fixes
+  ---------
+  * Fixed bug in writing latin1 HDL files
+
