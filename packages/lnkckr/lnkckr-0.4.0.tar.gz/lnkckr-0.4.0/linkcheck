@@ -1,0 +1,86 @@
+#!/usr/bin/env python3
+# Copyright (C) 2013 by Yu-Jie Lin
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+
+
+from __future__ import print_function
+
+import argparse
+import sys
+
+from lnkckr import __version__
+from lnkckr.checkers import checkers
+
+
+def main():
+
+  parser = argparse.ArgumentParser()
+  parser.add_argument('-c', '--checker')
+  parser.add_argument('-u', '--update', action='store_true',
+                      help='update JSON')
+  parser.add_argument('-f', '--file')
+  parser.add_argument('-j', '--json')
+  parser.add_argument('-s', '--status',
+                      help=('re-check links with status. '
+                            'Valid values: all, HTTP status code'))
+  parser.add_argument('-x', '--exclude-status',
+                      default='unchecked,200',
+                      help=('Exclude links with checking status from listing '
+                            'in report section. (Default: %(default)s)'))
+  parser.add_argument('-U', '--unverified-certificates', action='store_true',
+                      help='do not verify certificates')
+  parser.add_argument('--version', action='version',
+                      version='%(prog)s ' + __version__)
+  args = parser.parse_args()
+
+  for checker in checkers:
+    if args.checker and checker.ID == args.checker:
+      Checker = checker
+      break
+  else:
+    print('Cannot find checker to process', file=sys.stderr)
+    sys.exit(1)
+
+  if not args.file and not args.json:
+    print('No files to process', file=sys.stderr)
+    sys.exit(1)
+
+  f = lambda s: None if s == 'unchecked' else s
+  exclude_status = args.exclude_status.split(',')
+  exclude_status = tuple(map(f, exclude_status))
+  cfg = {
+    'exclude_status': exclude_status,
+    'unverified_certificates': args.unverified_certificates,
+  }
+  checker = Checker(**cfg)
+  checker.load(args.file, args.json, args.update)
+
+  f = None
+  if args.status == 'all':
+    f = lambda item: True
+  elif args.status:
+    f = lambda item: item[1]['status'] == args.status
+  checker.check(f)
+  print()
+  checker.print_all()
+
+
+if __name__ == '__main__':
+  main()
