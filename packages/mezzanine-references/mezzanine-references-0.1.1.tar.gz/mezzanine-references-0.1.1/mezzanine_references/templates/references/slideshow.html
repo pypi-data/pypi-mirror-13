@@ -1,0 +1,53 @@
+{% load mezzanine_tags staticfiles %}
+
+<div class="references-slideshow">
+
+<div id='{{ references_page.slug }}-carousel' class="carousel slide" data-ride="carousel">
+
+    <div class="carousel-inner" role="listbox">
+        {% for reference in references %}
+        <div class="item {% if forloop.first %}active{% endif %}">
+            <div class="reference">
+                <div class="clearfix">
+                    {% if reference.image %}<img src="{{ MEDIA_URL }}{% thumbnail reference.image references_page.references.image_size 0 %}" alt="" class="img img-responsive img-{{references_page.references.image_style}}">{% endif %}
+
+                    <div class="reference-content">
+
+                    <div class="reference-header">
+                        <h3 class="reference-name">{{ reference.name }}</h3>
+                        {% if reference.date %}<span class="reference-date text-muted">- {{ reference.date }}</span>{% endif %}
+                    </div>
+                    <div class="reference-body">
+                        <p>{{ reference.content|safe }}</p>
+                    </div>
+
+                    {% if reference.link %}
+                    <div class="reference-footer">
+                        <a
+                        {% if references_page.references.link_style == 'button' %}
+                        class="btn btn-{{references_page.references.button_style}}"
+                        {% endif %}
+                        {% if reference.link_new_window %}
+                        target="_blank"
+                        {% endif %}
+                        href="{{reference.link}}">{{reference.link_title}}</a>
+                    </div>
+                    {% endif %}
+
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <ol class="carousel-indicators">
+        {% for reference in references %}
+        <li data-target="#{{ references_page.slug }}-carousel" data-slide-to="{{ forloop.counter0 }}" {% if forloop.first %}class="active"{% endif %}></li>
+        {% endfor %}
+    </ol>
+
+</div>
+
+</div>
