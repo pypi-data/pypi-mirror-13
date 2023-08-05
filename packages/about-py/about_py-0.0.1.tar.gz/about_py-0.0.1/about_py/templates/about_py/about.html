@@ -1,0 +1,79 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>About this project</title>
+    <link rel="stylesheet" href="{% static "about_py/css/style.css" %}" type="text/css"/>
+</head>
+<body>
+<div>
+    <table id="hor-minimalist-a" >
+        <thead>
+        <tr>
+            <th colspan="2">VCS</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td>name</td>
+            <td scope="col">
+                {% if vcs.name %}
+                    {{ vcs.name }}
+                {% else %}
+                    <span>No Vesioning Control System found.</span>
+                {% endif %}
+
+            </td>
+        </tr>
+        <tr>
+            <td>Last Commit</td>
+            <td>
+                <a href="{{ vcs.last_commit.url }}" target="_blank">{{ vcs.last_commit.message }}</a>
+            </td>
+        </tr>
+        <tr>
+            <td>Origin</td>
+            <td><a href="{{ vcs.origin_url }}" target="_blank">{{ vcs.origin_url }}</a></td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+<div>
+    <table id="hor-minimalist-a" >
+        <thead>
+        <tr>
+            <th colspan="2">Python</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td>Version</td>
+            <td>
+                {{ python.version }}
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+<div>
+    <table id="hor-minimalist-a" >
+        <thead>
+        <tr>
+            <th colspan="2">Libraries</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for lib, version in libs.iteritems %}
+            <tr>
+                <td>{{ lib }}</td>
+                <td>
+                    {{ version }}
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+</body>
+</html>
