@@ -1,0 +1,104 @@
+Metadata-Version: 1.1
+Name: Filepool
+Version: 1.3-rc3
+Summary: EMC Centera Content Addressable Storage binding library.
+Home-page: https://github.com/ioggstream/caspython-centera
+Author: Roberto Polli
+Author-email: roberto.polli@par-tec.it
+License: #########################################################################
+#
+#  Copyright (c) 2006 EMC Corporation. All Rights Reserved
+#
+#  This file is part of Python wrapper for the Centera SDK.
+#
+#  Python wrapper is free software; you can redistribute it and/or
+#  modify it under the terms of the GNU General Public License as
+#  published by the Free Software Foundation version 2.
+#
+#  In addition to the permissions granted in the GNU General Public
+#  License version 2, EMC Corporation gives you unlimited permission
+#  to link the compiled version of this file into combinations with
+#  other programs, and to distribute those combinations without any
+#  restriction coming from the use of this file. (The General Public
+#  License restrictions do apply in other respects; for example,
+#  they cover modification of the file, and distribution when not
+#  linked into a combined executable.)
+#
+#  Python wrapper is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+#  General Public License version 2 for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  version 2 along with Python wrapper; see the file COPYING. If not,
+#  write to:
+#
+#   EMC Corporation
+#   Centera Open Source Intiative (COSI)
+#   80 South Street
+#   1/W-1
+#   Hopkinton, MA 01748
+#   USA
+#
+#########################################################################
+
+Download-URL: https://github.com/ioggstream/caspython-centera
+Description: # caspython-centera
+        
+        EMC Centera Python Wrapper with a user-friendly CenteraConnector interface.
+        
+        
+        ## Usage
+        
+        Connecting to Centera is easy thanks to CenteraConnector.
+        
+            from Filepool.connector import CenteraConnector
+            
+            # Connect to a pool.
+            pool = CenteraConnector('192.168.1.1,192.168.1.2')
+            
+            # Put many files.
+            clip_id = pool.put("put_one_file", files=["file1.txt", "file2.txt"], retention_sec=10)
+            
+            # Get clip metadata.
+            clip = self.connection.get(clip_id, tag=True)
+            print(clip.attributes)
+            
+            # Close pool.
+            pool.close()
+        
+        
+        
+        ## Installing
+        
+        On RHEL7 you need:
+         
+            #yum -y install compat-libstdc++-33
+        
+        Download and unpack the Centera SDK 3.1 or above.
+        
+            export CENTERA_HOME=/opt/centera
+            export PYTHONPATH+=:$(echo $PWD/src/build/lib.*)
+            (cd src && python setup.py install; )
+        
+        If using sudo, run:
+        
+            (cd src && sudo CENTERA_HOME=$CENTERA_HOME python setup.py install; )
+        
+        
+        ## Develop
+        
+        Setup the enviroment for using the local build and your test environment
+        
+            export CENTERA_PEA_LOCATION=$PWD/stage_pool.pea
+            tox
+        
+        
+        ## Centera Garbage collection & shredding
+        
+        https://community.emc.com/message/518033
+        https://community.emc.com/docs/DOC-7853
+        
+Keywords: centera,cas,linux,emc,worm
+Platform: UNKNOWN
+Provides: Filepool
