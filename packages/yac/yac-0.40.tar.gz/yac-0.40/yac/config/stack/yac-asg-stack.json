@@ -1,0 +1,420 @@
+{
+  "Description" : "{{desc}}",
+
+  "Parameters" : {
+    "AppName" : {
+      "Description" : "The short name of the application. Used for naming just about everything",
+      "Type"        : "String"
+    },
+    "AppEnv": {
+      "Description": "The app environment (dev, stage, prod, etc.)",
+      "Type": "String",
+      "AllowedValues": [
+        "Dev",
+        "Stage",
+        "Prod",
+        "Archive"
+      ]
+    },    
+    "ASGName" : {
+      "Description" : "The name of the auto-scaling group",
+      "Type"        : "String"
+    },
+    "AppSGName" : {
+      "Description" : "The name of the application security group",
+      "Type"        : "String"
+    },
+    "HostName" : {
+      "Description" : "The name of hosts in this stack",
+      "Type"        : "String"
+    },    
+    "VpcId": {
+      "Description": "The ID of the VPC to print into",
+      "Type":     "String"
+    },    
+    "KeyName" : {
+      "Description" : "The private/public key pair name to use for SSH access to EC2 instances",
+      "Type"        : "String"
+    },
+    "IamInstanceProfile" : {
+      "Description" : "The IAM instance profile to use with this application",
+      "Type"        : "String"
+    },    
+    "RestoreConfigs" : {
+      "Description" : "The configuration file defining which files to restore from backup when instance first boots",
+      "Type" : "String"
+    },
+    "S3Bucket" : {
+      "Description" : "The S3 bucket where yac app configuration files are sited via cluster configs.",
+      "Type" : "String"
+    },
+    "AccessLogsPath" : {
+      "Description" : "The S3 bucket and buck path wiwhere ELB logs will be stored.",
+      "Type" : "String"
+    },          
+    "AvailabilityZones": {
+      "Description": "The availability zones to provision the ASG into ",
+      "Type":        "List<AWS::EC2::AvailabilityZone::Name>"
+    },
+    "PublicSubnets": {
+      "Description": "The public-facing VPC subnets ",
+      "Type":        "CommaDelimitedList"
+    },
+    "DMZSubnets": {
+      "Description": "The subnets that are between the public and private subnets",
+      "Type":        "CommaDelimitedList"
+    },  
+    "PrivateSubnets": {
+      "Description": "The private subnets that are the 'furthest' from the internet in hops",
+      "Type":        "CommaDelimitedList"
+    },             
+    "SSLCert": {
+      "Description": "The SSL cert to use with the ELB",
+      "Type":        "String"
+    },
+    "AppEFS" : {
+      "Description" : "The name of EFS resource",
+      "Type"        : "String"
+    },
+    "NtpServers": {
+      "Description": "The ntp servers that can be polled to sync time",
+      "Type":        "String"
+    },         
+    "ClusterName" : {
+      "Description" : "The ECS cluster that EC2 instances in this stack should register with",
+      "Type"        : "String",
+      "Default"     : ""
+    },
+    "DnsCidr" : {
+      "Description" : "The CIDR identifying addresses of DNS servers to use for name lookups",
+      "Type"        : "String"
+    }, 
+    "HttpsProxy" : {
+      "Description" : "The URL for https proxy. Need this to navigate outbound proxy for downloading boot scripts.",
+      "Type"        : "String",
+      "Default"     : ""
+    },      
+    "CorporateCidr" : {
+      "Description" : "The CIDR identifying addresses in the corporte internet",
+      "Type"        : "String",
+      "Default"     : ""
+    },
+    "ProxyPort" : {
+      "Description" : "The port used by the outbound proxy",
+      "Type"        : "String",
+      "Default"     : ""
+    }, 
+    "ProxyName" : {
+      "Description" : "The name of the outbound proxy",
+      "Type"        : "String",
+      "Default"     : ""
+    },     
+    "ProxyCidr" : {
+      "Description" : "The CIDR identifying address of outbound proxy server",
+      "Type"        : "String",
+      "Default"     : ""
+    },             
+    "MountDir" : {
+      "Description" : "For stacks that include an EFS, specify the directory under app home that the EFS should be mounted to",
+      "Type" : "String",
+      "Default" : ""
+    },         
+    "InstanceType" : {
+      "Description" : "Type of EC2 instance to launch",
+      "Type" : "String",
+      "AllowedValues": [
+        "m3.large",
+        "m3.xlarge",
+        "m3.2xlarge",
+        "m4.large",
+        "m4.xlarge",
+        "m4.2xlarge",
+        "m4.4xlarge"
+      ],
+      "Default" : "m3.large"
+    },
+    "WebServerPort": {
+      "Description" : "Port web server listens on",
+      "Type" : "String",
+      "Default" : "80"
+    },
+    "DebugPort": {
+      "Description" : "Port web server listens on and doesn't redirect",
+      "Type" : "String",
+      "Default" : "81"
+    },    
+    "ImageId" : {
+      "Description" : "Image Id of CoreOS AMI",
+      "Type" : "String",
+      "Default" : "ami-00ebfc61"
+    },
+    "BootScriptsRepoURL" : {
+      "Description" : "URL of SCM repo containing script(s) used to boot the instance",
+      "Type" : "String",
+      "Default": "https://bitbucket.org/thomas_b_jackson/yac/raw/master/yac/config/app"
+    },  
+    "BootScriptsRepoTag" : {
+      "Description" : "The repo tag marking the version of the boot scripts to use",
+      "Type" : "String",
+      "Default" : "master"
+    },           
+    "Owner": {
+      "Description": "The Owner tag for all resources in the stack",
+      "Type": "String",
+      "Default": ""
+    },    
+    "CostCenter": {
+      "Description": "The CostCenter tag for all resources in the stack",
+      "Type": "String",
+      "Default": ""
+    },
+    "DockerVolumeSize" : {
+      "Description" : "The size of the volume used to store docker images (in GB)",
+      "Type" : "String",
+      "Default" : "40"
+    }, 
+    "HomeVolumeSize" : {
+      "Description" : "The size of the volume used to store the home directory (in GB)",
+      "Type" : "String",
+      "Default" : "50"
+    },
+    "HealthCheckPath" : {
+      "Description" : "The ping path to use in ELB health check",
+      "Type" : "String"
+    }
+  },
+  "Conditions" : {
+    "AllowProdAccountIngress" : {"Fn::Equals" : [{"Ref" : "AppEnv"}, "Prod"]},
+    "IsDevEnv" : {"Fn::Equals" : [{"Ref" : "AppEnv"}, "Dev"]},
+    "HasCorporateIntranet" : {"Fn::Not": [{"Fn::Equals" : [{"Ref" : "CorporateCidr"}, ""]}]},
+    "HasOutboundProxy" : {"Fn::Not": [{"Fn::Equals" : [{"Ref" : "ProxyPort"}, ""]}]},
+    "AllowCorporateDockerAPI": { "Fn::And": [
+        {"Condition": "IsDevEnv"},
+        {"Condition": "HasCorporateIntranet"}]
+    },
+    "AllowPublicDockerAPI": { "Fn::And": [
+        {"Condition": "IsDevEnv"},
+        {"Fn::Not": [{"Condition": "HasCorporateIntranet"}]}]
+    }
+  },
+  "Resources" : {
+    "AppAutoScalingGroup": {
+      "Type" : "AWS::AutoScaling::AutoScalingGroup",
+      "Properties" : {
+        "AvailabilityZones": { "Ref" : "AvailabilityZones" },
+        "LoadBalancerNames": [],
+        "DesiredCapacity" : "1",
+        "MaxSize": "1",
+        "MinSize": "1",
+        "HealthCheckGracePeriod": "600",
+        "HealthCheckType": "EC2",
+        "LaunchConfigurationName": { "Ref" : "AppLaunchConfig" },
+        "VPCZoneIdentifier": {"Ref" : "DMZSubnets"},
+        "Tags" : [ 
+          { "Key": "Name", "Value" : { "Ref" : "ASGName" },"PropagateAtLaunch": true },
+          { "Key": "Owner", "Value": { "Ref": "Owner" },"PropagateAtLaunch": true  },
+          { "Key": "CostCenter", "Value": { "Ref": "CostCenter" },"PropagateAtLaunch": true  }
+        ]
+      }
+    },    
+    "AppLaunchConfig" : {
+      "Type" : "AWS::AutoScaling::LaunchConfiguration",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups": [{"Fn::GetAtt": ["AppSG","GroupId"]}],
+        "ImageId": { "Ref" : "ImageId" },
+        "InstanceType": { "Ref": "InstanceType" },
+        "IamInstanceProfile": {"Ref" : "IamInstanceProfile" },
+        "BlockDeviceMappings": [
+          {
+            "DeviceName": "/dev/xvdc",
+            "Ebs": {
+              "VolumeType": "gp2",
+              "DeleteOnTermination": "false",
+              "VolumeSize": {"Ref" : "DockerVolumeSize" }
+            }
+          },
+          {
+            "DeviceName": "/dev/xvdd",
+            "Ebs": {
+              "VolumeType": "gp2",
+              "DeleteOnTermination": "false",
+              "VolumeSize": {"Ref" : "HomeVolumeSize" }
+            }
+          }
+        ],
+        "UserData" : { "Fn::Base64":
+          { "Fn::Join" : ["",
+             [
+              "#!/bin/bash\n",
+              "# *****************************************************************\n",
+              "# Load and run file used for bootstrapping a new standard host.  \n",
+              "# Note that this stuff ONLY gets run at instance creation time.    \n",
+              "# *****************************************************************\n",              
+              "export DOWNLOAD_URL=",{ "Ref": "BootScriptsRepoURL" },"\n",
+              "export REPO_TAG=\"at=",{ "Ref": "BootScriptsRepoTag" },"\"\n",
+              "export APP_NAME=",{ "Ref": "AppName" },"\n",
+              "export NTP_SERVERS='",{ "Ref": "NtpServers" },"'\n",
+              "export CLUSTER_NAME=",{ "Ref": "ClusterName" },"\n",
+              "export HOST_NAME=",{ "Ref": "HostName" },"\n",
+              "export RESTORE_CONFIG=",{ "Ref": "RestoreConfigs" },"\n",
+              "export EFS_ID=",{ "Ref": "AppEFS" },"\n",
+              "export MOUNT_DIR=",{ "Ref": "MountDir" },"\n",
+              "export PROXY_NAME=",{ "Ref": "ProxyName" },"\n",
+              "export PROXY_PORT=",{ "Ref": "ProxyPort" },"\n",
+              "export https_proxy=",{ "Ref": "HttpsProxy" },"\n",                 
+              "wget --no-check-certificate -O /tmp/boot.sh -q $DOWNLOAD_URL/boot.sh?$REPO_TAG\n",          
+              "chmod 0777 /tmp/boot.sh\n",
+              "# run boot script\n",
+              "/tmp/boot.sh\n"
+              ]
+            ]
+          }
+        }
+      }
+    }, 
+    "AppSG" : {
+      "Type" : "AWS::EC2::SecurityGroup",
+      "Metadata" : {
+        "Comment" : "Explanation for each non-standard Ingress port in this SG",
+        "Ports" : {
+          "5555_Ingress" : "Docker remote API. Need this to be open only in dev env's",
+          "80_81_Ingress": "Need both 80 and 81 for http. 81 doesn't redirect so is useful when standing up new apps (before they are capable of passing ELB health checks)",
+          "53_Ingress": "Need both UDP and TCP. Clients will try TCP if UDP fails (which can/will happen intermittantly if a domain has a big list of servers)",
+          "389_Egress": "Insecure LDAP",
+          "636_Egress": "Secure LDAP",
+          "3128_Egress": "Outbound Proxy",
+          "25_Egress": "SMTP - email"
+        }
+      },
+      "Properties" : {
+        "GroupDescription" : "Enable HTTP access from the ELB and (for now) SSH access from domain.",        
+        "SecurityGroupIngress" : [
+            {
+              "IpProtocol" : "tcp",
+              "FromPort" : "80",
+              "ToPort" : "80",
+              "CidrIp" : "172.0.0.0/8"
+            },        
+            {"Fn::If" : [ "HasCorporateIntranet",
+              {
+                "IpProtocol" : "tcp",
+                "FromPort" : "22",
+                "ToPort" : "22",
+                "CidrIp" : {"Ref" : "CorporateCidr" }
+              },
+              {}]
+            },
+            {"Fn::If" : [ "HasCorporateIntranet",              
+              {
+                "IpProtocol" : "tcp",
+                "FromPort" : "80",
+                "ToPort" : "81",
+                "CidrIp" : {"Ref" : "CorporateCidr" }
+              },
+              {}]
+            },
+            {"Fn::If" : [ "AllowCorporateDockerAPI",
+              {
+                "IpProtocol" : "tcp",
+                "FromPort" : "5555",
+                "ToPort" : "5555",
+                "CidrIp" : {"Ref" : "CorporateCidr" }
+              },
+              {}]
+            },
+            {"Fn::If" : [ "AllowPublicDockerAPI",
+              {
+                "IpProtocol" : "tcp",
+                "FromPort" : "5555",
+                "ToPort" : "5555",
+                "CidrIp" : "0.0.0.0/0"
+              },
+              {}]
+            }
+         ],
+         "SecurityGroupEgress" : [
+          {"Fn::If" : [ "HasCorporateIntranet",
+            {
+              "IpProtocol" : "tcp",
+              "FromPort" : "389",
+              "ToPort" : "389",
+              "CidrIp" : {"Ref" : "CorporateCidr" }
+            },
+            {}]
+          },
+          {"Fn::If" : [ "HasCorporateIntranet",
+            {
+              "IpProtocol" : "tcp",
+              "FromPort" : "636",
+              "ToPort" : "636",
+              "CidrIp" : {"Ref" : "CorporateCidr" }
+            },
+            {}]
+          },                    
+          {
+            "IpProtocol" : "tcp",
+            "FromPort" : "80",
+            "ToPort" : "80",
+            "CidrIp" : "0.0.0.0/0"
+          },
+          {
+            "IpProtocol" : "tcp",
+            "FromPort" : "443",
+            "ToPort" : "443",
+            "CidrIp" : "0.0.0.0/0"
+          },
+          {"Fn::If" : [ "HasCorporateIntranet",
+            {
+              "IpProtocol" : "tcp",
+              "FromPort" : "443",
+              "ToPort" : "443",
+              "CidrIp" : {"Ref" : "CorporateCidr" }
+            },
+            {}]
+          }, 
+          {"Fn::If" : [ "HasCorporateIntranet",
+            {
+              "IpProtocol" : "tcp",
+              "FromPort" : "80",
+              "ToPort" : "80",
+              "CidrIp" : {"Ref" : "CorporateCidr" }
+            },
+            {}]
+          },                     
+          {
+            "IpProtocol" : "udp",
+            "FromPort" : "53",
+            "ToPort" : "53",
+            "CidrIp" : { "Ref": "DnsCidr" }
+          },
+          {
+            "IpProtocol" : "tcp",
+            "FromPort" : "53",
+            "ToPort" : "53",
+            "CidrIp" : { "Ref": "DnsCidr" }
+          },
+          {"Fn::If" : [ "HasOutboundProxy",
+            {
+              "IpProtocol" : "tcp",
+              "FromPort" : { "Ref": "ProxyPort" },
+              "ToPort" : { "Ref": "ProxyPort" },
+              "CidrIp" : {"Ref" : "ProxyCidr" }
+            },
+            {}]
+          },          
+          {
+            "IpProtocol" : "tcp",
+            "FromPort" : "25",
+            "ToPort" : "25",
+            "CidrIp" : "10.0.0.0/8"
+          }
+         ],
+         "VpcId": {"Ref" : "VpcId"},
+         "Tags" : [ {"Key": "Name", "Value" : { "Ref" : "AppSGName" } },
+                     { "Key": "Owner", "Value": { "Ref": "Owner" } },
+                     { "Key": "CostCenter", "Value": { "Ref": "CostCenter" } } ]
+      }
+    }
+  }
+}

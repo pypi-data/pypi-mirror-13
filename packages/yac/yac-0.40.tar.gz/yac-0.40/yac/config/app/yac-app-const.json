@@ -1,0 +1,157 @@
+{ 
+  "ports": {
+
+    "comment1": "the default ports that each app listens on. debug ports are set one higher on each app",
+    "comment2": "hipchat is n/a because it can't (yet) be containerized",
+    "jira":       8080,
+    "conlfuence": 8090,
+    "crowd":      8095,
+    "bamboo":     8085,
+    "stash":      8070,
+    "hipchat":   "n/a"
+  },
+  "healthcheck": {
+    "comment": "elb health check path",
+    "jira":       "/secure/Dashboard.jspa",
+    "conlfuence": "/dashboard.action",
+    "crowd":      "/",
+    "bamboo":     "/rss/createAllBuildsRssFeed.action",
+    "stash":      "/projects",
+    "hipchat":    "/chat"
+  },
+  "sizing": {
+    "comment": "recommended resources based on user count (aka license levels)",
+    "25": {
+      "instance-type": "m4.large",
+      "app_container_memory": 6144,
+      "app_heap_size": "4G"
+    },
+    "50": {
+      "instance-type": "m4.large",
+      "app_container_memory": 6144,
+      "app_heap_size": "4G"
+    },
+    "100": {
+      "instance-type": "m4.large",
+      "app_container_memory": 6144,
+      "app_heap_size": "4G"
+    },
+    "250": {
+      "instance-type": "m4.xlarge",
+      "app_container_memory": 10240,
+      "app_heap_size": "8G"
+    },
+    "500": {
+      "instance-type": "m4.xlarge",
+      "app_container_memory": 10240,
+      "app_heap_size": "8G"
+    },
+    "2000": {
+      "instance-type": "m4.2xlarge",
+      "app_container_memory": 20480,
+      "app_heap_size": "16G"
+    },
+    "10000": {
+      "instance-type": "m4.4xlarge",
+      "app_container_memory": 36864,
+      "app_heap_size": "32G"
+    },
+    "10000+": {
+      "instance-type": "m4.4xlarge",
+      "app_container_memory": 36864,
+      "app_heap_size": "32G"
+    }
+  }, 
+  "logs": {
+
+    "comment": "forward these logs to cwlogs. each reflects the main log stream for these apps",
+
+    "jira": {
+      "file": "/var/local/atlassian/jira/logs/atlassian-jira.log"
+    },
+    "confluence": {
+      "file": "/var/local/atlassian/confluence/logs/atlassian-confluence.log"
+    },
+    "crowd": {
+      "file": "/var/local/atlassian/crowd/logs/atlassian-crowd.log"
+    },
+    "bamboo": {
+      "file": "/var/local/atlassian/bamboo/logs/atlassian-bamboo.log"
+    },    
+    "hipchat": {
+      "file": "/var/log/hipchat/web.log"
+    }
+  },
+  "backups": {
+
+    "comment": "backup these directories and/or files to the configured s3 buckets",
+
+    "jira": {
+      "period-min": "720",
+      "period-min-comment": "Run backups every 12 hours.",
+      "directories": {
+        "index": {
+            "src":  "/var/local/atlassian/jira/caches/indexes",  
+            "dest": "s3://{{s3_bucket}}/jira/{{suffix_then_env}}/indexes",
+            "delete": "true",
+            "comment": "delete flag is true because src and dest should be kept in perfect sync"
+          }
+        },
+        "files": {
+          "dbconfig.xml": {
+              "src":  "/var/local/atlassian/jira/dbconfig.xml",  
+              "dest": "s3://{{s3_bucket}}/jira/{{suffix_then_env}}/dbconfig.xml",
+              "comment": "file that defines DB connection parameters. Need this to fully restore from backup when we loose the app server and have to do complete restore"
+          }
+        }
+      },
+      "confluence": {
+        "period-min": "720",
+        "period-min-comment": "Run backups every 12 hours.",
+        "directories": {
+            "index": {
+                "src":  "/var/local/atlassian/confluence/index",
+                "dest": "s3://{{s3_bucket}}/confluence/{{suffix_then_env}}/index",
+                "delete": "true",
+                "comment": "delete flag is true because src and dest should be kept in perfect sync"
+            }
+        },
+        "files": {
+            "dbconfig.xml": {
+                "src":  "/var/local/atlassian/confluence/confluence.cfg.xml",  
+                "dest": "s3://{{s3_bucket}}/confluence/{{suffix_then_env}}/confluence.cfg.xml",
+                "comment": "file that defines DB connection parameters. Need this to fully restore from backup when we loose the app server and have to do complete restore"
+            }
+        }        
+      },
+      "crowd": {
+        "period-min": "1440",
+        "period-min-comment": "Run backups every 24 hours.",
+        "files": {
+          "crowd.properties": {
+              "src":  "/var/local/atlassian/crowd/crowd.properties",  
+              "dest": "s3://{{s3_bucket}}/crowd/{{suffix_then_env}}/crowd.properties",
+              "comment": "defines the server URL"
+          },
+          "crowd.cfg.xml": {
+              "src":  "/var/local/atlassian/crowd/crowd.cfg.xml",  
+              "dest": "s3://{{s3_bucket}}/crowd/{{suffix_then_env}}/crowd.cfg.xml",
+              "comment": "defines DB connection parameters"
+          }
+        }        
+      },
+      "hipchat": {
+        "period-min": "1440",
+        "period-min-comment": "Run backups every 24 hours.",        
+        "directories": {
+          "archives": {
+              "src":  "/file_store/cumulus/posixdata/f",  
+              "dest": "s3://{{s3_bucket}}/hipchat/{{suffix_then_env}}",
+              "options": "--delete --exclude \"*\" --include \"*.aes\"",
+              "comment1": "The ../f directory has a bunch of stuff. Exclude all files EXCEPT the backups, which have a .aes extentions",
+              "comment2": "The delete flag is true because src and dest should be kept in perfect sync"
+          }
+        }        
+      }
+    }
+}

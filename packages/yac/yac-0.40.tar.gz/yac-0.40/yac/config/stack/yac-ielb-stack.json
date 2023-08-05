@@ -1,0 +1,89 @@
+{  
+  "Parameters" : {
+    "InternalElbName" : {
+      "Description" : "The name of the Internal ELB",
+      "Type"        : "String"
+    }
+  },
+  "Resources" : {
+    "InternalElb" : {
+      "Type" : "AWS::ElasticLoadBalancing::LoadBalancer",
+      "Properties" : {
+        "AccessLoggingPolicy" : {
+          "EmitInterval" : 5,
+          "Enabled": true,
+          "S3BucketName": {"Ref" : "S3Bucket"},
+          "S3BucketPrefix" : { "Ref" : "AccessLogsPath" }
+        },
+        "SecurityGroups": [ { "Fn::GetAtt": ["InternalElbSG", "GroupId" ]} ],
+        "LoadBalancerName" : { "Ref" : "InternalElbName" },
+        "Listeners" : [ 
+          {
+            "LoadBalancerPort" : "443",
+            "InstancePort" : { "Ref" : "WebServerPort" },
+            "InstanceProtocol": "HTTPS",
+            "Protocol" : "HTTPS",
+            "SSLCertificateId": {
+              "Fn::Join":["",[
+                "arn:aws:iam::",{"Ref":"AWS::AccountId"},
+                ":server-certificate","/",
+                { "Ref": "SSLCert" }]]
+            }
+          }
+        ],
+        "HealthCheck" : {
+          "Target" : { "Fn::Join" : [ "", ["HTTP:81",{"Ref" : "HealthCheckPath" }]]},
+          "HealthyThreshold" : "3",
+          "UnhealthyThreshold" : "5",
+          "Interval" : "20",
+          "Timeout" : "5"
+        },
+        "Scheme": "internal",
+        "Subnets": {"Ref" : "PrivateSubnets"},
+        "Tags" : [ 
+          { "Key": "Name", "Value" : { "Ref" : "InternalElbName" }},
+          { "Key": "Owner", "Value": { "Ref": "Owner" } },
+          { "Key": "CostCenter", "Value": { "Ref": "CostCenter" } }]
+      }
+    }, 
+    "InternalElbSG" : {
+      "Type" : "AWS::EC2::SecurityGroup",
+      "Properties" : {
+        "GroupDescription" : "Enable inbound HTTPS access for web clients, and 5222/3 for mobile clients from domain",
+        "SecurityGroupIngress" : [ 
+          {
+            "IpProtocol" : "tcp",
+            "FromPort" : "443",
+            "ToPort" : "443",
+            "CidrIp" : {"Ref" : "CorporateCidr" }
+          }
+        ],        
+        "VpcId": {"Ref" : "VpcId"},
+        "Tags" : [ 
+          { "Key": "Name", "Value" : {  "Fn::Join" : ["-", [ { "Ref" : "InternalElbName" }, "SG"]] }},
+          { "Key": "Owner", "Value": { "Ref": "Owner" } },
+          { "Key": "CostCenter", "Value": { "Ref": "CostCenter" } } ]
+      }
+    },    
+    "InternalElbHttpEgress" : {
+      "Type" : "AWS::EC2::SecurityGroupEgress",
+      "Properties" : {
+        "GroupId" : { "Fn::GetAtt": ["InternalElbSG","GroupId"]},
+        "IpProtocol" : "tcp",
+        "FromPort" : { "Ref" : "WebServerPort" },
+        "ToPort" : { "Ref" : "DebugPort" },
+        "DestinationSecurityGroupId" : {"Fn::GetAtt": ["AppSG","GroupId"]}
+      }
+    },     
+    "InternalElbHttpIngress" : {
+      "Type" : "AWS::EC2::SecurityGroupIngress",
+      "Properties" : {
+        "GroupId" : { "Fn::GetAtt": ["AppSG","GroupId"]},
+        "IpProtocol" : "tcp",
+        "FromPort" : { "Ref" : "WebServerPort" },
+        "ToPort" : { "Ref" : "DebugPort" },
+        "SourceSecurityGroupId" : { "Fn::GetAtt": ["InternalElbSG","GroupId"] }
+      }
+    }
+  }
+}

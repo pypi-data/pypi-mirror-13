@@ -1,0 +1,152 @@
+{
+  "containerDefinitions": [
+    {
+      "name": "{{app}}", 
+      "image": "{{organization}}/{{app}}:{{app_version}}",
+      "command": [],
+      "cpu": 0,
+      "essential": true,
+      "volumesFrom": [],
+      "memory": {{app_container_memory}},
+      "disableNetworking": false,                
+      "portMappings": [
+        {
+          "hostPort": 80,
+          "containerPort": {{app_port}},
+          "protocol": "tcp"
+        },
+        {
+          "hostPort": 81,
+          "containerPort": {{debug_port}},
+          "protocol": "tcp"
+        }
+
+      ],
+      "mountPoints": [
+        {
+          "containerPath": "/var/local/atlassian/{{app}}",
+          "sourceVolume": "home",
+          "readOnly": false
+        },
+        {
+          "containerPath": "/etc/localtime",
+          "sourceVolume": "localtime",
+          "readOnly": true
+        }
+      ],
+      "environment": [
+        {
+          "name": "CNAME",
+          "value": "{{cname}}"
+        },
+        {
+          "name": "CATALINA_OPTS",
+          "value": "{{catalina_options}}"
+        }
+      ]
+    },
+    {
+      "name": "backups",
+      "image": "{{organization}}/backups:latest",
+      "cpu": 0,
+      "volumesFrom": [],
+      "memory": 1024,
+      "portMappings": [],
+      "essential": false,
+      "mountPoints": [
+        {
+          "containerPath": "/var/local/atlassian/{{app}}",
+          "sourceVolume": "home",
+          "readOnly": false
+        },
+        {
+          "containerPath": "/var/local/backups",
+          "sourceVolume": "backups-logs",
+          "readOnly": false
+        }
+      ],
+      "environment": [
+        {
+          "name": "HOSTNAME",
+          "value": "{{app}}{{env}}"
+        },
+        {
+          "name": "CONFIGS_PATH",
+          "value": "{{backups_configs_path}}"
+        }
+      ],
+      "files": {        
+        "conf": {
+            "comment": "deploy the yac-backups.json config file before starting the backups container",
+            "src":     "yac/config/app/yac-backups.json",
+            "dest":    "{{backups_configs_path}}"
+        }
+      }
+    },
+    {
+      "name": "logs",
+      "image": "{{organization}}/cwlogs:coreos",
+      "cpu": 0,
+      "volumesFrom": [],
+      "memory": 256,
+      "portMappings": [],
+      "essential": false,    
+      "mountPoints": [
+        {
+          "containerPath": "/var/local/atlassian/{{app}}",
+          "sourceVolume": "home",
+          "readOnly": true
+        }
+      ],
+      "environment": [
+        {
+          "name": "CONFIGS_S3_URL",
+          "value": "{{logs_configs_path}}"
+        },
+        {
+          "name": "REGION",
+          "value": "us-west-2"
+        },
+        {
+          "name": "http_proxy",
+          "value": "{{http_proxy}}"
+        },
+        {
+          "name": "https_proxy",
+          "value": "{{https_proxy}}"
+        },
+        {
+          "name": "no_proxy",
+          "value": "{{no_proxy}}"
+        }     
+      ],
+      "files": {
+        "conf": {
+            "comment": "deploy the yac-cwlogs.conf config file before starting the logs container",
+            "src":     "yac/config/app/yac-cwlogs.conf",
+            "dest":    "{{logs_configs_path}}"
+        }
+      } 
+    }
+  ],
+  "volumes": [
+    {
+      "host": {
+        "sourcePath": "/var/local/atlassian/{{app}}"
+      },
+      "name": "home"
+    },
+    {
+      "host": {
+        "sourcePath": "/etc/localtime"
+      },
+      "name": "localtime"
+    },
+    {
+      "host": {
+        "sourcePath": "/var/local/atlassian/{{app}}/backup-logs"
+      },
+      "name": "backups-logs"
+    }
+  ]
+}
