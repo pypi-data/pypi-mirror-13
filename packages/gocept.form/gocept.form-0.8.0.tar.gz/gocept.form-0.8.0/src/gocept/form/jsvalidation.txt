@@ -1,0 +1,91 @@
+=====================
+Javascript validation
+=====================
+
+The javascript validation module allows simple client-side validation
+operations. This is not as sophisticated as z3c.formjs but works with
+zope.formlib. There is also no abstraction of the javascript library so far, we
+require gocept.mochikit.
+
+Create a schema with two length constraints. Checking for the maximum length is
+the only validator we have so far:
+
+
+>>> import zope.interface
+>>> import zope.schema
+>>>
+>>> class IContact(zope.interface.Interface):
+...
+...     first_name = zope.schema.TextLine(
+...         title=u"First name",
+...         max_length=10)
+...     last_name = zope.schema.TextLine(title=u"Last name")
+...     remarks = zope.schema.Text(
+...         title=u"Remarks",
+...         max_length=100)
+
+Define an add form:
+
+>>> import zope.formlib.form
+>>> import gocept.form.grouped
+>>> class AddForm(gocept.form.grouped.AddForm):
+...
+...     form_fields = zope.formlib.form.FormFields(IContact)
+
+
+Log in a user:
+
+>>> import zope.security.testing
+>>> principal = zope.security.testing.Principal(u'zope.mgr')
+>>> participation = zope.security.testing.Participation(principal)
+>>> import zope.security.management
+>>> zope.security.management.newInteraction(participation)
+
+
+Instanciate the add form:
+
+>>> import zope.publisher.browser
+>>> content = object()
+>>> request = zope.publisher.browser.TestRequest()
+>>> zope.publisher.browser.applySkin(
+...     request, gocept.form.interfaces.IJSValidationLayer)
+>>> request.setPrincipal(principal)
+>>> form = AddForm(content, request)
+
+
+Instanciate the viewlet which produces the necessary javascript for validation:
+
+>>> import gocept.form.jsvalidation
+>>> provider = gocept.form.jsvalidation.ValidationViewlet(
+...     content, request, form, object())
+
+Before `update` is called the validators list is empty:
+
+>>> provider.validators
+[]
+
+After calling `update` the list is populated with the validators (as javascript
+string already):
+
+>>> provider.update()
+>>> provider.validators
+[(u'max-length', u'new gocept.validation.MaxLength(\'form.first_name\', 10,
+  "Too long (max 10)")'),
+  (u'max-length', u'new gocept.validation.MaxLength(\'form.remarks\', 100,
+  "Too long (max 100)")')]
+
+
+Rendering the viewlet yields a correct javascript tag. Note that the validators
+are created in an window.onload event handler:
+
+>>> print provider.render()
+<script language="javascript">
+// max-length
+connect(window, "onload", function(event) {new gocept.validation.MaxLength('form.first_name', 10, "Too long (max 10)")});
+// max-length
+connect(window, "onload", function(event) {new gocept.validation.MaxLength('form.remarks', 100, "Too long (max 100)")});
+</script>
+
+Clean up:
+
+>>> zope.security.management.endInteraction()

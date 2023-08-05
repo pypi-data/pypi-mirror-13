@@ -1,0 +1,28 @@
+========================
+Destructive form actions
+========================
+
+Destructive form actions are potentially dangerous. They can be used to
+mark actions like deleting important objects. Their representation includes a UI mode that avoids users to accidentally click them.
+
+In our implementation, we provide some javascript that initially
+disables the actual action button and provides a checkbox near it that
+has to enable it first:
+
+>>> from gocept.form.action import DestructiveAction, render_destructive_action
+>>> action = DestructiveAction("Delete")
+>>> print render_destructive_action(action)()
+<input type="submit" id="actions.delete" name="actions.delete" value="Delete" class="button" />
+         <script type="text/javascript">
+         document.getElementById('actions.delete').disabled = true;
+         </script>
+         <label>
+             <input
+             type="checkbox"
+             id="actions.delete.unlock"
+             onChange="document.getElementById('actions.delete').disabled = !this.checked"/> Unlock &quot;Delete&quot; button</label>
+
+
+Notice: We only enhance the UI when javascript is enabled. We try to not
+get in the way of existing patterns to avoid usability on unpredicted
+platforms.

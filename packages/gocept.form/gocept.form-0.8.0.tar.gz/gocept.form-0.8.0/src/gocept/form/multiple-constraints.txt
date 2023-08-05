@@ -1,0 +1,50 @@
+======================================
+Multiple constraints on a single field
+======================================
+
+Fields as defined by zope.schema allow to specify a callable that validates a
+value for the field.
+
+Often, we define smaller validators that we want to bundle together for a
+single field. Let's consider an example.
+
+We start with two validators: one accepts all even numbers, the other all
+numbers that can be divided by 6:
+
+  >>> def is_even(value):
+  ...     assert value % 2 == 0, "%s is not even" % value
+  ...     return True
+  >>> def dividable_by_three(value):
+  ...     assert value % 3 == 0, "%s can not be divided by 3" % value
+  ...     return True
+
+Let's see that those work correctly:
+
+  >>> is_even(1)
+  Traceback (most recent call last):
+  AssertionError: 1 is not even
+  >>> is_even(2)
+  True
+  >>> dividable_by_three(5)
+  Traceback (most recent call last):
+  AssertionError: 5 can not be divided by 3
+  >>> dividable_by_three(12)
+  True
+
+Let's define a new field that allows to store an integer and where the
+constraint is that the value is even and dividable by six. We can use a small
+helper that combines the individual validation functions:
+
+  >>> import gocept.form
+  >>> import zope.schema
+  >>> happy_number = zope.schema.Int(
+  ...   title=u"A happy number",
+  ...   constraint=gocept.form.all(dividable_by_three, is_even))
+
+  >>> happy_number.validate(3)
+  Traceback (most recent call last):
+  AssertionError: 3 is not even
+  >>> happy_number.validate(4)
+  Traceback (most recent call last):
+  AssertionError: 4 can not be divided by 3
+  >>> happy_number.validate(12)

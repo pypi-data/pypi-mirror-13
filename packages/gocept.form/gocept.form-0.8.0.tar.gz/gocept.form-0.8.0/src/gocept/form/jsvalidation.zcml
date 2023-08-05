@@ -1,0 +1,26 @@
+<configure
+  xmlns="http://namespaces.zope.org/zope"
+  xmlns:browser="http://namespaces.zope.org/browser">
+
+  <browser:viewlet
+    class=".jsvalidation.ValidationViewlet" 
+    manager="gocept.mochikit.interfaces.IJavascriptViewletManager"
+    for="*"
+    layer="gocept.form.interfaces.IJSValidationLayer"
+    view="zope.formlib.interfaces.IForm"
+    name="validation"
+    permission="zope.View"
+    />
+
+  <adapter
+    factory=".jsvalidation.max_length_validator"
+    name="max-length"
+    />
+
+  <resourceLibrary
+    name="gocept.form.jsvalidation"
+    require="mochikit gocept.mochikit.jsclass">
+    <directory source="resources" include="validation.js" /> 
+  </resourceLibrary>
+
+</configure>

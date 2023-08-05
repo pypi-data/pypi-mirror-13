@@ -1,0 +1,19 @@
+Confirmed form actions
+======================
+
+Sometimes we need to tell the user about the consequences of pressing a button.
+This is what confirm-action are for.
+
+>>> from gocept.form.action import ConfirmAction, render_confirm_action
+>>> action = ConfirmAction("Explode", "Press Ok to let me explode.")
+>>> print render_confirm_action(action)()
+<input type="submit" id="actions.explode" name="actions.explode" value="Explode" class="button" />
+        <script type="text/javascript">
+            function confirm_YWN0aW9ucy5leHBsb2(){
+                var confirmed = confirm("Press Ok to let me explode.");
+                if (confirmed)
+                    return true;
+                return false;
+            }
+            document.getElementById("actions.explode").onclick = confirm_YWN0aW9ucy5leHBsb2;
+        </script>

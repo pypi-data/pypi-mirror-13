@@ -1,0 +1,179 @@
+=========
+Base Form
+=========
+
+When doing simple add- and editforms there are always quite a few basics 
+to implement, so these classes should make it a bit more convenient.
+
+To get started we define a simple schema:
+
+>>> import zope.interface
+>>> import zope.schema
+>>>
+>>> class IPizza(zope.interface.Interface):
+...
+...     topping = zope.schema.TextLine(title=u"Topping")
+...     price = zope.schema.Int(title=u"Price")
+...
+
+>>> import zope.app.container.contained
+>>> class Pizza(zope.app.container.contained.Contained):
+...     zope.interface.implements(IPizza)
+...
+
+>>> import zope.app.container.sample
+>>> class PizzaContainer(zope.app.container.sample.SampleContainer):
+...     """sample container for testing"""
+...
+
+>>> pizzacontainer = PizzaContainer()
+>>> site = getRootFolder()
+>>> pizzacontainer.__parent__ = site
+>>> pizzacontainer.__name__ = 'pizzacontainer'
+>>> pizzacontainer2 = PizzaContainer()
+>>> pizzacontainer2.__parent__ = site
+>>> pizzacontainer2.__name__ = 'pizzacontainer2'
+
+
+=============
+Add form base
+=============
+
+Define an addform using our base class
+
+>>> import zope.formlib.form
+>>> import z3c.pagelet.browser
+>>> import gocept.form.base
+>>>
+>>> class AddPizza(gocept.form.base.Add, z3c.pagelet.browser.PageletAddForm):
+...
+...     form_fields = zope.formlib.form.Fields(IPizza)
+...     factory = Pizza
+...
+
+Create the object using the create method of the base class
+
+>>> import zope.publisher.browser
+>>> request = zope.publisher.browser.TestRequest()
+>>> addform = AddPizza(pizzacontainer, request)
+>>> pizza = addform.create({'topping': u'Cheese', 'price': 100})
+
+We now created a Pizza object with with topping set to Cheese and price to 100
+
+>>> pizza
+<Pizza object at 0x...>
+>>> pizza.topping
+u'Cheese'
+>>> pizza.price
+100
+
+Now we can add the pizza to the context of the addform
+
+>>> addform.add(pizza)
+
+Default name of the newly added object is the class name
+
+>>> pizzacontainer['Pizza']
+<Pizza object at 0x...>
+
+our nextURL method now returns the url of the added pizza
+
+>>> addform.nextURL()
+'http://127.0.0.1/pizzacontainer/Pizza'
+
+>>> addform.redirect_to_context_after_add = True
+>>> addform.nextURL()
+'http://127.0.0.1/pizzacontainer'
+
+
+==============
+Edit form base
+==============
+
+>>> import zope.security.testing
+>>> principal = zope.security.testing.Principal(u'zope.mgr')
+>>> request.setPrincipal(principal)
+>>> import zope.security.management
+>>> zope.security.management.newInteraction(request)
+
+
+Define an editform with our base class
+
+>>> import zope.formlib.form
+>>> class EditPizza(gocept.form.base.Edit, zope.formlib.form.EditForm):
+...     
+...     form_fields = zope.formlib.form.Fields(IPizza)
+...
+...     def notify(self, message):
+...         self.notified = message
+...
+>>> editform = EditPizza(pizza, request)
+>>> print editform.render()
+<html>
+  ...
+    <table class="form-fields">
+  ...
+</html>
+
+nextURL should now return the url of the parent because the default
+setting of redirect_to_parent_after_edit is True
+
+>>> editform.nextURL()
+'http://127.0.0.1/pizzacontainer'
+
+If we don't want to redirect to the parent and there is no view set to redirect to,
+and no new interface is given, nextURL returns none.
+
+>>> editform.redirect_to_parent_after_edit = False
+>>> print editform.nextURL()
+None
+
+Redirect to a view after edit.
+
+>>> editform.redirect_to_view = 'blablubb'
+>>> editform.nextURL()
+'http://127.0.0.1/pizzacontainer/Pizza/@@blablubb'
+
+Redirect to a view of the parent after edit.
+
+>>> editform.redirect_to_parent_after_edit = True
+>>> editform.nextURL()
+'http://127.0.0.1/pizzacontainer/@@blablubb'
+
+Redirect to another context after edit.
+
+To test this we need an adapter which can adapt a pizza.
+
+>>> class IFoo(zope.interface.Interface):
+...     """dummy interface"""
+...     pass
+...
+
+>>> import zope.component
+>>> class Foo(object):
+...
+...     zope.interface.implements(IFoo)
+...     zope.component.adapts(IPizza)
+...
+...     def __init__(self, context):
+...         self.context = context
+...         self.__parent__ = pizzacontainer2
+...         self.__name__ = 'foo'
+...
+
+>>> gsm = zope.component.getGlobalSiteManager()
+>>> gsm.registerAdapter(Foo)
+
+>>> editform.new_context_interface = IFoo
+>>> editform.redirect_to_parent_after_edit = False
+>>> editform.nextURL()
+'http://127.0.0.1/pizzacontainer2/foo/@@blablubb'
+
+>>> editform.redirect_to_parent_after_edit = True
+>>> editform.nextURL()
+'http://127.0.0.1/pizzacontainer2/@@blablubb'
+
+
+
+
+>>> zope.security.management.endInteraction()

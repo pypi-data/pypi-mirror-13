@@ -1,0 +1,121 @@
+===================
+Grouped Form Fields
+===================
+
+Rendering forms by just putting out one long list of fields is almost never
+usable. The approach taken here is to group fields together and apply styling
+via CSS.
+
+
+Let's define a schema which we will group then:
+
+>>> import zope.interface
+>>> import zope.schema
+>>>
+>>> class IContact(zope.interface.Interface):
+...
+...     first_name = zope.schema.TextLine(title=u"First name")
+...     last_name = zope.schema.TextLine(title=u"Last name")
+...     street = zope.schema.TextLine(title=u"Street")
+...     city = zope.schema.TextLine(title=u"City")
+...     birth_date = zope.schema.Date(title=u"Birth date")
+...
+
+Define an add form:
+
+>>> import zope.formlib.form
+>>> import gocept.form.grouped
+>>> class AddForm(gocept.form.grouped.AddForm):
+...
+...     field_groups = (
+...         gocept.form.grouped.Fields(
+...             u'Name', ('first_name', 'last_name'), css_class='class-a'),
+...         gocept.form.grouped.Fields(
+...             u'Address', ('street', 'city', 'nonexisting'), css_class='class-b'),
+...     )
+...
+...     form_fields = zope.formlib.form.FormFields(IContact)
+...
+
+Notice: The field 'nonexisting' will not cause an error because nonexisting
+fields are ignored.
+
+Log in a user:
+
+>>> import zope.security.testing
+>>> principal = zope.security.testing.Principal(u'zope.mgr')
+>>> participation = zope.security.testing.Participation(principal)
+>>> import zope.security.management
+>>> zope.security.management.newInteraction(participation)
+
+
+Instanciate the add form:
+
+>>> import zope.publisher.browser
+>>> request = zope.publisher.browser.TestRequest()
+>>> request.setPrincipal(principal)
+>>> form = AddForm(object(), request)
+
+
+And render it:
+
+>>> print form.render()
+<html>
+    ...
+    <fieldset class="class-a">
+        <legend>Name</legend>
+        ...
+        ...<input ... name="form.first_name"...
+        ...<input ... name="form.last_name"...
+        ...
+    </fieldset>
+    <fieldset class="class-b">
+        <legend>Address</legend>
+        ...
+        ...<input ... name="form.street"...
+        ...<input ... name="form.city"...
+        ...
+    </fieldset>
+    <fieldset>
+        <legend></legend>
+        ...
+        ...<input ... name="form.birth_date"...
+        ...
+    </fieldset>
+    ...
+
+
+Make sure the sort order is stable even when RemainingFields are used:
+
+>>> class AddForm(gocept.form.grouped.AddForm):
+...
+...     field_groups = (
+...         gocept.form.grouped.RemainingFields(
+...             u'Name', css_class='class-a'),
+...         gocept.form.grouped.Fields(
+...             u'Address', ('street', 'city', 'nonexisting'), css_class='class-b'),
+...     )
+...
+...     form_fields = zope.formlib.form.FormFields(IContact)
+...
+>>> form = AddForm(object(), request)
+>>> form.setUpWidgets()
+
+The groups are in the right order:
+
+>>> import pprint
+>>> pprint.pprint(form.widget_groups)
+[{'meta': <gocept.form.grouped.RemainingFields object at 0x...>,
+  'widgets': <zope.formlib.form.Widgets object at 0x...>},
+ {'meta': <gocept.form.grouped.Fields object at 0x...>,
+  'widgets': <zope.formlib.form.Widgets object at 0x...>}]
+
+The remaining group has the right widgets:
+
+>>> [w.name for w in form.widget_groups[0]['widgets']]
+['form.first_name', 'form.last_name', 'form.birth_date']
+>>> [w.name for w in form.widget_groups[1]['widgets']]
+['form.street', 'form.city']
+
+
+>>> zope.security.management.endInteraction()
