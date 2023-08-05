@@ -1,0 +1,20 @@
+{% extends widget.get_base_template %}
+
+{% load i18n static %}
+
+{% block content %}
+<script src="{% static 'js/lib/jquery.waypoints.min.js' %}"></script>
+
+<span class="counter counter-analog counter-{{ widget.fe_identifier }}" data-fittext data-fittext-max="110">{{ widget.number }}</span>
+
+<script>
+jQuery(document).ready(function($) {
+	$('.counter-{{ widget.fe_identifier }}').appear(function() {
+	    $('.counter-{{ widget.fe_identifier }}').counterUp({
+	      delay: 10,
+	      time: {{ widget.interval }}
+	    });
+	});
+});
+</script>
+{% endblock %}
