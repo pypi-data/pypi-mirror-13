@@ -1,0 +1,145 @@
+#! /usr/bin/env python
+# -*- python -*-
+
+####################################################################################################
+# 
+# PyOpenGLng - An OpenGL Python Wrapper with a High Level API.
+# Copyright (C) 2014 Fabrice Salvaire
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# 
+####################################################################################################
+
+####################################################################################################
+
+import argparse
+import logging
+import sys
+
+try:
+    from PyQt5 import QtCore
+    from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QHBoxLayout
+    IS_PYQT5 = True
+except ImportError:
+    from PyQt4 import QtCore
+    from PyQt4.QtGui import QApplication, QMainWindow, QWidget, QHBoxLayout
+    IS_PYQT5 = False
+
+####################################################################################################
+#
+# Options
+#
+
+argument_parser = argparse.ArgumentParser(
+    description='PyOpenGLng example',
+    formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
+
+argument_parser.add_argument('--debug-level',
+                             default='none',
+                             choices=('none', 'warning', 'info', 'debug', 'opengl'),
+                             help='logging level')
+
+argument_parser.add_argument('--opengl',
+                             default='v3',
+                             choices=('v3', 'v4'),
+                             help='OpenGL version')
+
+argument_parser.add_argument('--wrapper',
+                             default='ctypes',
+                             choices=('ctypes', 'cffi'),
+                             help='set the wrapper')
+
+argument_parser.add_argument('--example',
+                             default='2d',
+                             choices=('2d', '3d'),
+                             help='Select example')
+
+args = argument_parser.parse_args()
+
+####################################################################################################
+#
+# Logging
+#
+
+# Place here in order to enable logging
+
+if args.debug_level == 'opengl':
+    import OpenGL
+    OpenGL.FULL_LOGGING = True
+    level = logging.DEBUG
+elif args.debug_level == 'debug':
+    level = logging.DEBUG
+elif args.debug_level == 'info':
+    level=logging.INFO
+elif args.debug_level == 'warning':
+    level = logging.WARNING
+
+if args.debug_level != 'none':
+    logging.basicConfig(
+        format='\033[1;32m%(asctime)s\033[0m - \033[1;34m%(name)s - %(module)s.%(funcName)s\033[0m - \033[1;31m%(levelname)s\033[0m - %(message)s',
+        level=level,
+        )
+
+####################################################################################################
+
+if args.example == '2d':
+    if args.opengl == 'v3':
+        from GlWidgetV3 import GlWidget
+    elif args.opengl == 'v4':
+        from GlWidgetV4 import GlWidget
+    else:
+        raise ValueError('Unsupported OpenGL version')
+elif args.example == '3d':
+    from GlWidget3dV4 import GlWidget
+else:
+    raise ValueError('Unknown example')
+
+####################################################################################################
+
+class MainWindow(QMainWindow):
+    
+    def __init__ (self):
+        
+        super(MainWindow, self).__init__()
+
+        self.gl_widget = GlWidget(self)
+        self.gl_widget.setFocusPolicy(QtCore.Qt.ClickFocus)
+        self.setCentralWidget(self.gl_widget)
+
+        self.resize(800, 800)
+
+####################################################################################################
+
+class Application(QApplication):
+    
+    def __init__(self):
+        
+        super(Application, self).__init__(sys.argv)
+        
+        self.main_window = MainWindow()
+        self.main_window.show()
+
+####################################################################################################
+
+if __name__ == "__main__":
+
+    application = Application()
+    application.exec_()
+
+####################################################################################################
+#
+# End
+#
+####################################################################################################
