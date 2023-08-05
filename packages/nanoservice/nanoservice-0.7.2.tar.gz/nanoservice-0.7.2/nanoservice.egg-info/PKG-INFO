@@ -1,0 +1,120 @@
+Metadata-Version: 1.1
+Name: nanoservice
+Version: 0.7.2
+Summary: nanoservice is a small Python library for writing lightweight networked services using nanomsg
+Home-page: https://github.com/walkr/nanoservice
+Author: Tony Walker
+Author-email: walkr.walkr@gmail.com
+License: MIT
+Description: nanoservice
+        ===========
+        
+        nanoservice is a small Python library for writing lightweight networked
+        services using `nanomsg <http://nanomsg.org/>`__
+        
+        With nanoservice you can break up monolithic applications into small,
+        specialized services which communicate with each other.
+        
+        |Build Status|
+        
+        Install
+        -------
+        
+        1) Make sure you have the nanomsg library installed:
+        
+        .. code:: shell
+        
+            $ git clone git@github.com:nanomsg/nanomsg.git
+            $ ./configure
+            $ make
+            $ make check
+            $ sudo make install
+        
+        For more details visit the official `nanomsg
+        repo <https://github.com/nanomsg/nanomsg>`__
+        
+        On OS X you can also do:
+        
+        .. code:: shell
+        
+            $ brew install nanomsg
+        
+        2) Install nanoservice:
+        
+        From project directory
+        
+        .. code:: shell
+        
+            $ make install
+        
+        Or via pip
+        
+        .. code:: shell
+        
+            $ pip install nanoservice (it's broken)
+        
+        Example Usage
+        -------------
+        
+        The service:
+        
+        .. code:: python
+        
+            from nanoservice import Responder
+        
+            def echo(msg):
+                return msg
+        
+            s = Responder('ipc:///tmp/service.sock')
+            s.register('echo', echo)
+            s.start()
+        
+        .. code:: shell
+        
+            $ python echo_service.py
+        
+        The client:
+        
+        .. code:: python
+        
+            from nanoservice import Requester
+        
+            c = Requester('ipc:///tmp/service.sock')
+            res, err = c.call('echo', 'hello world’)
+            print('Result is {}'.format(res))
+        
+        .. code:: shell
+        
+            $ python my_client.py
+            $ Result is: hello world
+        
+        Other
+        -----
+        
+        To run tests:
+        
+        .. code:: shell
+        
+            $ make test
+        
+        To run benchmarks
+        
+        .. code:: shell
+        
+            $ make bench
+        
+        Check out examples directory for more examples.
+        
+        MIT Licensed
+        
+        .. |Build Status| image:: https://travis-ci.org/walkr/nanoservice.svg?branch=master
+           :target: https://travis-ci.org/walkr/nanoservice
+        
+Platform: UNKNOWN
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.3
+Classifier: Programming Language :: Python :: 3.4
+Classifier: Programming Language :: Python :: Implementation :: CPython
+Classifier: Programming Language :: Python :: Implementation :: PyPy
