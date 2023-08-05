@@ -1,0 +1,126 @@
+Metadata-Version: 2.0
+Name: fauxmo
+Version: 0.1.2
+Summary: Emulated Belkin WeMo devices that work with the Amazon Echo
+Home-page: https://github.com/n8henrie/fauxmo
+Author: Nathan Henrie
+Author-email: nate@n8henrie.com
+License: MIT
+Keywords: fauxmo,alexa,amazon echo
+Platform: UNKNOWN
+Classifier: Natural Language :: English
+Classifier: Programming Language :: Python :: 3.4
+Classifier: Programming Language :: Python :: 3.5
+Requires-Dist: Jinja2 (==2.8)
+Requires-Dist: MarkupSafe (==0.23)
+Requires-Dist: PyYAML (==3.11)
+Requires-Dist: homeassistant (==0.10.1)
+Requires-Dist: pytz (==2015.7)
+Requires-Dist: requests (==2.9.1)
+Requires-Dist: vincenty (==0.1.3)
+
+fauxmo
+======
+
+Python 3 module that emulates Belkin WeMo devices for use with the
+Amazon Echo.
+
+Updates 20151231 by @n8henrie:
+------------------------------
+
+-  see
+   `HISTORY.md <https://github.com/n8henrie/fauxmo/blob/master/HISTORY.md>`__
+-  All credit goes to @makermusings for `the original version of
+   Fauxmo <https://github.com/makermusings/fauxmo>`__!
+
+   -  Also thanks to @DoWhileGeek for commits towards python 3
+      compatibility
+
+Summary
+-------
+
+The Amazon Echo will allow you to control a limited number of home
+automation devices by voice. If you want to control device types that it
+doesn't know about, or perform more sophisticated actions, the Echo
+doesn't provide any native options. This code emulates the Belkin WeMo
+devices in software, allowing you to have it appear that any number of
+them are on your network and to link their on and off actions to any
+code you want.
+
+Usage
+-----
+
+1. ``cp config-sample.json config.json``
+2. Edit config.json
+3. ``python3 fauxmo.py [-v]``
+4. Have the Echo "find connected devices"
+5. Test: "Alexa turn on [the kitchen light]"
+
+Currently all the code is in ``fauxmo.py``, but I hope to refactor it
+into a module soon. It has an example REST handler class that reacts to
+on and off commands using the
+`python-requests <http://docs.python-requests.org/en/latest/>`__ library
+as well as a handler for the `Home Assistant Python
+API <https://home-assistant.io/developers/python_api>`__; these are
+examples of a multitude of ways that you could have the Echo trigger an
+action.
+
+**Note:** unless you specify port numbers in the creation of your fauxmo
+objetcs, your virtual switch devices will use a different port every
+time you run fauxmo.py, which will make it hard for the Echo to find
+them. So you should plan to either leave the script running for long
+periods or choose fixed port numbers.
+
+Once fauxmo.py is running, simply tell your Echo to "find connected
+devices" or open a browser to or your mobile device to the `connected
+home settings <http://alexa.amazon.com/#settings/connected-home>`__ page
+and ``Discover devices``
+
+Reading list:
+-------------
+
+-  http://www.makermusings.com/2015/07/13/amazon-echo-and-home-automation
+-  http://www.makermusings.com/2015/07/18/virtual-wemo-code-for-amazon-echo
+-  http://hackaday.com/2015/07/16/how-to-make-amazon-echo-control-fake-wemo-devices
+-  https://developer.amazon.com/appsandservices/solutions/alexa/alexa-skills-kit
+-  https://en.wikipedia.org/wiki/Universal_Plug_and_Play
+-  http://www.makermusings.com/2015/07/19/home-automation-with-amazon-echo-apps-part-1
+-  http://www.makermusings.com/2015/08/22/home-automation-with-amazon-echo-apps-part-2
+
+
+Changelog
+=========
+
+0.1.2 :: 20160104
+-----------------
+
+-  Fix MANIFEST.in to include ``sample-config.json`` and other dev files
+-  Update setup.py to extract version from ``fauxmo/__init__.py``
+
+0.1.1 :: 20160104
+-----------------
+
+-  Fix ReST from Markdown rendering issue for PyPI
+
+0.1.0 :: 20151231
+-----------------
+
+-  Continue to convert to python3 code
+-  Pulled in a few PRs by [@DoWhileGeek](https://github.com/DoWhileGeek)
+   working towards python3 compatibility and improved devices naming
+   with dictionary
+-  Renamed a fair number of classes
+-  Added kwargs to several class and function calls for clarity
+-  Renamed several variables for clarity
+-  Got rid of a few empty methods
+-  Import devices from ``config.json`` and include a sample
+-  Support ``POST``, headers, and json data in the RestApiHandler
+-  Change old debug function to use logging module
+-  Got rid of some unused dependencies
+-  Moved license (MIT) info to LICENSE
+-  Added argparse for future console scripts entry point
+-  Added Home Assistant API handler class
+-  Use "string".format() instead of percent
+-  Lots of other minor refactoring
+
+
