@@ -1,0 +1,256 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Migrating from SkoolKit 4 &mdash; SkoolKit 5.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '5.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="SkoolKit 5.1 documentation" href="index.html" />
+    <link rel="next" title="Changelog" href="changelog.html" />
+    <link rel="prev" title="Supported assemblers" href="assemblers.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="changelog.html" title="Changelog"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="assemblers.html" title="Supported assemblers"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">SkoolKit 5.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="migrating-from-skoolkit-4">
+<span id="migrating"></span><h1>Migrating from SkoolKit 4<a class="headerlink" href="#migrating-from-skoolkit-4" title="Permalink to this headline">¶</a></h1>
+<p>SkoolKit 5 includes some changes that make it incompatible with SkoolKit 4. If
+you have developed a disassembly using SkoolKit 4 and find that the SkoolKit
+commands no longer work with your control files or skool files, or produce
+broken output, look through the following sections for tips on how to migrate
+your disassembly to SkoolKit 5.</p>
+<div class="section" id="d-directives">
+<h2>D directives<a class="headerlink" href="#d-directives" title="Permalink to this headline">¶</a></h2>
+<p>In SkoolKit 4, the <tt class="docutils literal"><span class="pre">D</span></tt> directive in a control file could be used to define a
+block description or a mid-block comment. In SkoolKit 5, the <tt class="docutils literal"><span class="pre">D</span></tt> directive
+defines block descriptions only; to define a mid-block comment, use the <tt class="docutils literal"><span class="pre">N</span></tt>
+directive instead.</p>
+</div>
+<div class="section" id="address-ranges-in-control-directives">
+<h2>Address ranges in control directives<a class="headerlink" href="#address-ranges-in-control-directives" title="Permalink to this headline">¶</a></h2>
+<p>In SkoolKit 4, the extent of a sub-block directive in a control file could be
+specified by an address range; for example:</p>
+<div class="highlight-none"><div class="highlight"><pre>B 40000-40009
+</pre></div>
+</div>
+<p>In SkoolKit 5, address ranges are no longer supported, and this directive must
+be rewritten with a length parameter:</p>
+<div class="highlight-none"><div class="highlight"><pre>B 40000,10
+</pre></div>
+</div>
+</div>
+<div class="section" id="asm-directives">
+<h2>ASM directives<a class="headerlink" href="#asm-directives" title="Permalink to this headline">¶</a></h2>
+<p>In SkoolKit 4, ASM directives could be declared in a control file or a skool
+file by starting a line with <tt class="docutils literal"><span class="pre">;</span> <span class="pre">&#64;</span></tt>; for example, in a control file:</p>
+<div class="highlight-none"><div class="highlight"><pre>; @label:24576=START
+</pre></div>
+</div>
+<p>and in a skool file (or skool file template):</p>
+<div class="highlight-none"><div class="highlight"><pre>; @label=START
+</pre></div>
+</div>
+<p>This syntax is no longer supported. In SkoolKit 5, ASM directives must be
+declared in a control file by using the <tt class="docutils literal"><span class="pre">&#64;</span></tt> directive:</p>
+<div class="highlight-none"><div class="highlight"><pre>@ 24576 label=START
+</pre></div>
+</div>
+<p>and in a skool file (or skool file template) by starting a line with <tt class="docutils literal"><span class="pre">&#64;</span></tt>:</p>
+<div class="highlight-none"><div class="highlight"><pre>@label=START
+</pre></div>
+</div>
+</div>
+<div class="section" id="html-templates-and-css">
+<h2>HTML templates and CSS<a class="headerlink" href="#html-templates-and-css" title="Permalink to this headline">¶</a></h2>
+<p>If you are using any custom <a class="reference internal" href="html-templates.html#htmltemplates"><em>HTML templates</em></a> - in particular the full-page
+templates or the <a class="reference internal" href="html-templates.html#t-anchor"><em>anchor</em></a> template - or custom CSS, there are some
+changes to be aware of.</p>
+<p>In SkoolKit 4:</p>
+<ul class="simple">
+<li>the default full-page templates use the XHTML 1.0 Strict DOCTYPE</li>
+<li>every full-page template contains its own copy of the page footer</li>
+<li>the <tt class="docutils literal"><span class="pre">anchor</span></tt> template uses an <tt class="docutils literal"><span class="pre">&lt;a&gt;</span></tt> element with a <tt class="docutils literal"><span class="pre">name</span></tt> attribute</li>
+<li>every <tt class="docutils literal"><span class="pre">&lt;a&gt;</span></tt> element that defines a hyperlink has a <tt class="docutils literal"><span class="pre">class=&quot;link&quot;</span></tt>
+attribute</li>
+</ul>
+<p>In SkoolKit 5:</p>
+<ul class="simple">
+<li>the default full-page templates have been converted to HTML5</li>
+<li>every full-page template uses the <a class="reference internal" href="html-templates.html#t-footer"><em>footer</em></a> template to format the page
+footer</li>
+<li>the <tt class="docutils literal"><span class="pre">anchor</span></tt> template uses a <tt class="docutils literal"><span class="pre">&lt;span&gt;</span></tt> element with an <tt class="docutils literal"><span class="pre">id</span></tt> attribute</li>
+<li>the <tt class="docutils literal"><span class="pre">class=&quot;link&quot;</span></tt> attribute has been removed from every <tt class="docutils literal"><span class="pre">&lt;a&gt;</span></tt> element
+that defines a hyperlink</li>
+</ul>
+<p>This means that if you are using any custom full-page templates or a custom
+<tt class="docutils literal"><span class="pre">anchor</span></tt> template, you should ensure that they are consistent (i.e. produce
+valid HTML5 or XHTML 1.0 as required when used in combination).</p>
+<p>In addition, if you are using any custom full-page templates, you should either
+replace the page footer (the <tt class="docutils literal"><span class="pre">&lt;div</span> <span class="pre">class=&quot;footer&quot;&gt;</span></tt> element) with a
+<tt class="docutils literal"><span class="pre">{t_footer}</span></tt> replacement field, or reinstate the CSS rule for <tt class="docutils literal"><span class="pre">div.footer</span></tt>
+from SkoolKit 4:</p>
+<div class="highlight-none"><div class="highlight"><pre>div.footer {
+  clear: both;
+  margin-top: 10px;
+  text-align: center;
+}
+</pre></div>
+</div>
+<p>And finally, if you have defined any custom CSS rules for hyperlinks, you
+should remove the &#8216;link&#8217; class from the selectors. For example, this CSS rule
+from <cite>skoolkit.css</cite> in SkoolKit 4:</p>
+<div class="highlight-none"><div class="highlight"><pre>a.link { color: #ffff00; }
+</pre></div>
+</div>
+<p>has become this in SkoolKit 5:</p>
+<div class="highlight-none"><div class="highlight"><pre>a { color: #ffff00; }
+</pre></div>
+</div>
+</div>
+<div class="section" id="skool2asm-py">
+<h2>skool2asm.py<a class="headerlink" href="#skool2asm-py" title="Permalink to this headline">¶</a></h2>
+<p>In SkoolKit 4 and earlier versions, <a class="reference internal" href="commands.html#skool2asm-py"><em>skool2asm.py</em></a> sported the
+<tt class="docutils literal"><span class="pre">-d/--crlf</span></tt> option (to use CR+LF to end lines instead of the system default),
+the <tt class="docutils literal"><span class="pre">-i/--inst-width</span></tt> option (to set the width of the instruction field), and
+the <tt class="docutils literal"><span class="pre">-t/--tabs</span></tt> option (to use tab to indent instructions). These options
+have been removed in SkoolKit 5, but their effects can be achieved with the
+new <tt class="docutils literal"><span class="pre">-P/--set</span></tt> option:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="39%" />
+<col width="61%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">SkoolKit 4</th>
+<th class="head">SkoolKit 5</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><tt class="docutils literal"><span class="pre">--crlf</span></tt></td>
+<td><tt class="docutils literal"><span class="pre">--set</span> <span class="pre">crlf=1</span></tt></td>
+</tr>
+<tr class="row-odd"><td><tt class="docutils literal"><span class="pre">--inst-width</span> <span class="pre">N</span></tt></td>
+<td><tt class="docutils literal"><span class="pre">--set</span> <span class="pre">instruction-width=N</span></tt></td>
+</tr>
+<tr class="row-even"><td><tt class="docutils literal"><span class="pre">--tabs</span></tt></td>
+<td><tt class="docutils literal"><span class="pre">--set</span> <span class="pre">tab=1</span></tt></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="skoolkit4to5-py">
+<h2>skoolkit4to5.py<a class="headerlink" href="#skoolkit4to5-py" title="Permalink to this headline">¶</a></h2>
+<p>The <a class="reference external" href="https://github.com/skoolkid/skoolkit/raw/master/utils/skoolkit4to5.py">skoolkit4to5.py</a> script may be used to convert a control file, skool
+file, skool file template or CSS file that is compatible with SkoolKit 4 into a
+file that will work with SkoolKit 5. For example, to convert <cite>game.skool</cite>:</p>
+<div class="highlight-none"><div class="highlight"><pre>$ skoolkit4to5.py game.skool &gt; game5.skool
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Migrating from SkoolKit 4</a><ul>
+<li><a class="reference internal" href="#d-directives">D directives</a></li>
+<li><a class="reference internal" href="#address-ranges-in-control-directives">Address ranges in control directives</a></li>
+<li><a class="reference internal" href="#asm-directives">ASM directives</a></li>
+<li><a class="reference internal" href="#html-templates-and-css">HTML templates and CSS</a></li>
+<li><a class="reference internal" href="#skool2asm-py">skool2asm.py</a></li>
+<li><a class="reference internal" href="#skoolkit4to5-py">skoolkit4to5.py</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="assemblers.html"
+                        title="previous chapter">Supported assemblers</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="changelog.html"
+                        title="next chapter">Changelog</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/migration.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="changelog.html" title="Changelog"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="assemblers.html" title="Supported assemblers"
+             >previous</a> |</li>
+        <li><a href="index.html">SkoolKit 5.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2016, Richard Dymond.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>
