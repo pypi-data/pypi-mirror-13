@@ -1,0 +1,16 @@
+{% extends base_template %}
+
+{% block blog_content %}
+<div class="post-preview">
+    <h2 class="post-title">{{ post.title }}</h2>
+    <p class="post-byline">Posted by <a href="{% url 'blog_author' post.author.slug %}">{{ post.author.first_name }} {{ post.author.last_name }}</a> on {{ post.created }}
+    <span class="text-muted"> in </span>
+    {% for category in post.categories %}
+    <span class="label label-default"><a href="{% url 'blog_category' category.slug %}">{{category.name}}</a></span>
+    {% endfor %}
+    </p>
+    <p class="post-subtitle">{{ post.body }}</p>
+</div>
+{% endblock %}
+
+
