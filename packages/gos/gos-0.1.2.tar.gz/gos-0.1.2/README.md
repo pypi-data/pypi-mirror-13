@@ -1,0 +1,2 @@
+# gos
+Generically organizable supervisor 
