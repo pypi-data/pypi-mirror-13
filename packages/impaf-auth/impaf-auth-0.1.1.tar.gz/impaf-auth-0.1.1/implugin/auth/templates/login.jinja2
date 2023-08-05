@@ -1,0 +1,34 @@
+{% extends auth['main_template'] %}
+
+{% block body %}
+    <div class="container">
+        <div class="row">
+            <div class="col-md-4 col-md-offset-4">
+                <h1 class="page-header">{{auth['header']}}</h1>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4 col-md-offset-4">
+                <div class="login-panel panel panel-default">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">Proszę się zalogować</h3>
+                    </div>
+                    {{form.form_error()}}
+                    <div class="panel-body">
+                        {{form.begin()}}
+                            <fieldset>
+                                {{form.text('email')}}
+                                {{form.password('password')}}
+                                {{form.submit('Zaloguj')}}
+                            </fieldset>
+                        {{form.end()}}
+                        {% if auth['enable_register_link'] %}
+                            Nie masz konta? <a href="{{ route_path('auth:register') }}">Zarejestruj się</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
