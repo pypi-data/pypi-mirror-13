@@ -1,0 +1,27 @@
+<!--StacksImageList 3-up Grid-->
+
+<div class="stacks-module list-3up stacks-image stacks-image-list-3up grid">
+    <h3 class="module-title">{{ context.display_title }}</h3>
+    {% for image in context.images %}
+    {% if forloop.first or forloop.counter0|divisibleby:'3' %}
+    <div class="media-row grid-row">
+    {% endif %}
+        <div class="grid-3up grid-block
+            {% if forloop.first or forloop.counter0|divisibleby:'3' %}first-in-row{% endif %} {% if forloop.counter|divisibleby:'3' %}last-in-row{% endif %}">
+            <div class="image-container">
+                <img class="lazy" data-original="{{ image.image.3up_thumb }}" alt="{{ image.display_title }}"/>
+                {% if context.attribution %}
+                    <p class="attribution">{{ context.attribution }}</p>
+                {% endif %}
+            </div>
+            {% if image.optional_content.raw_text %}
+            <div class="text-container">
+                {{ image.optional_content.as_html }}
+            </div>
+            {% endif %}
+        </div>
+    {% if forloop.last or forloop.counter|divisibleby:'3' %}
+    </div>
+    {% endif %}
+    {% endfor %}
+</div>
