@@ -1,0 +1,39 @@
+# README #
+
+This project was created to automatize an important task in water aquariums, control the temperature to provide a stable environment to fish life.
+
+There are some solutions with thermostat and another devices to temperature control/monitor, in pet shops.
+
+### Motivation ###
+
+It's complicated take an aquarium, during all day, if you work/study all the week
+So, what is possible to do?
+I thought  in create a system to monitor the temperature (okay, already exists!), and a system to video monitor (okay again, already exists). 
+Although, I unified these systems, to create a more simple, using open source projects, in the web.
+
+### Features ###
+
+* Temperature monitor, using DS18B20
+* Temperature heater
+* Video monitor
+
+### The cost $$$ ###
+
+Buy just a thermostat with an embedded heater, cost about 15 U$.
+
+Produce this project will cost about:
+* Raspberry Pi 35 U$
+* DS18B20 5 U$
+* Relay 3 U$
+* Aquarium heater 10W 5U$
+Total: 48 U$
+
+### What will run? ###
+It's very simple:
+* [Motion](http://www.lavrsen.dk/foswiki/bin/view/Motion)
+* [Python](http://www.python.org)
+
+### Who do I talk to? ###
+
+* Uilian Ries <uilianries@gmail.com>
+
