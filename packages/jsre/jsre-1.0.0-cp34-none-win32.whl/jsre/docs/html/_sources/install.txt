@@ -1,0 +1,147 @@
+============
+Installation
+============
+
+The recommended way to install jsre is to use the Python ``pip`` utility which will 
+download the module from the pypi repository then install it. 
+
+This section briefly describes module installation, testing, and extending the installed 
+set of encodings if required.
+
+jsre is compatible with Python 3, it is not available for Python 2. It has a single python extension written in C which is 
+pre-compiled in a *wheel* for Microsoft Windows, or is compiled by *pip* during Linux installation. 
+ 
+
+Windows Installation
+^^^^^^^^^^^^^^^^^^^^
+
+Since Python 3.4, ``pip`` is installed with Python; jsre install should be straightforward::
+
+    pip install jsre 
+
+Earlier versions of Python may need to install pip as a module and invoke it with ``python -m pip ...``.
+If you have multiple versions of Python installed you may need to use ``pip3``. If pip is not installed
+as a module (``import pip`` or ``import pip3`` both fail) then try ``python -m ensurepip`` to install 
+the package - it will already be available as a wheel on the system.
+
+Python Modules are installed to the site-packages directory; for Python 3.4 the installation 
+directory is::
+
+    ...Python3.4\Lib\site-packages\jsre
+    
+jsre documentation is installed in the ``docs`` subdirectory of the above path.
+
+After installation, check that all the components of the module have been installed by navigating to the module
+directory using the command line, then using ``tools test``. For example::
+
+    C:\Python34\Lib\site-packages\jsre>python tools.py test
+
+The script will generate warnings as part of its testing; it should complete with a message:: 
+    
+    Ran .. tests in .. seconds
+    OK
+
+Finally, check that the module can be accessed from an external Python script::
+
+    C:\Users\student>Python
+    Python 3.4.2 ... on win32 ...
+    >>> import jsre
+    >>> res = jsre.findall('b\w*','quick brown fox')
+    >>> print(str(res))
+    [('brown',)]
+
+This assumes that only one version of python is installed, if you have multiple versions then you may
+need to use version-specific commands (e.g. ``pip3.4``). An alternative (better) solution is to use virtual environments.
+
+Linux Installation
+^^^^^^^^^^^^^^^^^^
+
+There is considerable variation in Linux systems; the examples in this section may need to be 
+adjusted for your system, but the process is straightforward.  ``pip`` is used to install the 
+module and compile the associated C extension. There are no additional environmental libraries
+or modules required but since the extension must be compiled it is necessary to first install 
+the Python development extensions. For example, in Debian based systems such as Ubuntu::
+
+    sudo apt-get install build-essential python3.4-dev
+
+RHEL/CentOS/Fedora users will need to use *yum* in place of *apt-get*.
+
+In Python 3.4 *pip* should already be installed, this can be tested using ``pip3.4 -V``. Note that Ubuntu users 
+need to substitute ``pip3`` and ``Python3``, omitting the minor version:: 
+
+    user@ubuntu:~$ pip3 -V
+    pip 1.5.4 from /usr/lib/python3/dist-packages (python 3.4)
+
+Install pip if it is not present, for example in Ubuntu::
+
+    sudo apt-get install python3-pip
+
+Next use *pip* to download, compile and install the module::
+
+    sudo pip3 install jsre
+
+In Linux, Python modules are installed in ``dist-packages``, for example:: 
+
+    /usr/local/lib/python3.4/dist-packages/jsre
+
+After installation check that all the components of the module have been installed by navigating to the module
+directory, then using ``python tools.py test``. For example::
+
+    user@ubuntu:/usr/local/lib/python3.4/dist-packages/jsre$ sudo python3.4 tools.py test
+
+The script will generate warnings as part of its testing; it should complete with a message:: 
+    
+    Ran .. tests in .. seconds
+    OK
+
+Finally, check that the module can be accessed from an external Python script::
+
+    user@ubuntu:~$ python3
+    Python 3.4.0 ... on linux ...
+    >>> import jsre
+    >>> res = jsre.findall('b\w*', 'quick brown fox')
+    >>> print(str(res))
+    [('brown',)]
+
+Ubuntu is used as an example because it supports both python2 and python3, so the identification of versions
+in the commands is important. If you have only version 3 installed you may be able to simply use *pip*, *python*, etc.
+
+.. _ref_install_encoding:
+
+Encodings
+^^^^^^^^^
+
+jsre uses pre-compiled Unicode character classes for each encoding that is required. 
+
+Unicode Encodings installed by default are:
+
+    utf_8, utf_16_be, utf_16_le, utf_32_be, utf_32_le
+
+together with codepages for: 
+
+    ascii, cp1250, cp1251, cp1252, cp1253, cp1254, cp1255, cp1256, cp1257, cp1258
+    
+Users can install additional encodings from the available Python codecs using the *tools* script 
+as above with the argument *compile* followed by the codec name. For example, to install 
+cp858 from the jsre install directory, use (Windows)::
+
+    tools compile cp858
+
+or Linux::
+
+    sudo python3.4 tools.py compile cp858
+
+Compilation may take several minutes and should end with a *Compilation Complete* message. 
+
+Most user-installed encodings are likely to be ascii extensions/code pages; in this case expect
+warning messages that some character classes cannot be found, since not all classes can be
+represented in all encodings. You are still able to use the installed character classes.
+
+    
+    
+    
+
+
+ 
+
+

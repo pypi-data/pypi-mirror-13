@@ -1,0 +1,80 @@
+=======
+History
+=======
+
+**Updates to Version 1.0.0**
+
+'+' and '*' are now unlimited (ie not restricted to 65535 repetitions)
+Loop optimisation has now been extended to inner loops (previously just those
+at the start of an expression.). This improves performance significantly for
+expressions with embedded loops that are likely to capture long strings. 
+
+The matching sematics have now been clarified (thanks for several comments) so that the 
+'first longest' rule usually applies following POSIX, assuming that shortest (reluctant) 
+matching is not specified for a group. Reluctant matching is still supported.
+
+Bugfixes:
+The anchor movement process described below at beta 5 has been superceeded, since it
+was unsafe in the presence of invalid encodings that resulted from parsing inputs with
+sequences of different encodings. ('.*' does not now re-position the anchor after newline 
+on failure.) This change does not impact performance.
+
+**Updates to Version 1.0.0 beta 7**
+
+Minor bugfix (match() not in __init__, purge function)
+
+**Updates to Version 1.0.0 beta 6**
+
+Indexing alternative expressions (``INDEXALT`` flag) now applies to any alternative
+expression, not just to keywords.
+
+.. note:: 	The property of the :class:`Match` object which has the value of the matched pattern
+			is ``keypattern``. The original **keyword** property has been removed.
+
+:class:`Match` objects now have a *flags* property which are the flags used to compile 
+the matched expression. 
+
+**Updates to Version 1.0.0 beta 5**
+
+``__getstate__`` and ``__setstate__`` functions have been added to the extension 
+class (jsvm) to allow a compiled expression to be pickled. This is necessary 
+for use with the multiprocessing module on Windows.
+
+Backreferences are now supported.
+
+``match()`` and ``purge()`` functions have been added.
+
+Reluctant (lazy) quantifiers (e.g. ``+?``) are now supported in addition to the
+reluctant group extension; see :ref:`ref_example_reluctant` for details.
+
+The memory footprint is still limited below 10MB but its size is now adaptive 
+depending on the expression to be evaluated.
+
+The depreciated ASYNCHRONOUS flag has been removed.
+
+There are minor changes to syntax for compatibility with other matching engines;
+the most significant is that the default status of repeated groups and groups 
+that encompass the whole expression has changed from non-capturing to capturing. 
+
+All repeats are limited to a maximum of 65535. 
+Note that if the expression starts with ''.*'' or similar then this means that 
+if a match fails then the next match will be attempted after the following newline.
+However if DOTALL is set the anchor will be incremented and a match will be attempted 
+from every byte - the user can prevent this behaviour by setting an anchor stop
+position.
+
+**Updates to Version 1.0.0 beta 4**
+
+The primary update to beta 3 is to automatically detect expressions that start
+with .* and other similar prefixes. In previous versions it was necessary to 
+set the anchor stop at the start of the text buffer to prevent the vm uselessly 
+restarting a failed match from every position in the buffer. These cases are 
+now detected automatically.
+
+This modification has also improved the use of Multiline ``^``: the fast prefix 
+scanning available in the VM is now used to move the anchor point to each line 
+start. 
+
+The update also includes bug fixes (optimiser treatment of non-consuming groups 
+and thread order processing in counted loops) which appear seldom in 
+(my) practice but improve asyptotic performance. 

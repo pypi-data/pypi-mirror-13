@@ -1,0 +1,50 @@
+==================
+Unicode Compliance
+==================
+
+*jsre* provides level 1 support for Unicode compliant with `Unicode
+Technical Standard #18, UNICODE REGULAR EXPRESSIONS
+<http://unicode.org/reports/tr18/tr18-14.html>`_, version 1.7.
+
+The module supports all:
+
+*   Binary Properties (e.g. *\\p{Alphabetic}*).
+*   General Category Properties.  (e.g. *\\pP*).
+*   Scripts and Script Extensions.
+*   Line_Break properties (e.g. *\\p{line_break=hyphen}*).
+*   Numeric_Type properties (e.g. *\\p{numeric_type=decimal*).
+
+Property specification within the regular expression pattern is flexible;
+case does not matter, '-' and '_' are interchangable, and general categories
+and scripts may be referenced by property name. (e.g. *\\p{greek}* as
+well as *\\p{script=greek}*)
+
+Some special properties are supported. Appendix C of UTS #18 recommends
+a set of properties for use in regular expressions, which provide extensions and combinations
+of standard character classes. These are:
+
+    *lower, upper, punct, digit, xdigit, alnum, space, blank, cntrl, graph, print, word*
+
+*word* is defined as in UTS #18 and includes digits, *\\w* uses the same definition. The
+zero width tests *\\b* *\\B* also use this definition to determine word boundaries. (Note that
+the more extensive algorithm given for word breaks in Unicode Standard Annex #29 is not
+used.)
+
+The *\\X* test for Extended Grapheme Cluster boundaries implements the extended version
+of the specification given in Unicode Standard Annex #29.
+
+Some additional properties defined in UTS #18 1.2.1 and 1.6 are also supported:
+
+    *any, assigned, ascii*
+
+Note that *any* is every code point, unlike '.' which omits newline characters unless the DOTALL flag is set.
+
+The property:
+
+    *newline*
+
+is provided to specify the set of new line characters in UTS #18 1.6, ie the familiar \\u000A, \\u000B etc
+as well as the Unicode characters such as \\u2028.
+
+The actual support for Unicode properties depends on the encoding used for searching; for non-Unicode encodings (e.g. *CP1250*)
+properties are interpreted as the set of code points that can be represented under that encoding.

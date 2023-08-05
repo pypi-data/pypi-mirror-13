@@ -1,0 +1,163 @@
+===========
+Performance
+===========
+
+To give some indication of the practical performance of jsre the tests below were 
+carried out by matching patterns over a 6GByte disk image, divided into 6149 1 MByte buffers. The disk
+contains a complete Windows XP system including several user accounts, emails and web access and was
+originally developed for forensic teaching.
+
+Most of the tests below are limited to utf-8 encoding to allow comparison with the 
+time taken by the Python re module for the same task; in all cases the results between 
+the two engines are identical. Test times are given in seconds, and the time measured is 
+the accumulated time in the regular expression match function. The wall-clock time for 
+each test was typically 25 seconds longer, mostly consisting of disk reads. 
+The timings were carried out on a single core of a i7-3517Y laptop processor.
+
+Pattern Complexity
+^^^^^^^^^^^^^^^^^^
+
+One case which allows increasing complexity to be evaluated is searching for credit card numbers,
+because the various expressions are of similar complexity and can be combined straightforwardly
+to incease the complexity of the test expression. Six patterms were used:
+
+
++-------+------------------------------------+-------------------+
+| Index | Pattern                            | Card Type         |
++=======+====================================+===================+
+| 1     | ``4[0-9]{12}(?:[0-9]{3})?``        | Visa              |
++-------+------------------------------------+-------------------+
+| 2     | ``5[1-5][0-9]{14}``                | Master Card       |
++-------+------------------------------------+-------------------+
+| 3     | ``3[47][0-9]{13}``                 | American Express  |
++-------+------------------------------------+-------------------+
+| 4     | ``3(?:0[0-5]|[68][0-9])[0-9]{11}`` | Diners Club       |
++-------+------------------------------------+-------------------+
+| 5     | ``6(?:011|5[0-9]{2})[0-9]{12}``    | Discovery         |
++-------+------------------------------------+-------------------+
+| 6     | ``(?:2131|1800|35\d{3})\d{11}``    | JCB               |
++-------+------------------------------------+-------------------+
+
+Normally such patterns would need to be terminated by lines or html tags to provide useful
+results, but here they are allowed to match anywhere for the sake of testing. 
+
+Test 1 matches pattern 1, test 2 matches patterns 1|2, and so on until test six which 
+matches all patterns. The results are:
+
+
++------+-------------------+-----------------------+------------------+
+| Test | Number of Matches | Python re time (secs) | jsre time (secs) |
++======+===================+=======================+==================+
+| 1    | 6740              | 44.5                  | 8.9              |
++------+-------------------+-----------------------+------------------+	
+| 2    | 8261              | 354.2                 | 9.2              |
++------+-------------------+-----------------------+------------------+		
+| 3    | 8527              | 537.5                 | 9.9              |	
++------+-------------------+-----------------------+------------------+	
+| 4    | 9019              | 728.8                 | 10.1             |	
++------+-------------------+-----------------------+------------------+		
+| 5    | 9207              | 902.0                 | 10.3             |
++------+-------------------+-----------------------+------------------+	
+| 6    | 9333              | 1302.8                | 10.6             |
++------+-------------------+-----------------------+------------------+	
+
+For simple expressions, especially those where the first character is unique or is 
+from a small set, performance is dominated by the speed of the matching 
+engine's inner acquisition loop; in this case the structure of the pattern has less 
+bearing on the final performance and efficient matching engines are likely to have 
+similar performances. More complex patterns make demands on the pattern 
+matching process. jsre demonstrates the desirable property that relative matching 
+performance improves with complexity.
+
+
+Keyword Searching
+^^^^^^^^^^^^^^^^^
+
+Keyword searching is an important and common application of the regular expression 
+alternate pattern ``A|B|C...``. jsre is designed to avoid the need to separate keywords
+from other expressions and execute them using a keyword-only search tool.
+
+A keyword performance test was carried out over the same disk image, using a randomly 
+selected set of keywords built into a simple alternate pattern. The keywords were selected 
+by filtering the 10,000 most common English words into words of 7 characters or over (to avoid
+swamping match execution time with match reporting), then selecting the test number of 
+words at random without replacement. (e.g. the 64 test contains the 32 test 
+keywords plus 32 extra randomly chosen new keywords.) The timing for exact matching is:
+
+
++--------------------+-------------------+-----------------------+------------------+
+| Number of Keywords | Number of Matches | Python re time (secs) | jsre time (secs) |
++====================+===================+=======================+==================+
+| 32                 |  17640            |  95.8                 | 14.9             |
++--------------------+-------------------+-----------------------+------------------+
+| 64                 |  25893            | 171.1                 | 18.2             |
++--------------------+-------------------+-----------------------+------------------+
+| 96                 |  30186            | 265.2                 | 20.9             |
++--------------------+-------------------+-----------------------+------------------+
+| 128                |  48980            | 347.3                 | 21.4             |
++--------------------+-------------------+-----------------------+------------------+
+| 160                |  57297            | 449.0                 | 22.6             |
++--------------------+-------------------+-----------------------+------------------+
+| 192                |  86430            | 546.9                 | 23.9             |
++--------------------+-------------------+-----------------------+------------------+
+| 224                | 113117            | 638.8                 | 25.2             |
++--------------------+-------------------+-----------------------+------------------+
+| 256                | 117452            | 739.2                 | 25.8             |
++--------------------+-------------------+-----------------------+------------------+
+
+Plotting the time taken by jsre as the number of keywords increase shows that searching 
+keywords using jsre has an approximately logarithmic cost function:
+
+..  image:: Keywords.png
+
+This complexity trend continues up to a practical design limit of 1024 keywords 
+(see below for limits).
+
+A more striking and practically important comparison can be made for searches which are 
+not case sensitive. Most practical keyword searches will use the IGNORECASE flag to 
+acommodate different capitalisations. The hybrid structure of jsre adds very little 
+overhead to matching a set of characters compared to a single character. Repeating 
+the comparison above with the IGNORECASE flag set gives the following result:
+
+
++--------------------+-------------------+-----------------------+------------------+
+| Number of Keywords | Number of Matches | Python re time (secs) | jsre time (secs) |
++====================+===================+=======================+==================+
+| 32                 | 29985             |  3389.6               | 17.3             |
++--------------------+-------------------+-----------------------+------------------+	
+| 64                 | 42354             |  7454.8               | 20.5	            |
++--------------------+-------------------+-----------------------+------------------+
+| 96                 | 49294             |  9772.9               | 25.3             |
++--------------------+-------------------+-----------------------+------------------+
+| 128                | 83359             | 12901.3               | 25.4             |
++--------------------+-------------------+-----------------------+------------------+	
+| 160                | 102614            | 16110.8               | 29.0             |
++--------------------+-------------------+-----------------------+------------------+	
+| 192                | 183298            | 19430.2               | 30.7             |
++--------------------+-------------------+-----------------------+------------------+	
+| 224                | 228351            | 22796.4               | 32.5             |
++--------------------+-------------------+-----------------------+------------------+	
+| 256                | 238381            | 25808.5               | 33.6             |
++--------------------+-------------------+-----------------------+------------------+	
+
+jsre implements basic Unicode folding, not simply equating ascii upper and lower case 
+characters.
+
+Practical Limits
+^^^^^^^^^^^^^^^^
+
+The practical limit to keyword searching results from the need to build the character and 
+decision models which are implemented as discrete automata within the hybrid matching 
+engine. Using three simultaneous encodings (e.g. utf-8, utf-16-be, utf-16-le) 
+1024 keywords can be searched using a single execution engine, which was a design objective. 
+
+The computational cost of searching multiple encodings is not as high as might be imagined. 
+Extending the above example, searching 1024 keywords using IGNORECASE and utf-8 takes 76.3 seconds; 
+the same search using three encodings (e.g. utf-8, utf-16-be, utf-16-le) takes 119.1 seconds. 
+The 16 bit encodings normally need to anchor searches every 2 bytes so they carry out 
+approximately half the number of match attempts as utf-8 or any of the ASCII code pages; 
+in addition search management is carried out in the extension class so the overhead 
+of marshalling and setup is shared between all encodings (or patterns) searched.
+
+
+

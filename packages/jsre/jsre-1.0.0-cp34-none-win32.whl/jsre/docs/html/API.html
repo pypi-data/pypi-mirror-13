@@ -1,0 +1,549 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>6. Module Functions and Objects &mdash; jsre 1.0.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="jsre 1.0.0 documentation" href="index.html" />
+    <link rel="next" title="7. Regular Expression Syntax" href="re_syntax.html" />
+    <link rel="prev" title="5. Installation" href="install.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="re_syntax.html" title="7. Regular Expression Syntax"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="install.html" title="5. Installation"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">jsre 1.0.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-jsre">
+<span id="module-functions-and-objects"></span><span id="ref-api"></span><h1>6. Module Functions and Objects<a class="headerlink" href="#module-jsre" title="Permalink to this headline">¶</a></h1>
+<p>This section provides interface information for <em>jsre</em> module functions Classes and methods.
+See <a class="reference internal" href="examples.html#ref-examples"><span>Features and Examples</span></a> for an overview with examples.</p>
+<p>The module uses standard Python exceptions, notably <code class="docutils literal"><span class="pre">SyntaxError</span></code> for errors in the regular expression pattern;
+if logging is enabled it will also log syntax errors in a more helpful way which indicates the position of the
+error in the regular expression. For example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">pattern</span> <span class="o">=</span> <span class="s">r&#39;abc(?)def&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">jsre</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">pattern</span><span class="p">)</span>
+
+<span class="go">parser       ERROR    abc(?)def</span>
+<span class="go">parser       ERROR        ^</span>
+<span class="go">parser       ERROR    Syntax error - RE or group starts with a repeat specification (nothing to repeat) at 4</span>
+</pre></div>
+</div>
+<p>The module functions provide simple shortcuts for the more comprehensive <a class="reference internal" href="#jsre.RegexObject" title="jsre.RegexObject"><code class="xref py py-class docutils literal"><span class="pre">RegexObject</span></code></a> methods. Module functions
+cache compiled regular expressions so repeated calling via module functions avoids the compilation overhead.
+However, the <a class="reference internal" href="#jsre.RegexObject" title="jsre.RegexObject"><code class="xref py py-class docutils literal"><span class="pre">RegexObject</span></code></a> methods provide a richer set of functionality and allows better control of
+which objects are retained in memory.</p>
+<p><em>jsre</em> also provides a <a class="reference internal" href="#jsre.ReCompiler" title="jsre.ReCompiler"><code class="xref py py-class docutils literal"><span class="pre">ReCompiler</span></code></a> class which provides a more comprehensive set of compilation
+functions than is available from the module level <code class="docutils literal"><span class="pre">compile()</span></code>. This class allows combinations of
+encodings and patterns to be combined into a single <a class="reference internal" href="#jsre.RegexObject" title="jsre.RegexObject"><code class="xref py py-class docutils literal"><span class="pre">RegexObject</span></code></a> instance.</p>
+<div class="section" id="module-functions">
+<span id="ref-api-module"></span><h2>6.1. Module Functions<a class="headerlink" href="#module-functions" title="Permalink to this headline">¶</a></h2>
+<p>The module level functions <code class="docutils literal"><span class="pre">search()</span></code>, <code class="docutils literal"><span class="pre">match()</span></code>, <code class="docutils literal"><span class="pre">finditer()</span></code>, <code class="docutils literal"><span class="pre">findall()</span></code> allow the search target
+(the data to be searched) to be either bytes or str.  If a string target is presented any resulting <a class="reference internal" href="#jsre.Match" title="jsre.Match"><code class="xref py py-class docutils literal"><span class="pre">Match</span></code></a>
+instances will index the original string.</p>
+<p>(Note - matching patterns in string targets is currently presented as a compatibility feature. Strings presented
+to module functions are encoded into UTF-32 before matching and this may incur a speed overhead.)</p>
+<p>In <em>jsre</em> all patterns are strings, regardless of the type of the search target.</p>
+<p>The following constants may be used as flags in both module and object functions:</p>
+<dl class="data">
+<dt id="jsre.I">
+<code class="descclassname">jsre.</code><code class="descname">I</code><a class="headerlink" href="#jsre.I" title="Permalink to this definition">¶</a></dt>
+<dt id="jsre.IGNORECASE">
+<code class="descclassname">jsre.</code><code class="descname">IGNORECASE</code><a class="headerlink" href="#jsre.IGNORECASE" title="Permalink to this definition">¶</a></dt>
+<dd><p>Matching is to be case insensitive; for example &#8216;a&#8217; will match both &#8216;a&#8217; and &#8216;A&#8217;.
+Full UNICODE case folding is supported.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="jsre.M">
+<code class="descclassname">jsre.</code><code class="descname">M</code><a class="headerlink" href="#jsre.M" title="Permalink to this definition">¶</a></dt>
+<dt id="jsre.MULTILINE">
+<code class="descclassname">jsre.</code><code class="descname">MULTILINE</code><a class="headerlink" href="#jsre.MULTILINE" title="Permalink to this definition">¶</a></dt>
+<dd><p>The special characters <code class="docutils literal"><span class="pre">^</span></code> and <code class="docutils literal"><span class="pre">$</span></code> match at the beginning and end of a line respectively
+(after/before newline characters). The default is for these characters to match only at the
+beginning and end of the input buffer.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="jsre.S">
+<code class="descclassname">jsre.</code><code class="descname">S</code><a class="headerlink" href="#jsre.S" title="Permalink to this definition">¶</a></dt>
+<dt id="jsre.DOTALL">
+<code class="descclassname">jsre.</code><code class="descname">DOTALL</code><a class="headerlink" href="#jsre.DOTALL" title="Permalink to this definition">¶</a></dt>
+<dd><p>The special character <code class="docutils literal"><span class="pre">.</span></code> matches any valid codepoint (character). The default behaviour
+is for <code class="docutils literal"><span class="pre">.</span></code> to match all codepoints except newline characters.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="jsre.X">
+<code class="descclassname">jsre.</code><code class="descname">X</code><a class="headerlink" href="#jsre.X" title="Permalink to this definition">¶</a></dt>
+<dt id="jsre.VERBOSE">
+<code class="descclassname">jsre.</code><code class="descname">VERBOSE</code><a class="headerlink" href="#jsre.VERBOSE" title="Permalink to this definition">¶</a></dt>
+<dd><p>Allows the formatting of regular expessions to be more readable.</p>
+<p>Whitespace within a regular expression is ignored, except where it is in a character class
+or preceeded with a backslash. Text between <code class="docutils literal"><span class="pre">#</span></code> and the next line is also ignored (ie is
+a comment), again provided that <code class="docutils literal"><span class="pre">#</span></code> is unescaped and not within a character class.
+Whitespace is not allowed between the start of a group and any extension syntax;
+for example <em>(  ?  P  &lt;name&gt;)</em> would not parse, but <code class="docutils literal"><span class="pre">(?P&lt;</span> <span class="pre">name</span> <span class="pre">&gt;)</span></code> is accepted.
+Similarly whitespace is not allowed between a backspace and the following character
+(e.g. <code class="docutils literal"><span class="pre">\w</span></code> ) or within code point specifications.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="jsre.INDEXALT">
+<code class="descclassname">jsre.</code><code class="descname">INDEXALT</code><a class="headerlink" href="#jsre.INDEXALT" title="Permalink to this definition">¶</a></dt>
+<dd><p>Specifies that alternatives are indexed. This allows (sub)expressions specified as alternatives
+in the regular expression to be retrieved from a <a class="reference internal" href="#jsre.Match" title="jsre.Match"><code class="xref py py-class docutils literal"><span class="pre">Match</span></code></a> object. This is much more efficient
+(and much more scalable) than using submatch groups to identify individual alternatives in a
+big list. See <a class="reference internal" href="examples.html#ref-example-keyword"><span>Indexing Alternatives</span></a> for an example.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="jsre.SECTOR">
+<code class="descclassname">jsre.</code><code class="descname">SECTOR</code><a class="headerlink" href="#jsre.SECTOR" title="Permalink to this definition">¶</a></dt>
+<dd><p>This enables the specification of stride and offset of anchor positions within within
+the search target, for example to search at only disk sector boundaries. See
+<a class="reference internal" href="examples.html#ref-example-sector"><span>Sector Offset Searches</span></a> for an example.</p>
+</dd></dl>
+
+<p><strong>Module level functions are:</strong></p>
+<dl class="function">
+<dt id="jsre.compile">
+<code class="descclassname">jsre.</code><code class="descname">compile</code><span class="sig-paren">(</span><em>pattern</em><span class="optional">[</span>, <em>flags</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#jsre.compile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compile the regular expression <em>pattern</em> and return a <a class="reference internal" href="#jsre.RegexObject" title="jsre.RegexObject"><code class="xref py py-class docutils literal"><span class="pre">RegexObject</span></code></a> object which
+allows searching etc. using the methods below. Note that the <a class="reference internal" href="#jsre.ReCompiler" title="jsre.ReCompiler"><code class="xref py py-class docutils literal"><span class="pre">ReCompiler</span></code></a> class
+may be used to compile combinations of expressions and encodings into a single matching object.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="jsre.search">
+<code class="descclassname">jsre.</code><code class="descname">search</code><span class="sig-paren">(</span><em>pattern</em>, <em>target</em><span class="optional">[</span>, <em>flags</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#jsre.search" title="Permalink to this definition">¶</a></dt>
+<dd><p>Search through the <em>target</em> (string or bytes) to find the first matching <em>pattern</em>,
+and returns the corresponding <a class="reference internal" href="#jsre.Match" title="jsre.Match"><code class="xref py py-class docutils literal"><span class="pre">Match</span></code></a> instance. Returns <code class="docutils literal"><span class="pre">None</span></code> if
+no match is found. The <em>pattern</em> must be a string, regardless of the type of <em>target</em>;
+if the <em>target</em> is a string then it is encoded using utf-32-be before matching;
+if a byte array then the default encoding (utf-8) is assumed. If different encodings
+are required the <code class="docutils literal"><span class="pre">RegexObject</span></code> methods provide a much wider range of options.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="jsre.match">
+<code class="descclassname">jsre.</code><code class="descname">match</code><span class="sig-paren">(</span><em>pattern</em>, <em>target</em><span class="optional">[</span>, <em>flags</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#jsre.match" title="Permalink to this definition">¶</a></dt>
+<dd><p>Attempt to match the <em>pattern</em> starting at the first character in the target. In other words the
+function is the same as <code class="docutils literal"><span class="pre">search()</span></code> but only succeeds if there is a match at the start of
+the <em>target</em> string or buffer.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="jsre.findall">
+<code class="descclassname">jsre.</code><code class="descname">findall</code><span class="sig-paren">(</span><em>pattern</em>, <em>target</em><span class="optional">[</span>, <em>flags</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#jsre.findall" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns all non-overlapping matches of <em>pattern</em> in the <em>target</em> as a list of strings,
+or a list of tuples. If the <em>pattern</em> has sub-match groups then the result will be a
+tuple in which the first value is the overall match and subsequent values are
+the groups defined in the regular expression. Non-matching groups will return a <code class="docutils literal"><span class="pre">None</span></code>
+entry in the tuple.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="jsre.finditer">
+<code class="descclassname">jsre.</code><code class="descname">finditer</code><span class="sig-paren">(</span><em>pattern</em>, <em>target</em><span class="optional">[</span>, <em>flags</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#jsre.finditer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns an <em>iterator</em> of <a class="reference internal" href="#jsre.Match" title="jsre.Match"><code class="xref py py-class docutils literal"><span class="pre">Match</span></code></a> instances over non-overlapping
+matches of <em>pattern</em> in the given <em>target</em>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="jsre.purge">
+<code class="descclassname">jsre.</code><code class="descname">purge</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#jsre.purge" title="Permalink to this definition">¶</a></dt>
+<dd><p>Clears the regular expression cache.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="regular-expression-compiler">
+<span id="ref-api-compiler"></span><h2>6.2. Regular Expression Compiler<a class="headerlink" href="#regular-expression-compiler" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="jsre.ReCompiler">
+<em class="property">class </em><code class="descclassname">jsre.</code><code class="descname">ReCompiler</code><span class="sig-paren">(</span><em>pattern=None</em>, <em>encoding=('utf_8'</em>, <em>)</em>, <em>flags=0</em>, <em>offset=0</em>, <em>stride=0</em><span class="sig-paren">)</span><a class="headerlink" href="#jsre.ReCompiler" title="Permalink to this definition">¶</a></dt>
+<dd><p>The <a class="reference internal" href="#jsre.ReCompiler" title="jsre.ReCompiler"><code class="xref py py-class docutils literal"><span class="pre">ReCompiler</span></code></a> class may be used as an alternative to the module level <code class="docutils literal"><span class="pre">compile()</span></code>
+function to allow combinations of expressions, flags and encodings to be compiled into a
+single <a class="reference internal" href="#jsre.RegexObject" title="jsre.RegexObject"><code class="xref py py-class docutils literal"><span class="pre">RegexObject</span></code></a> matching engine.</p>
+<p>The class allows a search specification (flags, encodings) to be set and then one or
+more patterns to be associated with the current search specification. The specification
+may be changed using <code class="docutils literal"><span class="pre">update(...)</span></code> and more patterns added to the existing specification
+using <code class="docutils literal"><span class="pre">setPattern(...)</span></code>. Finally the <a class="reference internal" href="#jsre.RegexObject" title="jsre.RegexObject"><code class="xref py py-class docutils literal"><span class="pre">RegexObject</span></code></a> is obtained via the <code class="docutils literal"><span class="pre">compile()</span></code>
+method. See examples in <a class="reference internal" href="examples.html#ref-example-compile"><span>Compiling and Matching</span></a>.</p>
+<p>The <a class="reference internal" href="#jsre.Match" title="jsre.Match"><code class="xref py py-class docutils literal"><span class="pre">Match</span></code></a> object resulting from a successful match has attributes of <code class="docutils literal"><span class="pre">re</span></code> and <code class="docutils literal"><span class="pre">encoding</span></code>
+which document the pattern and encoding that resulted in the match.</p>
+<dl class="attribute">
+<dt id="jsre.ReCompiler.encoding">
+<code class="descname">encoding</code><a class="headerlink" href="#jsre.ReCompiler.encoding" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>If present is a list or tuple of encodings; all the standard python codecs are supported.
+The most common encodings are installed by default and others can be added if required.
+See <a class="reference internal" href="install.html#ref-install-encoding"><span>Encodings</span></a> for more detail.</p>
+<dl class="attribute">
+<dt id="jsre.ReCompiler.flags">
+<code class="descname">flags</code><a class="headerlink" href="#jsre.ReCompiler.flags" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>Flags from those defined for this module (see above); multiple flags may be combined by
+addition (<code class="docutils literal"><span class="pre">+</span></code>) or logical or (<code class="docutils literal"><span class="pre">|</span></code>).</p>
+<dl class="attribute">
+<dt>
+<code class="descname">offset, stride</code></dt>
+<dd></dd></dl>
+
+<p>If the <code class="docutils literal"><span class="pre">SECTOR</span></code> flag is set then integer values for offset and stride may be specified to
+control the allowed positions of matching anchors (the places from which a match is tested).
+See examples at <a class="reference internal" href="examples.html#ref-example-sector"><span>Sector Offset Searches</span></a>.</p>
+<dl class="attribute">
+<dt id="jsre.ReCompiler.pattern">
+<code class="descname">pattern</code><a class="headerlink" href="#jsre.ReCompiler.pattern" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>The pattern is a regular expression presented as a string. (It is always a string, regardless
+of what encoding or set of encodings are to be searched.) When a pattern is registered it
+is compiled using the current search specification.</p>
+<p>The <a class="reference internal" href="#jsre.ReCompiler" title="jsre.ReCompiler"><code class="xref py py-class docutils literal"><span class="pre">ReCompiler</span></code></a> class provides the following methods:</p>
+<blockquote>
+<div><dl class="method">
+<dt id="jsre.ReCompiler.update">
+<code class="descname">update</code><span class="sig-paren">(</span><em>encoding=None</em>, <em>flags=None</em>, <em>offset=0</em>, <em>stride=0</em><span class="sig-paren">)</span><a class="headerlink" href="#jsre.ReCompiler.update" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>This method allows the current search specification to be updated; the new specification
+will apply to any patterns registered after the update, but not to any that are already
+registered. <em>offset</em> and <em>stride</em> are only required if the <code class="docutils literal"><span class="pre">SECTOR</span></code> flag is set and the
+<em>encoding</em> and <em>flags</em> arguments are as decribed above.</p>
+<p>If one of <em>encoding</em> or <em>flags</em> is not specified, or is <code class="docutils literal"><span class="pre">None</span></code>, it will not be updated.</p>
+<dl class="method">
+<dt id="jsre.ReCompiler.setPattern">
+<code class="descname">setPattern</code><span class="sig-paren">(</span><em>pattern</em><span class="sig-paren">)</span><a class="headerlink" href="#jsre.ReCompiler.setPattern" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>Registers a pattern to the compiler. The pattern is a regular expression which will be compiled
+using the current search specification. The pattern is added to those already specified as an
+independent regular expression.</p>
+<dl class="method">
+<dt id="jsre.ReCompiler.compile">
+<code class="descname">compile</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#jsre.ReCompiler.compile" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>Returns a <a class="reference internal" href="#jsre.RegexObject" title="jsre.RegexObject"><code class="xref py py-class docutils literal"><span class="pre">RegexObject</span></code></a> instance compiled from the various search specifications and
+patterns previously specified.</p>
+</div></blockquote>
+</dd></dl>
+
+</div>
+<div class="section" id="regular-expression-objects">
+<span id="ref-api-regex"></span><h2>6.3. Regular Expression Objects<a class="headerlink" href="#regular-expression-objects" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="jsre.RegexObject">
+<em class="property">class </em><code class="descclassname">jsre.</code><code class="descname">RegexObject</code><a class="headerlink" href="#jsre.RegexObject" title="Permalink to this definition">¶</a></dt>
+<dd><p>The <a class="reference internal" href="#jsre.RegexObject" title="jsre.RegexObject"><code class="xref py py-class docutils literal"><span class="pre">RegexObject</span></code></a> class encapsulates a compiled matching engine and provides
+methods that allow the engine to be used to match patterns in buffers.</p>
+<p>This pattern matcher is designed to simultaneously run several different combinations
+of regular expressions, flags, and encodings. As a consequence these attributes are
+provided by <a class="reference internal" href="#jsre.Match" title="jsre.Match"><code class="xref py py-class docutils literal"><span class="pre">Match</span></code></a> objects`, and not as attributes of this class.</p>
+<p>The pattern matching process checks each pattern/encoding combination in turn; in
+consequence although order is preserved for individual patterns/encodings
+there is a possibility of overlaps between matches from different patterns. Search will
+also report the first pattern/encoding to match, not necessarily the earliest
+position in the string from which a match could have been found (e.g. by a different encoding).</p>
+<p>All methods except <code class="docutils literal"><span class="pre">match()</span></code> have the same argument signature <em>(buffer [,start [,end [,endanchor]]] )</em>:</p>
+<blockquote>
+<div><p><strong>buffer</strong>  A <em>byte</em> object to search. Note that <a class="reference internal" href="#jsre.RegexObject" title="jsre.RegexObject"><code class="xref py py-class docutils literal"><span class="pre">RegexObject</span></code></a> does not support string
+objects, unlike the module level functions that encode strings if they are presented.</p>
+<p><strong>start</strong>  The first byte in the buffer from which to search (default 0). It is assumed that
+the start will be on the minimum character word boundary of any encodings used (ie 2 byte for
+utf16, 4 byte for utf32).</p>
+<p><strong>end</strong>  The index of the last byte to be searched + 1 (i.e. normal Python slice end). A
+regular expression will fail if it gets to this point and has not matched.</p>
+<p><strong>endAnchor</strong>  The last byte to be used as a match anchor + 1 (ie the last position
+from which the pattern match check should begin). The ability to specify both the buffer
+end and the end anchor allows long data streams to be split into blocks and ensure that
+all possible anchor points are searched without duplication and with a specified search
+window. See example in <a class="reference internal" href="examples.html#ref-example-largefile"><span>Large File Processing</span></a>.</p>
+<p>The <a class="reference internal" href="#jsre.RegexObject" title="jsre.RegexObject"><code class="xref py py-class docutils literal"><span class="pre">RegexObject</span></code></a> provides the following methods:</p>
+<blockquote>
+<div><dl class="method">
+<dt id="jsre.RegexObject.search">
+<code class="descname">search</code><span class="sig-paren">(</span><em>buffer</em><span class="optional">[</span>, <em>start</em><span class="optional">[</span>, <em>end</em><span class="optional">[</span>, <em>endanchor</em><span class="optional">]</span><span class="optional">]</span><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#jsre.RegexObject.search" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>Search through the <em>buffer</em> (string or bytes) to find the first matching <em>pattern</em>,
+and returns the corresponding <a class="reference internal" href="#jsre.Match" title="jsre.Match"><code class="xref py py-class docutils literal"><span class="pre">Match</span></code></a> instance. Returns <code class="docutils literal"><span class="pre">None</span></code> if
+no match is found.</p>
+<dl class="method">
+<dt id="jsre.RegexObject.match">
+<code class="descname">match</code><span class="sig-paren">(</span><em>buffer</em><span class="optional">[</span>, <em>start</em><span class="optional">[</span>, <em>end</em><span class="optional">]</span><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#jsre.RegexObject.match" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>Attempt to match the <em>pattern</em> starting at the first character in the buffer. In other words the
+function is the same as <code class="docutils literal"><span class="pre">search()</span></code> but only succeeds if there is a match at the start of
+the target buffer.</p>
+<dl class="method">
+<dt id="jsre.RegexObject.findall">
+<code class="descname">findall</code><span class="sig-paren">(</span><em>buffer</em><span class="optional">[</span>, <em>start</em><span class="optional">[</span>, <em>end</em><span class="optional">[</span>, <em>endanchor</em><span class="optional">]</span><span class="optional">]</span><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#jsre.RegexObject.findall" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>Returns all non-overlapping matches of <em>pattern</em> in the <em>buffer</em> as a list of strings,
+or a list of tuples. If the <em>pattern</em> has sub-match groups then the result will be a
+tuple in which the first value is the overall match and subsequent values are
+the groups. Non-matching groups will return a <code class="docutils literal"><span class="pre">None</span></code> entry in the tuple.</p>
+<dl class="method">
+<dt id="jsre.RegexObject.finditer">
+<code class="descname">finditer</code><span class="sig-paren">(</span><em>buffer</em><span class="optional">[</span>, <em>start</em><span class="optional">[</span>, <em>end</em><span class="optional">[</span>, <em>endanchor</em><span class="optional">]</span><span class="optional">]</span><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#jsre.RegexObject.finditer" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>Returns an <em>iterator</em> of <a class="reference internal" href="#jsre.Match" title="jsre.Match"><code class="xref py py-class docutils literal"><span class="pre">Match</span></code></a> instances over non-overlapping
+matches of <em>pattern</em> in the given <em>target</em>.</p>
+</div></blockquote>
+</div></blockquote>
+</dd></dl>
+
+</div>
+<div class="section" id="match-objects">
+<span id="ref-api-match"></span><h2>6.4. Match Objects<a class="headerlink" href="#match-objects" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="jsre.Match">
+<em class="property">class </em><code class="descclassname">jsre.</code><code class="descname">Match</code><a class="headerlink" href="#jsre.Match" title="Permalink to this definition">¶</a></dt>
+<dd><p>A <a class="reference internal" href="#jsre.Match" title="jsre.Match"><code class="xref py py-class docutils literal"><span class="pre">Match</span></code></a> instance reports a single successful match; a Match object always evaluates as true.</p>
+<p>The methods of this class provide the same signatures as the standard Python <em>re</em> module. However,
+because <em>jsre</em> supports multiple expressions and encodings <a class="reference internal" href="#jsre.Match" title="jsre.Match"><code class="xref py py-class docutils literal"><span class="pre">Match</span></code></a> objects also provide
+attributes which allow the retrieval of the expression and encoding associated with a particular
+match, and (if <code class="docutils literal"><span class="pre">INDEXALT</span></code>) the keyword component of the pattern which matched.</p>
+<p>The text matched by the regular expression is always returned as a string by decoding
+the byte buffer using whatever encoding was successful.</p>
+<p>Usually the indexes of a match group (start, stop) are returned as byte indexes. However, if the match
+resulted from a module function which was presented with a string target the indexes are corrected to
+reference positions in the original string.</p>
+<p>Methods that require a group index as an argument can instead be provided with a group name, if the
+group is named in the regular expression.</p>
+<p>Available class attributes:</p>
+<blockquote>
+<div><dl class="attribute">
+<dt>
+<code class="descname">pos, endpos, endAnchor</code></dt>
+<dd></dd></dl>
+
+<p>The buffer start, buffer end and last anchor buffer positions specified for this match in the <a class="reference internal" href="#jsre.RegexObject" title="jsre.RegexObject"><code class="xref py py-class docutils literal"><span class="pre">RegexObject</span></code></a>
+method that resulted in the <a class="reference internal" href="#jsre.Match" title="jsre.Match"><code class="xref py py-class docutils literal"><span class="pre">Match</span></code></a> object.</p>
+<dl class="attribute">
+<dt id="jsre.Match.lastindex">
+<code class="descname">lastindex</code><a class="headerlink" href="#jsre.Match.lastindex" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>The integer index of the last matched capturing group; note that this is the last group that
+resulted in a match in the expression, not necessarily the highest numbered group (which may not have matched).</p>
+<dl class="attribute">
+<dt id="jsre.Match.lastgroup">
+<code class="descname">lastgroup</code><a class="headerlink" href="#jsre.Match.lastgroup" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>The name of the group corresponding to the <em>lastindex</em>, if it was named.</p>
+<dl class="attribute">
+<dt id="jsre.Match.re">
+<code class="descname">re</code><a class="headerlink" href="#jsre.Match.re" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>The regular expression that resulted in this <a class="reference internal" href="#jsre.Match" title="jsre.Match"><code class="xref py py-class docutils literal"><span class="pre">Match</span></code></a> object.</p>
+<dl class="attribute">
+<dt id="jsre.Match.encoding">
+<code class="descname">encoding</code><a class="headerlink" href="#jsre.Match.encoding" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>The encoding that resulted in this <a class="reference internal" href="#jsre.Match" title="jsre.Match"><code class="xref py py-class docutils literal"><span class="pre">Match</span></code></a> object.</p>
+<dl class="attribute">
+<dt id="jsre.Match.flags">
+<code class="descname">flags</code><a class="headerlink" href="#jsre.Match.flags" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>The flags used to compile this regular expression.</p>
+<dl class="attribute">
+<dt id="jsre.Match.buf">
+<code class="descname">buf</code><a class="headerlink" href="#jsre.Match.buf" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>The byte buffer that was matched.</p>
+<dl class="attribute">
+<dt id="jsre.Match.keypattern">
+<code class="descname">keypattern</code><a class="headerlink" href="#jsre.Match.keypattern" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>If a pattern which is one of a set of alternatives within an expression was matched,
+and the <code class="docutils literal"><span class="pre">INDEXALT</span></code> flag was set this is the pattern that matched. Note that this
+is the pattern as specified in the regular expression, not as found in the buffer. This is
+helpful in the common case where <code class="docutils literal"><span class="pre">IGNORECASE</span></code> was set resulting in many varients of the original
+pattern being matched.</p>
+</div></blockquote>
+<p>The class <a class="reference internal" href="#jsre.Match" title="jsre.Match"><code class="xref py py-class docutils literal"><span class="pre">Match</span></code></a> provides the following methods:</p>
+<blockquote>
+<div><dl class="method">
+<dt id="jsre.Match.group">
+<code class="descname">group</code><span class="sig-paren">(</span><span class="optional">[</span><em>group1</em>, <em>...</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#jsre.Match.group" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>Returns a decoded string for one or more match groups. The byte buffer which has been searched will
+be decoded by the encoding that resulted in the hit, providing a string result. If one group is
+specified the result is a single string, if several are provided the result is a tuple of strings.
+Group 0 is always the whole match and is the default if no groups are specified; groups within
+the regular expression are indexed starting from 1 and group names, if specified, may be used
+instead of numbers.</p>
+<dl class="method">
+<dt id="jsre.Match.groups">
+<code class="descname">groups</code><span class="sig-paren">(</span><span class="optional">[</span><em>default</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#jsre.Match.groups" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>Returns a tuple of all the groups in a match, decoded to string using the encoding which matched.
+Groups that did not contibute to the match are returned as <code class="docutils literal"><span class="pre">None</span></code>, or as the default value
+if this is provided as a parameter.</p>
+<dl class="method">
+<dt id="jsre.Match.groupdict">
+<code class="descname">groupdict</code><span class="sig-paren">(</span><span class="optional">[</span><em>default</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#jsre.Match.groupdict" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>Returns a dict which maps group names to matched groups decoded to strings. If a group is not matched
+then the dictionary maps to <code class="docutils literal"><span class="pre">None</span></code> or the default value if this is provided as a parameter.</p>
+<dl class="method">
+<dt id="jsre.Match.start">
+<code class="descname">start</code><span class="sig-paren">(</span><span class="optional">[</span><em>group</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#jsre.Match.start" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="jsre.Match.end">
+<code class="descname">end</code><span class="sig-paren">(</span><span class="optional">[</span><em>group</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#jsre.Match.end" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>Returns the start or end of a given group, or of the whole match if a group is not specified. The
+value of -1 is used to signifiy that the specified group did not match. Note that matching an
+empty string is different from failling to match; if an empty string is matched <code class="docutils literal"><span class="pre">m.start()</span></code> and
+<code class="docutils literal"><span class="pre">m.end()</span></code> have the same value. Groups may be named or numbered, and if no group is provided group 0
+(the whole match) is the default value. The end value is the index of the last characer + 1,
+i.e. <code class="docutils literal"><span class="pre">[m.start(),</span> <span class="pre">m.end()]</span></code> is a normal Python range.</p>
+<p>The normal values returned are byte indexes into a byte buffer. So that:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">()</span>  <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">buf</span><span class="p">[</span><span class="n">m</span><span class="o">.</span><span class="n">start</span><span class="p">(),</span> <span class="n">m</span><span class="o">.</span><span class="n">end</span><span class="p">()]</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">encoding</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>However, if the match is a result of providing a module function with a string target, then the
+start and end values are corrected to index values in that string.</p>
+<dl class="method">
+<dt id="jsre.Match.span">
+<code class="descname">span</code><span class="sig-paren">(</span><span class="optional">[</span><em>group</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#jsre.Match.span" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>Returns the tuple <code class="docutils literal"><span class="pre">(start([m.group]),</span> <span class="pre">end([m.group})</span></code>.</p>
+</div></blockquote>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">6. Module Functions and Objects</a><ul>
+<li><a class="reference internal" href="#module-functions">6.1. Module Functions</a></li>
+<li><a class="reference internal" href="#regular-expression-compiler">6.2. Regular Expression Compiler</a></li>
+<li><a class="reference internal" href="#regular-expression-objects">6.3. Regular Expression Objects</a></li>
+<li><a class="reference internal" href="#match-objects">6.4. Match Objects</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="install.html"
+                        title="previous chapter">5. Installation</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="re_syntax.html"
+                        title="next chapter">7. Regular Expression Syntax</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/API.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="re_syntax.html" title="7. Regular Expression Syntax"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="install.html" title="5. Installation"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">jsre 1.0.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2015, Howard Chivers.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+    </div>
+  </body>
+</html>

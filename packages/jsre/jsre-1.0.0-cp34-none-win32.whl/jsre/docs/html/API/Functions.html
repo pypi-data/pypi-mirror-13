@@ -1,0 +1,184 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>1.1. Module Functions &mdash; jsre 1.0a documentation</title>
+    
+    <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0a',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="jsre 1.0a documentation" href="../index.html" />
+    <link rel="up" title="1. jsre API" href="API.html" />
+    <link rel="prev" title="1. jsre API" href="API.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="API.html" title="1. jsre API"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">jsre 1.0a documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="API.html" accesskey="U">1. jsre API</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-jsre">
+<span id="module-functions"></span><h1>1.1. Module Functions<a class="headerlink" href="#module-jsre" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="jsre.compile">
+<code class="descclassname">jsre.</code><code class="descname">compile</code><span class="sig-paren">(</span><em>pattern</em>, <em>**kargs</em><span class="sig-paren">)</span><a class="headerlink" href="#jsre.compile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compile a regular expression into a regular expression object.</p>
+<p>Is equivalent to RECompile(...).compile()</p>
+<dl class="attribute">
+<dt>
+<code class="descname">pattern     --- A regular expression, in str format. (bytes are not an option)</code></dt>
+<dd></dd></dl>
+
+<dl class="docutils">
+<dt>Keywords:</dt>
+<dd>encoding, flags, stride, offset &#8211; See ReCompile()</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="jsre.search">
+<code class="descclassname">jsre.</code><code class="descname">search</code><span class="sig-paren">(</span><em>pattern</em>, <em>target</em>, <em>**kargs</em><span class="sig-paren">)</span><a class="headerlink" href="#jsre.search" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find the first match location of a pattern in the target.</p>
+<p>Regular expressions and encodings are searched in turn and search will
+halt at the first to match. If multiple res and encodings are specified
+then &#8216;first&#8217; may not be the smallest index that could be matched by any
+of the possible encodings.</p>
+<p>The module level functions search, finditer, findall allow the target
+(the data to be searched) to be either bytes or str. The str option is
+not the intended use of this regular expression engine and is provided
+only for compatibility with other re - normally only for experiment and
+testing. If a string target is presented it is encoded using utf32 then
+searched; any indexes returned from the match function (start, end) will
+index the original string search target.</p>
+<p>Regular epxressions and associated encodings are cached - if the same
+combination is quested at module level the execution engine is not rebuilt.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>--- The regular expression, as a str</strong> (<em>pattern</em>) &#8211; </li>
+<li><strong>--- The search target, as a byte buffer or str (see above)</strong> (<em>target</em>) &#8211; </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>Keywords:</dt>
+<dd>encoding, flags, stride, offset &#8211; See ReCompile()</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">match   &#8212; A match object.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="jsre.findall">
+<code class="descclassname">jsre.</code><code class="descname">findall</code><span class="sig-paren">(</span><em>pattern</em>, <em>target</em>, <em>**kargs</em><span class="sig-paren">)</span><a class="headerlink" href="#jsre.findall" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns all search hits as a list of strings, or if multiple matches a list of tuples.</p>
+<p>For arguments and keywords, see search()</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="jsre.finditer">
+<code class="descclassname">jsre.</code><code class="descname">finditer</code><span class="sig-paren">(</span><em>pattern</em>, <em>target</em>, <em>**kargs</em><span class="sig-paren">)</span><a class="headerlink" href="#jsre.finditer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a match iterator for the regular expression pattern over the search target.</p>
+<p>For arguments and keywords, see search()</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="API.html"
+                        title="previous chapter">1. jsre API</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/API/Functions.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="API.html" title="1. jsre API"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">jsre 1.0a documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="API.html" >1. jsre API</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2015, Howard Chivers.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+    </div>
+  </body>
+</html>

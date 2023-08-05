@@ -1,0 +1,393 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>3. Performance &mdash; jsre 1.0.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="jsre 1.0.0 documentation" href="index.html" />
+    <link rel="next" title="4. Features and Examples" href="examples.html" />
+    <link rel="prev" title="2. FAQ" href="FAQ.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="examples.html" title="4. Features and Examples"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="FAQ.html" title="2. FAQ"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">jsre 1.0.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="performance">
+<h1>3. Performance<a class="headerlink" href="#performance" title="Permalink to this headline">¶</a></h1>
+<p>To give some indication of the practical performance of jsre the tests below were
+carried out by matching patterns over a 6GByte disk image, divided into 6149 1 MByte buffers. The disk
+contains a complete Windows XP system including several user accounts, emails and web access and was
+originally developed for forensic teaching.</p>
+<p>Most of the tests below are limited to utf-8 encoding to allow comparison with the
+time taken by the Python re module for the same task; in all cases the results between
+the two engines are identical. Test times are given in seconds, and the time measured is
+the accumulated time in the regular expression match function. The wall-clock time for
+each test was typically 25 seconds longer, mostly consisting of disk reads.
+The timings were carried out on a single core of a i7-3517Y laptop processor.</p>
+<div class="section" id="pattern-complexity">
+<h2>3.1. Pattern Complexity<a class="headerlink" href="#pattern-complexity" title="Permalink to this headline">¶</a></h2>
+<p>One case which allows increasing complexity to be evaluated is searching for credit card numbers,
+because the various expressions are of similar complexity and can be combined straightforwardly
+to incease the complexity of the test expression. Six patterms were used:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="11%" />
+<col width="58%" />
+<col width="31%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Index</th>
+<th class="head">Pattern</th>
+<th class="head">Card Type</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>1</td>
+<td><code class="docutils literal"><span class="pre">4[0-9]{12}(?:[0-9]{3})?</span></code></td>
+<td>Visa</td>
+</tr>
+<tr class="row-odd"><td>2</td>
+<td><code class="docutils literal"><span class="pre">5[1-5][0-9]{14}</span></code></td>
+<td>Master Card</td>
+</tr>
+<tr class="row-even"><td>3</td>
+<td><code class="docutils literal"><span class="pre">3[47][0-9]{13}</span></code></td>
+<td>American Express</td>
+</tr>
+<tr class="row-odd"><td>4</td>
+<td><code class="docutils literal"><span class="pre">3(?:0[0-5]|[68][0-9])[0-9]{11}</span></code></td>
+<td>Diners Club</td>
+</tr>
+<tr class="row-even"><td>5</td>
+<td><code class="docutils literal"><span class="pre">6(?:011|5[0-9]{2})[0-9]{12}</span></code></td>
+<td>Discovery</td>
+</tr>
+<tr class="row-odd"><td>6</td>
+<td><code class="docutils literal"><span class="pre">(?:2131|1800|35\d{3})\d{11}</span></code></td>
+<td>JCB</td>
+</tr>
+</tbody>
+</table>
+<p>Normally such patterns would need to be terminated by lines or html tags to provide useful
+results, but here they are allowed to match anywhere for the sake of testing.</p>
+<p>Test 1 matches pattern 1, test 2 matches patterns 1|2, and so on until test six which
+matches all patterns. The results are:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="9%" />
+<col width="29%" />
+<col width="35%" />
+<col width="27%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Test</th>
+<th class="head">Number of Matches</th>
+<th class="head">Python re time (secs)</th>
+<th class="head">jsre time (secs)</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>1</td>
+<td>6740</td>
+<td>44.5</td>
+<td>8.9</td>
+</tr>
+<tr class="row-odd"><td>2</td>
+<td>8261</td>
+<td>354.2</td>
+<td>9.2</td>
+</tr>
+<tr class="row-even"><td>3</td>
+<td>8527</td>
+<td>537.5</td>
+<td>9.9</td>
+</tr>
+<tr class="row-odd"><td>4</td>
+<td>9019</td>
+<td>728.8</td>
+<td>10.1</td>
+</tr>
+<tr class="row-even"><td>5</td>
+<td>9207</td>
+<td>902.0</td>
+<td>10.3</td>
+</tr>
+<tr class="row-odd"><td>6</td>
+<td>9333</td>
+<td>1302.8</td>
+<td>10.6</td>
+</tr>
+</tbody>
+</table>
+<p>For simple expressions, especially those where the first character is unique or is
+from a small set, performance is dominated by the speed of the matching
+engine&#8217;s inner acquisition loop; in this case the structure of the pattern has less
+bearing on the final performance and efficient matching engines are likely to have
+similar performances. More complex patterns make demands on the pattern
+matching process. jsre demonstrates the desirable property that relative matching
+performance improves with complexity.</p>
+</div>
+<div class="section" id="keyword-searching">
+<h2>3.2. Keyword Searching<a class="headerlink" href="#keyword-searching" title="Permalink to this headline">¶</a></h2>
+<p>Keyword searching is an important and common application of the regular expression
+alternate pattern <code class="docutils literal"><span class="pre">A|B|C...</span></code>. jsre is designed to avoid the need to separate keywords
+from other expressions and execute them using a keyword-only search tool.</p>
+<p>A keyword performance test was carried out over the same disk image, using a randomly
+selected set of keywords built into a simple alternate pattern. The keywords were selected
+by filtering the 10,000 most common English words into words of 7 characters or over (to avoid
+swamping match execution time with match reporting), then selecting the test number of
+words at random without replacement. (e.g. the 64 test contains the 32 test
+keywords plus 32 extra randomly chosen new keywords.) The timing for exact matching is:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="25%" />
+<col width="24%" />
+<col width="29%" />
+<col width="23%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Number of Keywords</th>
+<th class="head">Number of Matches</th>
+<th class="head">Python re time (secs)</th>
+<th class="head">jsre time (secs)</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>32</td>
+<td>17640</td>
+<td>95.8</td>
+<td>14.9</td>
+</tr>
+<tr class="row-odd"><td>64</td>
+<td>25893</td>
+<td>171.1</td>
+<td>18.2</td>
+</tr>
+<tr class="row-even"><td>96</td>
+<td>30186</td>
+<td>265.2</td>
+<td>20.9</td>
+</tr>
+<tr class="row-odd"><td>128</td>
+<td>48980</td>
+<td>347.3</td>
+<td>21.4</td>
+</tr>
+<tr class="row-even"><td>160</td>
+<td>57297</td>
+<td>449.0</td>
+<td>22.6</td>
+</tr>
+<tr class="row-odd"><td>192</td>
+<td>86430</td>
+<td>546.9</td>
+<td>23.9</td>
+</tr>
+<tr class="row-even"><td>224</td>
+<td>113117</td>
+<td>638.8</td>
+<td>25.2</td>
+</tr>
+<tr class="row-odd"><td>256</td>
+<td>117452</td>
+<td>739.2</td>
+<td>25.8</td>
+</tr>
+</tbody>
+</table>
+<p>Plotting the time taken by jsre as the number of keywords increase shows that searching
+keywords using jsre has an approximately logarithmic cost function:</p>
+<img alt="_images/Keywords.png" src="_images/Keywords.png" />
+<p>This complexity trend continues up to a practical design limit of 1024 keywords
+(see below for limits).</p>
+<p>A more striking and practically important comparison can be made for searches which are
+not case sensitive. Most practical keyword searches will use the IGNORECASE flag to
+acommodate different capitalisations. The hybrid structure of jsre adds very little
+overhead to matching a set of characters compared to a single character. Repeating
+the comparison above with the IGNORECASE flag set gives the following result:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="25%" />
+<col width="24%" />
+<col width="29%" />
+<col width="23%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Number of Keywords</th>
+<th class="head">Number of Matches</th>
+<th class="head">Python re time (secs)</th>
+<th class="head">jsre time (secs)</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>32</td>
+<td>29985</td>
+<td>3389.6</td>
+<td>17.3</td>
+</tr>
+<tr class="row-odd"><td>64</td>
+<td>42354</td>
+<td>7454.8</td>
+<td>20.5</td>
+</tr>
+<tr class="row-even"><td>96</td>
+<td>49294</td>
+<td>9772.9</td>
+<td>25.3</td>
+</tr>
+<tr class="row-odd"><td>128</td>
+<td>83359</td>
+<td>12901.3</td>
+<td>25.4</td>
+</tr>
+<tr class="row-even"><td>160</td>
+<td>102614</td>
+<td>16110.8</td>
+<td>29.0</td>
+</tr>
+<tr class="row-odd"><td>192</td>
+<td>183298</td>
+<td>19430.2</td>
+<td>30.7</td>
+</tr>
+<tr class="row-even"><td>224</td>
+<td>228351</td>
+<td>22796.4</td>
+<td>32.5</td>
+</tr>
+<tr class="row-odd"><td>256</td>
+<td>238381</td>
+<td>25808.5</td>
+<td>33.6</td>
+</tr>
+</tbody>
+</table>
+<p>jsre implements basic Unicode folding, not simply equating ascii upper and lower case
+characters.</p>
+</div>
+<div class="section" id="practical-limits">
+<h2>3.3. Practical Limits<a class="headerlink" href="#practical-limits" title="Permalink to this headline">¶</a></h2>
+<p>The practical limit to keyword searching results from the need to build the character and
+decision models which are implemented as discrete automata within the hybrid matching
+engine. Using three simultaneous encodings (e.g. utf-8, utf-16-be, utf-16-le)
+1024 keywords can be searched using a single execution engine, which was a design objective.</p>
+<p>The computational cost of searching multiple encodings is not as high as might be imagined.
+Extending the above example, searching 1024 keywords using IGNORECASE and utf-8 takes 76.3 seconds;
+the same search using three encodings (e.g. utf-8, utf-16-be, utf-16-le) takes 119.1 seconds.
+The 16 bit encodings normally need to anchor searches every 2 bytes so they carry out
+approximately half the number of match attempts as utf-8 or any of the ASCII code pages;
+in addition search management is carried out in the extension class so the overhead
+of marshalling and setup is shared between all encodings (or patterns) searched.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">3. Performance</a><ul>
+<li><a class="reference internal" href="#pattern-complexity">3.1. Pattern Complexity</a></li>
+<li><a class="reference internal" href="#keyword-searching">3.2. Keyword Searching</a></li>
+<li><a class="reference internal" href="#practical-limits">3.3. Practical Limits</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="FAQ.html"
+                        title="previous chapter">2. FAQ</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="examples.html"
+                        title="next chapter">4. Features and Examples</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/performance.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="examples.html" title="4. Features and Examples"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="FAQ.html" title="2. FAQ"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">jsre 1.0.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2015, Howard Chivers.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+    </div>
+  </body>
+</html>

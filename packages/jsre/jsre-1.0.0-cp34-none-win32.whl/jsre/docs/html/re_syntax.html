@@ -1,0 +1,552 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>7. Regular Expression Syntax &mdash; jsre 1.0.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="jsre 1.0.0 documentation" href="index.html" />
+    <link rel="next" title="8. Debugging and Error Codes" href="debugging.html" />
+    <link rel="prev" title="6. Module Functions and Objects" href="API.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="debugging.html" title="8. Debugging and Error Codes"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="API.html" title="6. Module Functions and Objects"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">jsre 1.0.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="regular-expression-syntax">
+<span id="ref-syntax"></span><h1>7. Regular Expression Syntax<a class="headerlink" href="#regular-expression-syntax" title="Permalink to this headline">¶</a></h1>
+<p><em>jsre</em> syntax is the same as that used in the Python <em>re</em> module, and as similar as possible to other
+regular expression systems.</p>
+<p><em>jsre</em> applies the POSIX (leftmost longest) matching policy which results in the longest of any
+alternative patterns in an expression being matched regardless of the order in which they are specified.
+Reluctant (lazy or smallest) matches are also supported and modify this policy for any groups or sub-groups
+in which they appear. Lookahead assertions and backreferences are supported, but not lookbehind assertions
+or negative lookaheads.</p>
+<p>The behaviour of regular expression syntax may be varied by flags (e.g. DOTALL, IGNORECASE), which
+are described in <a class="reference internal" href="API.html#ref-api"><span>Module Functions and Objects</span></a>.</p>
+<div class="section" id="single-characters">
+<h2>7.1. Single Characters<a class="headerlink" href="#single-characters" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="docutils">
+<colgroup>
+<col width="9%" />
+<col width="12%" />
+<col width="80%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Syntax</th>
+<th class="head">Code point</th>
+<th class="head">&nbsp;</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>c</td>
+<td>&nbsp;</td>
+<td>The single character c.</td>
+</tr>
+<tr class="row-odd"><td>.</td>
+<td>&nbsp;</td>
+<td>Any character except newline. If DOTALL set will also match newline.</td>
+</tr>
+<tr class="row-even"><td>\c</td>
+<td>&nbsp;</td>
+<td>To input the character c, for reserved characters:
+Normally reserved characters:  <code class="docutils literal"><span class="pre">\\</span> <span class="pre">'</span> <span class="pre">&quot;</span> <span class="pre">(</span> <span class="pre">)</span> <span class="pre">[</span> <span class="pre">]</span> <span class="pre">{</span> <span class="pre">}</span>&nbsp; <span class="pre">^</span> <span class="pre">$</span> <span class="pre">+</span> <span class="pre">*</span> <span class="pre">?</span> <span class="pre">.</span></code>
+Reserved within a character class:  <code class="docutils literal"><span class="pre">\\</span> <span class="pre">'</span> <span class="pre">&quot;</span> <span class="pre">[</span> <span class="pre">]</span> <span class="pre">&amp;</span> <span class="pre">|</span> <span class="pre">-</span></code>
+A backslash will also input any standard following character unless it
+has a special interpretation in the list below.</td>
+</tr>
+<tr class="row-odd"><td>\a</td>
+<td>\u0007</td>
+<td>Bell.</td>
+</tr>
+<tr class="row-even"><td>\b</td>
+<td>\u0008</td>
+<td>Backspace (only in character classes, otherwise word boundary).</td>
+</tr>
+<tr class="row-odd"><td>\f</td>
+<td>\u000C</td>
+<td>Form feed.</td>
+</tr>
+<tr class="row-even"><td>\n</td>
+<td>\u000A</td>
+<td>Newline.</td>
+</tr>
+<tr class="row-odd"><td>\r</td>
+<td>\u000D</td>
+<td>Carriage return.</td>
+</tr>
+<tr class="row-even"><td>\t</td>
+<td>\u0009</td>
+<td>Tab.</td>
+</tr>
+<tr class="row-odd"><td colspan="2">\uhhhh</td>
+<td>4 hex digit Unicode code point.</td>
+</tr>
+<tr class="row-even"><td colspan="2">\Uhhhhhhhh</td>
+<td>8 hex digit Unicode code point.</td>
+</tr>
+<tr class="row-odd"><td>\v</td>
+<td>\u000B</td>
+<td>Vertical Tab.</td>
+</tr>
+<tr class="row-even"><td>\xhh</td>
+<td>&nbsp;</td>
+<td>Single byte with hex value hh.
+WARNING: Use this only for actual byte encodings (e.g. file signature
+searches). To correctly encode an ASCII control character use \u
+because this will be correctly interpreted in all encodings.</td>
+</tr>
+<tr class="row-odd"><td>\ \</td>
+<td>\u005C</td>
+<td>Backslash.</td>
+</tr>
+<tr class="row-even"><td>\&#8217;</td>
+<td>\u0027</td>
+<td>Single quote.</td>
+</tr>
+<tr class="row-odd"><td>\&#8221;</td>
+<td>\u0022</td>
+<td>Double quote.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Character notes</strong></p>
+<ol class="arabic simple">
+<li>Python codecs do not handle unicode surrogates.</li>
+</ol>
+</div>
+<div class="section" id="zero-width-tests">
+<h2>7.2. Zero width tests<a class="headerlink" href="#zero-width-tests" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="docutils">
+<colgroup>
+<col width="9%" />
+<col width="91%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>^</td>
+<td>Matches the start of the text buffer,
+if MULTILINE also matches at the start of a new line.</td>
+</tr>
+<tr class="row-even"><td>$</td>
+<td>Matches the end of the text buffer, if MULTILINE also matches before a line break.</td>
+</tr>
+<tr class="row-odd"><td>\A</td>
+<td>Matches only at the start of the text buffer.</td>
+</tr>
+<tr class="row-even"><td>\z</td>
+<td>Matches the end of the text buffer.</td>
+</tr>
+<tr class="row-odd"><td>\b</td>
+<td>Match at start or end of a word. (Defined as boundary between \w and \W.)</td>
+</tr>
+<tr class="row-even"><td>\B</td>
+<td>Zero width match if NOT at start or end of word.
+(Defined as between \w or between \W.)</td>
+</tr>
+<tr class="row-odd"><td>\X</td>
+<td>Extended Grapheme cluster boundary. (see Unicode Standard Annex #29.)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Zero width test notes</strong></p>
+<ol class="arabic">
+<li><p class="first">Zero width tests do not change the position of the regular expression match in the bytes buffer,
+they are known as &#8216;non consuming&#8217; or &#8216;boundary&#8217; tests.</p>
+</li>
+<li><p class="first"><code class="xref py py-class docutils literal"><span class="pre">RegexObject</span></code> instances allow the user to specify a start point in a buffer
+(see <a class="reference internal" href="API.html#ref-api-compiler"><span>Regular Expression Compiler</span></a>), the &#8216;start of the text buffer&#8217; specified by <code class="docutils literal"><span class="pre">^</span></code>
+and <code class="docutils literal"><span class="pre">\A</span></code> is the start of the specified area to be matched. For example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="go">&gt;&gt;&gt;pattern =&#39;^test&#39;</span>
+<span class="go">&gt;&gt;&gt;buffer = b&#39;xxxxxtest&#39;</span>
+<span class="go">&gt;&gt;&gt;regex = jsre.compile(pattern)</span>
+<span class="go">&gt;&gt;&gt;match = regex.search(buffer, 5)</span>
+<span class="go">&gt;&gt;&gt;print(match.group())</span>
+<span class="go">test</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">In order to maintain compatibility with as many encodings as possible <code class="docutils literal"><span class="pre">\b</span></code> and <code class="docutils literal"><span class="pre">\B</span></code> use
+word boundary definitions compatible with <code class="docutils literal"><span class="pre">\w</span></code>.</p>
+</li>
+<li><p class="first">The negated forms of these tests (and of character classes below) are those valid code points
+that are not in the class being negated. An invalid code under the current encoding will be
+false in both the original and negated versions.</p>
+</li>
+<li><p class="first">The Extended Grapheme Cluster is limited to full Unicode encodings because it requires a
+wide range of Unicode code points; using <code class="docutils literal"><span class="pre">\X</span></code> in byte encodings such as ascii will result in a
+syntax error.</p>
+</li>
+<li><p class="first">The <code class="docutils literal"><span class="pre">\X</span></code> test requires a large number of individual character tests, its use may
+significantly impact performance if it appears early in a regular expression.</p>
+</li>
+</ol>
+</div>
+<div class="section" id="named-character-classes">
+<h2>7.3. Named Character Classes<a class="headerlink" href="#named-character-classes" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="docutils">
+<colgroup>
+<col width="12%" />
+<col width="88%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>\d</td>
+<td>Matches decimal digit. <code class="docutils literal"><span class="pre">\p{digit}</span></code>  (\D  matches everything except digit.)</td>
+</tr>
+<tr class="row-even"><td>\s</td>
+<td>Matches whitespace. <code class="docutils literal"><span class="pre">\p{blank}</span></code>  (\S matches everything except whitespace.)</td>
+</tr>
+<tr class="row-odd"><td>\w</td>
+<td>Matches word characters. <code class="docutils literal"><span class="pre">\p{word}</span></code> (\W matches everything except word
+characters.)</td>
+</tr>
+</tbody>
+</table>
+<p><em>Unicode Properties</em></p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="24%" />
+<col width="76%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>\p{propertyVal}</td>
+<td>Many classes can be specified by just the value name. They include all
+the binary properties, short form general category properties (L, Lu,
+Ll .....etc), their long equivalents, and scripts.</td>
+</tr>
+<tr class="row-even"><td>\pC</td>
+<td>Matches a Unicode single character property:  L (letter)  M (mark)
+N (number)  S (symbol)  P (punctuation)  Z (separator)  C (other)</td>
+</tr>
+<tr class="row-odd"><td>\p{propertyVal}</td>
+<td>Many classes can be specified by just the value name. They include all
+the binary properties, short form general category properties (L, Lu,
+Ll .....etc), their long equivalents, and scripts.</td>
+</tr>
+<tr class="row-even"><td>\p{property=value}</td>
+<td>The standard way of specifying all non-binary property classes.
+The alternative syntax <em>\p{property:value}</em> is also supported.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Named Classes Notes</strong></p>
+<ol class="arabic">
+<li><p class="first">Named classes are available inside and outside of character classes.</p>
+</li>
+<li><p class="first">\P... specifies a negated property.</p>
+</li>
+<li><p class="first">Some special Unicode properies are supported, including those recommended by Appendix C of Unicode
+Technical Standard #18 for use in regular expressions:</p>
+<blockquote>
+<div><p><em>lower, upper, punct, digit, xdigit, alnum, space, blank, cntrl, graph, print, word</em></p>
+</div></blockquote>
+<p>Note that <em>word</em> is defined as in UTS #18 and includes digits; the zero width tests <code class="docutils literal"><span class="pre">\b</span> <span class="pre">\B</span></code> also use this definition.
+Some additional properties defined in UTS #18 1.2.1 and 1.6 are also supported:</p>
+<blockquote>
+<div><p><em>any, assigned, ascii</em></p>
+</div></blockquote>
+<p>Note that <em>any</em> is every code point, unlike &#8216;.&#8217; which omits newline characters unless the DOTALL flag
+is set. <em>ascii</em> will specify a character class with unicode code points 0x00-0xFF, it will not specify
+an encoding.</p>
+<p>The property:</p>
+<blockquote>
+<div><p><em>newline</em></p>
+</div></blockquote>
+<p>is provided to specify the set of new line characters in UTS #18 1.6, ie the familiar u000A, u000B etc
+as well as the Unicode characters such as u2028.</p>
+</li>
+<li><p class="first">At present no encoding supports surrogate pairs, since they are not supported by current python codecs.</p>
+</li>
+</ol>
+</div>
+<div class="section" id="character-classes">
+<h2>7.4. Character Classes<a class="headerlink" href="#character-classes" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="docutils">
+<colgroup>
+<col width="9%" />
+<col width="91%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>[S]</td>
+<td>Match all code points in the set S.</td>
+</tr>
+<tr class="row-even"><td>[^S]</td>
+<td>Match all valid code points except those in the set S.</td>
+</tr>
+<tr class="row-odd"><td>ST</td>
+<td>Union of sets. Match code points in either S or T.</td>
+</tr>
+<tr class="row-even"><td>S||T</td>
+<td>Union of sets. Match code points in either S or T.</td>
+</tr>
+<tr class="row-odd"><td>S&amp;&amp;T</td>
+<td>Intersection of sets. Match code points common to S and T.  <code class="docutils literal"><span class="pre">&amp;&amp;</span> <span class="pre">--</span> <span class="pre">||</span></code> are all
+executed left to right, use [ ] brackets if required.</td>
+</tr>
+<tr class="row-even"><td>S&#8211;T</td>
+<td>Set difference. Match code points in S except for those that are also in T.</td>
+</tr>
+</tbody>
+</table>
+<p><em>Character Class Elements</em></p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="12%" />
+<col width="88%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>c</td>
+<td>An ASCII character, see note below.</td>
+</tr>
+<tr class="row-even"><td>c-c</td>
+<td>An ASCII character range, will be correctly interpreted as a set of code points,
+IGNORECASE does NOT extend the range. (use appropriate Unicode property instead)</td>
+</tr>
+<tr class="row-odd"><td>xHH-xHH</td>
+<td>A hex byte range.  See note on hex characters: these are bytes not code points.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Character Class Notes</strong></p>
+<ol class="arabic simple">
+<li>The characters <code class="docutils literal"><span class="pre">(</span> <span class="pre">)</span> <span class="pre">{</span> <span class="pre">}</span> <span class="pre">+</span> <span class="pre">*</span> <span class="pre">.</span> <span class="pre">^</span> <span class="pre">$</span> <span class="pre">?</span> <span class="pre">,</span></code> do not need to be escaped within a class, they no longer have
+a special meaning in this context.</li>
+<li>The way that jsre handles character classes is that everything is modelled as a set of Unicode code
+points. However if elements of the class are not present in a selected encoding then they will be
+silently omitted at runtime. For example, <em>\p{lower}</em> will work in all languages and encodings and doesn&#8217;t
+need special coding for ASCII, however if <em>\p{Han}</em> is specified in combination with ASCII encoding then
+(of course) the result will be null. If the compiler finds null character sets or groups it will log
+a warning, if as a result the whole pattern is null in a selected encoding then an exception is raised.</li>
+</ol>
+</div>
+<div class="section" id="repeats-alternatives-and-backreferences">
+<h2>7.5. Repeats Alternatives and Backreferences<a class="headerlink" href="#repeats-alternatives-and-backreferences" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="docutils">
+<colgroup>
+<col width="12%" />
+<col width="88%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>*</td>
+<td>0 or many repetitions. Repetitions apply to the previous character,
+character class, or group.</td>
+</tr>
+<tr class="row-even"><td>?</td>
+<td>0 or 1 instance.</td>
+</tr>
+<tr class="row-odd"><td>+</td>
+<td>1 or many repetitions.</td>
+</tr>
+<tr class="row-even"><td>{m}</td>
+<td>Match m times.</td>
+</tr>
+<tr class="row-odd"><td>{m,n}</td>
+<td>Match at least m times and up to n times.</td>
+</tr>
+<tr class="row-even"><td>{,n}</td>
+<td>Match up to n times.</td>
+</tr>
+<tr class="row-odd"><td>{n,}</td>
+<td>Match at least n times, then as many as possible.</td>
+</tr>
+<tr class="row-even"><td>re|re</td>
+<td>Alternative - match either the left or right regular expression.</td>
+</tr>
+<tr class="row-odd"><td>\nn</td>
+<td>Backreference to a previous capturing group. (nn is in the range 1 to 31)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Repeats and alternatives notes</strong></p>
+<ol class="arabic">
+<li><p class="first">The reluctant quantifier <code class="docutils literal"><span class="pre">?</span></code> may follow a repeat;  jsre also provides a special
+group construct to specify non-greedy groups. See groups below and <a class="reference internal" href="examples.html#ref-example-reluctant"><span>Reluctant Matching</span></a>.</p>
+</li>
+<li><p class="first">The limit for a specified number of repeats is 65535. If a bigger number is specified it will
+be limited and a warning will be logged. Unlimited repeats such as <code class="docutils literal"><span class="pre">*</span></code> are also limited to
+this number.</p>
+</li>
+<li><p class="first">if an expression starts with &#8216;&#8217;.*&#8217;&#8217; or similar then if a match fails then the next match
+will be attempted after the following newline. However if DOTALL is set the anchor will be
+incremented and a match will be attempted from the next byte; the user can prevent this
+behaviour by setting an anchor stop position.</p>
+</li>
+<li><p class="first">Alternatives are evaluated in parallel, the order in which alternatives appear in the regular
+expression is not significant.</p>
+</li>
+<li><p class="first">Although alternatives are efficient they are not as efficient as relations between character classes,
+so where there is a choice it is best to prefer the latter. For example, to combine scripts with
+common characters <code class="docutils literal"><span class="pre">[\p{Greek}\p{Common}]</span></code> is more efficient than <code class="docutils literal"><span class="pre">(\p{Greek}|\p{Common})</span></code>.</p>
+</li>
+<li><p class="first">Backreferences test that the same characters are present at this position as were matched by
+the referenced group (count capture groups from the left of the expression, starting at 1).
+A backreference will match the exact encoding of Unicode characters found in the referenced
+group - for example it will not check for case variations even if IGNORECASE is set. The
+Python group extension to provide named backreferences is also supported, see below.</p>
+<p>NB backreferences may be expensive in thread space. If the referenced group is determined in
+any particular input there is no performance problem, but if there are a very large number of
+possible choices for the reference group each has to supported by a separate thread and the
+system may run out of threads (error 3). See <a class="reference internal" href="examples.html#ref-example-backreferences"><span>Backreferences</span></a>.</p>
+</li>
+</ol>
+</div>
+<div class="section" id="groups">
+<h2>7.6. Groups<a class="headerlink" href="#groups" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="docutils">
+<colgroup>
+<col width="14%" />
+<col width="86%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>(re)</td>
+<td>Matches whatever re is inside the group. Groups can be quantified by repetition,
+for example <code class="docutils literal"><span class="pre">(re)*</span></code>.</td>
+</tr>
+<tr class="row-even"><td>(?#...)</td>
+<td>A comment, the group is ignored in the regular expression.</td>
+</tr>
+<tr class="row-odd"><td>(?= re )</td>
+<td>A forward match test. This matches if the re matches but doesn&#8217;t consume any of
+the target string.</td>
+</tr>
+<tr class="row-even"><td>(?: re )</td>
+<td>The group is non-capturing.</td>
+</tr>
+<tr class="row-odd"><td>(?? re)</td>
+<td>Makes the regular expression within the group non-greedy. This property is not
+inherited and can be separately specified for nested groups.</td>
+</tr>
+<tr class="row-even"><td>(?P&lt;name&gt; re)</td>
+<td>Names the group to allow the submatch to be retrieved by name as well as by index.</td>
+</tr>
+<tr class="row-odd"><td>(?P=name)</td>
+<td>A backreference to a previously named group. (See above for backreference notes.)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Groups notes</strong></p>
+<ol class="arabic simple">
+<li>Groups which are quantified byforward matches are non-capturing, meaning that the
+match is not recorded.</li>
+<li>If non-greedy quantifiers are needed then they can be placed in a non-greedy extension group. The
+advantage of group specification is that it allows the scope of greedy and non-greedy patterns
+to be explicitly specified. See <a class="reference internal" href="examples.html#ref-example-reluctant"><span>Reluctant Matching</span></a>.</li>
+<li>A total of 32 sub-group matches can be recorded in any single regular expression. This maximum
+may not be possible if the user uses INDEXALT (consumes one match position) or other group
+types which may temporarily use match positions, depending on the nested structure of the
+regular expression.</li>
+</ol>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">7. Regular Expression Syntax</a><ul>
+<li><a class="reference internal" href="#single-characters">7.1. Single Characters</a></li>
+<li><a class="reference internal" href="#zero-width-tests">7.2. Zero width tests</a></li>
+<li><a class="reference internal" href="#named-character-classes">7.3. Named Character Classes</a></li>
+<li><a class="reference internal" href="#character-classes">7.4. Character Classes</a></li>
+<li><a class="reference internal" href="#repeats-alternatives-and-backreferences">7.5. Repeats Alternatives and Backreferences</a></li>
+<li><a class="reference internal" href="#groups">7.6. Groups</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="API.html"
+                        title="previous chapter">6. Module Functions and Objects</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="debugging.html"
+                        title="next chapter">8. Debugging and Error Codes</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/re_syntax.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="debugging.html" title="8. Debugging and Error Codes"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="API.html" title="6. Module Functions and Objects"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">jsre 1.0.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2015, Howard Chivers.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+    </div>
+  </body>
+</html>

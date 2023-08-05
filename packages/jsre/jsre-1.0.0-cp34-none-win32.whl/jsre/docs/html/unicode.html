@@ -1,0 +1,154 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>9. Unicode Compliance &mdash; jsre 1.0.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="jsre 1.0.0 documentation" href="index.html" />
+    <link rel="next" title="10. History" href="history.html" />
+    <link rel="prev" title="8. Debugging and Error Codes" href="debugging.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="history.html" title="10. History"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="debugging.html" title="8. Debugging and Error Codes"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">jsre 1.0.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="unicode-compliance">
+<h1>9. Unicode Compliance<a class="headerlink" href="#unicode-compliance" title="Permalink to this headline">¶</a></h1>
+<p><em>jsre</em> provides level 1 support for Unicode compliant with <a class="reference external" href="http://unicode.org/reports/tr18/tr18-14.html">Unicode
+Technical Standard #18, UNICODE REGULAR EXPRESSIONS</a>, version 1.7.</p>
+<p>The module supports all:</p>
+<ul class="simple">
+<li>Binary Properties (e.g. <em>\p{Alphabetic}</em>).</li>
+<li>General Category Properties.  (e.g. <em>\pP</em>).</li>
+<li>Scripts and Script Extensions.</li>
+<li>Line_Break properties (e.g. <em>\p{line_break=hyphen}</em>).</li>
+<li>Numeric_Type properties (e.g. <em>\p{numeric_type=decimal</em>).</li>
+</ul>
+<p>Property specification within the regular expression pattern is flexible;
+case does not matter, &#8216;-&#8216; and &#8216;_&#8217; are interchangable, and general categories
+and scripts may be referenced by property name. (e.g. <em>\p{greek}</em> as
+well as <em>\p{script=greek}</em>)</p>
+<p>Some special properties are supported. Appendix C of UTS #18 recommends
+a set of properties for use in regular expressions, which provide extensions and combinations
+of standard character classes. These are:</p>
+<blockquote>
+<div><em>lower, upper, punct, digit, xdigit, alnum, space, blank, cntrl, graph, print, word</em></div></blockquote>
+<p><em>word</em> is defined as in UTS #18 and includes digits, <em>\w</em> uses the same definition. The
+zero width tests <em>\b</em> <em>\B</em> also use this definition to determine word boundaries. (Note that
+the more extensive algorithm given for word breaks in Unicode Standard Annex #29 is not
+used.)</p>
+<p>The <em>\X</em> test for Extended Grapheme Cluster boundaries implements the extended version
+of the specification given in Unicode Standard Annex #29.</p>
+<p>Some additional properties defined in UTS #18 1.2.1 and 1.6 are also supported:</p>
+<blockquote>
+<div><em>any, assigned, ascii</em></div></blockquote>
+<p>Note that <em>any</em> is every code point, unlike &#8216;.&#8217; which omits newline characters unless the DOTALL flag is set.</p>
+<p>The property:</p>
+<blockquote>
+<div><em>newline</em></div></blockquote>
+<p>is provided to specify the set of new line characters in UTS #18 1.6, ie the familiar \u000A, \u000B etc
+as well as the Unicode characters such as \u2028.</p>
+<p>The actual support for Unicode properties depends on the encoding used for searching; for non-Unicode encodings (e.g. <em>CP1250</em>)
+properties are interpreted as the set of code points that can be represented under that encoding.</p>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="debugging.html"
+                        title="previous chapter">8. Debugging and Error Codes</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="history.html"
+                        title="next chapter">10. History</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/unicode.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="history.html" title="10. History"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="debugging.html" title="8. Debugging and Error Codes"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">jsre 1.0.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2015, Howard Chivers.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+    </div>
+  </body>
+</html>

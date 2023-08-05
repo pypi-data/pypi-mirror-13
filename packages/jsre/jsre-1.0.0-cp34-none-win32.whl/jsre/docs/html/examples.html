@@ -1,0 +1,457 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>4. Features and Examples &mdash; jsre 1.0.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="jsre 1.0.0 documentation" href="index.html" />
+    <link rel="next" title="5. Installation" href="install.html" />
+    <link rel="prev" title="3. Performance" href="performance.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="install.html" title="5. Installation"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="performance.html" title="3. Performance"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">jsre 1.0.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="features-and-examples">
+<span id="ref-examples"></span><h1>4. Features and Examples<a class="headerlink" href="#features-and-examples" title="Permalink to this headline">¶</a></h1>
+<p>This section provides an introduction to features provided by <em>jsre</em>, including
+features for handling large data buffers.
+The examples here are cross referenced from <a class="reference internal" href="API.html#ref-api"><span>Module Functions and Objects</span></a>.</p>
+<div class="section" id="compiling-and-matching">
+<span id="ref-example-compile"></span><h2>4.1. Compiling and Matching<a class="headerlink" href="#compiling-and-matching" title="Permalink to this headline">¶</a></h2>
+<p><em>jsre</em> provides a <code class="xref py py-class docutils literal"><span class="pre">RegexObject</span></code> which is a compiled search engine which is then
+used to match patterns encoded as strings in a target byte buffer (or in a target string for module
+level functions) resulting in either a string match or a <code class="xref py py-class docutils literal"><span class="pre">Match</span></code> object which provides
+more detailed information.</p>
+<p>Module functions include <code class="docutils literal"><span class="pre">compile()</span></code> which builds a <code class="xref py py-class docutils literal"><span class="pre">RegexObject</span></code> object which
+is then used for matching, and shortcut functions which combine building the <code class="xref py py-class docutils literal"><span class="pre">RegexObject</span></code>
+with a matching function. These functions are similar to those provided in the standard
+Python <em>re</em> module.</p>
+<p>In addition <em>jsre</em> provides a <code class="xref py py-class docutils literal"><span class="pre">ReCompiler</span></code> class which allows a much wider
+range of matching algorithms to be compiled. In particular it allows different combinations
+regular expressions and encodings to be compiled into a single matching <code class="xref py py-class docutils literal"><span class="pre">RegexObject</span></code> instance.</p>
+<p>The module level matching functions are <code class="docutils literal"><span class="pre">search()</span></code>, <code class="docutils literal"><span class="pre">match()</span></code>, <code class="docutils literal"><span class="pre">finditer()</span></code> and <code class="docutils literal"><span class="pre">findall()</span></code>.
+Matching engines resulting from the use of these functions are cached. For example, the search function
+is the simplest way to search a complete target for a specified pattern:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="nb">buffer</span>  <span class="o">=</span> <span class="n">b</span><span class="s">&#39;sample byte buffer 123.456. the end&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pattern</span> <span class="o">=</span> <span class="s">&#39;([0-9]{3}\.)+&#39;</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">match</span> <span class="o">=</span> <span class="n">jsre</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="nb">buffer</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s">&#39;utf-8&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">())</span>
+<span class="go">123.456.</span>
+</pre></div>
+</div>
+<p>Module functions are described in more detail in <a class="reference internal" href="API.html#ref-api-module"><span>Module Functions</span></a>.</p>
+<p>Both object and module functions can take control flags or combinations of flags, for example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="nb">buffer</span>  <span class="o">=</span> <span class="n">b</span><span class="s">&#39;Foo, foo, FOO&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pattern</span> <span class="o">=</span> <span class="s">&#39;foo&#39;</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">match</span> <span class="ow">in</span> <span class="n">jsre</span><span class="o">.</span><span class="n">finditer</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="nb">buffer</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s">&#39;ascii&#39;</span><span class="p">,</span> <span class="n">flags</span><span class="o">=</span><span class="n">jsre</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">):</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="k">print</span><span class="p">(</span><span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">())</span>
+
+<span class="go">Foo</span>
+<span class="go">foo</span>
+<span class="go">FOO</span>
+</pre></div>
+</div>
+<p>Often it will be necessary to specify only a single regular expression pattern and a range of
+possible encodings. In this case the module <code class="docutils literal"><span class="pre">compile()</span></code> function, similar to that provided by
+the Python <em>re</em> module, can be used to build the <code class="xref py py-class docutils literal"><span class="pre">RegexObject</span></code> execution instance. For example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="nb">buffer</span>  <span class="o">=</span> <span class="n">b</span><span class="s">&#39;sample byte buffer 123.456. the end&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pattern</span> <span class="o">=</span> <span class="s">&#39;([0-9]{3}\.)+&#39;</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">regex</span> <span class="o">=</span> <span class="n">jsre</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s">&#39;ascii&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">match</span> <span class="o">=</span> <span class="n">regex</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="nb">buffer</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">())</span>
+<span class="go">123.456.</span>
+</pre></div>
+</div>
+<p>The <code class="xref py py-class docutils literal"><span class="pre">RegexObject</span></code> provides <code class="docutils literal"><span class="pre">search()</span></code>, <code class="docutils literal"><span class="pre">match()</span></code>, <code class="docutils literal"><span class="pre">finditer()</span></code> and <code class="docutils literal"><span class="pre">findall()</span></code>
+methods similar to the module methods. Unlike the module methods they take only a byte buffer
+as the search target (not a string), but provide more flexibility in specifying the part of the
+buffer to be matched.</p>
+<p>The required encodings can also be presented as a list or tuple, for example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">regex</span> <span class="o">=</span> <span class="n">jsre</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="p">(</span><span class="s">&#39;utf_8&#39;</span><span class="p">,</span> <span class="s">&#39;utf_16_le&#39;</span><span class="p">,</span> <span class="s">&#39;utf_16_be&#39;</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>The jsre compiler <code class="xref py py-class docutils literal"><span class="pre">ReCompiler`</span></code> is used to build more complex combinations of
+regular expressions and encodings which are compiled into a single <code class="xref py py-class docutils literal"><span class="pre">RegexObject</span></code>.
+Using the above example, the object sequence is:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">compiler</span> <span class="o">=</span> <span class="n">ReCompiler</span><span class="p">(</span><span class="n">encoding</span><span class="o">=</span><span class="s">&#39;ascii&#39;</span><span class="p">,</span> <span class="n">pattern</span><span class="o">=</span><span class="n">pattern</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">regex</span> <span class="o">=</span> <span class="n">compiler</span><span class="o">.</span><span class="n">compile</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">match</span> <span class="o">=</span> <span class="n">regex</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="nb">buffer</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>For more complex examples the <code class="xref py py-class docutils literal"><span class="pre">ReCompiler`</span></code> instance is configured with a specification,
+which is a set of encodings and associated flags; any regular expression patterns
+added to the instance will use the current specification. The specification may be updated before
+further patterns are added. For example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">compiler</span> <span class="o">=</span> <span class="n">ReCompiler</span><span class="p">(</span><span class="n">encoding</span><span class="o">=</span><span class="s">&#39;utf_8&#39;</span><span class="p">,</span> <span class="n">pattern</span><span class="o">=</span><span class="n">pattern1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">compiler</span><span class="o">.</span><span class="n">setPattern</span><span class="p">(</span><span class="n">pattern2</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">compiler</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">encoding</span><span class="o">=</span><span class="p">(</span><span class="s">&#39;utf_16_le&#39;</span><span class="p">,</span> <span class="s">&#39;utf_16_be&#39;</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">compiler</span><span class="o">.</span><span class="n">setPattern</span><span class="p">(</span><span class="n">pattern3</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">regex</span> <span class="o">=</span> <span class="n">compiler</span><span class="o">.</span><span class="n">compile</span><span class="p">()</span>
+</pre></div>
+</div>
+<p><em>pattern1</em> and <em>pattern2</em> will be matched using <em>utf-8</em> and <em>pattern3</em> will be matched using
+both <em>utf_16_le</em> and <em>utf_16_be</em>. The matching engine will test all of these combinations
+and the <code class="xref py py-class docutils literal"><span class="pre">Match</span></code> object properties of <code class="docutils literal"><span class="pre">re</span></code> and <code class="docutils literal"><span class="pre">encoding</span></code> can be used to determine
+which of these combinations resulted in a particular match.</p>
+</div>
+<div class="section" id="searching-within-python-strings">
+<span id="ref-example-search"></span><h2>4.2. Searching within Python Strings<a class="headerlink" href="#searching-within-python-strings" title="Permalink to this headline">¶</a></h2>
+<p>jsre is primarily designed to search byte buffers, not Python 3 Strings. For compatibility
+with re the module level functions also allow matching against a String target.</p>
+<p>(If a string is presented instead of a byte buffer the current implementation encodes the
+string into <em>utf_32_be</em> before processing, and this may therefore incur a processing overhead.
+A more comprehensive approach to strings is planned.)</p>
+<p>If module functions are presented with a string the position values returned by <code class="docutils literal"><span class="pre">Match</span></code> in
+<code class="docutils literal"><span class="pre">start()</span></code>, <code class="docutils literal"><span class="pre">end()</span></code> and <code class="docutils literal"><span class="pre">span()</span></code> correctly index the original string:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">match</span> <span class="o">=</span> <span class="n">jsre</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s">r&#39;\bt\w+&#39;</span><span class="p">,</span> <span class="s">&#39;str not byte text to search&#39;</span><span class="p">)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">())</span>
+<span class="go">text</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">match</span><span class="o">.</span><span class="n">span</span><span class="p">()))</span>
+<span class="go">(13, 17)</span>
+</pre></div>
+</div>
+<p>Note that automated conversion of strings applies only in the module functions, it is
+not provided by the object methods.</p>
+</div>
+<div class="section" id="matching-semantics-for-alternative-expressions">
+<span id="ref-example-alternative"></span><h2>4.3. Matching Semantics for Alternative Expressions<a class="headerlink" href="#matching-semantics-for-alternative-expressions" title="Permalink to this headline">¶</a></h2>
+<p>Alternative patterns within a regular expression are evaluated in parallel, using &#8216;leftmost longest&#8217;
+(POSIX style) evaluation. Note that this differs from many (PERL style) matching
+systems which evaluate alternatives left to right; in jsre the order of alternatives in
+a regular expression does not change the result. jsre also supports reluctant (&#8216;lazy&#8217;, &#8216;shortest&#8217; )
+matching which is not present in the POSIX specification but is common in current language libraries, see below.</p>
+<p>For example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="nb">buffer</span>  <span class="o">=</span> <span class="n">b</span><span class="s">&#39;search searching searched&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pattern</span> <span class="o">=</span> <span class="s">&#39;(search|searching)&#39;</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">match</span> <span class="ow">in</span> <span class="n">jsre</span><span class="o">.</span><span class="n">finditer</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="nb">buffer</span><span class="p">):</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="k">print</span><span class="p">(</span><span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">())</span>
+
+<span class="go">search</span>
+<span class="go">searching</span>
+<span class="go">search</span>
+</pre></div>
+</div>
+<p>An example with sub-group matches:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="nb">buffer</span>  <span class="o">=</span> <span class="n">b</span><span class="s">&#39;abcd&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pattern</span> <span class="o">=</span> <span class="s">r&#39;(a|ab|abc)(bcd|cd|d)&#39;</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">match</span> <span class="ow">in</span> <span class="n">jsre</span><span class="o">.</span><span class="n">finditer</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="nb">buffer</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s">&#39;ascii&#39;</span><span class="p">):</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="k">print</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">match</span><span class="o">.</span><span class="n">groups</span><span class="p">()))</span>
+
+<span class="go">(&#39;abcd&#39;, &#39;abc&#39;, &#39;d&#39;)</span>
+</pre></div>
+</div>
+<p>The longest leftmost match is &#8216;abc&#8217;, leaving &#8216;d&#8217; to be matched by the second sub-group.
+Note that exactly the same match occurs if a repeated group is used, but in this case the
+match returned from the sub-group is the last match for the repeated group:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="nb">buffer</span>  <span class="o">=</span> <span class="n">b</span><span class="s">&#39;abcd&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pattern</span> <span class="o">=</span> <span class="s">r&#39;(a|ab|abc|bcd|cd|d)+&#39;</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">match</span> <span class="ow">in</span> <span class="n">jsre</span><span class="o">.</span><span class="n">finditer</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="nb">buffer</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s">&#39;ascii&#39;</span><span class="p">):</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="k">print</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">match</span><span class="o">.</span><span class="n">groups</span><span class="p">()))</span>
+
+<span class="go">(&#39;abcd&#39;, &#39;d&#39;)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="indexing-alternatives">
+<span id="ref-example-keyword"></span><h2>4.4. Indexing Alternatives<a class="headerlink" href="#indexing-alternatives" title="Permalink to this headline">¶</a></h2>
+<p>Indexing allows the efficient identification of the matching (sub) expressions or keywords
+without the need to provide each with its own subgroup. This allows the use of much larger
+alternative expression lists and provides some efficiency gains in their matching.</p>
+<p>Indexing is enabled using the flag <code class="docutils literal"><span class="pre">jsre.INDEXALT</span></code>. <code class="docutils literal"><span class="pre">Match</span></code> objects then allow
+the user to retrieve the keyword matched using the <code class="docutils literal"><span class="pre">keypattern</span></code> attribute:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="nb">buffer</span>  <span class="o">=</span> <span class="n">b</span><span class="s">&#39;the quick brown Foo jumps over the lazy BAR&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pattern</span> <span class="o">=</span> <span class="s">&#39;foo|bar|dog|fox&#39;</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">match</span> <span class="ow">in</span> <span class="n">jsre</span><span class="o">.</span><span class="n">finditer</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="nb">buffer</span><span class="p">,</span> <span class="n">flags</span><span class="o">=</span><span class="n">jsre</span><span class="o">.</span><span class="n">INDEXALT</span> <span class="o">+</span> <span class="n">jsre</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">):</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="k">print</span><span class="p">(</span><span class="s">&#39;keypattern = {}, match = {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">match</span><span class="o">.</span><span class="n">keypattern</span><span class="p">,</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">()))</span>
+
+<span class="go">keypattern = foo, match = Foo</span>
+<span class="go">keypattern = bar, match = BAR</span>
+</pre></div>
+</div>
+<p>Alternatives indexed in this way are limited to the highest level of alternatives within a
+given expression. For example, in <code class="docutils literal"><span class="pre">foo|(?cat|dog)|fox</span></code> the key patterns
+would be <code class="docutils literal"><span class="pre">foo</span></code>, <code class="docutils literal"><span class="pre">(?:cat|dog)</span></code> and <code class="docutils literal"><span class="pre">fox</span></code>. The indexing would not extend recursively to
+separate <code class="docutils literal"><span class="pre">cat</span></code> and <code class="docutils literal"><span class="pre">dog</span></code>.</p>
+</div>
+<div class="section" id="large-file-processing">
+<span id="ref-example-largefile"></span><h2>4.5. Large File Processing<a class="headerlink" href="#large-file-processing" title="Permalink to this headline">¶</a></h2>
+<p>In common with most regular expression libraries jsre allows a search to be limited to part
+of an input buffer, for example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="nb">buffer</span>  <span class="o">=</span> <span class="n">b</span><span class="s">&#39;the quick brown Foo jumps over the lazy BAR&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pattern</span> <span class="o">=</span> <span class="s">r&#39;\b\w{5}\b&#39;</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">regex</span> <span class="o">=</span> <span class="n">jsre</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s">&#39;ascii&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">match</span> <span class="o">=</span> <span class="n">regex</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="nb">buffer</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">())</span>
+<span class="go">brown</span>
+</pre></div>
+</div>
+<p>In large buffers this method of selection is often preferable to preprocessing the
+buffer with the equivalent <code class="docutils literal"><span class="pre">buffer[9:20]</span></code>, since slicing a buffer in Python in this way
+will incur a buffer copy overhead.</p>
+<p>When splitting a very large file or disk image into buffers
+for processing it is necessary to allow an overlap between buffers, so that patterns that start
+to match (anchor) near the end of a buffer boundary can be matched to completion. The length of the
+overlap determines the match &#8216;window&#8217; - some patterns will be required to match
+within this space.</p>
+<p>It is desirable to avoid duplication that may occur if a short match occurs within the overlap
+between buffers. This is achieved by setting a &#8216;last anchor point&#8217; in the buffer, which is the last
+position at which a pattern match is allowed to start. This is an additional parameter which jsre allows
+after the usual (start,end) pair used above.</p>
+<p>For example, if a very large file was split into 1 MByte buffers, and the longest required window
+for any match was 1kByte, then the specification for each match would be:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">regex</span><span class="o">.</span><span class="n">finditer</span><span class="p">(</span><span class="nb">buffer</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1049600</span><span class="p">,</span> <span class="mi">1048576</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The actual buffer size is 1049600, the last anchor point is at 148576; the second buffer to be
+processed would start at byte 1048576 and overlap into the third buffer, etc.</p>
+</div>
+<div class="section" id="sector-offset-searches">
+<span id="ref-example-sector"></span><h2>4.6. Sector Offset Searches<a class="headerlink" href="#sector-offset-searches" title="Permalink to this headline">¶</a></h2>
+<p>A common feature of searches against disks and other structured objects such as databases is that certain pattern matches
+are only valid at periodic offsets - for example at disk sector boundaries. jsre allows a <em>stride</em> and <em>offset</em> to be associated with
+an encoding to restrict the anchor points from which matches are attempted.</p>
+<p>This feature is enabled with the <code class="docutils literal"><span class="pre">jsre.SECTOR</span></code> flag, and requires the <em>stride</em> and <em>offset</em>
+keyword parameters to be set with the associated encoding list. For example, to search from only the start of sectors size 512:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">regex</span> <span class="o">=</span> <span class="n">jsre</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">pattern</span><span class="o">=...</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=...</span><span class="p">,</span> <span class="n">flags</span><span class="o">=</span><span class="n">jsre</span><span class="o">.</span><span class="n">SECTOR</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">512</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>A small example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="nb">buffer</span>  <span class="o">=</span> <span class="n">b</span><span class="s">&#39;test4567890test5678901test6789012test7890123test8901234test9012345test&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pattern</span> <span class="o">=</span> <span class="s">r&#39;test\d&#39;</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">regex</span> <span class="o">=</span> <span class="n">jsre</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">pattern</span><span class="o">=</span><span class="n">pattern</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s">&#39;ascii&#39;</span><span class="p">,</span> <span class="n">flags</span><span class="o">=</span><span class="n">jsre</span><span class="o">.</span><span class="n">SECTOR</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">match</span> <span class="ow">in</span> <span class="n">regex</span><span class="o">.</span><span class="n">finditer</span><span class="p">(</span><span class="nb">buffer</span><span class="p">):</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="k">print</span><span class="p">(</span><span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">())</span>
+
+<span class="go">test7</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="reluctant-matching">
+<span id="ref-example-reluctant"></span><h2>4.7. Reluctant Matching<a class="headerlink" href="#reluctant-matching" title="Permalink to this headline">¶</a></h2>
+<p>jsre supports reluctant (lazy or shortest) quantifiers (e.g. <code class="docutils literal"><span class="pre">+?</span></code> ). Because jsre does
+not search an expression using backtracking reluctant quatifiers are interpreted as requiring
+the shortest possible match for the group or subgroup in which they occur. For this reason jsre
+also provides a group extension mechanism which can also be used to specify the scope of
+the shortest match..</p>
+<p>In most cases this provides the same result as lazy evaluation in a backtracking system
+(but with considerable performance benefits); there is one limitation, however, which is that
+only one kind of quantifier (ie greedy or reluctant) is permitted in any single group. In
+difficult cases this may require the user to specify additional sub-groups to achieve exactly the
+desired matching.</p>
+<p>Simple reluctant semantics, such as lazy evaluation of the whole regular expression,
+are most easily implemented using the group extension mechanism. For example if
+alternatives are made reluctant, then the shortest available match will succeed:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="nb">buffer</span>  <span class="o">=</span> <span class="n">b</span><span class="s">&#39;search searching searched&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pattern</span> <span class="o">=</span> <span class="s">&#39;(??search|searching)&#39;</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">match</span> <span class="ow">in</span> <span class="n">jsre</span><span class="o">.</span><span class="n">finditer</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="nb">buffer</span><span class="p">):</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="k">print</span><span class="p">(</span><span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">())</span>
+
+<span class="go">        (&#39;search&#39;, &#39;search&#39;)</span>
+<span class="go">        (&#39;search&#39;, &#39;search&#39;)</span>
+<span class="go">        (&#39;search&#39;, &#39;search&#39;)</span>
+</pre></div>
+</div>
+<p>In this case &#8216;search&#8217; appears as the overall match, and also as a submatch since the
+whole expression is grouped.</p>
+<p>Non-greedy sections of regular expression are often used to enforce locality, such as
+ensuring that the closest brackets or tags are matched. For example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="nb">buffer</span>  <span class="o">=</span> <span class="n">b</span><span class="s">&#39;brackets example {first{one},second{two}} end of example&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pattern</span> <span class="o">=</span> <span class="s">r&#39;\{.+?\}&#39;</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">match</span> <span class="ow">in</span> <span class="n">jsre</span><span class="o">.</span><span class="n">finditer</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="nb">buffer</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s">&#39;ascii&#39;</span><span class="p">):</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="k">print</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">match</span><span class="o">.</span><span class="n">groups</span><span class="p">()))</span>
+
+<span class="go">(&#39;{first{one}&#39;,)</span>
+<span class="go">(&#39;{two}&#39;,)</span>
+</pre></div>
+</div>
+<p>The matching behaviour can be controlled within nested groups.
+For example, for the buffer above, the following regular expression:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">pattern</span> <span class="o">=</span> <span class="s">r&#39;(??\{([a-z,]+(\{.+\}))+\})&#39;</span>
+</pre></div>
+</div>
+<p>results in:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">(</span><span class="s">&#39;{first{one},second{two}}&#39;</span><span class="p">,</span>
+ <span class="s">&#39;{first{one},second{two}}&#39;</span><span class="p">,</span>
+ <span class="s">&#39;first{one},second{two}&#39;</span><span class="p">,</span>
+ <span class="s">&#39;{one},second{two}&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Despite the reluctant outer match the inner group <code class="docutils literal"><span class="pre">([a-z,]+(\{.+\}))</span></code> is
+processed greedily, as shown by the inner match of <em>{one},second{two}</em>.</p>
+<p>If the pattern specified a reluctant inner quantifier:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">pattern</span> <span class="o">=</span> <span class="s">r&#39;(??\{([a-z,]+(??\{.+\}))+\})&#39;</span>
+</pre></div>
+</div>
+<p>Then the reluctant inner group would be executed twice because it will be constrained to short matches,
+resulting in the submatch reporting only the second inner bracket:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">(</span><span class="s">&#39;{first{one},second{two}}&#39;</span><span class="p">,</span>
+ <span class="s">&#39;{first{one},second{two}}&#39;</span><span class="p">,</span>
+ <span class="s">&#39;,second{two}&#39;</span><span class="p">,</span>
+ <span class="s">&#39;{two}&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Note that in this case jsre would NOT accept the syntax <code class="docutils literal"><span class="pre">([a-z,]+\{.+?\})</span></code> because it would
+result in both reluctant and greedy quantifiers in a single branch; the user is required
+to specify the scope of the different matching policies. The example above uses the group
+extension, the alternative is to clarify the intent by placing a standard reluctant quantifier
+in a separate sub-group: <code class="docutils literal"><span class="pre">([a-z,]+(\{.+?\}))</span></code></p>
+</div>
+<div class="section" id="backreferences">
+<span id="ref-example-backreferences"></span><h2>4.8. Backreferences<a class="headerlink" href="#backreferences" title="Permalink to this headline">¶</a></h2>
+<p>A backreference specifies that part of an expression must match exactly a string that was previously
+matched by a specified group. The group may be identified by name or number.</p>
+<p>For example, it may be necessary to extract tagged information without knowing the tags in advance:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="nb">buffer</span>  <span class="o">=</span> <span class="s">r&#39;a&lt;x&gt;b&lt;y&gt;c&lt;\y&gt;d&lt;\x&gt;e&lt;x&gt;f&lt;\x&gt;g&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pattern</span> <span class="o">=</span> <span class="s">r&#39;&lt;(.*&gt;).*?&lt;</span><span class="se">\\</span><span class="s">\1&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">match</span> <span class="ow">in</span> <span class="n">jsre</span><span class="o">.</span><span class="n">finditer</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="nb">buffer</span><span class="p">):</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="k">print</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">match</span><span class="o">.</span><span class="n">groups</span><span class="p">()))</span>
+
+<span class="go">(&#39;&lt;x&gt;b&lt;y&gt;c&lt;\y&gt;d&lt;\x&gt;&#39;, &#39;x&gt;&#39;)</span>
+<span class="go">(&#39;&lt;x&gt;f&lt;\x&gt;&#39;, &#39;x&gt;)</span>
+</pre></div>
+</div>
+<p>The first part of the pattern <code class="docutils literal"><span class="pre">&lt;(.*&gt;)</span></code> matches the tag <em>&lt;x&gt;</em> so the backreference <code class="docutils literal"><span class="pre">\1</span></code> to the first
+subgroup matches <em>x&gt;</em> capturing the closing tag; the reluctant quantifier <code class="docutils literal"><span class="pre">.*?</span></code> matches
+the shortest possible string between tags, resulting in two matches.</p>
+<p>Backreferences allow expressions to be written that may otherwise be impossible, but also present potential
+performance problems. In this expression the first subgroup will match all possible strings ending in <em>&gt;</em>
+that follow a <em>&lt;</em>, i.e.:  <em>x&gt;, x&gt;b&lt;y&gt;, x&gt;b&lt;y&gt;c&lt;y&gt;, x&gt;b&lt;y&gt;c&lt;y&gt;d&lt;x&gt;, x&gt;b&lt;y&gt;c&lt;y&gt;d&lt;x&gt;e&lt;x&gt;, x&gt;b&lt;y&gt;c&lt;y&gt;d&lt;x&gt;e&lt;x&gt;f&lt;x&gt;, y&gt; ...</em>
+Each of these has to be tested in all the remaining positions of the input string. It should be obvious that
+patterns of this sort may result in performance problems. In backtracking pattern
+matchers the result is likely to be excessive execution time, jsre will suffer little in speed but may
+exhaust the memory space allocated to tracking the alternatives at each point in the string.</p>
+<p>The solution is to minimise as far as possible the options available to the subgroup that is to be backreferenced.
+For example, in this case assuming that tags are smaller than 3 characters the expression could be better rewritten
+as: <code class="docutils literal"><span class="pre">&lt;(.{1,3}&gt;).*?&lt;\\\1</span></code>.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">4. Features and Examples</a><ul>
+<li><a class="reference internal" href="#compiling-and-matching">4.1. Compiling and Matching</a></li>
+<li><a class="reference internal" href="#searching-within-python-strings">4.2. Searching within Python Strings</a></li>
+<li><a class="reference internal" href="#matching-semantics-for-alternative-expressions">4.3. Matching Semantics for Alternative Expressions</a></li>
+<li><a class="reference internal" href="#indexing-alternatives">4.4. Indexing Alternatives</a></li>
+<li><a class="reference internal" href="#large-file-processing">4.5. Large File Processing</a></li>
+<li><a class="reference internal" href="#sector-offset-searches">4.6. Sector Offset Searches</a></li>
+<li><a class="reference internal" href="#reluctant-matching">4.7. Reluctant Matching</a></li>
+<li><a class="reference internal" href="#backreferences">4.8. Backreferences</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="performance.html"
+                        title="previous chapter">3. Performance</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="install.html"
+                        title="next chapter">5. Installation</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/examples.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="install.html" title="5. Installation"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="performance.html" title="3. Performance"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">jsre 1.0.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2015, Howard Chivers.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+    </div>
+  </body>
+</html>

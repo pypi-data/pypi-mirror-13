@@ -1,0 +1,92 @@
+#
+# Tests cases to cover basic re semantics
+# Note that addition tests are included in the development test tree,
+# allowing testing against larger images than can be included in a dist package
+#
+# test name ; image file ; test reference ; encoding ; flags ; altindex, pattern
+#
+# IGNORECASE, INDEXALT, ASYNCHRONOUS
+#
+asynchronous;test_async_utf32;ref_async_utf32;utf_32_be;65536;0;<\w*>
+#
+# Characters and character sets
+#
+characters utf_32_be;test_characters_utf32be;ref_characters_utf32be;utf_32_be;0;0;a\\\'\"\(\)\[\]\{\}\^\$\+\*\?\.\a\f\n\r\t\u1BC3\U0010B8C9\v\xDF
+characters ascii;test_characters_ascii;ref_characters_ascii;ascii;0;0;a\\\'\"\(\)\[\]\{\}\^\$\+\*\?\.\a\f\n\r\t\v\xAA
+class combinations;test_classes_ascii;ref_classes_ascii;ascii;0;0;[ab]{2}[^ab]{2}[[a][b]]{2}[[a]||[b]]{2}[a||b]{2}[[ -~]&&[a-z]]{2}[[ -~]--[a-z]]{2}[\x2B-\x5A]{2}
+class characters ascii;test_classes_ascii;ref_classchars_ascii;ascii;0;0;[\d]{2}[^\D]{2}[^\d]{2}[\D]{2}[\s]{2}[\S]{2}[\w]{2}[\W]{2}[\pP]{2}[\p{Lu}]{2}[\p{gc:symbol}]{2}[\p{Numeric-Type=Decimal}]{2}[\p{alnum}]{2}
+class characters utf32;test_classes_utf32be;ref_classes_utf32be;utf_32_be;0;0;[\p{greek}][\P{greek}][\p{gc=letter}][\p{lower}][\p{greek}\p{lower}][\p{greek}&&\p{lower}][\p{greek}--\p{lower}]
+dot class normal utf8;test_re_keyword_ascii;ref_re_keyword_ascii_dot;utf_8;0;0;\b.+\b
+dot class All utf8;test_re_keyword_ascii;ref_re_keyword_ascii_dotall;utf_8;16;0;\b.+\b
+#
+# Zero width boundaries and Multiline
+#
+zero width word boundary utf8;test_re_keyword_ascii;ref_re_keyword_ascii_lcb;utf_8;0;0;\bkeyword\b
+zero width word boundary utf16le;test_re_keyword_utf16;ref_re_keyword_utf16_lcb;utf_16_le;0;0;\bkeyword\b
+zero width notBoundary utf8;test_re_keyword_ascii;ref_re_keyword_ascii_ucB;utf_8;0;0;\Bword\B
+zero width notBoundary utf16le;test_re_keyword_utf16;ref_re_keyword_utf16_ucB;utf_16_le;0;0;\Bword\B
+buffer start utf8;test_re_keyword_ascii;ref_re_keyword_ascii_bsn;utf_8;0;0;\A\w+
+buffer start utf16le;test_re_keyword_utf16;ref_re_keyword_utf16_bsn;utf_16_le;0;0;\A\w+
+buffer start utf8;test_re_keyword_ascii;ref_re_keyword_ascii_bsn;utf_8;0;0;^\w+
+buffer start utf16le;test_re_keyword_utf16;ref_re_keyword_utf16_bsn;utf_16_le;0;0;^\w+
+line start utf8;test_re_keyword_ascii;ref_re_keyword_ascii_bsm;utf_8;8;0;^\w+
+line start utf16le;test_re_keyword_utf16;ref_re_keyword_utf16_bsm;utf_16_le;8;0;^\w+
+buffer end utf8;test_re_keyword_ascii;ref_re_keyword_ascii_ben;utf_8;0;0;\w+\z
+buffer end utf16le;test_re_keyword_utf16;ref_re_keyword_utf16_ben;utf_16_le;0;0;\w+\z
+buffer end utf8;test_re_keyword_ascii;ref_re_keyword_ascii_ben;utf_8;0;0;\w+$
+buffer end utf16le;test_re_keyword_utf16;ref_re_keyword_utf16_ben;utf_16_le;0;0;\w+$
+line end utf8;test_re_keyword_ascii;ref_re_keyword_ascii_bem;utf_8;8;0;\w+$
+line end utf16le;test_re_keyword_utf16;ref_re_keyword_utf16_bem;utf_16_le;8;0;\w+$
+line break ascii;test_lineend_ascii;ref_re_linebreak_ascii;ascii;24;0;$.^
+line scan ascii;test_lineend_ascii;ref_re_linescan_ascii;ascii;8;0;^keyword.*
+#
+# Dotall
+#
+dot normal utf8;test_re_keyword_ascii;ref_re_keyword_ascii_dot;utf_8;0;0;\b.+\b
+dot normal utf16le;test_re_keyword_utf16;ref_re_keyword_utf16_dot;utf_16_le;0;0;\b.+\b
+dot All utf8;test_re_keyword_ascii;ref_re_keyword_ascii_dotall;utf_8;16;0;\b.+\b
+dot All utf16le;test_re_keyword_utf16;ref_re_keyword_utf16_dotall;utf_16_le;16;0;\b.+\b
+#
+# Repeats
+#
+repeat * utf8;test_repeats_ascii;ref_repeats_ascii_star;utf_8;0;0;<(key\d)*>
+repeat * utf16;test_repeats_utf16;ref_repeats_utf16_star;utf_16_le;0;0;<(key\d)*>
+repeat ? utf8;test_repeats_ascii;ref_repeats_ascii_question;utf_8;0;0;<(key\d)?>
+repeat ? utf16;test_repeats_utf16;ref_repeats_utf16_question;utf_16_le;0;0;<(key\d)?>
+repeat + utf8;test_repeats_ascii;ref_repeats_ascii_plus;utf_8;0;0;<(key\d)+>
+repeat + utf16;test_repeats_utf16;ref_repeats_utf16_plus;utf_16_le;0;0;<(key\d)+>
+repeat required utf8;test_repeats_ascii;ref_repeats_ascii_required;utf_8;0;0;<(key\d){3}>
+repeat required utf16;test_repeats_utf16;ref_repeats_utf16_required;utf_16_le;0;0;<(key\d){3}>
+repeat required+ utf8;test_repeats_ascii;ref_repeats_ascii_rplus;utf_8;0;0;<(key\d){3,}>
+repeat required+ utf16;test_repeats_utf16;ref_repeats_utf16_rplus;utf_16_le;0;0;<(key\d){3,}>
+repeat optional utf8;test_repeats_ascii;ref_repeats_ascii_optional;utf_8;0;0;<(key\d){,4}>
+repeat optional utf16;test_repeats_utf16;ref_repeats_utf16_optional;utf_16_le;0;0;<(key\d){,4}>
+repeat full utf8;test_repeats_ascii;ref_repeats_ascii_full;utf_8;0;0;<(key\d){2,4}key
+repeat full utf16;test_repeats_utf16;ref_repeats_utf16_full;utf_16_le;0;0;<(key\d){2,4}key
+repeat alt utf8;test_repeats_ascii;ref_repeats_ascii_alt;utf_8;0;0;<(key\d){2}>|<(key\d){3,5}key
+repeat alt utf16;test_repeats_utf16;ref_repeats_utf16_alt;utf_16_le;0;0;<(key\d){2}>|<(key\d){3,5}key
+#
+# Lazy
+#
+repeat full utf8 nongreedy group;test_repeats_ascii;ref_repeats_ascii_fullng;utf_8;0;0;(??<(key\d){2,4}key)
+repeat full utf8 nongreedy qualifier;test_repeats_ascii;ref_repeats_ascii_fullng;utf_8;0;0;<(key\d){2,4}?key
+repeat full utf16 nongreedy group;test_repeats_utf16;ref_repeats_utf16_fullng;utf_16_le;0;0;(??<(key\d){2,4}key)
+repeat full utf16 nongreedy qualifier;test_repeats_utf16;ref_repeats_utf16_fullng;utf_16_le;0;0;<(key\d){2,4}?key
+repeat alt utf8 nongreedy group;test_repeats_ascii;ref_repeats_ascii_altng;utf_8;0;0;(??<(key\d){2}>|<(key\d){3,5}key)
+repeat alt utf8 nongreedy qualifier;test_repeats_ascii;ref_repeats_ascii_altng;utf_8;0;0;<(key\d){2}>|<(key\d){3,5}?key
+repeat alt utf16 nongreedy group;test_repeats_utf16;ref_repeats_utf16_altng;utf_16_le;0;0;(??<(key\d){2}>|<(key\d){3,5}key)
+repeat alt utf16 nongreedy qualifier;test_repeats_utf16;ref_repeats_utf16_altng;utf_16_le;0;0;<(key\d){2}>|<(key\d){3,5}?key
+#
+# Start flags not covered elsewhere
+#
+start with repeated any greedy;test_anyrepeated_ascii;ref_any_repeat_greedy_ascii;ascii;0;0;\p{any}*keyword
+start with repeated any nongreedy;test_anyrepeated_ascii;ref_any_repeat_nongreedy_ascii;ascii;0;0;(??\p{any}*keyword)
+start with repeated . multiline greedy;test_anyrepeated_ascii;ref_any_repeat_greedy_ascii;ascii;16;0;.+keyword
+start with repeated . multiline nongreedy;test_anyrepeated_ascii;ref_any_repeat_nongreedy_ascii;ascii;16;0;(??.+keyword)
+#
+# anchor/scan cases
+#
+anchor-scan dotall;test_re_keyword_ascii;ref_anchor-scan_dotall_ascii;ascii;16;0;(??.*\key)
+anchor-scan any;test_re_keyword_ascii;ref_anchor-scan_dotall_ascii;ascii;0;0;(??\p{any}*\key)
+anchor-scan dot;test_re_keyword_ascii;ref_anchor-scan_dot_ascii;ascii;0;0;(??.*key)
+anchor-scan multiline;test_re_keyword_ascii;ref_anchor-scan_multiline_ascii;ascii;8;0;(??^\w*key)
