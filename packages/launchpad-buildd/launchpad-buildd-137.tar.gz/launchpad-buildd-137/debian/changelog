@@ -1,0 +1,1295 @@
+launchpad-buildd (137) trusty; urgency=medium
+
+  * Remove handling for pre-karmic versions of Twisted that didn't support
+    --umask.
+  * Stop cleaning /var/log/launchpad-buildd/ from cron; logrotate handles
+    that now.
+  * Configure systemd-timesyncd to use the NTP server configured in
+    /etc/launchpad-buildd/default.
+  * Try to load the nbd module when starting launchpad-buildd
+    (LP: #1531171).
+  * buildrecipe: Add option parsing framework.
+  * Use git-build-recipe to run git-based recipe builds (LP: #1453022).
+
+ -- Colin Watson <cjwatson@ubuntu.com>  Mon, 18 Jan 2016 11:50:05 +0000
+
+launchpad-buildd (136) trusty; urgency=medium
+
+  * Use twisted.python.log.msg rather than print to write to the log file.
+    Twisted 15.2's stdio wrapper tries to decode as ASCII and thus breaks on
+    sbuild's UTF-8 section markers, and this seems to be the simplest way to
+    fix that while preserving source compatibility with earlier versions of
+    Twisted.
+  * Add Python packaging files so that Launchpad's test suite can
+    incorporate this as a Python dependency rather than requiring
+    python-lpbuildd to be installed on the test system.
+
+ -- Colin Watson <cjwatson@ubuntu.com>  Fri, 13 Nov 2015 13:59:48 +0000
+
+launchpad-buildd (135) trusty; urgency=medium
+
+  * debian/control: Require python-debian (>= 0.1.23), needed for changes in
+    launchpad-buildd 133.
+  * debian/control: Drop dependency on linux32.  It's been in util-linux for
+    ages, which is Essential, and utopic dropped the Provides.
+  * debian/launchpad-buildd.init: Set "Should-Start: cloud-init" to ensure
+    that launchpad-buildd is started after the hostname is set.
+  * Simplify BuilddSlaveTestSetup slightly.
+
+ -- Colin Watson <cjwatson@ubuntu.com>  Thu, 29 Oct 2015 17:49:57 +0000
+
+launchpad-buildd (134) trusty; urgency=medium
+
+  * buildsnap: Drop explicit installation of sudo, now fixed in snapcraft.
+  * Rewrite debian/rules in modern dh style.
+  * buildsnap: Pass SNAPCRAFT_LOCAL_SOURCES=1 to snapcraft so that it uses
+    the build's sources.list.
+
+ -- Colin Watson <cjwatson@ubuntu.com>  Thu, 24 Sep 2015 10:20:13 +0100
+
+launchpad-buildd (133) trusty; urgency=medium
+
+  * Liberalise dep-wait matching regexes slightly so that they match
+    multi-line output properly, as in the case where multiple
+    build-dependencies are uninstallable.
+  * If there is a mix of definite and dubious dep-wait output, then analyse
+    the situation rather than trusting just the definite information.
+  * Handle architecture restrictions, architecture qualifications, and
+    restriction formulas (build profiles) in build-dependencies.
+  * Add support for building snaps (LP: #1476405).
+  * slave-prep: Output current python-debian version, useful for debugging
+    build-dependency parsing problems.
+  * Strip qualifications and restrictions even from dep-waits derived solely
+    from sbuild output.
+
+ -- Colin Watson <cjwatson@ubuntu.com>  Tue, 04 Aug 2015 22:58:47 +0100
+
+launchpad-buildd (132) trusty; urgency=medium
+
+  * Fix incorrect dscpath construction that caused a crash when analysing
+    dubious dep-wait cases.
+
+ -- Colin Watson <cjwatson@ubuntu.com>  Wed, 15 Jul 2015 12:09:08 +0100
+
+launchpad-buildd (131) trusty; urgency=medium
+
+  * slave-prep: Output current sbuild version, now that it's a separate
+    package.
+  * buildrecipe: Pass --only-source to "apt-get build-dep" to force it to
+    use the source package we care about rather than trying to map through
+    binary package names.
+  * Make sbuild use "sudo -E" rather than just sudo.  It will still filter
+    the environment itself, but this means that variables such as
+    DEB_BUILD_OPTIONS will be passed through given our standard buildd
+    sudoers configuration.
+  * Analyse dubious dep-wait cases ("but it is not installed" or "but it is
+    not going to be installed") manually to check whether any direct
+    build-dependencies are missing, and if so generate an appropriate
+    dep-wait (LP: #1468755).
+
+ -- Colin Watson <cjwatson@ubuntu.com>  Mon, 13 Jul 2015 14:16:11 +0100
+
+launchpad-buildd (130) trusty; urgency=medium
+
+  * Reimplement build-dependency installation for recipes by hand using
+    sbuild-like logic, allowing us to drop use of pbuilder (LP: #728494) and
+    support :native in recipe build-dependencies (LP: #1322294).
+  * Stop cleaning /home/buildd/public_html/ddebs/ and
+    /home/buildd/public_html/translations/, now that we're using an sbuild
+    that doesn't publish anything there.
+  * Drop apache2 dependency, which was only needed for old-style
+    ddeb/translation publishing.
+
+ -- Colin Watson <cjwatson@ubuntu.com>  Mon, 29 Jun 2015 17:56:52 +0100
+
+launchpad-buildd (129) trusty; urgency=low
+
+  [ William Grant ]
+  * Tighten apt depwait parsing to not return uninstallable deps as missing.
+
+ -- Colin Watson <cjwatson@ubuntu.com>  Thu, 04 Jun 2015 11:42:13 +0100
+
+launchpad-buildd (128) trusty; urgency=medium
+
+  [ Colin Watson ]
+  * Use sbuild's --resolve-alternatives mode, to match the behaviour of the
+    old internal sbuild fork.
+
+ -- William Grant <wgrant@ubuntu.com>  Tue, 26 May 2015 11:27:26 +1000
+
+launchpad-buildd (127) trusty; urgency=low
+
+  [ William Grant ]
+  * Switch from an internal sbuild fork to the system package.
+    - Dropped copy of sbuild.
+    - Install ~buildd/.sbuildrc instead of ~buildd/.lp-sbuildrc.
+    - Clean and update sbuildrc.
+    - Write out /CurrentlyBuilding from Python.
+    - Rewrite failure stage and depwait detection to cope with modern sbuild.
+  * Refactor lpbuildd.binarypackage tests to be readable.
+  * Drop duplicated paths from the config file.
+
+  [ Colin Watson ]
+  * Apply more reasonable log handling, as well as logrotate.
+    RotatableFileLogObserver class borrowed from Launchpad, amended to use
+    SIGHUP as its reopening signal.
+
+ -- Colin Watson <cjwatson@ubuntu.com>  Wed, 20 May 2015 13:38:51 +0100
+
+launchpad-buildd (126) trusty; urgency=medium
+
+  [ Colin Watson ]
+  * Build with dpkg-deb -Zgzip, so that the resulting .deb can still be
+    installed on lucid.
+  * Drop support for running binarypackage builds without a "suite"
+    argument; Launchpad has passed this for all binarypackage builds since
+    2007.
+  * Expect a "distribution" argument in binarypackage and pass it to
+    sbuild's --archive option (LP: #1348077).  Remove the hardcoded
+    --archive=ubuntu from the configuration file.
+  * upgrade-config: Use python-apt for version comparison (LP: #574713).
+  * debian/launchpad-buildd.cron.daily: Remove old ddebs and translations
+    directories recursively (LP: #1417893).
+
+  [ William Grant ]
+  * Remove the 1GB RLIMIT_AS for recipe builds. All virtual builders now have
+    4GiB of RAM, so even maxing out a 32-bit address space can't cause much
+    trashing. This also fixes build dependency installation for some packages,
+    as the ulimit was erroneously applied to more than just the tree build
+    phase (LP: #693524).
+  * Drop the long-obsolete "debian" alias for the "binarypackage" build
+    manager (LP: #538844).
+
+  [ Adam Conrad ]
+  * Avoid removing the buildlog in the cron.daily cleanup job, so that we
+    don't end up removing it and crashing lp-buildd on a long-hung build.
+
+ -- Colin Watson <cjwatson@ubuntu.com>  Fri, 06 Feb 2015 21:03:36 +0000
+
+launchpad-buildd (125) trusty; urgency=medium
+
+  [ Dimitri John Ledkov ]
+  * Enable verbose build logs (LP: #516208).
+
+  [ Colin Watson ]
+  * Calculate the FQDN dynamically in sbuildrc rather than substituting it
+    in from the postinst.  This is friendlier to scalingstack, where a
+    single image is used for multiple guests.
+  * Set V=1 rather than DH_VERBOSE=1, in line with Debian buildds and to
+    cover some more build systems (see https://bugs.debian.org/751528).
+  * Fix lpbuildd.livefs tests to account for the "suite" argument no longer
+    being accepted.
+  * Set LANG=C.UTF-8 when running "bzr builder", to ensure that it can
+    handle UTF-8 file and author names (LP: #1273487).
+
+  [ Adam Conrad ]
+  * scan-for-processes: Don't explode if one of the processes we were
+    going to kill completes before we get around to killing it.
+
+ -- Colin Watson <cjwatson@ubuntu.com>  Mon, 04 Aug 2014 08:51:37 +0200
+
+launchpad-buildd (124) hardy; urgency=medium
+
+  [ Adam Conrad ]
+  * Make launchpad-buildd more self-contained to avoid sbuild conflict:
+    - Move our forked sbuild to /usr/share/launchpad-buildd/slavebin
+    - Look for and use ~/.lp-sbuildrc instead of ~/.sbuildrc
+    - Move /etc/sbuild.conf to /usr/share/launchpad-buildd/sbuild.conf
+    - Move our internal helper binaries to /usr/share/launchpad-buildd
+    - Remove now unnecessary lintian overrides for launchpad-buildd
+  * Remove empty and obsolete /usr/share/launchpad-buildd/lpbuildd
+  * Update Standards-Version, and switch Conflicts to Breaks/Replaces.
+  * Remove instance configuration from /etc/launchpad-buildd/ on purge.
+
+  [ Colin Watson ]
+  * Install ltsp-server (but not its Recommends) for i386 livefs builds, as
+    Edubuntu needs it.
+  * Stop accepting the "suite" argument to livefs builds, now that Launchpad
+    has been updated to use the newer series/pocket protocol.
+
+ -- Colin Watson <cjwatson@ubuntu.com>  Fri, 04 Jul 2014 16:24:26 +0100
+
+launchpad-buildd (123) hardy; urgency=medium
+
+  * Fix handling of livefs builds for the -proposed pocket.
+  * Accept an "extra_ppas" entry in livefs arguments, which is passed to
+    livecd-rootfs to request that the image be built against additional
+    PPAs.
+
+ -- Colin Watson <cjwatson@ubuntu.com>  Sun, 22 Jun 2014 16:10:44 +0100
+
+launchpad-buildd (122) hardy; urgency=medium
+
+  * Drop the status_dict XML-RPC method, now that the master uses the
+    new-style dict-flavoured status method.
+  * Don't add symlinks to the results of livefs builds (LP: #1247461).
+  * Cope with builds that return multiple files with identical content.
+  * If a build is aborted between subprocesses, pretend that it was
+    terminated by a signal.
+
+ -- Colin Watson <cjwatson@ubuntu.com>  Tue, 13 May 2014 16:46:52 +0100
+
+launchpad-buildd (121) hardy; urgency=medium
+
+  * Retry "apt-get update" on failure after a short delay, as this
+    occasionally fails due to racing with an archive pulse.
+  * Go back to setting explicit values for LANG, LC_ALL, and LANGUAGE rather
+    than unsetting them, since otherwise sudo/pam_env may fill in unwanted
+    values from /etc/default/locale.
+
+ -- Colin Watson <cjwatson@ubuntu.com>  Tue, 28 Jan 2014 13:40:40 +0000
+
+launchpad-buildd (120) hardy; urgency=low
+
+  [ Colin Watson ]
+  * Unset LANG and LC_ALL rather than setting them to C, and unset a number
+    of other environment variables too (including DISPLAY and TERM), in line
+    with Debian buildds.
+  * Make the status XML-RPC method a synonym for status_dict.
+  * Add a new "livefs" build manager, based on livecd-rootfs/BuildLiveCD
+    (LP: #1247461).
+  * Remove virtualization check from buildrecipe.  It was a rather futile
+    security check as escaping chroots is trivial, and it will fail when the
+    PPA builder pool is converted to scalingstack.
+
+  [ Adam Conrad ]
+  * update-debian-chroot: Allow arm64-on-x86 builds with qemu-aarch64-static.
+  * slave-prep: output current dpkg-dev version for debugging purposes.
+
+ -- Colin Watson <cjwatson@ubuntu.com>  Thu, 23 Jan 2014 12:30:54 +0000
+
+launchpad-buildd (119) hardy; urgency=low
+
+  * Mount /dev/pts with -o gid=5,mode=620 to avoid needing pt_chown.
+
+ -- Adam Conrad <adconrad@ubuntu.com>  Thu, 10 Oct 2013 08:56:07 -0600
+
+launchpad-buildd (118) hardy; urgency=low
+
+  [ William Grant ]
+  * Fix fallback to PACKAGEFAIL of unknown sbuild DEPFAIL conditions
+    (LP: #1235038).
+
+  [ Colin Watson ]
+  * Fail the builder immediately if $HOME/.sbuildrc is corrupt
+    (LP: #1235287).
+  * Add a status_dict XML-RPC method for better extensibility, including
+    reporting the python-lpbuildd version (LP: #680514).
+
+ -- William Grant <william.grant@canonical.com>  Tue, 08 Oct 2013 15:09:47 +1100
+
+launchpad-buildd (117) hardy; urgency=low
+
+  * Fix dep-wait detection when recipes fail to install build-dependencies
+    (LP: #1234621).
+  * Remove *.pyc files from source tree on clean.
+
+ -- Colin Watson <cjwatson@ubuntu.com>  Thu, 03 Oct 2013 12:43:27 +0100
+
+launchpad-buildd (116) hardy; urgency=low
+
+  [ Colin Watson ]
+  * Remove obsolete BuilderStatus.ABORTED.
+  * Remove obsolete BuildDSlave.fetchFile method, unused since October 2005.
+  * If the expected .changes file doesn't exist, consider this as a package
+    build failure rather than crashing (LP: #993642).
+  * Don't attempt to read entire files into memory at once when storing them
+    in the file cache.
+  * Rearrange build log searching to avoid reading the entire build log into
+    memory at once (LP: #1227086).
+
+  [ Adam Conrad ]
+  * Tidy up log formatting of the "Already reaped..." message. 
+
+ -- Colin Watson <cjwatson@ubuntu.com>  Fri, 27 Sep 2013 13:08:59 +0100
+
+launchpad-buildd (115) hardy; urgency=low
+
+  [ Adam Conrad ]
+  * Short the readlink call in scan-for-process with a true to avoid
+    prematurely exiting the process scan when tripping over zombies.
+  * Write to temporary cache files and then rename after validation
+    to avoid the cache containing broken aborted files (LP: #471076)
+  * Skip nonexistent directories in cron cleanup code to avoid vomit
+    in cron log on fresh installs that lack those dirs (LP: #559115)
+  * Build buildd-slave-example.conf from template-buildd-slave.conf
+    using buildd-genconfig at package build time so it's not stale.
+  * Add a build-dependency on python to make buildd-genconfig work.
+  * Add kernel name (hey, we might build on another kernel some day)
+    and hostname (to help us track build host issues) to uname call.
+  * Add x32 and ppc64el to the list of 64-bit arches for linux64.
+  * Strip trailing whitespace in buildd-genconfig because I'm anal.
+  * Mangle recipe versions to match backports policy (LP: #1095103)
+  * Make scan-for-processes log output match the other slave helpers.
+
+  [ Colin Watson ]
+  * Move scan-for-processes up to the top-level slave code so that it is
+    available for more general use.
+  * Make abort work properly, calling scan-for-processes to kill all
+    processes in the chroot.
+
+ -- Colin Watson <cjwatson@ubuntu.com>  Thu, 29 Aug 2013 11:32:23 +0100
+
+launchpad-buildd (114) hardy; urgency=low
+
+  * Don't use the uname-2.6 hack when building on quantal and newer.
+  * Display the linux32-faked kernel version before calling sbuild.
+
+ -- Adam Conrad <adconrad@ubuntu.com>  Tue, 24 Apr 2012 07:44:18 -0600
+
+launchpad-buildd (113) hardy; urgency=low
+
+  * Shut up umount-chroot's verbose output, it served its purpose.
+  * Yank out sbuild's dependency removal code, as we never once
+    checked the return from this anyway, so it's just wasted time.
+  * Stop writing to avg-space and avg-time, which we don't use.
+
+ -- Adam Conrad <adconrad@ubuntu.com>  Thu, 22 Mar 2012 04:01:48 -0600
+
+launchpad-buildd (112) hardy; urgency=low
+
+  [ Jelmer Vernooij ]
+  * Prevent slave from blowing up when it is aborted before a job has
+    started. LP: #497772
+
+  [ Adam Conrad ]
+  * Update sbuild-package and update-debian-chroot to use linux32/64
+    universally, and to pass --uname-2.6 when available, so we can
+    use 3.x.x kernels to build older releases on the buildds.
+  * Fix sbuild-package to report the correct number of cores/jobs.
+  * Make sure /usr/bin/check-implicit-pointer-functions is called for
+    all 64-bit builds on lucid and above, this logic got broken.
+
+ -- Adam Conrad <adconrad@ubuntu.com>  Wed, 25 Jan 2012 11:27:55 -0700
+
+launchpad-buildd (111) hardy; urgency=low
+
+  * Add preppath to buildd-slave-test.conf, to unbreak the LP test suite.
+
+ -- William Grant <wgrant@ubuntu.com>  Fri, 09 Dec 2011 08:58:17 +1100
+
+launchpad-buildd (110) hardy; urgency=low
+
+  [ Jelmer Vernooij ]
+  * Use the actual target distroseries name in changelog, rather than
+    the same as the last entry. LP: #855479
+  * Use os.SEEK_END constant now that all build slaves run at least
+    hardy. LP: #239213
+
+  [ Adam Conrad ]
+  * Create a new slavebin script called 'slave-prep' to kick off builds:
+    - Move useless "echo" fork to slave-prep, and include our version
+    - Move ntpdate call from unpack-chroot to slave-prep
+    - Add preppath to the default config, and add a version 110 upgrade
+      stanza to our config file upgrading script to fix upgrades
+  * While doing the above, s/Synching/Syncing/ 'cause it drives me nuts
+  * Make slave-prep output versions of bzr, bzr-builder, python-lpbuildd
+
+  [ William Grant ]
+  * Log `uname -a` as well.
+
+ -- William Grant <wgrant@ubuntu.com>  Mon, 05 Dec 2011 15:01:43 +1100
+
+launchpad-buildd (109) hardy; urgency=low
+
+  * Use sudo when installing qemu into the chroot.
+  * Only install qemu into the chroot when building arm* on x86, so armhf
+    builds on armel hosts don't try to do it.
+
+ -- William Grant <wgrant@ubuntu.com>  Tue, 29 Nov 2011 22:02:00 +1100
+
+launchpad-buildd (108) hardy; urgency=low
+
+  [ Adam Conrad ]
+  * Use the chroot's dpkg-architecture instead of the base system.
+
+  [ Nick Moffitt ]
+  * Fixed up sbuild-package and update-debian-chroot to support
+    syscall-emulated ARM builds on non-ARM hardware.
+  * Added Recommends for qemu-user-static to launchpad-buildd, as the
+    package only exists in Universe in natty and later.
+
+ -- William Grant <wgrant@ubuntu.com>  Tue, 29 Nov 2011 19:52:43 +1100
+
+launchpad-buildd (107) hardy; urgency=low
+
+  * Correction to generate-translation-templates for the new file location.
+
+ -- Martin Pool <mbp@canonical.com>  Mon, 21 Nov 2011 16:28:50 +1100
+
+launchpad-buildd (106) hardy; urgency=low
+
+  * Safer parsing in upgrade-config.
+  * Get 'make check' working for the split-out tree.
+
+ -- Martin Pool <mbp@canonical.com>  Mon, 21 Nov 2011 12:19:52 +1100
+
+launchpad-buildd (105.1) hardy; urgency=low
+
+  * Add strict version dependency of launchpad-buildd on python-lpbuildd.
+  * Add explicit Python dependency for lintian.
+
+ -- Martin Pool <mbp@canonical.com>  Mon, 21 Nov 2011 12:16:34 +1100
+
+launchpad-buildd (105) hardy; urgency=low
+
+  * Remove attempt to run dpkg-query from inside the slave: each state machine
+    step can run only a single iteration.
+
+ -- Martin Pool <mbp@canonical.com>  Fri, 18 Nov 2011 19:18:21 +1100
+
+launchpad-buildd (104) hardy; urgency=low
+
+  * Don't expect bzr-builddeb in the chroot; it's not there.
+
+ -- Martin Pool <mbp@canonical.com>  Fri, 18 Nov 2011 18:46:23 +1100
+
+launchpad-buildd (103) hardy; urgency=low
+
+  * Log dpkg versions from the slave, where they will be externally visible.
+
+ -- Martin Pool <mbp@canonical.com>  Fri, 18 Nov 2011 15:17:08 +1100
+
+launchpad-buildd (102) hardy; urgency=low
+
+  * Show dpkg versions of launchpad-buildd and some other relevant packages at
+    startup, for debuggability.
+
+ -- Martin Pool <mbp@canonical.com>  Fri, 18 Nov 2011 13:26:30 +1100
+
+launchpad-buildd (101) hardy; urgency=low
+
+  * Pass -Derror to bzr dailydeb. LP: 890892
+
+ -- Martin Pool <mbp@canonical.com>  Wed, 16 Nov 2011 21:05:12 +1100
+
+launchpad-buildd (100) hardy; urgency=low
+
+  * Move python-lpbuildd to section python.
+  * Don't create /var/run/launchpad-buildd during installation, it's
+    already created at init-time.
+  * Remove unnecessary debian/launchpad-buildd.conffiles. debhelper
+    already adds the required conffiles.
+  * In buildrecipe, pass -sa to dpkg-buildpackage so the orig tarball(s)
+    always get included. LP: #891892
+
+ -- Jelmer Vernooij <jelmer@canonical.com>  Fri, 11 Nov 2011 14:43:31 +0100
+
+launchpad-buildd (99) hardy; urgency=low
+
+  * launchpad-buildd conflicts with sbuild.
+
+ -- Martin Pool <mbp@canonical.com>  Wed, 16 Nov 2011 10:53:43 +1100
+
+launchpad-buildd (98) hardy; urgency=low
+
+  * Add launchpad-buildd dependency on python-apt, as an accomodation for it
+    being only a Recommends but actually required by python-debian.  
+    LP: #890834
+
+ -- Martin Pool <mbp@canonical.com>  Wed, 16 Nov 2011 10:28:48 +1100
+
+launchpad-buildd (97) hardy-cat; urgency=low
+
+  * drop bzr-builder dependency entirely and handle it in the autoinstall
+    process on x86 virtual builders
+
+ -- LaMont Jones <lamont@canonical.com>  Tue, 15 Nov 2011 03:15:23 -0700
+
+launchpad-buildd (96) hardy-cat; urgency=low
+
+  * only depend on bzr-builder on i386.
+
+ -- LaMont Jones <lamont@canonical.com>  Tue, 15 Nov 2011 02:46:54 -0700
+
+launchpad-buildd (95) hardy; urgency=low
+
+  * Add explicit dependency on pristine-tar, recommended by newer
+    versions of bzr-builder.
+  * Fix finding of upstream build directory after recipe builds.
+
+ -- Jelmer Vernooij <jelmer@canonical.com>  Fri, 11 Nov 2011 13:18:51 +0100
+
+launchpad-buildd (94) hardy; urgency=low
+
+  * Auto-start on machines whose hostname fqdn ends in .buildd or .ppa.
+
+ -- Martin Pool <mbp@canonical.com>  Fri, 11 Nov 2011 17:26:20 +1100
+
+launchpad-buildd (93) hardy; urgency=low
+
+  * Rename buildd-genconfig in the tree, rather than during install.
+  * Symlink check_implicit_function_pointers rather than copying.
+
+ -- Martin Pool <mbp@canonical.com>  Fri, 11 Nov 2011 16:26:17 +1100
+
+launchpad-buildd (92) hardy; urgency=low
+
+  * Use debhelper for more of the package build.
+
+ -- Martin Pool <mbp@canonical.com>  Fri, 11 Nov 2011 16:01:03 +1100
+
+launchpad-buildd (91) hardy; urgency=low
+
+  * launchpad-buildd will not start unless you set
+    RUN_NETWORK_REQUESTS_AS_ROOT=yes in /etc/default/launchpad-buildd.
+
+ -- Martin Pool <mbp@canonical.com>  Fri, 11 Nov 2011 15:02:12 +1100
+
+launchpad-buildd (90) hardy; urgency=low
+
+  * debhelper is a Build-Depends because it is needed to run 'clean'. 
+  * python-lpbuildd conflicts with launchpad-buildd << 88.
+  * Add and adjust build-arch, binary-arch, build-indep to match policy.
+  * Complies with stardards version 3.9.2.
+
+ -- Martin Pool <mbp@canonical.com>  Fri, 11 Nov 2011 14:30:36 +1100
+
+launchpad-buildd (89) hardy; urgency=low
+
+  * Add debian/copyright file.
+
+ -- Martin Pool <mbp@canonical.com>  Fri, 11 Nov 2011 13:12:22 +1100
+
+launchpad-buildd (88) hardy; urgency=low
+
+  * Separate python-lpbuildd from the main launchpad-buildd package, so that
+    it can be used alone for integration tests.
+
+ -- Martin Pool <mbp@canonical.com>  Fri, 11 Nov 2011 12:43:20 +1100
+
+launchpad-buildd (87) hardy; urgency=low
+
+  * Split launchpad-buildd completely out of the Launchpad source tree.
+  * Rename the Python package to lpbuildd.
+
+ -- Martin Pool <mbp@canonical.com>  Wed, 09 Nov 2011 20:04:02 +1100
+
+launchpad-buildd (86) hardy-cat; urgency=low
+
+  * Cope with orig tarballs in the recipe result directory.
+
+ -- Jelmer Vernooij <jelmer@canonical.com>  Thu, 10 Nov 2011 19:16:44 +0100
+
+launchpad-buildd (85) hardy-cat; urgency=low
+
+  * buildrecipe: Fix env argument to call_report_rusage.
+
+ -- Jelmer Vernooij <jelmer@canonical.com>  Thu, 10 Nov 2011 17:34:57 +0100
+
+launchpad-buildd (84) hardy-cat; urgency=low
+
+  * Fix import of check_call in buildrecipe.
+  * Avoid using /usr/bin/env in buildrecipe, breaks use of -u argument to
+  Python.
+
+ -- Jelmer Vernooij <jelmer@canonical.com>  Thu, 10 Nov 2011 14:55:10 +0100
+
+launchpad-buildd (83) hardy-cat; urgency=low
+
+  [ Martin Pool ]
+   * Cut out readyservice from the buildds.  LP: #800295
+   * buildrecipe shows the bzr and bzr-builder versions.  LP: #884092
+   * buildrecipe shows bzr rusage.  LP: #884997
+
+  [ Steve Langasek ]
+  * Strip :any, :native qualifiers off all build-dependencies in sbuild, since
+    the distinction only matters once we want to do cross-building.
+
+  [ Jelmer Vernooij ]
+  * Pass --allow-fallback-to-native to "bzr dailydeb" for compatibility
+    with older recipe build behaviour. Depend on bzr-builder >= 0.7.1
+    which introduces this option. LP: #885497
+
+ -- Jelmer Vernooij <jelmer@canonical.com>  Wed, 09 Nov 2011 14:57:35 +0100
+
+launchpad-buildd (81) hardy-cat; urgency=low
+
+  * generate-translation-templates: switch to Python 2.7.
+
+ -- Danilo Šegan <danilo@canonical.com>  Mon, 17 Oct 2011 14:46:13 +0200
+
+launchpad-buildd (80) hardy-cat; urgency=low
+
+  * binfmt-support demonstrated umount ordering issues for us.  LP: #851934
+
+ -- LaMont Jones <lamont@canonical.com>  Mon, 19 Sep 2011 04:56:58 -0600
+
+launchpad-buildd (79) hardy-cat; urgency=low
+
+  * Fix sudoers.d/buildd permissions
+
+ -- LaMont Jones <lamont@canonical.com>  Fri, 19 Aug 2011 07:31:54 -0600
+
+launchpad-buildd (78) hardy-cat; urgency=low
+
+  * Correctly update sudoers files when needed.  LP: #742881
+
+ -- LaMont Jones <lamont@canonical.com>  Wed, 06 Apr 2011 22:20:17 -0600
+
+launchpad-buildd (77) hardy-cat; urgency=low
+
+  * Add back in ultimate-backstop umask() correction.
+
+ -- LaMont Jones <lamont@canonical.com>  Wed, 06 Apr 2011 13:34:05 -0600
+
+launchpad-buildd (76) hardy-cat; urgency=low
+
+  [ various ]
+  * ProjectGroup.products sort order and remove Author: comments.
+  * Fix some tests to not print stuff
+  * Make buildd pointer check regexes work on natty
+  * merge before rollout + text conflict patch by wgrant
+
+ -- LaMont Jones <lamont@canonical.com>  Tue, 15 Mar 2011 16:59:36 -0600
+
+launchpad-buildd (74) hardy-cat; urgency=low
+
+  [ Aaron Bentley]
+  * Memory-limit recipe builds. LP#676657
+
+  [ LaMont Jones]
+  * mount a tmpfs on /dev/shm in build chroots.  LP#671441
+
+  [Michael Bienia]
+  * Update regexes used for DEPWAIT.  LP#615286
+
+ -- LaMont Jones <lamont@canonical.com>  Tue, 23 Nov 2010 06:17:57 -0700
+
+launchpad-buildd (73) hardy-cat; urgency=low
+
+  * Revert to revision 70
+
+ -- LaMont Jones <lamont@canonical.com>  Thu, 28 Oct 2010 12:53:45 -0600
+
+launchpad-buildd (72) hardy-cat; urgency=low
+
+  * break out readyservice.py from tachandler.py. LP#663828
+
+ -- LaMont Jones <lamont@canonical.com>  Wed, 20 Oct 2010 13:03:23 -0600
+
+launchpad-buildd (71) hardy-cat; urgency=low
+
+  * Detect ppa hosts for build recipes.  LP#662664
+  * Better recipe builds. LP#599100, 627119, 479705
+
+ -- LaMont Jones <lamont@canonical.com>  Tue, 19 Oct 2010 13:48:33 -0600
+
+launchpad-buildd (70) hardy-cat; urgency=low
+
+  [ LaMont Jones ]
+  * Restore the rest of version 68.
+
+  [ James Westby ]
+  * buildrecipe: Specify BZR_EMAIL via sudo so that the called command
+    sees the environment variable.
+  * buildrecipe: call sudo -i -u instead of sudo -iu so that it works with
+    older versions of sudo.
+  * buildrecipe: flush stdout before calling another command so that
+    the build log has the output correctly interleaved.
+
+  [ William Grant ]
+  * correct arch_tag arguments.
+
+ -- LaMont Jones <lamont@canonical.com>  Fri, 20 Aug 2010 13:27:55 -0600
+
+launchpad-buildd (69) hardy-cat; urgency=low
+
+  * REVERT all of version 68 except for BZR_EMAIL LP#617072
+    (Not reflected in bzr.)
+
+ -- LaMont Jones <lamont@canonical.com>  Tue, 17 Aug 2010 10:40:03 -0600
+
+launchpad-buildd (68) hardy-cat; urgency=low
+
+  [ William Grant ]
+  * Take an 'arch_tag' argument, so the master can override the slave
+    architecture.
+
+  [ Jelmer Vernooij ]
+
+  * Explicitly use source format 1.0.
+  * Add LSB information to init script.
+  * Use debhelper >= 5 (available in dapper, not yet deprecated in
+    maverick).
+  * Fix spelling in description.
+  * Install example buildd configuration.
+
+  [ Paul Hummer ]
+  * Provide BZR_EMAIL for bzr 2.2 in the buildds LP#617072
+
+ -- LaMont Jones <lamont@canonical.com>  Mon, 16 Aug 2010 13:25:09 -0600
+
+launchpad-buildd (67) hardy-cat; urgency=low
+
+  * Force aptitude installation for recipe builds on maverick
+
+ -- LaMont Jones <lamont@canonical.com>  Fri, 23 Jul 2010 14:22:23 -0600
+
+launchpad-buildd (66) hardy-cat; urgency=low
+
+  * handle [linux-any] build-dependencies.  LP#604981
+
+ -- LaMont Jones <lamont@canonical.com>  Mon, 19 Jul 2010 12:13:31 -0600
+
+launchpad-buildd (65) hardy-cat; urgency=low
+
+  * Drop preinst check, since human time does not scale across a large
+    rollout.  soyuz just needs to deal with upgrades mid-build better.
+
+ -- LaMont Jones <lamont@canonical.com>  Thu, 08 Jul 2010 05:04:02 -0600
+
+launchpad-buildd (64) hardy-cat; urgency=low
+
+  * Pottery now strips quotes from variables.
+
+ -- Jeroen Vermeulen <jtv@canonical.com>  Wed, 30 Jun 2010 12:50:59 +0200
+
+launchpad-buildd (63) hardy-cat; urgency=low
+
+  * Drop apply-ogre-model, since override-sources-list replaced it three years
+    ago. Also clean up extra_args parsing a bit.
+
+ -- William Grant <wgrant@ubuntu.com>  Sat, 12 Jun 2010 11:33:11 +1000
+
+launchpad-buildd (62) hardy-cat; urgency=low
+
+  * Make the buildds cope with not having a sourcepackagename LP#587109
+
+ -- LaMont Jones <lamont@canonical.com>  Tue, 08 Jun 2010 13:02:31 -0600
+
+launchpad-buildd (61) hardy-cat; urgency=high
+
+  [ William Grant ]
+  * Fixed translation templates slave to return files properly. LP#549422
+
+  [ Danilo Segan ]
+  * Added more output to generate-translation-templates. LP#580345
+
+  [ Henning Eggers ]
+  * Improved output of build xmplrpc call, not returning None now. LP#581746
+  * Added apache2 dependency. LP#557634
+  * Added preinst script to prevent installation when a build is running.
+    LP#557347
+
+  [ LaMont Jones ]
+  * preinst needs to detect a stale buildlog as well.
+
+ -- LaMont Jones <lamont@canonical.com>  Fri, 21 May 2010 05:52:53 -0600
+
+launchpad-buildd (60) lucid-cat; urgency=low
+
+  * Depends: lsb-release, which is ubuntu-minimal, but not essential.
+
+ -- LaMont Jones <lamont@ubuntu.com>  Thu, 01 Apr 2010 08:54:48 -0600
+
+launchpad-buildd (59) lucid-cat; urgency=low
+
+  [ Henning Eggers ]
+  * Added translation template generation code (pottery).
+
+  [ LaMont Jones ]
+  * set umask for twisted where supported
+
+ -- LaMont Jones <lamont@canonical.com>  Wed, 31 Mar 2010 10:38:15 -0600
+
+launchpad-buildd (58~1) karmic; urgency=low
+
+  * Misc fixes to match APIs.
+
+ -- Aaron Bentley <aaron@aaronbentley.com>  Fri, 15 Jan 2010 10:03:07 +1300
+
+launchpad-buildd (58~0) karmic; urgency=low
+
+  * Include buildrecipe.py.
+
+ -- Aaron Bentley <aaron@aaronbentley.com>  Wed, 13 Jan 2010 17:06:59 +1300
+
+launchpad-buildd (57) hardy-cat; urgency=low
+
+  * Split the sbuild wrapper from DebianBuildManager into a new
+    BinaryPackageBuildManager, and point the 'debian' builder at that
+    instead.
+
+ -- William Grant <wgrant@ubuntu.com>  Tue, 12 Jan 2010 09:22:50 +1300
+
+launchpad-buildd (56) hardy-cat; urgency=low
+
+  * only error out on implicit-function-pointers check on lucid or later,
+    non-32-bit architectures.  Warnings elsewhere.  LP#504078
+  * drop use of ccache and /var/cache/apt/archives, since we don't use one,
+    and the other is just plain silly.
+
+ -- LaMont Jones <lamont@canonical.com>  Mon, 11 Jan 2010 13:12:49 -0700
+
+launchpad-buildd (54) hardy-cat; urgency=low
+
+  [ William Grant ]
+  * debian.py: Tell sbuild to build debug symbols if the
+    build_debug_symbols argument is True.
+  * sbuild: Set "Build-Debug-Symbols: yes" in CurrentlyBuilding if
+    we have been told to build debug symbols.
+
+  [ LaMont Jones ]
+  * do not ignore SIGHUP in builds - it breaks test suites. LP#453460
+  * create filecache-default/ccache directories in init.d as well as postinst
+  * sbuild: run dpkg-source inside the chroot.  LP#476036
+  * sbuild: change the regexp for dpkg-source extraction to handle both karmic and pre-karmic dpkg.  LP#476036
+  * use --print-architecture instead of --print-installation-architecture
+  * mount-chroot: copy hosts et al into chroot. LP#447919
+  * provide and call check-implicit-function-pointers.
+
+ -- LaMont Jones <lamont@canonical.com>  Mon, 14 Dec 2009 12:00:10 -0700
+
+launchpad-buildd (52) dapper-cat; urgency=low
+
+  * Depends: apt-transport-https
+
+ -- LaMont Jones <lamont@canonical.com>  Fri, 09 Oct 2009 11:00:50 -0600
+
+launchpad-buildd (50) dapper-cat; urgency=low
+
+  * sbuild: Change all invocations of apt and dpkg to occur inside
+    the build chroot, rather than happening outside the chroot with
+    a bunch of flags to operate on data files in the chroot.  This
+    should clear up issues we see with mismatched host toolchains.
+  * sbuild: Revert the above in the case of "apt-get source" which
+    doesn't require any fancy features in the chroot and, frankly,
+    is much easier to manage if it's executed externally.
+  * scan-for-processes: Bring in a change from production to make
+    sure that we follow symlinks in our search for process roots.
+  * sbuild-package: Output NR_PROCESSORS in the build logs, for
+    sightly easier debugging of possible parallel build bugs.
+  * update-debian-chroot: Stop using chapt-get, and instead chroot
+    into the build chroot and call the native apt-get there.
+  * update-debian-chroot: Cargo-cult the linux32 magic from the
+    sbuild wrapper to set our personality on chroot upgrades.
+  * mount-chroot: Mount sys in the chroot too.  While it shouldn't
+    be, strictly-speaking, required for anything, it's nice to have.
+  * chapt-get, slave_chroot_tool.py: Delete both as obsolete cruft.
+
+ -- Adam Conrad <adconrad@ubuntu.com>  Fri, 24 Jul 2009 07:21:30 -0600
+
+launchpad-buildd (49) dapper-cat; urgency=low
+
+  * sbuild.conf: bump default automake from automake1.8 to automake1.9
+
+ -- Adam Conrad <adconrad@ubuntu.com>  Fri, 12 Sep 2008 08:54:24 -0600
+
+launchpad-buildd (48) dapper-cat; urgency=low
+
+  * sbuild-package: If we're an amd64 host system, but being used
+    to build i386 or lpia, use linux32 to pretend to be i686.
+
+ -- Adam Conrad <adconrad@ubuntu.com>  Fri, 12 Sep 2008 08:12:34 -0600
+
+launchpad-buildd (47) dapper-cat; urgency=low
+
+  * slave.py: If the logfile doesn't currently exist on disk when
+    getLogTail() goes looking for it (which is a possible race with
+    the new sanitisation code), just return an empty string.
+
+ -- Adam Conrad <adconrad@ubuntu.com>  Mon, 02 Jun 2008 13:09:55 -0600
+
+launchpad-buildd (46) dapper-cat; urgency=low
+
+  * slave.py: Accept a separate username and password to the
+    ensurePresent() call which, if present, are used to install
+    an auth handler to cope with basic http auth with the http
+    server when fetching files.
+  * slave.py: Ensure that build logs are sanitized so that any
+    user:password@ parts in URLs are removed.
+
+ -- Julian Edwards <julian.edwards@canonical.com>  Tue, 29 Apr 2008 14:25:00 +0100
+
+launchpad-buildd (45) dapper-cat; urgency=low
+
+  * slave.py: Stop setting BuilderStatus.WAITING in each failure
+    method, as this gives us a race where the builddmaster might
+    dispatch another build to us before we're done cleaning up.
+  * slave.py: Don't set BuildStatus.OK in buildComplete(), this is
+    now a generic "the build has ended, succesfully or not" method.
+  * slave.py: Define a new buildOK() method that sets BuildStatus.OK.
+  * debian.py: When done cleaning, if the build isn't already marked
+    as failed, call buildOK, then call buildComplete unconditionally.
+  * The above changes should resolve https://launchpad.net/bugs/179466
+
+ -- Adam Conrad <adconrad@ubuntu.com>  Tue, 08 Apr 2008 14:12:07 -0600
+
+launchpad-buildd (44) dapper-cat; urgency=low
+
+  * slave.py: Redefine "private" _unpackChroot() as "public" doUnpack(),
+    so we can use it from the build iteration control process.
+  * slave.py: Make the initiate method set a _chroottarfile private
+    variable for use by doUnpack(), rather than calling _unpackChroot().
+  * slave.py: Trigger the forked buildd process with an echo statement.
+  * debian.py: Add the INIT state to the DebianBuildState class.
+  * debian.py: Start the build process at INIT state instead of UNPACK.
+  * debian.py: Add iterate_INIT(), which just checks success of the
+    initial variable sanitisation checks, then hands off to doUnpack().
+  * debian.py: Adjust the failure return calls of the UNPACK and MOUNT
+    methods to chrootFail() instead of builderFail(), for correctness.
+  * The above changes should resolve https://launchpad.net/bugs/211974
+
+ -- Adam Conrad <adconrad@ubuntu.com>  Mon, 07 Apr 2008 13:53:20 -0600
+
+launchpad-buildd (43) dapper-cat; urgency=low
+
+  * unpack-chroot: Move the ntpdate calls below the bunzip/exec bit,
+    so we don't run ntpdate twice when unzipping tarballs, which
+    happens on every single build on Xen hosts (like the PPA hosts).
+  * debian/control: We use adduser in postinst, depending on it helps.
+  * debian/control: Set myself as the Maintainer, since I'm in here.
+  * debian/control: Change our section from "misc" to "admin".
+  * sbuild{,-package}: Pass DEB_BUILD_OPTIONS="parallel=N" to dpkg.
+
+ -- Adam Conrad <adconrad@ubuntu.com>  Thu, 24 Jan 2008 15:39:20 -0700
+
+launchpad-buildd (42) dapper-cat; urgency=low
+
+  * sbuild: using "eq" to evaluate strings instead of "==" is ever
+    so slightly less retarded (fixed the launchpad bug #184565)
+
+ -- Adam Conrad <adconrad@ubuntu.com>  Tue, 22 Jan 2008 16:21:54 -0700
+
+launchpad-buildd (41) dapper-cat; urgency=low
+
+  * sbuild: If we've already marked a package as "installed" with a
+    valid version, don't overwrite that version with PROVIDED.
+
+ -- Adam Conrad <adconrad@ubuntu.com>  Thu, 17 Jan 2008 10:39:26 -0700
+
+launchpad-buildd (40) dapper-cat; urgency=low
+
+  * sbuild: Don't allow versioned build-deps to be satisfied by provided
+    packages, but force them to go through the "upgrade/downgrade" tests.
+  * sbuild: Do --info and --contents on _all.deb packages as well, if
+    we're building arch:all packages.
+  * sbuild: Don't process ENV_OVERRIDE anymore, we only had an override
+    for one thing anyway (LC_ALL), and this code caused bug #87077.
+  * sbuild-package: Call sbuild with LC_ALL=C explicitely, to compensate.
+  * Makefile: clean up the makefile a bit to DTRT (as I expect it).
+
+ -- Adam Conrad <adconrad@ubuntu.com>  Tue, 15 Jan 2008 16:51:08 -0700
+
+launchpad-buildd (39) unstable; urgency=low
+
+  * If we're fed an archive_purpose argument from the builddmaster,
+    we pass --purpose=$archive_purpose to sbuild, and if we get suite
+    from the builddmaster, we pass --dist=$suite to sbuild.
+  * Mangle sbuild to write out Suite: and Purpose: stanzas to our
+    CurrentlyBuilding file, according to command-line input.
+  * Now that we're no longer always feeding -dautobuild to sbuild,
+    fix up sbuild to always look for the chroot at chroot-autobuild
+    instead of the Debian Way of using chroot-$suite.
+  * If the config file contains an ntphost stanza, use that with
+    ntpdate to sync the system's clock before we unpack the chroot.
+  * Mangle update-config to add an ntphost stanza to the default
+    config, and to 's/-dautobuild //' from the sbuild arguments.
+
+ -- Adam Conrad <adconrad@ubuntu.com>  Thu, 20 Dec 2007 01:51:49 -0700
+
+launchpad-buildd (38) unstable; urgency=high
+
+  * unpack-chroot: set $PATH rather than hardcoding paths to binaries
+    since bzip2 moved from /usr/bin to /bin in edgy and didn't bother with
+    compatability symlinks.
+
+ -- James Troup <james.troup@canonical.com>  Wed, 21 Nov 2007 17:08:36 +0000
+
+launchpad-buildd (37) dapper; urgency=high
+
+  * update-debian-chroot: Adam's LPIA support (i.e. overriding
+    architecture for chapt-get).
+  * debian/launchpad-buildd.cron.daily: fix run-on-line.
+  * debian/postinst: only create ~buildd/.sbuildrc if it doesn't exist.
+    This avoids the problem of upgrades of the launchpad-buildd package
+    resetting the architecture to i386 on lpia builders.
+
+ -- James Troup <james.troup@canonical.com>  Wed, 14 Nov 2007 18:34:46 +0000
+
+launchpad-buildd (36) dapper; urgency=low
+
+  * changing override-sources to replace current sources.list with
+    the content sent by buildmaster instead of prepend. It will allow
+    us to cope more easily with SoyuzArchive implementation (PARTNER,
+    EMBARGOED, PPA)
+
+ -- Celso Providelo <cprov@canonical.com>  Thu, 7 Aug 2007 14:10:26 -0300
+
+launchpad-buildd (35) unstable; urgency=low
+
+  * including previous code changes (32 & 33).
+
+ -- Celso Providelo <cprov@canonical.com>  Thu, 23 May 2007 17:40:26 -0300
+
+launchpad-buildd (34) unstable; urgency=low
+
+  * add suport for overriding the chroot /etc/apt/sources.list with the
+    content of builddmaster build arguments 'archives'.
+
+ -- Celso Providelo <cprov@canonical.com>  Thu, 17 May 2007 15:12:26 -0300
+
+launchpad-buildd (33) unstable; urgency=low
+
+  * Mangle sbuild further to allow us to publish Martin's debug debs (ddeb)
+    to public_html/ddebs/ until such a time as soyuz can do this natively.
+  * Fix the auto-dep-wait regexes to allow for versions with ~ in them.
+  * Make cron.daily clean out translations and ddebs more than 1 week old.
+
+ -- Adam Conrad <adconrad@ubuntu.com>  Sat, 30 Sep 2006 17:25:25 +1000
+
+launchpad-buildd (32) unstable; urgency=low
+
+  * We need to create /var/run/launchpad-buildd in our init script in the
+    case (such as in current dapper) where /var/run is on a tmpfs.
+  * Our init script shouldn't exit non-zero on "stop" if already stopped.
+  * Remove exc_info argument from our call to self.log in slave.py, which
+    clearly doesn't support that argument, so stop producing tracebacks.
+  * Reset self.builddependencies in our clean routine, so the variable
+    doesn't get leaked to the next build, causing me SERIOUS confusion.
+  * Tidy up translation handling a bit more to deal with old chroots (where
+    pkgstriptranslations won't dpkg-distaddfile for us), and to chmod the
+    translation dirs after the build, so apache can actually get at them.
+  * Add --no_save to our command line to avoid useless -shutdown.tap files.
+  * Make sure umount-chroot doesn't fail, even if there's nothing to umount.
+  * Append to the cron.daily cleaning to also occasionally clean up the apt
+    cache and /home/buildd/filecache-default, so we don't run out of disk.
+
+ -- Adam Conrad <adconrad@ubuntu.com>  Fri, 17 Mar 2006 19:39:05 +1100
+
+launchpad-buildd (31) unstable; urgency=low
+
+  * Cherry-pick patch from Ryan's sbuild that outputs dpkg --purge output
+    line-by-line, instead of as one big blob, to make output on the web
+    UI a little bit more friendly for people following along at home.
+  * Install a cron.daily script (eww) to purge old build logs for now until
+    I have the time to learn how twisted's native log rotation works.
+
+ -- Adam Conrad <adconrad@ubuntu.com>  Wed, 15 Mar 2006 17:23:26 +1100
+
+launchpad-buildd (30) unstable; urgency=low
+
+  * Move our translation publishing mojo so it happens BEFORE we move
+    all the files from debian/files out of the chroot, instead of after.
+
+ -- Adam Conrad <adconrad@ubuntu.com>  Wed,  8 Mar 2006 18:50:49 +1100
+
+launchpad-buildd (29) unstable; urgency=low
+
+  * Use dpkg --print-installation-architecture in our postinst instead
+    of --print-architecture to avoid spewing suprious error messages.
+  * Remove the check for log_dir, since we call sbuild with --nolog,
+    and stop creating $HOME/logs in the user setup part of postinst.
+
+ -- Adam Conrad <adconrad@ubuntu.com>  Tue,  7 Mar 2006 19:13:56 +1100
+
+launchpad-buildd (28) unstable; urgency=low
+
+  * Modify the protocol method ensurepresent to return additional
+    information about the target files lookup procedure. It helps to
+    debug intermittent Librarian errors.
+
+ -- Celso Providelo <celso.providelo@canonical.com>  Mon, 06 Mar 2006 16:42:00 -0300
+
+launchpad-buildd (27) unstable; urgency=low
+
+  * Update the slave chroot tool to use getent so it works on the production
+    buildds
+
+ -- Daniel Silverstone <daniel.silverstone@canonical.com>  Mon, 20 Feb 2006 12:57:45 +0000
+
+launchpad-buildd (26) unstable; urgency=low
+
+  * Update buildd-slave code to allow for GIVENBACK status returns,
+    matching the states under which sbuild used to do --auto-give-back.
+  * Port over sanae's build log regex parsing to allow us to do:
+    - Automatic dep-wait handling, based on sbuild's logs of apt-get.
+    - Automatic give-backs for a few corner cases (like kernel bugs).
+  * Make sbuild stop dying if we have no sendmail installed, since we
+    don't really want it sending mail in the launchpad world anyway.
+  * Call sbuild and apt with "LANG=C", so we don't have to worry about
+    locales matching between the base system and the autobuild chroots.
+  * Clear up confusion in build states with 's/BUILDFAIL/PACKAGEFAIL/'
+
+ -- Adam Conrad <adconrad@ubuntu.com>  Mon, 27 Feb 2006 14:00:08 +1100
+
+launchpad-buildd (25) unstable; urgency=low
+
+  * Update sbuild.conf to current yumminess.
+
+ -- Daniel Silverstone <daniel.silverstone@canonical.com>  Fri,  3 Feb 2006 19:22:01 +0000
+
+launchpad-buildd (24) unstable; urgency=low
+
+  * Add /var/cache/apt/archives to the buildd chroots when mounting
+
+ -- Daniel Silverstone <daniel.silverstone@canonical.com>  Fri,  3 Feb 2006 00:30:07 +0000
+
+launchpad-buildd (23) unstable; urgency=low
+
+  * And make apply-ogre-model use $SUDO, yay
+
+ -- Daniel Silverstone <daniel.silverstone@canonical.com>  Fri, 27 Jan 2006 13:59:10 +0000
+
+launchpad-buildd (22) unstable; urgency=low
+
+  * Fix typo in apply-ogre-model (missing space)
+
+ -- Daniel Silverstone <daniel.silverstone@canonical.com>  Fri, 27 Jan 2006 13:55:12 +0000
+
+launchpad-buildd (21) unstable; urgency=low
+
+  * Fix the .extend call for the --comp argument to pass it as one argument
+    instead of as - - c o m p = m a i n (which kinda doesn't work)
+
+ -- Daniel Silverstone <daniel.silverstone@canonical.com>  Fri, 27 Jan 2006 13:45:34 +0000
+
+launchpad-buildd (20) unstable; urgency=low
+
+  * Update sbuild to the latest sbuild from adam.
+  * Make sure we pass --archive=ubuntu
+  * Make sure we pass --comp=<the component we're building for>
+
+ -- Daniel Silverstone <daniel.silverstone@canonical.com>  Thu, 26 Jan 2006 17:20:49 +0000
+
+launchpad-buildd (19) unstable; urgency=low
+
+  * Add ogre support to the slave chroot tool
+  * Make sure the chroot tool ensures localhost in /etc/hosts in the chroot
+
+ -- Daniel Silverstone <daniel.silverstone@canonical.com>  Wed, 25 Jan 2006 12:29:04 +0000
+
+launchpad-buildd (18) unstable; urgency=low
+
+  * Remove sbuildrc.tmp dangleberry in postinst
+  * Add linux32 to set of depends so that hppa, sparc and powerpc can build
+  * Make hppa, sparc, powerpc use linux32 to invoke the sbuild binary
+  * Add --resolve-deps to debootstrap invocation
+  * Make chroot tool use /bin/su - rather than /bin/sh for chrooting. shiny
+    (apparently)
+  * Add a bunch of deps infinity spotted.
+  * Make sure we chown the chroot tarball to the calling user after packing
+    it up.
+
+ -- Daniel Silverstone <daniel.silverstone@canonical.com>  Wed,  9 Nov 2005 17:37:37 -0500
+
+launchpad-buildd (17) unstable; urgency=low
+
+  * Changed default UID/GID to match the ldap buildd UID/GID
+
+ -- Daniel Silverstone <daniel.silverstone@canonical.com>  Wed,  9 Nov 2005 17:13:22 -0500
+
+launchpad-buildd (16) unstable; urgency=low
+
+  * Change the XMLRPC method 'ensure' to be 'ensurepresent'
+
+ -- Daniel Silverstone <daniel.silverstone@canonical.com>  Wed,  5 Oct 2005 15:50:58 +0100
+
+launchpad-buildd (15) unstable; urgency=low
+
+  * Fix it so getting a logtail when less than 2k is available will work.
+  * Actually install apply-ogre-model
+  * Also spot arch_indep properly
+
+ -- Daniel Silverstone <daniel.silverstone@canonical.com>  Mon,  3 Oct 2005 14:34:55 +0100
+
+launchpad-buildd (14) unstable; urgency=low
+
+  * Slight bug in slave.py meant missing .emptyLog() attribute. Fixed.
+
+ -- Daniel Silverstone <daniel.silverstone@canonical.com>  Mon,  3 Oct 2005 14:21:16 +0100
+
+launchpad-buildd (13) unstable; urgency=low
+
+  * Fix a syntax error in the postinst
+  * Oh, and actually include the buildd config upgrader
+
+ -- Daniel Silverstone <daniel.silverstone@canonical.com>  Mon,  3 Oct 2005 12:17:50 +0100
+
+launchpad-buildd (12) unstable; urgency=low
+
+  * Implement V1.0new protocol.
+  * Add in OGRE support
+  * Add in archindep support
+  * If upgrading from < v12, will remove -A from sbuildargs and add in
+    a default ogrepath to any buildd configs found in /etc/launchpad-buildd
+  * Prevent launchpad-buildd init from starting ~ files
+
+ -- Daniel Silverstone <daniel.silverstone@canonical.com>  Sun,  2 Oct 2005 23:20:08 +0100
+
+launchpad-buildd (11) unstable; urgency=low
+
+  * Quieten down the slave scripts and make them prettier for the logs.
+  * make unpack-chroot uncompress the chroot and keep it uncompressed if
+    possible. This fixes bug#2699
+  * Make the slave run the process reaper run even if the build failed.
+
+ -- Daniel Silverstone <daniel.silverstone@canonical.com>  Fri, 30 Sep 2005 00:24:45 +0100
+
+launchpad-buildd (10) unstable; urgency=low
+
+  * Make sure /etc/source-dependencies is present in the postinst.
+    (just need to be touched)
+
+ -- Daniel Silverstone <daniel.silverstone@canonical.com>  Wed, 28 Sep 2005 22:02:26 +0100
+
+launchpad-buildd (9) unstable; urgency=low
+
+  * Implement /filecache/XXX urls in the slave to permit larger file transfer
+
+ -- Daniel Silverstone <daniel.silverstone@canonical.com>  Tue, 27 Sep 2005 13:16:52 +0100
+
+launchpad-buildd (8) unstable; urgency=low
+
+  * spiv's crappy spawnFDs implementation needs an int not a file handle
+    and can't cope with converting one to the other :-(
+
+ -- Daniel Silverstone <daniel.silverstone@canonical.com>  Tue, 27 Sep 2005 02:18:05 +0100
+
+launchpad-buildd (7) unstable; urgency=low
+
+  * Made sure the slave puts /dev/null on the subprocess stdin.
+
+ -- Daniel Silverstone <daniel.silverstone@canonical.com>  Tue, 27 Sep 2005 01:52:50 +0100
+
+launchpad-buildd (6) unstable; urgency=low
+
+  * Removed slavechroot.py from installed set.
+
+ -- Daniel Silverstone <daniel.silverstone@canonical.com>  Thu, 15 Sep 2005 11:39:25 +0100
+
+launchpad-buildd (5) unstable; urgency=low
+
+  * Add slave tool and example chroot configuration
+  * Added debootstrap and dpkg-dev to the dependencies
+
+ -- Daniel Silverstone <daniel.silverstone@canonical.com>  Fri,  9 Sep 2005 16:38:22 +0100
+
+launchpad-buildd (4) unstable; urgency=low
+
+  * Add sbuild.conf which was previously missing
+  * Fix up abort protocol and various other bits in the slave
+
+ -- Daniel Silverstone <daniel.silverstone@canonical.com>  Fri,  9 Sep 2005 14:24:31 +0100
+
+launchpad-buildd (3) unstable; urgency=low
+
+  * Modified postinst to make sure ccache and log dirs are created
+    even if the user already exists.
+
+ -- Daniel Silverstone <daniel.silverstone@canonical.com>  Wed,  7 Sep 2005 15:50:36 +0100
+
+launchpad-buildd (2) unstable; urgency=low
+
+  * Fixes to postinst to make sure ccache and log dirs are created if missing.
+  * Added README to explain how to build the package.
+
+ -- Daniel Silverstone <daniel.silverstone@canonical.com>  Thu,  1 Sep 2005 10:46:08 +0100
+
+launchpad-buildd (1) unstable; urgency=low
+
+  * Initial version
+
+ -- Daniel Silverstone <daniel.silverstone@canonical.com>  Mon, 13 Jun 2005 11:08:38 +0100
+
