@@ -1,0 +1,106 @@
+Metadata-Version: 1.1
+Name: pyramid_sendgrid_webhooks
+Version: 1.2.3
+Summary: Parses incoming Sendgrid Webhooks in Pyramid apps
+Home-page: https://github.com/GoodRx/pyramid-sendgrid-webhooks
+Author: Kyle Stark
+Author-email: kyle@goodrx.com
+License: MIT
+Description: ===============================
+        Pyramid Sendgrid Webhooks
+        ===============================
+        
+        .. image:: https://img.shields.io/pypi/v/pyramid_sendgrid_webhooks.svg
+                :target: https://pypi.python.org/pypi/pyramid_sendgrid_webhooks
+        
+        .. image:: https://img.shields.io/travis/GoodRx/pyramid-sendgrid-webhooks.svg
+                :target: https://travis-ci.org/GoodRx/pyramid-sendgrid-webhooks
+        
+        .. image:: https://readthedocs.org/projects/pyramid_sendgrid_webhooks/badge/?version=latest
+                :target: https://readthedocs.org/projects/pyramid_sendgrid_webhooks/?badge=latest
+                :alt: Documentation Status
+        
+        
+        Parses incoming Sendgrid Webhooks in Pyramid  apps
+        
+        * Free software: MIT license
+        * Documentation: https://pyramid_sendgrid_webhooks.readthedocs.org.
+        
+        Features
+        --------
+        
+        To use this app, add a configuration statement with your intended webhook
+        callback path:
+        
+        .. code:: python
+        
+            config.include('pyramid_sendgrid_webhooks', '/sendgrid/webhooks')
+        
+        Then, set up subscribers for any events that you want to be notified of:
+        
+        .. code:: python
+        
+            from pyramid_sendgrid_webhooks import events
+        
+            def handle_bounce(event):
+                request = event.request
+                print event.reason
+        
+            ...
+            config.add_subscriber(handle_bounce, events.BounceEvent)
+        
+        Currently the app adds a single endpoint at :code:`{PREFIX}/receive`.  This will be
+        the webhook path to give to Sendgrid.  In the example above, the full endpoint
+        would therefore be at :code:`/sendgrid/webhooks/receive`.
+        
+        
+        Credits
+        ---------
+        
+        Tools used in rendering this package:
+        
+        *  Cookiecutter_
+        *  `cookiecutter-pypackage`_
+        
+        .. _Cookiecutter: https://github.com/audreyr/cookiecutter
+        .. _`cookiecutter-pypackage`: https://github.com/audreyr/cookiecutter-pypackage
+        
+        
+        
+        
+        History
+        -------
+        
+        1.2.2 (2015-12-15)
+        ---------------------
+        
+        * Updating documentation with modules
+        
+        1.2.1 (2015-12-15)
+        ---------------------
+        
+        * Update trove classifiers
+        
+        1.2.0 (2015-12-14)
+        ---------------------
+        
+        * Correct package listing in setup.py
+        
+        1.0.0 (2015-12-07)
+        ---------------------
+        
+        * First release on PyPI.
+        
+Keywords: pyramid_sendgrid_webhooks
+Platform: UNKNOWN
+Classifier: Development Status :: 4 - Beta
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Natural Language :: English
+Classifier: Programming Language :: Python :: 2
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.3
+Classifier: Programming Language :: Python :: 3.4
+Classifier: Programming Language :: Python :: 3.5
+Classifier: Framework :: Pyramid
