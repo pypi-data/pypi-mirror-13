@@ -1,0 +1,118 @@
+r"""Contains functions to evaluate regression and classification
+    methods
+
+    The given methods can be any machine learning algorithms that
+    adhere to sklearn's estimator pattern - this includes sklearn's
+    pipelines. The evaluate_ functions will perform a set number of
+    cross validations over given parameters and return certain metrics
+    (MSE and MAPE for regression, ROC-AUC for classification).
+
+    <routine listings>
+
+    <see also>
+
+    <notes>
+
+    <references>
+
+    <examples>
+
+:Author:
+    Matthias Manhertz
+:Copyright:
+    (c) Matthias Manhertz 2015
+:Licence:
+    MIT
+"""
+
+from collections import namedtuple
+from sklearn.grid_search import GridSearchCV
+from sklearn.cross_validation import train_test_split
+from sklearn.metrics import roc_auc_score, mean_squared_error
+import numpy as np
+
+
+# create named tuples to hold the results of our evaluations
+EvalRegrResult = namedtuple("EvalRegrResult", "mse msestd mape mapestd")
+EvalBinClassResult = namedtuple("EvalBinClassResult", "auc aucstd")
+
+
+def evaluate_regression(X, y, method, cv_params, n_runs, **kwargs):
+    r"""Runs cross validation on the given regression method. Returns
+        evaluation metrics.
+
+
+        Notes
+        -----
+        Will cause a divide by zero error in MAPE calculation if the
+        targets `y` contain any zero entries.
+    """
+
+    msescores = []
+    mapescores = []
+    for i in range(n_runs):
+        X_train, X_test, y_train, y_test = train_test_split(
+            X, y, test_size=0.2, random_state=42)
+        fitted_grid = cross_validate(X_train, y_train, method,
+                                     cv_params, **kwargs)
+        y_pred = fitted_grid.predict(X_test)
+        msescores.append(mean_squared_error(y_test, y_pred))
+        mapescores.append(mean_average_percentage_error(y_test, y_pred))
+
+    mse, msestd = _get_mean_std(msescores)
+    mape, mapestd = _get_mean_std(mapescores)
+
+    return EvalRegrResult(mse, msestd, mape, mapestd)
+
+
+def evaluate_binary_classification(X, y, method, cv_params, n_runs, **kwargs):
+    r"""Runs cross validation on the given classification method.
+        Returns evaluation metrics.
+
+    """
+
+    aucscores = []
+    for i in range(n_runs):
+        X_train, X_test, y_train, y_test = train_test_split(
+            X, y, test_size=0.2, random_state=42)
+        fitted_grid = cross_validate(X_train, y_train, method,
+                                     cv_params, **kwargs)
+        y_proba = fitted_grid.predict_proba(X_test)
+        aucscores.append(roc_auc_score(y_test, y_proba[:, 1]))
+
+    auc, aucstd = _get_mean_std(aucscores)
+    return EvalBinClassResult(auc, aucstd)
+
+
+def cross_validate(X, y, method, cv_params, **kwargs):
+    r"""Runs cross validation on method and returns fitted GridSearchCV
+        instance."""
+
+    # extract the arguments that are meant for GridSearchCV()
+    gridargs = {key: value for key, value in kwargs.iteritems()
+                if key in GridSearchCV.__init__.func_code.co_varnames}
+
+    gscv = GridSearchCV(method, cv_params, **gridargs)
+    gscv.fit(X, y)
+    return gscv
+
+
+def mean_average_percentage_error(y_true, y_pred):
+    r"""Calculates the mean absolute percentage error.
+
+        Notes
+        -----
+        This will cause divide by zero error, if `y_true` contains zeroes.
+
+    """
+
+    return np.mean(np.abs((y_true - y_pred) / y_true)) * 100
+
+
+def _get_mean_std(scores):
+    r"""Calculates the mean and std for the given sequence of scores."""
+
+    score_arr = np.array(scores)
+    mean = np.mean(score_arr)
+    std = np.std(score_arr)
+    return mean, std
