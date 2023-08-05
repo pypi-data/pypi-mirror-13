@@ -1,0 +1,30 @@
+# -*- coding: utf-8 -*-
+#
+# Copyright (C) 2010-2016 YVertical, PPMESSAGE
+# Ding Guijin, guijin.ding@yvertical.com
+# Ning Ben, ben.ning@yvertical.com
+#
+# All rights reserved
+#
+
+from setuptools import setup, find_packages
+from distutils.core import setup, Extension
+import os
+
+setup(
+    name = "ppmessage-mqtt",
+    version = "1.0.3",
+    author = "ppmessage.com",
+    license = "http://www.apache.org/licenses/LICENSE-2.0",
+    install_requires = ["tornado>=4.3"],
+    packages = ["ppmessage"],
+    author_email = 'dingguijin@gmail.com',
+    url = "https://www.ppmessage.com",
+    keywords = "mqtt server ppmessage",
+    description="A Python mqtt server, originally developed at PPMESSAGE.",
+    classifiers=[
+        'License :: OSI Approved :: Apache Software License',
+        'Programming Language :: Python :: 2.7',
+    ],
+
+)
