@@ -1,0 +1,1 @@
+from .pyPassGenerator import generatePass
