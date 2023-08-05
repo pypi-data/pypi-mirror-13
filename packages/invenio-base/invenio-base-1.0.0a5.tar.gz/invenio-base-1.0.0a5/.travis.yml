@@ -1,0 +1,73 @@
+# -*- coding: utf-8 -*-
+#
+# This file is part of Invenio.
+# Copyright (C) 2015 CERN.
+#
+# Invenio is free software; you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the
+# Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
+# MA 02111-1307, USA.
+#
+# In applying this license, CERN does not
+# waive the privileges and immunities granted to it by virtue of its status
+# as an Intergovernmental Organization or submit itself to any jurisdiction.
+
+
+notifications:
+  email: false
+
+sudo: false
+
+language: python
+
+cache:
+  - pip
+
+env:
+  - REQUIREMENTS=lowest
+  - REQUIREMENTS=release
+  - REQUIREMENTS=devel
+
+python:
+  - "2.7"
+  - "3.3"
+  - "3.4"
+  - "3.5"
+
+before_install:
+  - "travis_retry pip install --upgrade pip setuptools py"
+  - "travis_retry pip install twine wheel coveralls requirements-builder"
+  - "requirements-builder --level=min setup.py > .travis-lowest-requirements.txt"
+  - "requirements-builder --level=pypi setup.py > .travis-release-requirements.txt"
+  - "requirements-builder --level=dev --req requirements-devel.txt setup.py > .travis-devel-requirements.txt"
+
+install:
+  - "travis_retry pip install -r .travis-${REQUIREMENTS}-requirements.txt"
+  - "travis_retry pip install -e .[all]"
+
+script:
+  - "./run-tests.sh"
+
+after_success:
+  - coveralls
+
+deploy:
+  provider: pypi
+  user: jirikuncar
+  password:
+    secure: fgCMmAN3IQovRtKh8epQhHPkF0WZ9zwvcQz1wmeToAcI3O2ZrKEZ25IYrx80JkNszUDBCzo8evo5kPEWzEe13Dayj7ub/8RyvdrFPcSF+WjFLG8OS+ZcW1uA02UtXNHT89efdNwAGJyYAORgwRcZWug7I39QkTQrR9jFeFrn6PvnYKGsOg+eriaAq3NS9YQkuIYBsR5mLRgvazkhFJbBpIkK+ANtM3k7fGhclDSQYfiF7wHPDxUxNhBz1pafK70qYprbL4RHjaRYK/o+++RCV5+bQ8R8Sg1tXK3BlZlmCtr90pDrNEGD57mliycH+yk6bInoL0QpN0DveNX+5ZIm9KoeJcdWCuS57pPIrJxCi3R781AZOGxHrSpZyuYcS6CISd6aVT2oGYjEAiWb5pxVQkM3kQ9ZMOG1PuiR4jSev+eSEMUZxCNGBw18pZQxzXGOTXefxcqxcPdjRIRbGh3SotBoVdysyMw52Z8ZFTqRCqfCE4kgl95g8S2haS5TmgNlq8lOgEqqMZdcFcYtI6ftGNwcY5qxFGCALd4kuwd39HhsJMiA52bu3yIzc05T0Dmraq4mvy64ZBhlaVN/JpxGL5v2MhEE6ZUtvu16j+Ee40x7d0a5MVv2YkjeilpG6gl4skdKTn77+uhLmoTdINIZ4MRL8HjA6ZPlqUKQo3snxiU=
+  distributions: "sdist bdist_wheel"
+  on:
+    tags: true
+    python: "2.7"
+    condition: $REQUIREMENTS = release
