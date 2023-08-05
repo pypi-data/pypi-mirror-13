@@ -1,0 +1,208 @@
+MapProxy is an open source proxy for geospatial data. It caches, accelerates and transforms data from existing map services and serves any desktop or web GIS client.
+
+.. image:: http://mapproxy.org/mapproxy.png
+
+MapProxy is a tile cache, but also offers many new and innovative features like full support for WMS clients.
+
+MapProxy is actively developed and supported by `Omniscale <http://omniscale.com>`_, it is released under the Apache Software License 2.0, runs on Unix/Linux and Windows and is easy to install and to configure.
+
+Go to http://mapproxy.org/ for more information.
+
+The documentation is available at: http://mapproxy.org/docs/latest/
+
+Changes
+-------
+1.8.2 2016-01-22
+~~~~~~~~~~~~~~~~
+
+Fixes:
+
+- serve-develop: fixed reloader for Windows installations made
+  with recent pip version
+
+1.8.1 2015-09-22
+~~~~~~~~~~~~~~~~
+
+Improvements:
+
+- WMS 1.3.0: support for metadata required by INSPIRE View Services
+- WMS: OnlineResource defaults to service URL
+
+Fixes:
+
+- mapproxy-seed: fix race-condition which prevented termination at the
+  end of the seeding process
+- autoconfig: parse capabilities without ContactInformation
+- SQLite cache: close files after seeding
+- sqlite/mbtiles: fix tile lock location
+- WMS 1.0.0: fix image format for source requests
+- WMS: allow floats for X/Y in GetFeatureInfo requests
+- CouchDB: fix for Python 3
+
+Other:
+
+- mapproxy-seed: seeding a cache with disable_storage: true returns
+  an error
+- all changes are now tested against Python 2.7, 3.3, 3.4 and 3.5
+
+1.8.0 2015-05-18
+~~~~~~~~~~~~~~~~
+
+Features:
+
+- Support for Python 3.3 or newer
+
+Improvements:
+
+- WMS is now available at /service, /ows and /wms
+- WMTS KVP is now available at /service and /ows, RESTful service at /wmts
+- allow tiled access to layers with multiple map:false sources
+- add Access-control-allow-origin header to HTTP responses
+- list KVP and RESTful capabilities on demo page
+- disable verbose seed output if stdout is not a tty
+- add globals.cache.link_single_color_images option
+- support scale_factor for Mapnik sources
+
+Fixes:
+
+- handle EPSG axis order in WMTS capabilities
+- pass through legends/featureinfo for recursive caches
+- accept PNG/JPEG style image_format for WMS 1.0.0
+- fix TMS capabilities in demo for TMS with use_grid_names
+- fix ctrl+c behaviour in mapproxy-seed
+- fix BBOX parsing in autoconf for WMS 1.3.0 services
+
+Other:
+
+- 1.8.0 is expected to work with Python 2.6, but it is no longer officially supported
+- MapProxy will now issue warnings about configurations that will change with 2.0.
+  doc/mapproxy_2.rst lists some of the planed incompatible changes
+
+1.7.1 2014-07-08
+~~~~~~~~~~~~~~~~
+
+Fixes:
+
+- fix startup of mapproxy-util when libgdal/geos is missing
+
+
+1.7.0 2014-07-07
+~~~~~~~~~~~~~~~~
+
+Features:
+
+- new `mapproxy-util autoconf` tool
+- new versions option to limit supported WMS versions
+- set different max extents for each SRS with bbox_srs
+
+Improvements:
+
+- display list of MultiMapProxy projects sorted by name
+- check included files (base) for changes in reloader and serve-develop
+- improve combining of multiple cascaded sources
+- respect order of --seed/--cleanup tasks
+- catch and log sqlite3.OperationalError when storing tiles
+- do not open cascaded responses when image format matches
+- mapproxy-seed: retry longer if source fails (100 instead of 10)
+- mapproxy-seed: give more details if source request fails
+- mapproxy-seed: do not hang nor print traceback if seed ends
+  after permanent source errors
+- mapproxy-seed: skip seeds/cleanups with empty coverages
+- keep order of image_formats in WMS capabilities
+
+
+Fixes:
+
+- handle errors when loading to many tiles from mbtile/sqlite in
+  one batch
+- reduce memory when handling large images
+- allow remove_all for mbtiles cleanups
+- use extent from layer metadata in WMTS capabilities
+- handle threshold_res higher than first resolution
+- fix exception handling in Mapnik source
+- only init libproj when requested
+
+Other:
+
+- 1.7.x is the last release with support for Python 2.5
+- depend on Pillow if PIL is not installed
+
+1.6.0 2013-09-12
+~~~~~~~~~~~~~~~~
+
+Improvements:
+
+- Riak cache supports multiple nodes
+
+Fixes:
+
+- handle SSL verification when using HTTP proxy
+- ignore errors during single color symlinking
+
+Other:
+
+- --debug option for serve-multiapp-develop
+- Riak cache requires Riak-Client >=2.0
+
+1.6.0rc1 2013-08-15
+~~~~~~~~~~~~~~~~~~~
+
+Features:
+
+- new `sqlite` cache with timestamps and one DB for each zoom level
+- new `riak` cache
+- first dimension support for WMTS (cascaded only)
+- support HTTP Digest Authentication for source requests
+- remove_all option for seed cleanups
+- use real alpha composite for merging layers with transparent
+  backgrounds
+- new tile_lock_dir option to write tile locks outside of the cache dir
+- new decorate image API
+- new GLOBAL_WEBMERCATOR grid with origin:nw and EPSG:3857
+
+Improvements:
+
+- speed up configuration loading with tagged sources
+- speed up seeding with sparse coverages and limited levels
+  (e.g. only level 17-20)
+- add required params to WMS URL in mapproxy-util wms-capabilities
+- support for `@` and `:` in HTTP username and password
+- try to load pyproj before using libproj.dll on Windows
+- support for GDAL python module (osgeo.ogr) besides using gdal.so/dll
+  directly
+- files are now written atomical to support concurrent access
+  to the same tile cache from different servers (e.g. via NFS)
+- support for WMS 1.3.0 in mapproxy-util wms-capabilities
+- support layer merge for 8bit PNGs
+- support for OGR/GDAL 1.10
+- show TMS root resource at /tms
+
+Fixes:
+
+- support requests>=1.0 for CouchDB cache
+- HTTP_X_FORWARDED_HOST can be a list of hosts
+- fixed KML for caches with origin: nw
+- fixed 'I/O operation on closed file' errors
+- fixed memory leak when reloading large configurations
+- improve handling of mixed grids/formats when using caches as
+  cache sources
+- threading related crashes in coverage handling
+- close OGR sources
+- catch IOErrors when PIL/Pillow can't identify image file
+
+Other:
+
+- update example configuration (base-config)
+- update deployment documentation
+- update OpenLayers version in demo service
+- use restful_template URL in WMTS demo
+- update MANIFEST.in to prevent unnecessary warnings during installation
+- accept Pillow as depencendy instead of PIL when already installed
+- deprecate use_mapnik2 option
+
+
+Older changes
+-------------
+See https://raw.github.com/mapproxy/mapproxy/master/CHANGES.txt
+
+
