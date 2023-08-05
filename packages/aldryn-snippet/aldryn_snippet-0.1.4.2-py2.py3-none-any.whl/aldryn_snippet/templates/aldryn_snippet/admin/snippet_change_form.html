@@ -1,0 +1,38 @@
+{% extends "admin/change_form.html" %}
+{% load static %}
+
+{% block object-tools %}
+{{ block.super }}
+<script src="{% static 'js/ace-1.1.7/ace.js' %}" type="text/javascript" charset="utf-8"></script>
+<script>
+    var $ = django.jQuery;
+
+    // Hook up ACE editor to all textareas with data-editor attribute
+    $(function () {
+        $('textarea[data-editor]').each(function () {
+            var textarea = $(this);
+            // create new div for editing
+            var editDiv = $('<div>', {
+                position: 'absolute',
+                width: '100%',
+                height: textarea.height(),
+                'class': textarea.attr('class')
+            }).insertBefore(textarea);
+
+            // hide textarea
+            textarea.css('visibility', 'hidden');
+
+            // theme editor div
+            var editor = ace.edit(editDiv[0]);
+            editor.getSession().setValue(textarea.val());
+            editor.getSession().setMode(textarea.data('mode'));
+            editor.setTheme(textarea.data('theme'));
+
+            // copy back to textarea on form submit
+            textarea.closest('form').submit(function () {
+                textarea.val(editor.getSession().getValue());
+            })
+        })
+    })
+</script>
+{% endblock %}
