@@ -1,0 +1,99 @@
+#!/usr/bin/env python3
+#
+# BTZen - Bluetooh Smart sensor reading library.
+#
+# Copyright (C) 2015 by Artur Wroblewski <wrobell@pld-linux.org>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+import argparse
+import asyncio
+import logging
+import threading
+
+import dbus
+from dbus.mainloop.glib import DBusGMainLoop
+from gi.repository import GObject
+
+import btzen
+
+logging.basicConfig(level=logging.DEBUG)
+
+dbus_loop = DBusGMainLoop(set_as_default=True)
+dbus_main_loop = GObject.MainLoop()
+bus = dbus.SystemBus(mainloop=dbus_loop)
+
+parser = argparse.ArgumentParser()
+parser.add_argument('device', help='MAC address of device')
+args = parser.parse_args()
+
+print('connecting to {}...'.format(args.device))
+dev = btzen.connect(bus, args.device)
+print('connected to {}'.format(dev.Name))
+
+readers = {}
+try:
+    readers['pressure'] = btzen.Pressure(bus, dev)
+except ValueError as ex:
+    print(ex)
+try:
+    readers['temperature'] = btzen.Temperature(bus, dev)
+except ValueError as ex:
+    print(ex)
+try:
+    readers['humidity'] = btzen.Humidity(bus, dev)
+except ValueError as ex:
+    print(ex)
+try:
+    readers['light'] = btzen.Light(bus, dev)
+except ValueError as ex:
+    print(ex)
+try:
+    readers['motion'] = btzen.Motion(bus, dev)
+except ValueError as ex:
+    print(ex)
+
+print('sensors initialized')
+
+async def read_data(name, f):
+    t1 = loop.time()
+    value = await f()
+    if isinstance(value, (float, int)):
+        value = '{:.1f}'.format(value)
+    elif isinstance(value, tuple):
+        value = ', '.join('{:.1f}'.format(v) for v in value)
+    else:
+        assert False, 'float, int or tuple expected'
+    t2 = loop.time()
+    print('{}: {} ({:.4f}s)'.format(name, value, t2 - t1))
+
+
+async def read_sensors(sensors):
+    while True:
+        tasks = [read_data(n, r.read_async) for n, r in sensors]
+        await asyncio.gather(*tasks)
+        print()
+        await asyncio.sleep(-loop.time() % 1)
+
+
+# start DBUS loop for async calls
+thread = threading.Thread(target=dbus_main_loop.run)
+thread.start()
+loop = asyncio.get_event_loop()
+
+sensors = sorted([(n, r) for n, r in readers.items() if r])
+loop.run_until_complete(read_sensors(sensors))
+
+# vim: sw=4:et:ai
