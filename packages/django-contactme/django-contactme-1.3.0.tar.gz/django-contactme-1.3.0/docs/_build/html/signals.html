@@ -1,0 +1,241 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Signals &mdash; django-contactme-form 1.3.0 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="django-contactme-form 1.3.0 documentation" href="index.html"/>
+        <link rel="next" title="Templatetags" href="templatetags.html"/>
+        <link rel="prev" title="Tutorial" href="tutorial.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> django-contactme-form
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.3
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="example.html">Demo projects</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">Signals</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#confirmation-will-be-requested">Confirmation will be requested</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#confirmation-has-been-requested">Confirmation has been requested</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#confirmation-has-been-received">Confirmation has been received</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="templatetags.html">Templatetags</a></li>
+<li class="toctree-l1"><a class="reference internal" href="settings.html">Settings</a></li>
+<li class="toctree-l1"><a class="reference internal" href="templates.html">Templates</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">django-contactme-form</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+    <li>Signals</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/signals.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="signals">
+<span id="ref-signals"></span><h1>Signals<a class="headerlink" href="#signals" title="Permalink to this headline">¶</a></h1>
+<p>List of signals sent by the django-contactme app.</p>
+<div class="section" id="confirmation-will-be-requested">
+<h2>Confirmation will be requested<a class="headerlink" href="#confirmation-will-be-requested" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt><strong>django_contactme.signals.confirmation_will_be_requested</strong></dt>
+<dd><p class="first">Sent just before a confirmation message is requested.</p>
+<p class="last">A message is sent to the user right after the contact form is been posted and validated to verify the user&#8217;s email address. This signal may be used to ban email addresses or check message content. If any receiver returns False the process is discarded and the user receives a discarded message.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="confirmation-has-been-requested">
+<h2>Confirmation has been requested<a class="headerlink" href="#confirmation-has-been-requested" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt><strong>django_contactme.signals.confirmation_requested</strong></dt>
+<dd><p class="first">Sent just after a confirmation message is requested.</p>
+<p class="last">A message is sent to the user right after the contact form is been posted and validated to verify the user&#8217;s email address. This signal may be uses to trace contact messages posted but never confirmed.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="confirmation-has-been-received">
+<h2>Confirmation has been received<a class="headerlink" href="#confirmation-has-been-received" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt><strong>django_contactme.signals.confirmation_received</strong></dt>
+<dd><p class="first">Sent just after a confirmation has been received.</p>
+<p>A confirmation is received when the user clicks on the link provided in the confirmation message sent by email. This signal may be used to validate that the submit date stored in the URL is no older than a certain time. If any receiver returns False the process is discarded and the user receives a discarded message.</p>
+<p class="last">See a simple example of a receiver for this signal: <a class="reference internal" href="tutorial.html#signals-and-receivers-label"><span>Signals and receivers</span></a>, in the Tutorial.</p>
+</dd>
+</dl>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="templatetags.html" class="btn btn-neutral float-right" title="Templatetags" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="tutorial.html" class="btn btn-neutral" title="Tutorial" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, Daniel Rus Morales.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'1.3.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
