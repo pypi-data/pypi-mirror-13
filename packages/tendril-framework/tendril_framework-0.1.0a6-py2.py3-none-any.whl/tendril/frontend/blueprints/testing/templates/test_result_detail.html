@@ -1,0 +1,341 @@
+{#
+    Copyright (c) 2015 Chintalagiri Shashank
+    Released under the MIT license
+#}
+
+{% extends "base_templates/base.html" %}
+
+{% block magellan %}
+<!-- Magellan -->
+<div data-magellan-expedition="sticky">
+    <dl class="sub-nav">
+        <dd data-magellan-arrival="documentation"><a href="#documentation">Download</a></dd>
+        {% for suite in stage.suites %}
+        <dd data-magellan-arrival="{{ suite.desc|replace('.','_') }}"><a href="#{{ suite.desc|replace('.','_') }}">{{ suite.desc }}</a></dd>
+        {% endfor %}
+        <dd data-magellan-arrival="instruments"><a href="#documentation">Instruments</a></dd>
+    </dl>
+</div>
+{% endblock %}
+
+{% block main %}
+
+<p></p>
+
+<h3> {{ stage.docs[0].filename|replace('TEST-REPORT-', '') }} Test & Calibration Report </h3>
+<!-- TODO Make the tables responsive and improve the layout -->
+<div class="row">
+<!-- Metadata -->
+<div class="small-12 medium-6 columns">
+<a name="metadata"></a>
+    <div class="small-12 columns">
+        <table id="metadata_table" class="display" width="100%">
+            <tbody>
+                <tr>
+                    <td class="dt-right" scope="row"> Model </td>
+                    <td> <b>{{ stage.devicetype }}</b> </td>
+                </tr>
+                <tr>
+                    <td class="dt-right" scope="row"> Serial No. </td>
+                    <td> <b>{{ stage.sno }}</b> </td>
+                </tr>
+                <tr>
+                    <td class="dt-right" scope="row"> Test Definitions </td>
+                    <td> R{{ stage.svnrevision }} configs </td>
+                </tr>
+                <tr>
+                    <td class="dt-right" scope="row"> Test Date </td>
+                    <td> {{ stage.testdate }} </td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        {{ stage.desc }}
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <!-- TODO colspan breaks datatables -->
+    <!--<script type="text/javascript">-->
+        <!--$(document).ready( function () {-->
+            <!--var table = $('#metadata_table').DataTable({-->
+                <!--/* Disable initial sort */-->
+                <!--"aaSorting": [],-->
+                <!--responsive: true,-->
+                <!--"bAutoWidth": false,-->
+                <!--"paging": false,-->
+                <!--"ordering": false,-->
+                <!--"info": false,-->
+                <!--"searching": false,-->
+            <!--});-->
+        <!--});-->
+    <!--</script>-->
+</div>
+
+
+<!-- Downloads -->
+<div class="small-12 medium-6 columns" data-magellan-destination="documentation">
+<h4> Download </h4>
+<a name="documentation"></a>
+    <ul class="doclinklist">
+        {% for doc in stage.docs %}
+            {% include 'parts/doc_link_list_element.html' %}
+        {% endfor %}
+    </ul>
+</div>
+</div>
+
+<!-- Result -->
+<script type="text/javascript">
+    var details = {};
+
+    /* Formatting function for row details */
+    function format ( d, namebase ) {
+        // `d` is the original data object for the row
+        if (!d){
+            return '';
+        }
+        var rval = '';
+        rval += '<div class="row">';
+        if (d.lines){
+            rval += '<div class="large-6 medium-12 columns">';
+            rval += '<table class="embedtable" width="100%" cellpadding="5" cellspacing="0" border="0" style="padding-left:50px;">';
+            for(var i=0, len=d.lines.length; i < len; i++){
+                rval += '<tr><td>' + d.lines[i].desc + '</td>'
+                        + '<td class="text-center">' + d.lines[i].expected + '</td>'
+                        + '<td class="text-center">' + d.lines[i].measured + '</td>'
+                        + '</tr>';
+            }
+            rval += '</table></div>';
+        }
+        if (d.instrument){
+            rval += '<div class="large-5 medium-12 columns">Instrument : ';
+            rval += d.instrument + ' ' + d.inststr + '</div>';
+        }
+        rval += '</div>';
+        if (d.graphs.length > 0){
+            rval += '<div class="row">';
+            namebase = namebase.split('.').join('_');
+            for(var i=0, len=d.graphs.length; i<len; i++){
+                rval += '<div id="GRAPH_' + namebase + '_' + i + '" class="large-5 medium-12 columns"></div>';
+            }
+            rval += '</div>';
+        }
+
+        return rval;
+    }
+
+    function render_graph(gdef, tid){
+        nv.addGraph(function() {
+            var chart = nv.models.lineChart()
+                        .margin({left: 70})  //Adjust chart margins to give the x-axis some breathing room.
+                        .useInteractiveGuideline(true)  //We want nice looking tooltips and a guideline!
+                        .showYAxis(true)        //Show the y-axis
+                        .showXAxis(true)        //Show the x-axis
+            ;
+
+            chart.xAxis     //Chart x-axis settings
+              .axisLabel(gdef.params.xlabel)
+              .tickFormat(d3.format(',.1f'));
+
+            if(gdef.params.xscale == 'log'){
+                chart.xScale(d3.scale.log());
+            }
+
+            chart.yAxis     //Chart y-axis settings
+              .axisLabel(gdef.params.ylabel)
+              .tickFormat(d3.format(',.1f'));
+
+            if(gdef.params.yscale == 'log'){
+                chart.yScale(d3.scale.log());
+            }
+
+            /* Done setting the chart up? Time to render it!*/
+            var points = []
+            for(var j=0, plen=gdef.x.length; j<plen; j++){
+                points.push({x: gdef.x[j], y:gdef.y[j]})
+            }
+            var myData = [
+                {
+                    values: points,
+                    key: gdef.title
+                }
+            ];
+
+            d3.select('#'+ tid).append('svg') //Select the <svg> element you want to render the chart in.
+              .datum(myData)         //Populate the <svg> element with chart data...
+              .style({ 'width': '100%', 'height': '350px' }) //Finally, render the chart!
+              .call(chart);
+
+
+            //Update the chart when window resizes.
+            nv.utils.windowResize(function() { chart.update() });
+            return chart;
+            });
+    }
+
+    function render_graphs(d, namebase){
+        if (d.graphs.length > 0){
+            for(var i=0, len=d.graphs.length; i<len; i++){
+                namebase = namebase.split('.').join('_');
+                var tid = "GRAPH_" + namebase + "_" + i;
+                var gdef = d.graphs[i];
+                render_graph(gdef, tid);
+            }
+        }
+    }
+
+</script>
+
+<div class="small-12 columns">
+<h4> Test Result </h4>
+<a name="results"></a>
+<div class="small-12 columns">
+
+        {% for suite in stage.suites %}
+        <a name="{{ suite.desc|replace('.','_') }}"></a>
+        <table id="suite_table_{{ loop.index }}" class="responsive cleantable row-border" width="100%" data-magellan-destination="{{ suite.desc|replace('.','_') }}">
+            <thead>
+            <tr>
+                <th class="all"></th>
+                <th class="all">{{ suite.desc }}</th>
+                <th> </th>
+                <th class="all">{{ suite.title }}</th>
+                <th class="desktop text-right">{{ suite.ts }}</th>
+                <th class="all text-center
+                {% if suite.passed == 'PASSED' %}
+                    resulthead-pass
+                {% elif suite.passed == 'FAILED' %}
+                    resulthead-fail
+                {% endif %}">{{ suite.passed }}</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for test in suite.tests %}
+                <tr data-id='{{ test.desc }}'>
+                    <td> {{ loop.index }} </td>
+                    <td> {{ test.desc }} </td>
+                    <td class="details-control"> </td>
+                    <td> {{ test.title }} </td>
+                    <td class="text-right"> {{ test.ts }} </td>
+                    <td class="text-center
+                    {% if test.passed == 'PASSED' %}
+                        resultcell-pass
+                    {% elif test.passed == 'FAILED' %}
+                        resultcell-fail
+                    {% endif %}
+                    ">{{ test.passed }}</td>
+
+                    <script>
+                    details['{{test.desc}}'] = {};
+                    {% if test.lines %}
+                    details['{{test.desc}}']['lines'] = [
+                        {% for l in test.lines %}
+                            {'desc': '{{ l.desc }}',
+                             {% if l.expected %}
+                             'expected': '{{ l.expected|latex_render|safe }}',
+                             {% else %}
+                             'expected': '',
+                             {% endif %}
+                             'measured': '{{ l.measured|latex_render|safe }}'
+                             },
+                        {% endfor %}
+                     ];
+                    {% endif %}
+                    {% if test.instrument %}
+                        details['{{test.desc}}']['instrument'] = '{{ stage.instruments.get(test.instrument) }}';
+                        details['{{test.desc}}']['inststr'] = '{{ test.instrument }}';
+                    {% endif %}
+                    {% if test.graphs_data %}
+                        details['{{test.desc}}']['graphs'] = JSON.parse('{{ test.graphs_data|safe }}');
+                    {% endif %}
+                    </script>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        <script type="text/javascript">
+        $(document).ready( function () {
+            var table = $('#suite_table_{{ loop.index }}').DataTable({
+                "aaSorting": [],
+                responsive: true,
+                "paging": false,
+                "ordering": false,
+                "info": false,
+                "searching": false,
+                "columnDefs":[
+                    {"width": "1em", "targets": 0},
+                    {"width": "10em", "targets": 1},
+                    {"width": "16em", "targets": 4},
+                    {"width": "7em", "targets": 5},
+                ],
+            });
+
+            // Add event listener for opening and closing details
+            $('#suite_table_{{ loop.index }} tbody').on('click', 'td.details-control', function () {
+                var tr = $(this).closest('tr');
+                var data_id = tr.attr('data-id');
+                var row = table.row( tr );
+
+                if ( row.child.isShown() ) {
+                    // This row is already open - close it
+                    row.child.hide();
+                    tr.removeClass('shown');
+                }
+                else {
+                    // Open this row
+                    row.child( format(details[data_id], data_id) ).show();
+                    render_graphs( details[data_id], data_id );
+                    tr.addClass('shown');
+                }
+            });
+        });
+    </script>
+        {% endfor %}
+
+    </div>
+</div>
+
+<!-- Instrument -->
+<div class="row">
+<div class="small-12 medium-6 columns" data-magellan-destination="instruments">
+    <a name="instruments"></a>
+    <div class="small-12 columns">
+        <h5> Instruments </h5>
+    </div>
+    <div class="small-12 columns">
+        <table id="instruments_table" class="display" width="100%">
+            <thead>
+            <tr>
+                <th class="all">IDX</th>
+                <th class="all">Instrument</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for instrument in stage.instruments|dictsort(False, 'value') %}
+                <tr>
+                    <td> {{ instrument.1 }} </td>
+                    <td> {{ instrument.0 }} </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <script type="text/javascript">
+        $(document).ready( function () {
+            var table = $('#instruments_table').DataTable({
+                /* Disable initial sort */
+                "aaSorting": [],
+                responsive: true,
+                "paging": false,
+                "ordering": false,
+                "info": false,
+                "searching": false,
+            });
+        });
+    </script>
+</div>
+</div>
+
+<!-- Graphs -->
+{% endblock %}
