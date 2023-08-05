@@ -1,0 +1,56 @@
+
+{% extends "Webmaster/Package/User/Account/_layout.html" %}
+{% import "Webmaster/macros/master.html" as m with context %}
+{% import "Webmaster/Package/User/_macros.html" as macros with context %}
+{% import "Webmaster/macros/forms.html" as f with context %}
+{% block login_content %}
+
+<div class="panel">
+    <div class="panel-heading">
+        <h2 class="">{{ login_title | default('Login')}}</h2>
+    </div>
+
+    <div class="panel-body">
+
+        {% if signup_enabled and oauth_enabled %}
+            <div class="text-center">
+                {{ macros.oauth_providers() }}
+            </div>
+
+            <hr>
+        {% endif %}
+
+
+        <form method="POST" action="{{ url_for(endpoint_namespace % 'login') }}">
+            {{- f.csrf_field() -}}
+            <input type="hidden" name="next" value="{{ login_url_next }}">
+            <div class="form-group">
+                <label>Email:</label>
+                <input type="email" required class="form-control"  name="email" placeholder="Enter email">
+            </div>
+            <div class="form-group">
+                <label>Password:</label>
+                <input type="password" required class="form-control" name="password" placeholder="Password">
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-lg btn-block">Login</button>
+        </form>
+
+        <hr>
+
+        {% if signup_enabled %}
+            <a class=" pull-left"  href="{{url_for(endpoint_namespace % 'signup', next=login_url_next)}}">Signup</a>
+        {% endif %}
+
+        <a class="pull-right" href="{{url_for(endpoint_namespace % 'lost_password')}}">Lost Password</a>
+        <div class="clearfix"></div>
+
+    </div>
+
+</div>
+
+{% endblock %}
+
+
+
+

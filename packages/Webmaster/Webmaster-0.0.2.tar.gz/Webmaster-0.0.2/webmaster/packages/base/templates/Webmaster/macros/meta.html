@@ -1,0 +1,50 @@
+{#
+
+ META
+
+ Collections of meta tags
+
+#}
+
+{% macro title(suffix) %}
+    <title>{{ __g.PAGE_META["title"] | safe }} {{ suffix | safe }}</title>
+{% endmacro %}
+
+{#: The basic meta tag :#}
+{% macro meta(name, value) %}
+    <meta name="{{ name }}" content="{{ value | safe }}">
+{% endmacro %}
+
+{#: Custom meta tag :#}
+{% macro custom(namespace, name, value) %}
+    <meta {{ namespace }}="{{ name }}" content="{{ value | safe }}">
+{% endmacro %}
+
+{#: Opengraph property :#}
+{% macro property(namespace, name, value) %}
+    <meta property="{{ namespace }}:{{ name }}" content="{{ value | safe }}">
+{% endmacro %}
+
+{#: Custom meta tag :#}
+{%- macro opengraph(name, value) -%}
+    {% if value %}
+    <meta property="og:{{ name }}" content="{{ value | safe }}">
+    {% endif %}
+{%- endmacro %}
+
+{#: Custom meta tag :#}
+{%- macro googleplus(name, value) -%}
+    {% if value %}
+    <meta itemprop="{{ name }}" content="{{ value | safe }}">
+    {% endif %}
+{%- endmacro -%}
+
+{#: Custom meta tag :#}
+{%- macro twitter(name, value) -%}
+    {% if value %}
+    <meta name="twitter:{{ name }}" content="{{ value | safe }}">
+    {% endif %}
+{%- endmacro -%}
+
+
+
