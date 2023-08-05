@@ -1,0 +1,119 @@
+{% load i18n %}
+{% load staticfiles %}
+<div class="tree">
+<ul class="sortable" data-id="" data-parent_id="" id="main_list">
+  {% for stmt in procmailrc.django.flat %}{% spaceless %}
+    {% if stmt == "in_list" %}{% spaceless %}
+      {% if not stmt.data.in_simple or not simple %}
+        <ul
+          class="sortable"
+          {% for key, value in stmt.data.items %}
+          data-{{key}}="{{value}}"{% endfor %}
+        >
+      {% endif %}
+    {% endspaceless %}{% elif stmt == "out_list" %}{% spaceless %}
+      {% if not stmt.data.in_simple or not simple %}
+      </ul>
+      {% endif %}
+    {% endspaceless %}{% elif stmt == "in_item" %}{% spaceless %}
+      {% if not stmt.data.in_simple or not simple %}
+      <li
+        class="{% if not stmt.data.display %}hide{% endif %}"
+        {% for key, value in stmt.data.items %}
+        data-{{key}}="{{value}}"{% endfor %}
+      >
+      {% endif %}
+    {% endspaceless %}{% elif stmt == "out_item" %}{% spaceless %}
+      {% if not stmt.data.in_simple or not simple %}
+      </li>
+      {% endif %}
+    {% endspaceless %}{% elif not simple or not stmt.django.in_simple %}
+      <div style="white-space: nowrap;">
+        <div style="display:inline-block;width:100%">
+        {% if not stmt.is_first %}
+          <a href="{% url "procmail:up" stmt.id curr_stmt.id%}" class="up_down">
+            <i title="move up" class="fa fa-caret-up"></i>
+          </a>
+        {% endif %}
+        {% if not stmt.is_last %}
+          <a href="{% url "procmail:down" stmt.id curr_stmt.id%}" class="up_down">
+            <i title="move down" class="fa fa-caret-down"></i>
+          </a>
+        {% endif %}
+        {% if stmt.id != curr_stmt.id %}
+          <a  href="{% spaceless %}
+              {% if simple and stmt.django.is_simple %}
+                {% url "procmail:edit_simple" stmt.id %}
+              {% else %}
+                {% url "procmail:edit" stmt.id %}
+              {% endif %}{% endspaceless %}"
+              class="keep_scroll_list"
+          >
+        {% endif %}{% spaceless %}
+          <span> {% spaceless %}
+            {% if stmt.meta_title %}
+              {{stmt.meta_title}}
+            {% else %}
+              {{stmt.gen_title}}
+            {% endif %}
+          {% endspaceless %}</span>
+        {% endspaceless %}{% if stmt.id != curr_stmt.id %}</a>{% endif %}
+        </div>
+        <div style="display:inline-block;text-align:right" class="delete_list_item">
+            <a
+                class="delete_list_item keep_scroll_list"
+                href="{% url "procmail:delete" stmt.id current_url_name curr_stmt.id %}"
+                title="{% trans "Delete" %}"
+            >
+                <i class="fa fa-times" class="delete_list_item"></i>
+            </a>
+        </div>
+      </div>
+    {% endif %}
+  {% endspaceless %}{% endfor %}
+</ul>
+<a href="{% url "procmail:create" "" %}" class="btn btn-primary btn-block add_rule">
+    {% trans "Add a rule" %}
+</a>
+<br/>
+</div>
+<script>
+
+var sortables = []
+$( ".sortable" ).each(
+    function() {
+        var id = $(this).data("id");
+        var sortable = Sortable.create(
+            this,
+            {
+                group: "procmailrc",
+                pull: true,
+                put: true,
+                onUpdate: function (evt) {
+                    if(evt.oldIndex != evt.newIndex){
+                        var parent_id = $(evt.item).data("parent_id");
+                        var old_id = get_id(parent_id, evt.oldIndex);
+                        var new_id = get_id(parent_id, evt.newIndex);
+                        do_move("{{current_view_name}}", curr_id, old_id, new_id);
+                    }
+                },
+                onAdd: function (/**Event*/evt) {
+                    var old_id = get_id($(evt.from).data("id"), evt.oldIndex);
+                    var new_id = get_id(id, evt.newIndex);
+                    do_move("{{current_view_name}}", curr_id, old_id, new_id);
+                },
+                onStart: function (/**Event*/evt) {
+                    var item = $('li[data-id="'+ get_id(id, evt.oldIndex) +'"]');
+                    item.find("ul").first().css("display", "none");
+                },
+                onEnd: function (/**Event*/evt) {
+                    var item = $('li[data-id="'+ get_id(id, evt.oldIndex) +'"]');
+                    item.find("ul").first().css("display", "block");
+                }
+            }
+        );
+        sortables.push(sortable);
+    }
+);
+</script>
+<script src="{% static "procmail/list.js" %}"></script>
