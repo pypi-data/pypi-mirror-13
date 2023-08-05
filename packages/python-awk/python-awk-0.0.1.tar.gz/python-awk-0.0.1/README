@@ -1,0 +1,108 @@
+pawk is a python-based replacement for awk.
+
+It uses python for line-by-line processing of files
+
+Examples:
+
+#pawk automatically reads lines as csv rows and stores the result as a list in "r"
+#-g ("grep") keeps a subset of lines satisfying a given condition
+
+#Selects lines from input.txt with at least 3 csv fields
+> pawk -f input.txt -g 'len(r) > 2'
+
+
+#Keep a subset of lines where the second csv field is non-empty
+> pawk -f input.txt -g 'r[1]'
+
+
+#The above may crash if some lines have only one csv field
+#Use this instead:
+> pawk -f input.txt -g 'len(r) > 1 and r[1]'
+
+
+#The raw line is stored in the "l" variable
+#Keep a subset of lines where l isn't empty and the first character is "a"
+> pawk -f input.txt -g 'l != "" and l[0] == "a"'
+
+
+#Run certain code for each input line using -p
+#Using -p prevents the default printing of the line
+
+#For each line of the input, print that line with whitespace stripped
+> pawk -f input.txt -p 'print l.strip()'
+
+
+#default value of -f is /dev/stdin
+> less input.txt | pawk -p 'print len(r)'
+
+
+#-d sets the input delimiter
+#the output delimiter is ",", so this command converts a tsv to a csv
+> pawk -f input.txt -d '\t'
+
+
+#pawk store the line number (zero-indexed) in the "i" variable
+#only keep lines starting with the 1133rd
+> pawk -f input.txt -g 'i>=1132'
+
+
+#replace a regular expression from each line (python re module imported by default)
+> pawk -f input.txt -p 'print re.sub("U_C_Rate","firearm_rate",l)'
+
+#-b runs code before any lines are processed
+#-e runs code after all lines are processed
+#To add up a list of floats
+> pawk -b "cnt=0" -p "cnt += float(l)" -e "print cnt"
+
+
+
+
+
+Writing multi-line python in pawk:
+Heavily inspired by a source I can't find right now, pawk can process strings representing multi-line python. 
+
+examples:
+#(semi-colon) or (colon+whitespace) causes a line break
+'import random; print random.random()'
+-->
+import random;
+print random.random()
+
+
+#after lines with (colon+whitespace) successive lines are automatically indented:
+'if i>3: print "hello world!"; a += 1; b = 0'
+-->
+if i>3:
+   print "hello world!";
+   a += 1;
+   b == 0
+
+
+#use the 'end;' keyword to force indent level to decrease (compare this example with the above)
+'if i>3: print "hello world!"; end; a += 1; b = 0'
+-->
+if i>3:
+   print "hello world!";
+a += 1;
+b = 0
+
+
+#"elif:", "else:" and "except:" automatically cause indenting to decrease
+'if i>3: print "a"; elif i>1: print "b"; else: print "c"'
+-->
+if i>3:
+   print "a";
+elif i>1:
+   print "b";
+else:
+   print "c"
+
+
+#you can define functions!
+'def test123(): print "hello world!" end; test123(); test123(); test123();'
+->
+def test123():
+    print "hello world!"
+test123();
+test123();
+test123();
