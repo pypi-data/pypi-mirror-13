@@ -1,0 +1,128 @@
+#! /usr/local/bin/python
+import glob
+import os
+from PIL import Image, ImageOps
+from PIL.ImageCms import profileToProfile, createProfile, buildTransform, applyTransform
+import click
+from pkg_resources import Requirement, resource_filename
+import zipfile
+
+fujipath = resource_filename(Requirement.parse("proam"),"Fuji_DP2_ProAm.icm")
+
+
+DENSITY = 402
+SRGB_TO_FUJI = buildTransform(createProfile("sRGB"), fujipath, inMode="RGB", outMode="RGB")
+
+def zipdir(path, ziph):
+    # ziph is zipfile handle
+    for root, dirs, files in os.walk(path):
+        for file in files:
+            ziph.write(os.path.join(os.path.relpath(root), file))
+
+def convert_to_fuji_profile(im):
+    return applyTransform(im, SRGB_TO_FUJI)
+
+def save_with_own_profile(im, path):
+    im.save(path, icc_profile=im.info['icc_profile'], dpi=(DENSITY,DENSITY))
+
+def splitsize(size):
+    w, h = map(int, sorted(size.lower().split("x")))
+    return (w,h)
+
+def validsize(size):
+    w, h = reversed(splitsize(size))
+    return ("{}x{}".format(w,h))
+
+def pixels_from_inches(size, density=DENSITY):
+    "Always returns portrait size"
+    w, h = splitsize(size)
+    return (w*DENSITY, h*DENSITY)
+
+def make_portrait(im):
+    if im.size[0] > im.size[1]:
+        return im.rotate(90)
+    return im
+
+
+def proam(path, size, newpath, border):
+    im = Image.open(path)
+    # thanks to http://stackoverflow.com/questions/12984426/python-pil-ioerror-image-file-truncated-with-big-images
+    try:
+        im.load()
+    except IOError:
+        pass # You can always log it to logger
+
+
+    im = make_portrait(im)
+    pixsize = pixels_from_inches(size)
+
+    if border:
+        pixsize = [i - DENSITY/12 for i in pixsize] #1/4 inch border
+
+    im = ImageOps.fit(im, pixsize, Image.ANTIALIAS)
+
+    if border:
+        im = ImageOps.expand(im, border=DENSITY/12, fill='white')
+
+    im = convert_to_fuji_profile(im)
+    save_with_own_profile(im, newpath)
+
+import fnmatch
+import os
+import re
+
+def findfiles(which, where='.'):
+    '''Returns list of filenames from `where` path matched by 'which'
+       shell pattern. Matching is case-insensitive.'''
+
+    # TODO: recursive param with walk() filtering
+    rule = re.compile(fnmatch.translate(which), re.IGNORECASE)
+    return [name for name in os.listdir(where) if rule.match(name)]
+
+
+@click.command()
+@click.option('--sizes', default="6x4", help="Default is 6x4. Sizes of prints required, in inches, with 'x' as separator. All images are rotated to be portrait, so 6x4 is same as 4x6")
+@click.option('--pattern', default="*.jpg", help="Default '*.jpg'. Patten to match the files to process.")
+@click.option('--border', 'border', flag_value=True, default=False, help="Include white border around prints.")
+@click.option('--source', default=".", type=click.Path(exists=True, file_okay=False, dir_okay=True, readable=True, resolve_path=True), help="Source directory to find prints in. Defaults to current directory.")
+@click.option('--destination', default="_proam", type=click.Path(exists=False, file_okay=False, dir_okay=True, writable=True, resolve_path=True), help="Destination directory to save prints in. By default creates a 'proam' directory within current working directory.")
+def process_for_proam(source, destination, pattern, border, rotate=True, sizes='6x4'):
+
+    """Processes images for printing by the ProamImaging service.
+
+    All input images matching --pattern are:
+
+        - Rotated to be portrait
+
+        - Change DPI to 402pixels/inches
+
+        - Adds the correct Fuji colour profile
+
+        - Resized to fit dimensions of prints required
+    """
+
+    filepaths = findfiles(pattern, where=source)
+    if not filepaths:
+        raise  click.UsageError("No files found in source directory")
+
+    if not os.path.exists(destination):
+        os.makedirs(destination)
+
+    sizes = set([validsize(i.strip()) for i in sizes.split(",")])
+    for size in sizes:
+        sizefolder = os.path.join(destination, size)
+        if not os.path.exists(sizefolder):
+            os.makedirs(sizefolder)
+
+        with click.progressbar(length=len(filepaths), label='Processing images') as bar:
+            newpaths = [os.path.join(sizefolder, os.path.basename(i)) for i in filepaths]
+            ims, _ = zip(*[(proam(i, size, j, border), bar.update(1)) for i, j in zip(filepaths, newpaths)])
+
+    with click.progressbar(length=1, label='Zipping archive') as bar:
+        zipf = zipfile.ZipFile('proam.zip', 'w')
+        zipdir(destination, zipf)
+        zipf.close()
+        bar.update(1)
+
+if __name__ == '__main__':
+    process_for_proam()
