@@ -1,0 +1,50 @@
+upstream {{{ application.name }}}_app  {
+  server localhost:{{{ application.port }}};
+}
+
+server {
+    listen              80;
+    server_name         www.{{{ application.name }}}.com;
+    root                /var/www/{{{ application.name }}};
+
+    error_log /var/log/nginx/{{{ application.name }}}-error.log;
+    access_log /var/log/nginx/{{{ application.name }}}-access.log;
+
+    proxy_redirect     off;
+    proxy_set_header   Host             $host;
+    proxy_set_header   X-Real-IP        $remote_addr;
+    proxy_set_header   X-Forwarded-For  $proxy_add_x_forwarded_for;
+
+    location / {
+        proxy_pass         http://{{{ application.name }}}_app;
+    }
+
+    ### to serve static files as /static
+    #location /static/ {
+    #    root  /var/www/{{{ application.name }}}/static;
+    #}
+
+    ### to use a static landing page
+    #location / {
+    #    root   /var/www/{{{ application.name }}};
+    #    index  index.html;
+    #}
+
+    ### to redirect specific URLs to the app server
+    #location ~ ^/(i|s|b|f|account)/ {
+    #    proxy_pass         http://{{{ application.name }}}_app;
+    #}
+
+    ### to password-protect using basic HTTP auth
+    #location /admin/ {
+    #    auth_basic            "Restricted";
+    #    auth_basic_user_file  /etc/{{{ application.name }}}.htpasswd;
+    #    proxy_pass            http://localhost:{{{ application.port }}};
+    #}
+}
+
+server {
+    listen          80;
+    server_name     {{{ application.name }}}.com;
+    return          301 $scheme://www.$server_name$request_uri;
+}

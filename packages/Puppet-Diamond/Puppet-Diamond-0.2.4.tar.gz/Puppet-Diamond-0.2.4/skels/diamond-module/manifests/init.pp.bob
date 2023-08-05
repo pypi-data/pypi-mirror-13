@@ -1,0 +1,41 @@
+class {{{ application.name }}} {
+    Diamond[$name] ->
+    Diamond::Manage["$name init_db"] ->
+    Diamond::Manage["$name populate_db"]
+
+    diamond {
+        "$name": repo => "{{{ git.repo }}}"
+    }
+
+    diamond::manage {
+        "$name init_db":
+            username => $name,
+            func => "init_db",
+            unless => "test -f /var/lib/$name/main.db";
+        "$name populate_db":
+            username => $name,
+            func => "populate_db",
+            unless => "test `sqlite3 /var/lib/$name/main.db 'select * from user' | wc -l` -gt 0";
+    }
+
+    #file {
+        #'/etc/ssl/certs/{{{ application.name }}}.crt':
+        #    ensure => file,
+        #    owner => "root",
+        #    group => "root",
+        #    mode => "0644",
+        #    source => "puppet:///modules/{{{ application.name }}}/ssl/{{{ application.name }}}.crt";
+        #'/etc/ssl/private/{{{ application.name }}}.key':
+        #    ensure => file,
+        #    owner => "root",
+        #    group => "root",
+        #    mode => "0600",
+        #    source => "puppet:///modules/{{{ application.name }}}/ssl/{{{ application.name }}}.key";
+    #}
+
+    #network::iptables::rule {
+    #    "allow https":
+    #        seq => '11',
+    #        cmd => "-A INPUT -p tcp -m tcp --dport 443 -j ACCEPT";
+    #}
+}
