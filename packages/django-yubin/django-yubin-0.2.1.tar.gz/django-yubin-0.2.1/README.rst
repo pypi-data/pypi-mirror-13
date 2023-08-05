@@ -1,0 +1,55 @@
+django-yubin
+============
+
+.. image:: https://travis-ci.org/APSL/django-yubin.svg
+    :target: https://travis-ci.org/APSL/django-yubin
+
+.. image:: https://codecov.io/github/APSL/django-yubin/coverage.svg?branch=develop
+    :target: https://codecov.io/github/APSL/django-yubin?branch=develop
+
+.. image:: https://coveralls.io/repos/APSL/django-yubin/badge.svg
+  :target: https://coveralls.io/r/APSL/django-yubin
+
+.. image:: https://img.shields.io/pypi/v/django-yubin.svg
+  :target: https://pypi.python.org/pypi/django-yubin
+
+
+In our projects we use always two django packages for dealing with emails:
+django-mailer2 (our own fork in APSL) and django-mailviews to compose the
+emails.
+
+django-mailer-2 by is a Chris Beaven fork from a fork of
+James Tauber's django-mailer and is a reusable Django app for queuing the sending of email.
+
+django-mailviews from Disqus, allows you to compose e-mails using templates in
+the same way you compose your html templates, and allows you to preview the
+e-mails.
+
+As we use both packages our choice has been  create a new one which could deal
+with both task: sending and composing e-mails instead of mantaining two diferent
+branches. As you can see it seems django-mailer2 is not accepting patches, so in
+order to put a new version on pypi a new name was mandatory.
+
+So django-yubin is born (yubin is postal mail in japanese). The name attribution is for @morenosan.
+
+If you want to run the test you'll need a test smtpd server, you can find one in
+
+    ./bin/fake-server
+
+run it in a different console and execute `runtests.py`
+
+You can read the package documentation at http://django-yubin.readthedocs.org/en/latest/
+
+Changelog
+---------
+* 0.2.1       Updated links to CI and Code Coverage Services
+* 0.2.0       Merged  sergei-maertens contribution.
+* 0.1.8       Added migrations for Django 1.9 compatibility. See http://django-yubin.readthedocs.org/en/latest/install.html#upgrading-from-previous-versions
+* 0.1.7       Support for Django 1.8.
+* 0.1.6       Bugfixes.
+* 0.1.5       Bugfixes.
+* 0.1.4       Updated README.
+* 0.1.3       Fixed Python3 compatibility, thanks Marc, Cesc & Dani.
+* 0.1.2       Fixed Templates.
+* 0.1.1       Updated documentation and unit tests.
+
