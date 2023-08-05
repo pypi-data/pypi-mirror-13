@@ -1,0 +1,94 @@
+Metadata-Version: 2.0
+Name: smsframework-pswin
+Version: 0.0.1.post9
+Summary: SMS framework: PSWin provider
+Home-page: https://github.com/dignio/py-smsframework-pswin
+Author: Dignio
+Author-email: UNKNOWN
+License: MIT
+Keywords: sms,message,notification,receive,send,pswin
+Platform: any
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: Intended Audience :: Developers
+Classifier: Natural Language :: English
+Classifier: Programming Language :: Python :: 2
+Classifier: Operating System :: OS Independent
+Requires-Dist: smsframework (>=0.0.1)
+Requires-Dist: requests (==2.4.3)
+Provides-Extra: _dev
+Requires-Dist: wheel; extra == '_dev'
+Requires-Dist: nose; extra == '_dev'
+Requires-Dist: flask; extra == '_dev'
+Provides-Extra: receiver
+Requires-Dist: flask (>=0.10); extra == 'receiver'
+
+SMSframework PSWinCom Provider
+==============================
+
+`PSWin <https://wiki.pswin.com/>`__ Provider for
+`smsframework <https://pypi.python.org/pypi/smsframework/>`__.
+
+Installation
+============
+
+Install from pypi:
+
+::
+
+    $ pip install smsframework_pswin
+
+To receive SMS messages, you need to ensure that `Flask
+microframework <http://flask.pocoo.org>`__ is also installed:
+
+::
+
+    $ pip install smsframework_pswin[receiver]
+
+Initialization
+==============
+
+.. code:: python
+
+    from smsframework import Gateway
+    from smsframework_pswin import PswinProvider
+
+    gateway = Gateway()
+    gateway.add_provider('pswin', PswinProvider,
+        user='dignio',
+        password='123',
+        https=True
+    )
+
+Config
+------
+
+Source: /smsframework\_pswin/provider.py
+
+-  ``user: str``: Account username
+-  ``password: str``: Account password
+-  ``https: bool``: Use HTTPS for outgoing messages? Default: ``False``
+
+Receivers
+=========
+
+Source: /smsframework\_pswin/receiver.py
+
+Message Receiver: /im
+---------------------
+
+Login to https://accountweb.pswin.com/ using your account details and
+edit the section "Mobile Originated (MO) messages forwarding
+configuration"
+
+Protocol: HTTP Value: ``<protocol>://<server-name>/<provider-name>/im``
+
+Status Receiver: /status
+------------------------
+
+Login to https://accountweb.pswin.com/ using your account details and
+edit the section "Delivery Reports (DR) forwarding configuration"
+
+Protocol: HTTP Value:
+``<protocol>://<server-name>/<provider-name>/status``
+
+
