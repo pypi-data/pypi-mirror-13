@@ -1,0 +1,49 @@
+{% extends 'reportapi/index.html' %}{% comment %}<!--
+ 
+    Copyright 2013-2015 Grigoriy Kramarenko <root@rosix.ru>
+
+    This file is part of ReportAPI.
+
+    ReportAPI is free software: you can redistribute it and/or
+    modify it under the terms of the GNU Affero General Public License
+    as published by the Free Software Foundation, either version 3 of
+    the License, or (at your option) any later version.
+
+    ReportAPI is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public
+    License along with ReportAPI. If not, see
+    <http://www.gnu.org/licenses/>.
+-->
+{% endcomment %}
+{% load i18n l10n reportapi_base cache %}{% load url from reportapi_compat %}
+{% get_current_language as LANGUAGE_CODE %}
+
+{% block breadcrumbs %}
+    <ol class="breadcrumb">
+        <li><a href="{% url 'reportapi:index' %}">{% trans 'Reporting' %}</a></li>
+        <li class="active">{{ section.label|capfirst }}</li>
+    </ol>
+{% endblock %}
+
+{% block report_list %}
+<h3>{% trans 'List of reports in section' %} &laquo;{{ section.label|title }}&raquo;</h3>
+
+<table class="table">
+    <tbody>
+{% for report in reports %}
+    <tr>
+        <td class="col-xs-1">{{ forloop.counter }}</td>
+        <td class="col-xs-11"><a href="{% url 'reportapi:documents_section_name' report.section report.name %}">
+                {{ report.label }}
+            </a>
+        </td>
+    </tr>
+{% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}

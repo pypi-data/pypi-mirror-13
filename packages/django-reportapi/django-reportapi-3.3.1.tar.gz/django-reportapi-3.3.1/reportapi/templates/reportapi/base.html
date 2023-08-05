@@ -1,0 +1,251 @@
+{% comment %}<!--
+ 
+    Copyright 2013-2015 Grigoriy Kramarenko <root@rosix.ru>
+
+    This file is part of ReportAPI.
+
+    ReportAPI is free software: you can redistribute it and/or
+    modify it under the terms of the GNU Affero General Public License
+    as published by the Free Software Foundation, either version 3 of
+    the License, or (at your option) any later version.
+
+    ReportAPI is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public
+    License along with ReportAPI. If not, see
+    <http://www.gnu.org/licenses/>.
+-->
+{% endcomment %}{% load i18n l10n reportapi_base cache static %}{% load url from reportapi_compat %}<!DOCTYPE html>
+{% get_current_language as LANGUAGE_CODE %}
+<html lang="{{ LANGUAGE_CODE|default:"ru" }}" {% if LANGUAGE_BIDI %}dir="rtl"{% endif %}>
+<head>
+    <title>{% block title %}{% trans 'Reporting' %}{% endblock %}</title>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="author" content="Grigoriy Kramarenko">
+    <meta name="generator" content="Django {% DJANGO_VERSION %}">
+    <meta name="description" content="{% trans "ReportAPI - it's easy mechanism building reports in Django projects." %}">
+    <meta name="version" content="{% REPORTAPI_VERSION %}">
+
+{% block shortcut_icons %}
+    <link rel="icon" href="{% get_static_prefix %}reportapi/{% REPORTAPI_VERSION %}/img/logo.svg" type="image/svg">
+    <link rel="icon" href="{% get_static_prefix %}reportapi/{% REPORTAPI_VERSION %}/img/logo.png" type="image/png">
+{% endblock %}
+
+    <!-- START: block style -->
+    {% block style %}
+    <link rel="stylesheet" href="{% get_static_prefix %}font-awesome/4.4.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="{% get_static_prefix %}bootstrap/3.3.5/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{% get_static_prefix %}bootstrap/3.3.5/css/bootstrap-theme.min.css">
+    <link rel="stylesheet" href="{% get_static_prefix %}jquery/datetimepicker/2.4.1/min.css">
+    <link rel="stylesheet" href="{% get_static_prefix %}selectize/0.12.0/css/selectize.bootstrap3.css">
+    <link rel="stylesheet" href="{% get_static_prefix %}reportapi/{% REPORTAPI_VERSION %}/css/reportapi.min.css">
+
+    <style type="text/css">
+        html {
+            position: relative;
+            min-height: 100%;
+        }
+        body {
+            margin-bottom: 100px;
+        }
+        body > .container {
+            margin-top: 20px;
+        }
+        .navbar-brand > img {
+            display: inline;
+        }
+        .footer {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            min-height: 91px;
+            background-color: #f5f5f5;
+        }
+        .footer>div {
+            background-color: #f5f5f5;
+        }
+        .footer-content {
+            padding: 35px 0px;
+        }
+
+    </style>
+    {% endblock %}
+    <!-- END: block style -->
+
+    <!-- START: block extrastyle -->
+    {% block extrastyle %}{% endblock %}
+    <!-- END: block extrastyle -->
+</head>
+
+
+<body>
+    <!-- START: block navbar -->
+    {% block navbar %}
+    <nav class="navbar navbar-default navbar-static-top" role="navigation">
+
+      <div class="container">
+
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                <span class="sr-only">{% trans 'Toggle navigation' %}</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="{% url 'reportapi:index' %}"
+                title="Django ReportAPI {% REPORTAPI_VERSION %}">{% block navbar_brand %}{% trans 'Reporting' %}{% endblock %}</a>
+        </div>
+
+        <div class="collapse navbar-collapse">
+            <ul class="nav navbar-nav">
+            {% for sect, reports in sections %}
+                <li class="dropdown">
+                    <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                        {{ sect.label|title  }} <span class="caret"></span>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a href="{% url 'reportapi:report_list' sect.name %}">{% trans 'List reports' %}</a></li>
+                        <li class="divider"></li>
+                    {% for rep in reports %}
+                        <li><a href="{% url 'reportapi:documents_section_name' rep.section rep.name %}">{{ rep.label }}</a></li>
+                    {% endfor %}
+                    </ul>
+                </li>
+            {% endfor %}
+            </ul>
+            {% block navbar_project %}
+            <ul class="nav navbar-nav navbar-right">
+                <li>
+                    <a href="{% PROJECT_URL %}" class="navbar-brand">
+                        <i class="fa fa-level-up fa-lg"></i>
+                        <span> {% PROJECT_NAME %}</span>
+                    </a>
+                </li>
+            </ul>
+            {% endblock %}
+        </div><!--/.nav-collapse -->
+      </div>
+    </nav>
+    {% endblock %}
+    <!-- END: block navbar -->
+
+    <!-- START: block container -->
+    {% block container %}
+    <div id="container" class="container">
+        <!-- START: block content -->
+        {% block content %}{% endblock %}
+        <!-- END: block content -->
+    </div><!-- /.container -->
+    {% endblock %}
+    <!-- END: block container -->
+
+    <!-- START: block footer -->
+    {% block footer %}
+    <!-- .footer -->
+    <div class="footer">
+
+        <div class="container">
+
+            <div class="col-xs-12">
+
+                <div class="footer-content text-center">
+
+                    <a href="https://djangoproject.com/">
+                        <span> Django <span class="badge">{% DJANGO_VERSION %}</span> </span>
+                    </a>
+                    <a class="label" style="background-color: rgb(117, 73, 116);" href="{% get_static_prefix %}licenses/BSD/Django.txt">
+                        <span> BSD License </span>
+                    </a>
+
+                    <span>&nbsp;</span>
+
+                    <i class="fa fa-angle-double-right fa-lg text-success"> </i>
+
+                    <a href="https://rosix.ru/projects/django-quickapi/">
+                        <span> QuickAPI <span class="badge">{% QUICKAPI_VERSION %}</span> </span>
+                    </a>
+                    <a href="{% get_static_prefix %}licenses/GNU/AGPLv3.txt">
+                        <img height="20" src="{% get_static_prefix %}licenses/GNU/img/agplv3-88x31.png">
+                    </a>
+
+                    <i class="fa fa-angle-double-right fa-lg text-success"> </i>
+
+                    <a href="https://rosix.ru/projects/django-reportapi/">
+                        <span> ReportAPI <span class="badge">{% REPORTAPI_VERSION %}</span> </span>
+                    </a>
+                    <a href="{% get_static_prefix %}licenses/GNU/AGPLv3.txt">
+                        <img height="20" src="{% get_static_prefix %}licenses/GNU/img/agplv3-88x31.png">
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+    <!-- /.footer -->
+    {% endblock %}
+    <!-- END: block footer -->
+
+    <!-- START: block modal_alert -->{% block modal_alert %}{% include "reportapi/modal_alert.html" %}{% endblock %}<!-- END: block modal_alert -->
+
+<!-- START: block jstemplates -->
+    {% block jstemplates %}
+    {% cache 600 jstemplates LANGUAGE_CODE %}
+    <!-- underscore -->
+    <script type="text/x-underscore" id="underscore-alert">
+        {% include "reportapi/underscore_alert.html" %}
+    </script>
+    <script type="text/x-underscore" id="underscore-filter">
+        {% include "reportapi/underscore_filter.html" %}
+    </script>
+    {% endcache %}
+    {% endblock %}
+<!-- END: block jstemplates -->
+
+    <!-- START: block jsglobalvars -->
+    {% block jsglobalvars %}
+        <script type="text/javascript">
+            /* GLOBAL VARS */
+            window.AJAX_TIMEOUT = 3000;
+            window.TIMEOUT_PROGRESS = 1000;
+            window.REPORTAPI_API_URL = "{% filter escapejs %}{% url "reportapi:api" %}{% endfilter %}";
+            window.USER_ID = "{{ user.id|default:0 }}";
+            window.USER_NAME = "{{ user.username }}";
+            window.USER_LAST_NAME = "{{ user.last_name }}";
+            window.USER_FIRST_NAME = "{{ user.first_name }}";
+            window.USER = "{{ user }}";
+            window.DEBUG = {% filter lower %}{% DEBUG_MODE %}{% endfilter %};
+            window.LANGUAGE_CODE = "{{ LANGUAGE_CODE }}" || undefined;
+            window.SERVER_TZ_OFFSET = {% SERVER_TZ_OFFSET %},
+            window.DEFAULT_MODAL_ALERT_HEAD = "{% trans 'Error' %}";
+        </script>
+    {% endblock %}
+    <!-- END: block jsglobalvars -->
+
+    <!-- START: block js -->
+    {% block js %}
+    <!-- Bootstrap -->
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="{% get_static_prefix %}jquery/jquery-2.1.4.min.js"></script>
+    <script src="{% get_static_prefix %}jquery/django/django-ajax-csrf.min.js"></script>
+    <script src="{% get_static_prefix %}jquery/json/2.5.1/jquery.json.min.js"></script>
+    <script src="{% get_static_prefix %}jquery/datetimepicker/2.4.1/min.js"></script>
+    <script src="{% get_static_prefix %}underscore/1.8.3/underscore-min.js"></script>
+    <script src="{% get_static_prefix %}bootstrap/3.3.5/js/bootstrap.min.js"></script>
+    <script src="{% get_static_prefix %}selectize/0.12.0/js/standalone/selectize.min.js"></script>
+    <script src="{% get_static_prefix %}reportapi/{% REPORTAPI_VERSION %}/js/reportapi.min.js"></script>
+    {% endblock %}
+
+    <!-- START: block extrajs -->
+    {% block extrajs %}{% endblock %}
+    <!-- END: block extrajs -->
+
+</body>
+</html>
