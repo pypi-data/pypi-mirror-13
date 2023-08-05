@@ -1,0 +1,46 @@
+{% extends "django_cradmin/viewhelpers/listbuilder/base/itemvalue.django.html" %}
+{% load cradmin_tags %}
+
+{% block content %}
+    {% block start-of-content %}{% endblock start-of-content %}
+
+    {% block title %}
+        <h2 class="django-cradmin-multiselect2-itemvalue-title">
+            {% block title-content %}
+                {{ me.get_title }}
+            {% endblock title-content %}
+        </h2>
+    {% endblock title %}
+    {% block below-title %}{% endblock below-title %}
+
+    {% block description %}
+        {% if me.get_description %}
+            <p class="django-cradmin-multiselect2-itemvalue-description">
+                {% block description-content %}
+                    {{ me.get_description }}
+                {% endblock description-content %}
+            </p>
+        {% endif %}
+    {% endblock description %}
+    {% block below-description %}{% endblock below-description %}
+
+    {% block buttons %}
+        <p class="django-cradmin-multiselect2-itemvalue-buttons">
+            {% block select-button %}
+                <button type="button"
+                        id="{{ me.get_selectbutton_dom_id }}"
+                        class="btn btn-default django-cradmin-multiselect2-itemvalue-button"
+                        django-cradmin-multiselect2-select={{ select_directive_json|safe }}
+                        aria-label='{{ me.get_selectbutton_aria_label }}'>
+                    {% block usethis-button-content %}
+                        {{ me.get_selectbutton_text }}
+                    {% endblock usethis-button-content %}
+                </button>
+            {% endblock select-button %}
+        </p>
+    {% endblock buttons %}
+
+    {% block preview-wrapper %}
+        {% cradmin_render_renderable me.selected_item_renderer %}
+    {% endblock preview-wrapper %}
+{% endblock content %}
