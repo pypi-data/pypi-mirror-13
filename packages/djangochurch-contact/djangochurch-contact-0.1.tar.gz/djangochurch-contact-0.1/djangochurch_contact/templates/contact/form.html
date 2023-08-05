@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% load page_tags %}
+
+
+{% block title %}{{ lazy_page.title }} - {{ block.super }}{% endblock %}
+
+
+{% block pagetitle %}<a href="{{ lazy_page.get_absolute_url }}">{{ lazy_page.title }}</a>{% endblock %}
+
+
+{% block nav %}
+{% include "includes/nav.html" with current_page=lazy_page only %}
+{% endblock nav %}
+
+
+{% block subnav %}
+{% include "includes/subnav.html" with current_page=lazy_page only %}
+{% endblock subnav %}
+
+
+{% block content %}
+{{ lazy_page.content|safe }}
+
+<form method="POST" action="">
+    {% csrf_token %}
+    {{ form.as_p }}
+
+    <button type="submit">Submit</button>
+</form>
+{% endblock content %}
