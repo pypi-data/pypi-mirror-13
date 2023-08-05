@@ -1,0 +1,25 @@
+S -> IND-CLAUSE 1.0 | S comma conjunction_coordinating S 0.5 | S semicolon adverb_sentence_modifier comma S 0.2 | IND-CLAUSE colon LIST 0.1
+
+IND-CLAUSE -> NP VP | S-MOD comma NP VP 0.4 | NP VP comma S-MOD 0.4 | S-MOD comma NP VP comma S-MOD 0.2
+
+NP -> possessive-pronoun N | DETERMINER ADJ N | nominative-pronoun | proper-noun 0.4
+DObj -> possessive-pronoun N | DETERMINER N | pronoun | proper-noun 0.4
+N -> ADJ noun 0.7 | noun
+
+VP -> verb_intransitive | verb_transitive DObj | verb_linking DObj 0.7
+
+S-MOD -> adverb_sentence_modifier
+
+LIST -> SIMPLE-LIST | COMPLEX-LIST
+SIMPLE-LIST -> TWO-LIST | SERIAL-LIST
+TWO-LIST -> DObj conjunction_and_literal DObj
+SERIAL-LIST -> DObj comma SERIAL-LIST | DObj comma DObj comma conjunction_and_literal DObj
+COMPLEX-LIST -> DObj semicolon COMPLEX-LIST | DObj semicolon DObj semicolon conjunction_and_literal DObj
+# in the future, we should set some kind of meta data about lists while
+# creating the sentence diagrams, so we can inflect for plurals on them
+
+DETERMINER -> determiner | indefinite-article
+
+ADJ -> ADJ adjective 0.7 | adjective
+
+#ADV -> ADV adverb | adverb
