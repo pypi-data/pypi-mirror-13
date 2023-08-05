@@ -1,0 +1,29 @@
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# Copyright (C) 2013-2015  Shawn Silva
+# ------------------------------------
+# This file is part of steamwebapi.
+#
+# steamwebapi is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+import unittest
+from steamwebapi.utils import gid_32_to_64_bit
+
+KNOWN_32_BIT_GID = 1606484
+KNOWN_64_BIT_GID = 103582791431127892
+
+class TestUtils(unittest.TestCase):
+	def test_gid_32_to_64_bit(self):
+		converted_id = gid_32_to_64_bit(KNOWN_32_BIT_GID)
+		self.assertEqual(converted_id, KNOWN_64_BIT_GID)
