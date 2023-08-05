@@ -1,0 +1,42 @@
+Murano
+======
+Murano Project introduces an application catalog, which allows application
+developers and cloud administrators to publish various cloud-ready
+applications in a browsable‎ categorised catalog, which may be used by the
+cloud users (including the inexperienced ones) to pick-up the needed
+applications and services and composes the reliable environments out of them
+in a "push-the-button" manner.
+
+Python Muranoclient
+-------------------
+python-muranoclient is a client library for Murano built on the Murano API.
+It provides a Python API (the ``muranoclient`` module) and a command-line tool
+(``murano``).
+
+
+Project Resources
+-----------------
+
+Project status, bugs, and blueprints are tracked on Launchpad:
+
+* Client bug tracker
+    * https://launchpad.net/python-muranoclient
+
+* Murano bug tracker
+    * https://launchpad.net/murano
+
+Developer documentation can be found here:
+
+  https://murano.readthedocs.org
+
+Additional resources are linked from the project wiki page:
+
+  https://wiki.openstack.org/wiki/Murano
+
+License
+-------
+
+Apache License Version 2.0 http://www.apache.org/licenses/LICENSE-2.0
+
+
+
