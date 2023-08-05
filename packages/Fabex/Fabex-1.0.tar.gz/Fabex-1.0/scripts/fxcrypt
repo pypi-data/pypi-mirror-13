@@ -1,0 +1,23 @@
+#!/usr/bin/env python
+
+import sys
+import argparse
+from fabex.crypt import AESCipher
+
+def main():
+    parser = argparse.ArgumentParser(description
+                                     ='encrypt a string for fabex !decrypt yaml directive')
+    parser.add_argument('password', help='encryption key, *required* to decrypt')
+    parser.add_argument('text', help='text to encrypt')
+    parser.add_argument('--decrypt', action='store_true', 
+                        help='decrypt instead of encrypting')
+
+    args = parser.parse_args()
+    cipher = AESCipher(args.password)
+    if args.decrypt:
+        print(cipher.decrypt(args.text))
+    else:
+        print(cipher.encrypt(args.text))
+
+if __name__ == '__main__':
+    sys.exit(main())
