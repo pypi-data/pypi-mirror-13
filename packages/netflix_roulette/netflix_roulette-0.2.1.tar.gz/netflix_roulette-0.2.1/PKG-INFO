@@ -1,0 +1,154 @@
+Metadata-Version: 1.1
+Name: netflix_roulette
+Version: 0.2.1
+Summary: A simple python wrapper for the Netflix Roulette API
+Home-page: https://github.com/tizz98/netflix_roulette
+Author: Elijah Wilson
+Author-email: elijah@elijahwilson.me
+License: GNU General Public License v3.0
+Download-URL: https://github.com/tizz98/netflix_roulette/tarball/0.2.1
+Description: Netflix Roulette
+        ================
+        
+        This is a simple python wrapper for the `Netflix Roulette
+        API <http://netflixroulette.net/api/>`__.
+        
+        |Build Status| |PyPI version| |Python Versions| |License|
+        
+        Installation
+        ------------
+        
+        Pip
+        ^^^
+        
+        -  ``pip install netflix_roulette``
+        
+        From Source
+        ^^^^^^^^^^^
+        
+        -  ``git clone git@github.com:tizz98/netflix_roulette.git``
+        -  ``cd netflix_roulette``
+        -  ``python setup.py install``
+        
+        Usage
+        -----
+        
+        Simple Query
+        ^^^^^^^^^^^^
+        
+        .. code:: python
+        
+            >>> import netflix_roulette
+            >>> media = netflix_roulette.NetflixMedia('Attack on titan')
+            >>> media
+            <NetflixMedia(title='Attack on titan', year='None')>
+            >>> media.show_id
+            70299043
+            >>> media.summary
+            u'For over a century, people have been living behind barricades to block out the giant Titans that threaten to destroy the human race. When a Titan destroys his hometown, young Eren Yeager becomes determined to fight back.'
+            >>> media.is_on_netflix
+            True
+            >>> media.get_readable_mediatype()
+            'TV Show'
+        
+        Query with year
+        ^^^^^^^^^^^^^^^
+        
+        .. code:: python
+        
+            >>> import netflix_roulette
+            >>> media = netflix_roulette.NetflixMedia('The Boondocks', year=2005)
+            >>> media
+            <NetflixMedia(title='The Boondocks', year='2005')>
+            >>> media.show_id
+            70153391
+            >>> media.summary
+            u'Based on the comic strip by Aaron McGruder, this satirical animated series follows the socially conscious misadventures of Huey Freeman, a preternaturally smart 10-year-old who relocates from inner-city Chicago to the suburbs.'
+            >>> media.is_on_netflix
+            True
+            >>> media.get_readable_mediatype()
+            'TV Show'
+        
+        ``class NetflixMedia``
+        ----------------------
+        
+        Parameters
+        ^^^^^^^^^^
+        
+        -  ``title``: Title of the media you are searching for.
+        -  ``year``: (Optional) Year of the media you are searching for.
+        
+        Attributes
+        ^^^^^^^^^^
+        
+        -  ``title``: User supplied title of the media you are searching for.
+        -  ``year``: User supplied year of the media you are searching for.
+        -  ``rating``: How high the media is rated, max is 5.
+        -  ``poster``: The poster for the media, right from the Netflix CDN.
+        -  ``mediatype``: 0 means movie, 1 means TV Show. See also
+           ``get_readable_mediatype()``.
+        -  ``release_year``: The media's release date.
+        -  ``show_cast``: The cast of a given title.
+        -  ``category``: A title's given category.
+        -  ``summary``: A plot summary.
+        -  ``director``: The name(s) of the director(s) of a given title.
+        -  ``show_id``: The Netflix id of the title.
+        -  ``is_on_netflix``: A boolean, whether or not the show is on Netflix.
+        
+        Methods
+        ^^^^^^^
+        
+        -  ``get_readable_mediatype()``: Returns ``TV Show`` or ``Movie``
+           instead of ``1`` or ``0``.
+        -  ``is_movie()``: Returns ``True`` if the media is a Movie.
+        -  ``is_tv_show()``: Returns ``True`` if the media is a TV Show.
+        
+        ``class NetflixDirector``
+        -------------------------
+        
+        Parameters
+        ^^^^^^^^^^
+        
+        -  ``name``: Name of the director you are searching for.
+        
+        Attributes
+        ^^^^^^^^^^
+        
+        -  ``name``: User supplied name.
+        -  ``media``: List of ``NetflixMedia`` that the person has directed.
+        
+        ``class NetflixActor``
+        ----------------------
+        
+        Parameters
+        ^^^^^^^^^^
+        
+        -  ``name``: Name of the actor you are searching for.
+        
+        Attributes
+        ^^^^^^^^^^
+        
+        -  ``name``: User supplied name.
+        -  ``media``: List of ``NetflixMedia`` that the person has been in.
+        
+        .. |Build Status| image:: https://travis-ci.org/tizz98/netflix_roulette.svg?branch=master
+           :target: https://travis-ci.org/tizz98/netflix_roulette
+        .. |PyPI version| image:: https://img.shields.io/pypi/v/netflix_roulette.svg
+           :target: https://pypi.python.org/pypi/netflix_roulette
+        .. |Python Versions| image:: https://img.shields.io/pypi/pyversions/netflix_roulette.svg
+           :target: https://pypi.python.org/pypi/netflix_roulette
+        .. |License| image:: https://img.shields.io/pypi/l/netflix_roulette.svg
+           :target: https://github.com/tizz98/netflix_roulette/blob/master/LICENSE.md
+        
+Keywords: netflix roulette netflixroulette netflix_roulette api
+Platform: UNKNOWN
+Classifier: Development Status :: 4 - Beta
+Classifier: Intended Audience :: Developers
+Classifier: Topic :: Software Development :: Libraries
+Classifier: License :: OSI Approved :: GNU General Public License v3 (GPLv3)
+Classifier: Programming Language :: Python :: 2
+Classifier: Programming Language :: Python :: 2.6
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.3
+Classifier: Programming Language :: Python :: 3.4
