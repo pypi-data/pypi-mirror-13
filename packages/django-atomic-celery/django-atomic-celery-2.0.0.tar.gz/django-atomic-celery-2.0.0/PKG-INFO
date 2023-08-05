@@ -1,0 +1,102 @@
+Metadata-Version: 1.1
+Name: django-atomic-celery
+Version: 2.0.0
+Summary: Atomic transaction aware Celery tasks for Django 1.6+
+Home-page: http://bruun.co/
+Author: Nick Bruun
+Author-email: nick@bruun.co
+License: Copyright (c) Nick Bruun <nick@bruun.co>
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without modification,
+are permitted provided that the following conditions are met:
+
+    1. Redistributions of source code must retain the above copyright notice, 
+       this list of conditions and the following disclaimer.
+    
+    2. Redistributions in binary form must reproduce the above copyright 
+       notice, this list of conditions and the following disclaimer in the
+       documentation and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
+Parts of the code base are derivatives of the Django code base subject to the
+Django license:
+
+Copyright (c) Django Software Foundation and individual contributors.
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without modification,
+are permitted provided that the following conditions are met:
+
+    1. Redistributions of source code must retain the above copyright notice, 
+       this list of conditions and the following disclaimer.
+    
+    2. Redistributions in binary form must reproduce the above copyright 
+       notice, this list of conditions and the following disclaimer in the
+       documentation and/or other materials provided with the distribution.
+
+    3. Neither the name of Django nor the names of its contributors may be used
+       to endorse or promote products derived from this software without
+       specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+Description: django_atomic_celery - Atomic transaction aware Celery tasks for Django
+        =======================================================================
+        
+        .. image:: https://travis-ci.org/adamchainz/django_atomic_celery.png?branch=master
+                :target: https://travis-ci.org/adamchainz/django_atomic_celery
+        
+        Don't Use This Package
+        ----------------------
+        
+        This library uses `django-atomic-signals`_. Unfortunately this is not a great way of achieving "don't run this code
+        until the transaction commits" any more. There is plenty of extra description on `django-atomic-signals' README
+        <django-atomic-signals>`_, and also on the similar library `django-transaction-signals`_, by Django core developer
+        Aymeric.
+        
+        .. _django-atomic-signals: https://github.com/adamchainz/django_atomic_signals
+        .. _django-transaction-signals: https://github.com/aaugustin/django-transaction-signals
+        
+        If you want a supported method of executing a celery task on commit, then:
+        
+        - on Django >= 1.9, use the built-in on_commit_ hook
+        - on Django < 1.9, use `django-transaction-hooks`_ (the original source of 1.9's ``on_commit``)
+        
+        .. _on_commit: https://docs.djangoproject.com/en/dev/topics/db/transactions/#django.db.transaction.on_commit
+        .. _django-transaction-hooks: https://django-transaction-hooks.readthedocs.org/
+        
+        Both give examples with celery tasks so you are in good hands.
+        
+        If your project is still using this library, please migrate. You will need to remove `django-atomic-signals` as well as
+        `django-atomic-celery`.
+        
+        The current version of `django-atomic-celery`, 2.0.0, simply errors upon import, directing you here.
+        
+Platform: UNKNOWN
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: Framework :: Django
+Classifier: Intended Audience :: Developers
+Classifier: Natural Language :: English
+Classifier: License :: OSI Approved :: Apache Software License
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 2.7
