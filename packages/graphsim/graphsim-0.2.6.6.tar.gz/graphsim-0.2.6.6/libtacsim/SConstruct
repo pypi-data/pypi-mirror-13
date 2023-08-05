@@ -1,0 +1,24 @@
+# Compile and install libtacsim.
+# Copyright Xiaming Chen <chen@xiaming.me>
+import os
+import sys
+import shutil
+
+libdir = os.path.dirname(os.path.realpath('__file__'))
+
+prgname = 'test_tacsim'
+libname = 'libtacsim'
+srcfiles = [os.path.join(libdir, 'libtacsim/tacsim.c')]
+
+env = Environment(CCFLAGS = ['-std=c99', '-Wall', '-O2', '-g'])
+
+staticlib = env.Library(libname, srcfiles)
+sharedlib = env.SharedLibrary(libname, srcfiles)
+
+srcfiles.append(os.path.join(libdir, 'libtacsim/main.c'))
+exeutil = env.Program(prgname, srcfiles, LIBS=['m'])
+
+## install
+env.Alias('install', env.Install('/usr/local/lib/', staticlib))
+env.Alias('install', env.Install('/usr/local/lib/', sharedlib))
+shutil.copy(os.path.join(libdir, 'libtacsim/tacsim.h'), '/usr/local/include/')
