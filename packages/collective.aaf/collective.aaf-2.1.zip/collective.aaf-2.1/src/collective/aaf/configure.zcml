@@ -1,0 +1,57 @@
+<configure
+    xmlns="http://namespaces.zope.org/zope"
+    xmlns:five="http://namespaces.zope.org/five"
+    xmlns:i18n="http://namespaces.zope.org/i18n"
+    xmlns:genericsetup="http://namespaces.zope.org/genericsetup"
+    xmlns:monkey="http://namespaces.plone.org/monkey"
+    i18n_domain="collective.aaf">
+
+  <five:registerPackage package="." initialize=".initialize" />
+
+  <include package="Products.CMFCore" />
+  <includeDependencies package="." />
+
+  <genericsetup:registerProfile
+      name="default"
+      title="collective.aaf"
+      directory="profiles/default"
+      description="Installs the collective.aaf package"
+      provides="Products.GenericSetup.interfaces.EXTENSION"
+      />
+
+  <genericsetup:importStep
+      name="collective-aaf-various"
+      title="collective.aaf Various"
+      description="Various setup for collective.aaf"
+      handler=".setuphandlers.setupVarious">
+  </genericsetup:importStep>
+
+  <genericsetup:registerProfile
+      name="upgrade_portlet"
+      title="collective.aaf"
+      directory="profiles/upgrade_porlet"
+      description="Removes old AAF porlet"
+      provides="Products.GenericSetup.interfaces.EXTENSION"
+      />
+
+  <genericsetup:upgradeStep
+      source="*"
+      destination="0002"
+      title="Update user property setting for auth plugin"
+      description="Configures AutoUserMakerPASPlugin to automatically update user properties."
+      profile="collective.aaf:default"
+      handler=".upgrades.upgrade_0001_to_0002"
+      />
+
+  <genericsetup:upgradeStep
+      source="*"
+      destination="0003"
+      title="Install collective.shibboleth and remove old portlet"
+      description="Install new dependencies with upgrade."
+      profile="collective.aaf:default"
+      handler=".upgrades.upgrade_all_to_0003"
+      />
+
+  <!-- -*- extra stuff goes here -*- -->
+
+</configure>
