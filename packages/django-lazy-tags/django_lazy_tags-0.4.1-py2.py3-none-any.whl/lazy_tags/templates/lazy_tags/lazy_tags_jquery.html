@@ -1,0 +1,21 @@
+<script type="text/javascript">
+    $(function() {
+        $('.lazy-tag').each(function(i, elem) {
+            var tag = $(elem);
+            var tag_id = tag.attr('id');
+            var url = '{% url "lazy_tag" %}' + tag_id;
+
+            $.ajax({
+                type: 'GET',
+                url: url,
+                success: function(data) {
+                    $('#' + tag_id).replaceWith(data);
+                },
+                error: function(data) {
+                    $('#' + tag_id).replaceWith('{{ error_message|safe }}');
+                }
+            });
+
+        });
+    });
+</script>
