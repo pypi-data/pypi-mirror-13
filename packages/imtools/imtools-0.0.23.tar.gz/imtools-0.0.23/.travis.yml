@@ -1,0 +1,34 @@
+language: python
+python:
+  #  - "2.6"
+  - "2.7"
+  # - "3.2"
+  # - "3.3"
+  # - "3.4"
+virtualenv:
+  system_site_packages: true
+before_install:
+    - sudo apt-get install -qq $(< requirements_apt.txt)
+    - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
+    - chmod +x miniconda.sh
+    - ./miniconda.sh -b
+    - export PATH=/home/travis/miniconda2/bin:$PATH
+    - conda update --yes conda
+    # GUI
+    - "export DISPLAY=:99.0"
+    - sh -e /etc/init.d/xvfb start
+#    - wget http://147.228.240.61/queetech/sample-extra-data/io3d_sample_data.zip && unzip io3d_sample_data.zip
+# command to install dependencies
+install:
+    - conda install --yes -c SimpleITK -c luispedro -c mjirik -c menpo --file requirements_conda.txt
+    - pip install coveralls
+    - pip install -r requirements.txt
+    - pip install .
+
+    - python -m imtools.sample_data biodur_sample gensei_slices -o sample_data
+    - ls
+    - ls sample_data
+# command to run tests
+script: nosetests -c setup.cfg --with-coverage --cover-package=imtools -v
+after_success:
+    - coveralls
