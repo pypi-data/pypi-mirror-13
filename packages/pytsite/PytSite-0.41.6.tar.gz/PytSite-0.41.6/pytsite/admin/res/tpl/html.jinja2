@@ -1,0 +1,45 @@
+{% do browser.include('bootstrap') %}
+{% do browser.include('font-awesome') %}
+{% do assetman.add('pytsite.admin@AdminLTE/css/AdminLTE.min.css') %}
+{% do assetman.add('pytsite.admin@AdminLTE/css/skins/skin-blue.min.css') %}
+{% do assetman.add('pytsite.admin@css/custom.css') %}
+{% do assetman.add('pytsite.admin@AdminLTE/js/app.js') %}
+<!DOCTYPE html>
+<html lang="{{ lang.get_current() }}">
+<head>
+    {{ metatag.dump_all() }}
+    {{ assetman.dump_css() }}
+</head>
+<body class="skin-blue sidebar-mini">
+
+<div class="wrapper">
+    {% include 'pytsite.admin@header' %}
+    {% include 'pytsite.admin@sidebar' %}
+
+    <div class="content-wrapper">
+        <section class="content-header">
+            <h1>
+                {{ metatag.get('title') }}
+                <small>{{ metatag.get('description') }}</small>
+            </h1>
+{#            <ol class="breadcrumb">#}
+{#                <li><a href="#"><i class="fa fa-dashboard"></i> Level</a></li>#}
+{#                <li class="active">Here</li>#}
+{#            </ol>#}
+        </section>
+
+        <section class="content">
+            {% include 'pytsite.admin@messages' %}
+            {% block content %}{% endblock %}
+        </section>
+    </div>
+
+    {% include 'pytsite.admin@footer' %}
+{#    {% include 'pytsite.admin@control_sidebar' %}#}
+
+    <div class="control-sidebar-bg"></div>
+</div>
+
+{{ assetman.dump_js() }}
+</body>
+</html>
