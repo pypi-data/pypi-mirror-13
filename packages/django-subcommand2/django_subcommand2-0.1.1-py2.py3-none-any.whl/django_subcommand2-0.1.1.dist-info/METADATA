@@ -1,0 +1,93 @@
+Metadata-Version: 2.0
+Name: django-subcommand2
+Version: 0.1.1
+Summary: Support subcommands in management commands
+Home-page: https://github.com/CptLemming/django-subcommand2
+Author: Ashley Wilson
+Author-email: scifilem@gmail.com
+License: BSD
+Keywords: django-subcommand2
+Platform: UNKNOWN
+Classifier: Development Status :: 3 - Alpha
+Classifier: Framework :: Django
+Classifier: Framework :: Django :: 1.8
+Classifier: Framework :: Django :: 1.9
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: BSD License
+Classifier: Natural Language :: English
+Classifier: Programming Language :: Python :: 2
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.3
+Classifier: Programming Language :: Python :: 3.4
+Classifier: Programming Language :: Python :: 3.5
+
+==================
+django-subcommand2
+==================
+
+.. image:: https://img.shields.io/pypi/v/django-subcommand2.svg
+    :target: https://pypi.python.org/pypi/django-subcommand2
+
+.. image:: https://img.shields.io/pypi/dm/django-subcommand2.svg
+    :target: https://pypi.python.org/pypi/django-subcommand2
+
+.. image:: https://img.shields.io/travis/CptLemming/django-subcommand2.svg
+    :target: https://travis-ci.org/CptLemming/django-subcommand2
+
+
+Documentation
+-------------
+
+The full documentation is at https://django-subcommand2.readthedocs.org.
+
+Install
+-------
+
+Install django-subcommand::
+
+    pip install django-subcommand2
+
+Usage
+-----
+
+::
+
+    # myapp.management.commands.parent_command.py
+    from subcommand.base import SubcommandCommand
+
+    from .subcommands.sub import MySubcommand
+
+
+    class Command(SubcommandCommand):
+        help = 'My Parent Command'
+
+        subcommands = {
+            'sub': MySubcommand,  # python manage.py parent_command sub
+        }
+
+
+    # myapp.management.commands.subcommands.sub.py
+    from django.core.management.base import BaseCommand
+
+
+    class MySubcommand(BaseCommand):
+        help = 'My Sub Command'
+
+
+
+
+History
+-------
+
+0.1.0 (2016-01-26)
+++++++++++++++++++
+
+* First release on PyPI.
+
+0.1.1 (2016-01-26)
+++++++++++++++++++
+
+* Update badges.
+
+
