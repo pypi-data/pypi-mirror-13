@@ -1,0 +1,2 @@
+class HealthServiceException(Exception):
+    pass
