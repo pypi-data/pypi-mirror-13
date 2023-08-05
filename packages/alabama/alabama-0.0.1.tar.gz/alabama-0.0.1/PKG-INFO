@@ -1,0 +1,184 @@
+Metadata-Version: 1.1
+Name: alabama
+Version: 0.0.1
+Summary: A simple python orm to connect with any sql database. Actually, alabama was built to connect         just to postgresql, but once that we use just ansi operations, you can use it to any sql database.
+Home-page: http://packages.python.org/alabama
+Author: Felipe Volpone
+Author-email: felipevolpone@gmail.com
+License: MIT
+Description: # Alabama
+        A small and simple python orm to connect with postgresql database.
+        
+        [![Build Status](https://travis-ci.org/felipevolpone/alabama_orm.svg?branch=master)](https://travis-ci.org/felipevolpone/alabama_orm)
+        [![Code Climate](https://codeclimate.com/github/felipevolpone/alabama_orm/badges/gpa.svg)](https://codeclimate.com/github/felipevolpone/alabama_orm)
+        [![Coverage Status](https://coveralls.io/repos/felipevolpone/alabama_orm/badge.svg?branch=master&service=github)](https://coveralls.io/github/felipevolpone/alabama_orm?branch=master)
+        [![Code Health](https://landscape.io/github/felipevolpone/alabama_orm/master/landscape.svg?style=flat)](https://landscape.io/github/felipevolpone/alabama_orm/master)
+        
+        
+        ## How to use
+        
+        ### 1. Create a model
+        Create a model that will represent a table in your database, just like that:
+        ```python
+        from alabama.models import BaseModel, StringProperty, IntegerProperty
+        
+        class Person(BaseModel):
+            name = StringProperty(80)  # 80 is the size of characters that can fill this column
+            lastname = StringProperty(60)
+            age = FloatProperty()
+        
+            def __init__(self, name=None, age=None, lastname=None):
+                self.name = name
+                self.age = Age
+                ...
+        ```
+        
+        All models have two methods: **to_json** and **to_instance**. The first convert the model into a json object and the second one convert the json object passed as parameter to an Model object. Just like that:
+        ```python
+        p = Person(name='felipe', age=23)
+        print(p.to_json())
+        >>> {'name': 'felipe', 'age': 23}
+        
+        person_as_json = {'name': 'john', 'age': 40}
+        model = Person.to_instance(person_as_json)
+        print(model)
+        >>> <__main__.Person object at 0x10ccfba10>
+        ```
+        
+        ### 2. Create a connection with the database
+        Create a file called *db.properties* this way:
+        ```
+        db.name=alabama
+        db.user=alabama
+        db.password=alabama
+        db.host=localhost
+        db.show_sql=False
+        ```
+        
+        Then, you'll start your connection with the postgresql database.
+        ```python
+        database = connection.start_db('../alabama/tests/db.properties')
+        connection.create_pool(database)
+        ```
+        And then... it's working! Alabama it's ready to use it.
+        
+        ### 3. Use the API
+        
+        ## API Documentation
+        The hole thing in Alabama is the **storage** API. This module allow you to interact with your model and use then to interact with your database. Beyond the storage, Alabama also has the an API to handle with transactions. Check both here:
+        
+        ### 1. storage
+        ```python
+        from alabama import storage
+        ```
+        
+        #### create_database
+        This will create the table of all the models passed as parameter.
+        ```python
+        storage.create_database(Person)
+        storage.create_database([Person, Client, Item])
+        ```
+        
+        #### put
+        Put will call the insert method if the object doesn't have an id. If it does the update method will be called.
+        The put method returns the same object with the id property.
+        ```python
+        john = Person(name='felipe', age=20)
+        john = storage.put(john) # now it has the id property
+        print john.id
+        ```
+        
+        #### insert
+        Insert method returns True or False. Obviously, True if the object was inserted in database; False if the opposite happened.
+        ```python
+        storage.insert(Person(name='jackson', age=20))
+        ```
+        
+        #### find
+        Get all Persons
+        ```python
+        storage.find(Person)
+        ```
+        
+        #### find where
+        Filter by fields and using limit
+        ```python
+        storage.find(Person, limit=1, where={'age': 20, 'name': 'jackson'})     
+        ```
+        
+        #### find where using IN
+        ```python
+        storage.find(Person, where={'age': (Query.IN, [20, 21, 23])})
+        ```
+        
+        #### delete all
+        ```python
+        storage.delete(Person)
+        ```
+        
+        #### update
+        To the update method, pass a json object that represents those fields will be updated.
+        ```python
+        person = Person(name='john', age=50)
+        person = storage.put(person)
+        storage.update(person, where={'age': 10, 'name': 'mouse'})
+        ```
+        
+        #### join
+        The storage.query returns a dict that the keys are the names of the classes that are beeing used in the Query operation. In the case bellow, the storage.query can return a dict with the keys 'Age' and 'Person'.
+        ```python
+        query = Query(Person, alias='p').select(['p.*'])\
+                      .join(Age, alias='a', on='p.name = a.name')\
+                      .where({'p.name': 'alabama'})\
+                      .order("p.lastname DESC")
+        
+        results = storage.query(query)
+        print results['Person'][0].lastname
+        ```
+        
+        ### 2. Properties
+        You can use these properties to represent your columns: StringProperty, IntegerProperty, FloatProperty, EnumProperty, BooleanProperty.
+        ```python
+        from models import StringProperty, IntegerProperty, FloatProperty, EnumProperty, BooleanProperty
+        ```
+        
+        #### StringProperty
+        You can pass an argument to StringProperty to set the size of that column. The default value is 512.
+        ```python
+        class UserModel(BaseModel):
+            name = StringProperty(80)
+        ```
+        
+        ### 3. Handling with Transactions
+        **todo**
+        
+        ### 4. Details
+        **todo**
+        *  Alabama use [uuid](https://en.wikipedia.org/wiki/Universally_unique_identifier)
+        *  The "\_\_init\_\_" of all models *must have* only keyword arguments or no one at all.
+        
+        ## Another ORM?
+        Yep. Let's a build a *really* simple one. An ORM with few documentation, not because we don't care about it, but 'cause it's 
+        really simple to use it.
+        
+        
+        ## Contributing 
+        
+        ### Development
+        You can use Docker:
+        ```bash
+        $ docker build -t 'alabama' .
+        $ ./run_tests.sh
+        ```
+        
+        Alternativelly, you can install all the dependencies in your machine running the command:
+        ```bash
+        $ ./install.sh
+        ```
+        
+        Please *follow the pep8* rules (more details at .pep8 file).
+        
+Keywords: orm postgresql alabama
+Platform: UNKNOWN
+Classifier: Development Status :: 3 - Alpha
+Classifier: Topic :: Utilities
