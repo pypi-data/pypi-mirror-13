@@ -1,0 +1,105 @@
+<form method="post" enctype="multipart/form-data"
+    tal:condition="not:view/result" i18n:domain="waeup.kofa">
+<br />
+  <table class="form-table">
+    <tr>
+      <td i18n:translate="" class="fieldname">
+        Registration Number or Applicant Id:
+      </td>
+      <td>
+        <input class="textType half" type="text" name="unique_id" />
+      </td>
+    </tr>
+    <tr>
+      <td i18n:translate="" class="fieldname">
+        Lastname (Surname):
+      </td>
+      <td>
+        <input class="textType half" type="text" name="lastname" />
+      </td>
+    </tr>
+    <tr tal:condition="view/captcha_code">
+      <td i18n:translate="">
+        Please solve the captcha<br />to prevent misuse of this service:
+      </td>
+      <td>
+        <div tal:content="structure view/captcha_code"></div>
+      </td>
+    </tr>
+  </table>
+  <br />
+  <input class="btn btn-primary" type="submit" name="SUBMIT"
+      tal:attributes="value view/buttonname" />
+</form>
+
+<div tal:condition="view/result" i18n:domain="waeup.kofa">
+  <br />
+  <tal:admitted condition="view/admitted">
+    <p i18n:translate="app_admitted">
+      <strong>Congratulations!</strong> You have been offered provisional
+      admission into the <span  i18n:name="entry_session" tal:replace="view/entry_session"></span>
+      Academic Session of <span  i18n:name="app_title" tal:replace="layout/getAppTitle"></span>.
+    </p>
+    <span tal:condition="view/course_admitted">
+      <table class="form-table">
+        <tr>
+          <td style="width: 150px;" i18n:translate="">Name:
+          </td>
+          <td><span tal:replace="view/applicant/display_fullname"></span>
+          </td>
+        </tr>
+        <tr>
+          <td style="width: 150px;" i18n:translate="">Study Course:
+          </td>
+          <td><span tal:replace="view/longtitle"></span>
+          </td>
+        </tr>
+        <tr>
+          <td i18n:translate=""> Department:
+          </td>
+          <td><span tal:replace="view/department"></span>
+          </td>
+        </tr>
+        <tr>
+          <td i18n:translate="">Faculty:
+          </td>
+          <td><span tal:replace="view/faculty"></span>
+          </td>
+        </tr>
+      </table>
+    </span>
+  </tal:admitted>
+
+  <tal:created condition="view/created">
+    <br />
+    <p i18n:translate="appl_created">
+      Your student record has already been created for you. Your new
+      user name (= student id) is: <strong><span  i18n:name="student_id"
+      tal:replace="view/student_id">STUDENT_ID</span></strong>.
+      Your initial password is: <strong><span  i18n:name="appl_number"
+      tal:replace="view/password">PASSWORD</span></strong>.
+      Please proceed to the <a  i18n:name="login_url"
+      tal:attributes="href python: view.url(layout.site, 'login')">login form</a>,
+      enter your new login credentials and change your password immediately after login.
+    </p>
+  </tal:created>
+
+  <tal:notadmitted condition="view/not_admitted">
+    <p i18n:translate="">
+      Sorry, you have not been offered admission.
+    </p>
+  </tal:notadmitted>
+
+  <tal:submitted condition="view/submitted">
+    <p i18n:translate="">
+      Your submitted application is being processed.
+    </p>
+  </tal:submitted>
+
+  <tal:notsubmitted condition="view/not_submitted">
+    <p i18n:translate="">
+      You have not yet submitted your application.
+    </p>
+  </tal:notsubmitted>
+
+</div>

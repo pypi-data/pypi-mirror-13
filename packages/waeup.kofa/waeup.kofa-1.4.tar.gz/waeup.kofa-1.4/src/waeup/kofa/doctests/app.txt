@@ -1,0 +1,100 @@
+Central Components
+******************
+
+.. :doctest:
+.. :layer: waeup.kofa.testing.KofaUnitTestLayer
+
+.. module:: waeup.kofa.app
+
+
+Creating `University` instances
+===============================
+
+As :class:`University` instances make use of the Zope Component
+Architecture (ZCA), we have to setup the basic component registries,
+before we can create instances. We do this by simply grokking the
+whole :mod:`waeup` package. This way all interfaces, utilities and adapters
+defined in the package are looked up and registered with the global
+registries (this is done by the testlayer automatically).
+
+Now we can import the :class:`University` class and create an
+instance:
+
+  >>> from waeup.kofa.app import University
+  >>> myuniversity = University()
+  >>> myuniversity
+  <waeup.kofa.app.University object at 0x...>
+
+Instances of `University` comply with the interface
+`waeup.kofa.interfaces.IUniversity`:
+
+  >>> from zope.interface.verify import verifyClass
+  >>> from waeup.kofa.interfaces import IUniversity
+  >>> verifyClass(IUniversity, University)
+  True
+
+A freshly created instance provides the attributes promised by the
+interface:
+
+  >>> from waeup.kofa.app import University
+  >>> myuniversity = University()
+  >>> myuniversity['configuration'].name
+  u'Sample University'
+
+  >>> myuniversity['faculties']
+  <waeup.kofa.university.facultiescontainer.FacultiesContainer object at 0x...>
+
+  >>> myuniversity['students']
+  <waeup.kofa.students.container.StudentsContainer object at 0x...>
+
+  >>> myuniversity['users']
+  <waeup.kofa.userscontainer.UsersContainer object at 0x...>
+
+  >>> myuniversity['datacenter']
+  <waeup.kofa.datacenter.DataCenter object at 0x...>
+
+  >>> myuniversity['configuration']
+  <waeup.kofa.configuration.ConfigurationContainer object at 0x...>
+
+Kofa plugins
+============
+
+waeup.kofa provides an API to 'plugin' components. Things that should
+be setup at creation time of a Kofa application can indicate
+that by providing a utility providing IKofaPlugin.
+
+The plugins are looked up by an created app, which then will call the
+``setup()`` method of each plugin.
+
+   >>> from waeup.kofa.interfaces import IKofaPluggable
+   >>> from zope.component import getAdapters, getUtilitiesFor
+   >>> sorted(list(getUtilitiesFor(IKofaPluggable)))
+   [(u'accesscodes', <waeup.kofa.accesscodes...AccessCodePlugin ...)]
+
+
+We can provide a new plugin like this:
+
+   >>> import grok
+   >>> from waeup.kofa.interfaces import IKofaPluggable
+   >>> class MyPlugin(grok.GlobalUtility):
+   ...   grok.implements(IKofaPluggable)
+   ...   def setup(self, site, name, logger):
+   ...     print "Setup was called for"
+   ...     print site
+   ...   def update(self, site, name, logger):
+   ...     pass
+
+When we register the plugin
+
+   >>> grok.testing.grok_component('MyPlugin', MyPlugin)
+   True
+
+and setup a new Kofa instance, we will get a message:
+
+   >>> from waeup.kofa.app import University
+   >>> site = University()
+   Setup was called for
+   <waeup.kofa.app.University object at 0x...>
+
+Apparently the plugin can do with the University object whatever it
+likes. That's what plugins are for.

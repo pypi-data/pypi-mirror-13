@@ -1,0 +1,89 @@
+<div class="modal-body">
+  <div class="panel-group"
+       id="accordion"
+       role="tablist"
+       aria-multiselectable="true"
+       i18n:domain="waeup.kofa"
+       >
+    <div class="panel panel-default"  tal:repeat="importer view/getImporters">
+      <div class="panel-heading" role="tab"
+           tal:attributes="id python: 'heading' + importer['name']">
+        <h4 class="panel-title">
+          <a class="collapsed" data-toggle="collapse"
+             data-parent="#accordion"
+             tal:attributes="href python: '#collapse' + importer['name'];
+                             aria-controls python: 'collapse' + importer['name']"
+             aria-expanded="false">
+            <span tal:replace="importer/title">TITLE</span>
+          </a>
+        </h4>
+      </div>
+      <div tal:attributes="id python: 'collapse' + importer['name'];
+                           aria-labelledby python: 'heading' + importer['name']"
+           class="panel-collapse collapse"
+           role="tabpanel">
+        <div class="panel-body">
+          <table class="table table-condensed">
+            <thead>
+              <tr>
+                <th i18n:translate="">Processor</th>
+                <th i18n:translate="">Required Schema Fields</th>
+                <th i18n:translate="">Optional Schema Fields</th>
+                <th i18n:translate="">Non-Schema Fields</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>
+                  <span tal:content="importer/title">TITLE</span><br /><br />
+                  <a i18n:translate="" class="btn btn-primary btn-xs"
+                     tal:attributes="href python: view.url(context)
+                                          + '/skeleton?name='
+                                          + importer['name']">
+                     Download CSV File Template
+                  </a>
+                </td>
+                <td nowrap>
+                  <span tal:repeat="field importer/fields">
+                      <tal:schemafield condition="field/f_type">
+                        <tal:required condition="field/f_required">
+                          <span tal:replace="field/f_name"></span>
+                          (<span tal:replace="field/f_type"></span>)
+                          <br />
+                        </tal:required>
+                      </tal:schemafield>
+                  </span>
+                </td>
+                <td nowrap>
+                  <span tal:repeat="field importer/fields">
+                      <tal:schemafield condition="field/f_type">
+                        <tal:notrequired condition="not:field/f_required">
+                          <span tal:replace="field/f_name"></span>
+                          (<span tal:replace="field/f_type"></span>)
+                          <br />
+                        </tal:notrequired>
+                      </tal:schemafield>
+                  </span>
+                </td>
+                <td>
+                  <span tal:repeat="field importer/fields">
+                      <tal:extrafield condition="not:field/f_type">
+                        <span tal:replace="field/f_name"></span>
+                        <br />
+                      </tal:extrafield>
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+  <br />
+  <button type="button" class="btn btn-default" style="float: right"
+          i18n:translate="" data-dismiss="modal"
+          tal:condition="python: view.__name__ == 'processorsoverview'">
+      Close
+  </button>
+</div>

@@ -1,0 +1,73 @@
+<form action="." tal:attributes="action request/URL" method="POST"
+      i18n:domain="waeup.kofa" enctype="multipart/form-data">
+
+  <tal:desired_hostel condition="view/actionsgroup1">
+    <br />
+    <p i18n:translate="">
+    Select and <strong>save the desired hostel</strong> before booking acommodation.
+    Your choice cannot be changed afterwards.
+    </p>
+    <div class="form-inline">
+      <br />
+      <div class="form-group">
+        <select class="form-control" id="hostel" name="hostel">
+          <option tal:repeat="hostel view/getHostels"
+                  tal:attributes="value hostel/name; selected hostel/selected">
+          <span tal:replace="hostel/title">USERTITLE
+          </span>
+          </option>
+        </select>
+      </div>
+      <div class="form-group">
+        <span tal:repeat="action view/actions" tal:omit-tag="">
+          <input tal:condition="python:action.label in view.actionsgroup1"
+                 tal:replace="structure action/render"/>
+        </span>
+      </div>
+    </div>
+    <br />
+  </tal:desired_hostel>
+
+  <tal:choice condition="python: view.desired_hostel and view.with_hostel_selection">
+  <p>
+    <strong i18n:translate="">Favoured Hostel:</strong>
+    <span tal:replace="view/desired_hostel"></span>
+  </p>
+  </tal:choice>
+
+  <h3 i18n:domain="waeup.kofa" i18n:translate="">Bookings</h3>
+  <br />
+
+  <table class="kofa-data-table dataTableManage">
+    <thead>
+    <tr>
+      <th tal:condition="not: layout/isStudent">&nbsp;</th>
+      <th i18n:translate="">Session</th>
+      <th i18n:translate="">Booking Date</th>
+      <th i18n:translate="">Bed Coordinates</th>
+      <th i18n:translate="">Bed Type</th>
+    </tr>
+    </thead>
+    <tbody>
+      <tr tal:repeat="cl context/values">
+         <td tal:condition="not: layout/isStudent">
+          <input type="checkbox"
+    		 name="val_id"
+    		 tal:attributes="value cl/__name__" />
+        </td>
+        <td> <a tal:attributes="href python: view.url(cl)">
+        <span tal:content="python: cl.getSessionString()">PID</span></a></td>
+        <td tal:content="python: layout.formatDatetime(cl.booking_date)">DATE</td>
+        <td tal:content="cl/display_coordinates">COORDINATES</td>
+        <td tal:content="cl/bed_type">TYPE</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span tal:repeat="action view/actions"
+        tal:omit-tag="">
+    <input tal:condition="python:action.label in view.actionsgroup2"
+           tal:replace="structure action/render"/>
+  </span>
+
+</form>

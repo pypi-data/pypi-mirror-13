@@ -1,0 +1,31 @@
+<form action="." tal:attributes="action request/URL" method="post"
+      i18n:domain="waeup.kofa" enctype="multipart/form-data"
+      autocomplete="off">
+    <br />
+    <p i18n:translate="prefill">
+        <strong>Technical Note:</strong> An application in create mode can be
+        performed with an empty container. Each time an applicant registers,
+        a new record is being created and a corresponding user account
+        set up. Since each single account creation causes a significant
+        growth of Kofa's database, it is strongly recommended to pre-fill
+        applicants containers with empty application records. This is done
+        in a single transaction and does thus save database volume when
+        application is ongoing.
+    </p>
+    <br />
+    <label i18n:translate="">
+     Pre-fill '<span  i18n:name="code" tal:replace="context/code">CODE</span>' container with
+    </label>
+    <select id="number" name="number" class="form-control half">
+      <option value="10" i18n:translate="">10 empty records</option>
+      <option value="100" i18n:translate="">100 empty records</option>
+      <option value="1000" i18n:translate="">1000 empty records</option>
+      <option value="10000" i18n:translate="">10000 empty records</option>
+    </select>
+    <br /><br />
+    <div tal:condition="view/availableActions">
+      <input tal:repeat="action view/actions"
+             tal:replace="structure action/render"
+             />
+    </div>
+</form>

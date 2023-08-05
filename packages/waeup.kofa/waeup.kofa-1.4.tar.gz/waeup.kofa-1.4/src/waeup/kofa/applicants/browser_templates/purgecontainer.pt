@@ -1,0 +1,24 @@
+<form action="." tal:attributes="action request/URL" method="post"
+      i18n:domain="waeup.kofa" enctype="multipart/form-data"
+      autocomplete="off">
+    <br />
+    <p i18n:translate="purge">
+        <strong>Technical Note:</strong> During application, many records
+        are being initialized but not used. For various reasons, many
+        applicants do create one or more application records with
+        corresponding user accounts but fail to log in. These records
+        remain in state 'initialized' and are never turned to state
+        'started'. After a while, these records can be safely removed.
+        <br /><br />
+        <strong>Attention:</strong> When purging an applicants container, also
+        all unused pre-filled application records are being removed.
+        If necessary, the container must be pre-filled with empty
+        records again.
+    </p>
+    <br />
+    <div tal:condition="view/availableActions">
+      <input tal:repeat="action view/actions"
+             tal:replace="structure action/render"
+             />
+    </div>
+</form>
