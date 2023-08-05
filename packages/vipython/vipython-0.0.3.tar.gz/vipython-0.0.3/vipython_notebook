@@ -1,0 +1,58 @@
+#!/usr/bin/env python
+from __future__ import print_function
+
+# -*- coding: utf-8 -*-
+import re
+import sys
+import os
+import subprocess
+import tempfile
+
+HOME = os.environ['HOME']
+CUSTOM_JS_FILE = '%s/.jupyter/custom/custom.js' % HOME
+JS_PAYLOAD = "Jupyter.utils.load_extensions('vim_binding/vim_binding')"
+
+def install_vim_binding():
+    from notebook.nbextensions import install_nbextension
+    install_nbextension(
+        'https://rawgithub.com/russell91/jupyter-vim-binding/master/vim_binding.js',
+         nbextensions_dir='%s/.ipython/nbextensions/vim_binding' % HOME)
+
+def create_custom_js():
+    import IPython
+    if not IPython.version_info[0] >= 4:
+        sys.exit('Failed. You must have IPython >= 4.0 with Jupyter installed')
+    subprocess.call('mkdir -p %s/.jupyter/custom' % HOME, shell=True)
+    subprocess.call('touch %s' % CUSTOM_JS_FILE, shell=True)
+
+def modify_custom_js():
+    with open(CUSTOM_JS_FILE, 'r') as f:
+        js = [x.strip() for x in f.readlines()]
+    for line in js:
+        if line == JS_PAYLOAD:
+            return
+    with open(CUSTOM_JS_FILE, 'a') as f:
+        f.writelines([JS_PAYLOAD])
+
+def disable():
+    tmpfile = '%s/tmpcustom.js' % tempfile.gettempdir()
+    subprocess.call(
+        'cat %s | grep -v vim_binding/vim_binding > %s' %
+        (CUSTOM_JS_FILE, tmpfile), shell=True)
+    subprocess.call(
+        'mv %s %s' %
+        (tmpfile, CUSTOM_JS_FILE), shell=True)
+
+if __name__ == '__main__':
+    if len(sys.argv) != 2 or sys.argv[1] not in ['enable', 'disable']:
+        sys.exit(print('Usage:\n\nvipython-notebook enable\nOR\nvipython-notebook disable'))
+    elif sys.argv[1] == 'disable':
+        disable()
+        sys.exit(print('Successfully disabled: Refresh the browser'))
+    else:
+        if not os.path.exists('%s/.ipython/nbextensions/vim_binding' % HOME):
+            install_vim_binding()
+        if not os.path.exists(CUSTOM_JS_FILE):
+            create_custom_js()
+        modify_custom_js()
+        sys.exit(print('Successfully enabled: Refresh the browser and enjoy'))
