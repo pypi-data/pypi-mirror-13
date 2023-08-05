@@ -1,0 +1,14 @@
+#!upstart
+description "{{{ application.name }}} daemon"
+
+env USER={{{ application.name }}}
+env SETTINGS=/etc/{{{ application.name }}}.conf
+
+start on runlevel [2345]
+stop on runlevel [06]
+
+respawn
+
+exec start-stop-daemon --start --make-pidfile --pidfile /var/run/{{{ application.name }}}.pid \
+    --chuid $USER --exec /var/lib/{{{ application.name }}}/.virtualenvs/{{{ application.name }}}/bin/runserver.py \
+    >> /var/log/{{{ application.name }}}/daemon.log 2>&1
