@@ -1,0 +1,69 @@
+Metadata-Version: 1.1
+Name: autodock-cron
+Version: 0.0.2
+Summary: autodock cron plugin
+Home-page: https://github.com/prologic/autodock-cron
+Author: James Mills
+Author-email: James Mills, prologic at shortcircuit dot net dot au
+License: MIT
+Download-URL: https://github.com/prologic/autodock-cron/archive/master.zip
+Description: autodock-cron
+        =============
+        
+        .. image:: https://badge.imagelayers.io/prologic/autodock-cron:latest.svg
+           :target: https://imagelayers.io/?images=prologic/autodock-cron:latest
+           :alt: Image Layers
+        
+        Cron-like Plugin for autodock.
+        
+        This plugin runs containers on a regular scheduled as defined by
+        the environment variable ``CRON`` of the form ``m h d mon dow``
+        much like crond on many Linux/UNIX systems.
+        
+        The container must first be run at least once for ``autodock-cron``
+        to pick up the new container and its configuration.
+        
+        Note that ``autodock-cron`` makes use of the Docker API and effectively
+        calls ``docker start`` on your container; a new container is **NOT** created
+        on very run of the schedule.
+        
+        .. note:: See: `autodock <https://github.com/prologic/autodock>`_
+        
+        Basic Usage
+        -----------
+        
+        Start the daemon::
+            
+            $ docker run -d --name autodock prologic/autodock
+        
+        Link and start an autodock plugin::
+            
+            $ docker run -d --link autodock prologic/autodock-cron
+        
+        Run a container of your choice and set ``CRON=*/1 * * * *`` to run every minute::
+            
+            $ docker run --name hello -e CRON="*/1 * * * *" busybox sh -c 'echo Hello'
+        
+        Now autodock-cron will schedule a timer to re-run this container every minute
+        until the container is deleted and removed. After about ~3mins you should get::
+            
+            $ docker logs hello
+            Hello
+            Hello
+            Hello
+        
+Keywords: autodock cron plugin docker
+Platform: POSIX
+Classifier: Development Status :: 3 - Alpha
+Classifier: Environment :: Console
+Classifier: Intended Audience :: Developers
+Classifier: Intended Audience :: System Administrators
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Natural Language :: English
+Classifier: Operating System :: POSIX :: BSD
+Classifier: Operating System :: POSIX :: Linux
+Classifier: Operating System :: MacOS :: MacOS X
+Classifier: Programming Language :: Python :: 2.6
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Programming Language :: Python :: Implementation :: CPython
+Classifier: Programming Language :: Python :: Implementation :: PyPy
