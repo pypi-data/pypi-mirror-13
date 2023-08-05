@@ -1,0 +1,150 @@
+.\" Man page generated from reStructuredText.
+.
+.TH "JSON_PATCH" "1" "November 29, 2015" "1.1.3" "json_delta"
+.SH NAME
+json_patch \- Apply patches to JSON-serialized data structures
+.
+.nr rst2man-indent-level 0
+.
+.de1 rstReportMargin
+\\$1 \\n[an-margin]
+level \\n[rst2man-indent-level]
+level margin: \\n[rst2man-indent\\n[rst2man-indent-level]]
+-
+\\n[rst2man-indent0]
+\\n[rst2man-indent1]
+\\n[rst2man-indent2]
+..
+.de1 INDENT
+.\" .rstReportMargin pre:
+. RS \\$1
+. nr rst2man-indent\\n[rst2man-indent-level] \\n[an-margin]
+. nr rst2man-indent-level +1
+.\" .rstReportMargin post:
+..
+.de UNINDENT
+. RE
+.\" indent \\n[an-margin]
+.\" old: \\n[rst2man-indent\\n[rst2man-indent-level]]
+.nr rst2man-indent-level -1
+.\" new: \\n[rst2man-indent\\n[rst2man-indent-level]]
+.in \\n[rst2man-indent\\n[rst2man-indent-level]]u
+..
+.SH SYNOPSIS
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+json_patch [\-\-output FILE] [\-\-unified | \-\-normal]
+           [\-\-strip [NUM]] [\-\-reverse] [originalfile] [patchfile]
+json_patch [\-\-version]
+json_patch [\-\-help]
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.SH DESCRIPTION
+.sp
+json_patch applies diffs in the format produced by
+\fIjson_diff(1)\fP to JSON\-serialized data structures.
+.sp
+The program attempts to mimic the interface of the \fIpatch(1)\fP
+utility as far as possible, while also remaining compatible with the
+script functionality of the \fIjson_delta.py\fP library on which it
+relies.  There are, therefore, at least four different ways its input
+can be specified.
+.INDENT 0.0
+.IP 1. 3
+The simplest, of course, is if the filenames are both specified as
+positional arguments.
+.IP 2. 3
+Closely following in terms of simplicity, the inputs can be fed as
+a JSON array \fB[<structure>, <patch>]\fP to standard input.
+.IP 3. 3
+If only one positional argument is specified, it is read as the
+filename of the original data structure, and the patch is expected
+to appear on stdin.
+.IP 4. 3
+Finally, if there are no positional arguments, and stdin cannot be
+parsed as JSON, it can alternatively be a udiff, as output by
+\fBjson_diff \-u\fP\&.  In this case, json_patch will read the name of
+the file containing the structure to modify out of the first header
+line of the udiff (the one beginning with \fB\-\-\-\fP).
+.UNINDENT
+.sp
+The most salient departure from the behavior of \fIpatch(1)\fP is
+that, by default, json_patch will \fBnot\fP modify files in place.
+Instead, the patched structure is written as JSON to stdout.  Frankly,
+this is to save having to implement backup filename options, getting
+it wrong, and having angry hackers blame me for their lost data.
+.sp
+However, the input structure is read into memory before the output
+file handle is opened, so an in\-place modification can be accomplished
+by setting the option \fB\-\-output\fP to point to \fB<originalfile>\fP\&.
+.sp
+Also, note that json_diff and json_patch can only manipulate a single
+file at a time: even the output of \fBjson_diff \-u\fP is not a "unified"
+diff \fIsensu stricto\fP\&.
+.sp
+\fIjson_patch\fP will accept input in any of the encodings specified in RFC
+7159, namely UTF\-8, \-16 or \-32, with or without byte\-order marks.
+Note that the output is always encoded as UTF\-8.
+.SH OPTIONS
+.INDENT 0.0
+.TP
+.BI \-\-output \ FILE\fP,\fB \ \-o \ FILE
+Write output to FILE instead of stdout.
+.TP
+.B \-\-unified\fP,\fB  \-u
+Force the patch to be interpreted as a udiff.
+.TP
+.B \-\-normal\fP,\fB  \-n
+Force the patch to be interpreted as a normal
+(i.e. JSON\-format) patch
+.TP
+.B \-\-reverse\fP,\fB  \-R
+Assume the patch was created with old and new
+files swapped.
+.TP
+.BI \-\-strip \ NUM\fP,\fB \ \-p \ NUM
+Strip NUM leading components from file names
+read out of udiff headers.
+.TP
+.B \-\-version
+Show the program\(aqs version number and exit.
+.TP
+.B \-\-help\fP,\fB  \-h
+Show a brief help message and exit.
+.UNINDENT
+.SH UDIFF FORMAT
+.sp
+The program has strict requirements of the format of "unified" diffs.
+It works by discarding header lines, then creating two strings: one by
+discarding every line beginning with \fB\-\fP, then discarding the first
+character of every remaining line, and one following the same
+procedure, but with lines beginning with \fB+\fP discarded.  For
+json_patch to function, these strings must be interpretable according
+to the following superset of the JSON spec:
+.INDENT 0.0
+.IP \(bu 2
+Within objects, the string \fB\&...\fP may appear in any context where a
+\fB"property": <object>\fP construction would be valid JSON.  This
+indicates that one or more properties have been omitted from the
+representation of the object.
+.IP \(bu 2
+Within arrays, the string \fB\&...\fP may appear as an array element.
+It may optionally be followed by an integer in parentheses,
+e.g. \fB(1)\fP, \fB(15)\fP\&.  This indicates that that number of elements
+have been omitted from the array, or that one element has, if no
+parenthesized number is present.
+.UNINDENT
+.sp
+The program reconstructs the JSON\-format diff on the basis of these
+strings, and then applies it to the input structure.
+.SH AUTHOR
+Phil Roberts <himself@phil-roberts.name>
+.SH COPYRIGHT
+2012-2015, Phil Roberts <himself@phil-roberts.name>
+.\" Generated by docutils manpage writer.
+.
