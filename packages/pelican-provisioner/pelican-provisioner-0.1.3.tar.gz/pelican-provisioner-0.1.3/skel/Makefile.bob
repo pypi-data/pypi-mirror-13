@@ -1,0 +1,25 @@
+# {{ sitename }} (c) {{ siteauthor }}
+
+SHELL=/bin/bash
+PROJECT_NAME={{ sitename }}
+
+html:
+	cd blog && make html
+
+regenerate:
+	cd blog && make regenerate
+
+deploy:
+	cd blog && make publish rsync_upload
+
+serve:
+	fab serve
+
+new:
+	fab new:'$(filter-out $@,$(MAKECMDGOALS))'
+	ls -alF 'blog/content/posts/$(filter-out $@,$(MAKECMDGOALS)).md'
+
+tidy:
+	fab tidy
+
+.PHONY: html regenerate serve deploy new tidy
