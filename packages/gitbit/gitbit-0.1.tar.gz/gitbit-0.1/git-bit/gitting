@@ -1,0 +1,113 @@
+#!/bin/bash
+#Git script
+flag="-n"
+if [ "$1" == "-r" ]
+then
+        flag="-r"
+elif [ "$1" == "-s" ]
+then
+	flag="-s"
+elif [ "$1" == "-i" ]
+then
+        flag="-i"
+elif [ "$1" == "-l" ]
+then
+        flag="-l"
+elif [ "$1" == "-c" ]
+then
+	flag="-c"
+elif [ "$1" == "-p" ]
+then
+	flag="-p"
+fi
+
+if [ "$flag" != "-n" ]
+then
+	if [ "$2" != "" ]
+	then
+		cd "$2"
+	else
+		cd "$(pwd)"
+	fi
+else
+	if [ "$1" != "" ]
+	then
+		cd "$1"
+	else
+		cd "$(pwd)"
+	fi
+fi
+echo "Operating on $(pwd)"
+if [ "$flag" == "-c" ]
+        then
+                echo -e "\n\n\t\t------------------------"
+                echo -e "\t\t\tGit Clone"
+                echo -e "\t\t------------------------\n\n"
+                echo "Enter the url of the git repo"
+                read c_url
+                git clone "$c_url"
+		exit
+fi
+
+if ls -al | grep "\.git" > /dev/null
+then
+	if [ "$flag" == "-n" ]
+	then
+		if [[ `git status --porcelain` ]]; then
+	  		echo -e "\n\n\t\t-------------------------"
+	                echo -e "\t\t\tGit Normal"
+        	        echo -e "\t\t-------------------------\n\n"
+			git add .
+  	  		echo "Add commit message? (Leave blank if none)" 
+	  		read cm
+	  		git commit -m "$cm $(date)"
+	  		git push -u origin master
+		else
+  	  		echo "Nothing to commit"
+		fi
+	elif [ "$flag" == "-s" ]
+	then
+		echo -e "\n\n\t\t-------------------------"
+		echo -e "\t\t\tGit Status"
+		echo -e "\t\t-------------------------\n\n"
+		git status
+	elif [ "$flag" == "-r" ]
+        then
+                echo -e "\n\n\t\t------------------------"
+                echo -e "\t\t\tGit Reset"
+                echo -e "\t\t------------------------\n\n"
+		git reset --hard
+	elif [ "$flag" == "-l" ]
+        then
+                echo -e "\n\n\t\t----------------------"
+                echo -e "\t\t\tGit Log"
+                echo -e "\t\t----------------------\n\n"
+                git log
+	elif [ "$flag" == "-p" ]
+        then
+                echo -e "\n\n\t\t-----------------------"
+                echo -e "\t\t\tGit Pull"
+                echo -e "\t\t-----------------------\n\n"
+                git pull
+
+	fi
+else
+	if [ "$flag" == "-i" ]
+        then
+                echo -e "\n\n\t\t------------------------"
+                echo -e "\t\t\tGit Init"
+                echo -e "\t\t------------------------\n\n"
+                git init
+	elif [ "$flag" == "-c" ]
+        then
+                echo -e "\n\n\t\t------------------------"
+                echo -e "\t\t\tGit Clone"
+                echo -e "\t\t------------------------\n\n"
+                echo "Enter the url of the git repo"
+                read c_url
+		git clone "$c_url"
+	else        
+	echo "Not a git repository. Initialize and attach remote repo manually first."
+	fi
+fi
+echo "Exiting..."
