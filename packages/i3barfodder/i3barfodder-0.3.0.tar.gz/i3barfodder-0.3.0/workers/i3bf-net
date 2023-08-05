@@ -1,0 +1,95 @@
+#!/usr/bin/env python3
+#
+# Released under GPL3 terms (see LICENSE)
+#
+# TODO: Add wifi support.
+#
+# TODO: Add more keys to info:
+#   - current IP address
+#   - device connected or not
+#   - uptime
+#   - cumulated traffic (up and down)
+#   - number of connections
+
+
+from i3bfutils import (network, convert, io, delay, template)
+
+NIC = io.get_var('NIC', default=network.get_default_nic())
+INTERVAL = io.get_var('INTERVAL', default=1)
+SAMPLES = io.get_var('SAMPLES', default=3)
+UNIT = io.get_var('UNIT', default='bit', options=('bit', 'byte', 'bits', 'bytes')).lower()
+
+BINARY = io.get_var('BINARY', default=False)
+
+# Variables for default layout
+dflt_layout_cfg_up = {
+    'BANDWIDTH': io.get_var('BANDWIDTH_UP', default='56k'),
+    'DISPLAY_MIN': io.get_var('DISPLAY_MIN_UP', default='5%'),
+    'COLORS': io.get_var('COLORS_UP', default='#847-#F7D'),
+    'SCALE': io.get_var('SCALE', default='linear', options=('linear', 'sqrt', 'log')).lower(),
+}
+
+dflt_layout_cfg_down = {
+    'BANDWIDTH': io.get_var('BANDWIDTH_DOWN', default='56k'),
+    'COLORS': io.get_var('COLORS_DOWN', default='#487-#7FD'),
+    'DISPLAY_MIN': io.get_var('DISPLAY_MIN_DOWN', default='5%'),
+    'SCALE': dflt_layout_cfg_up['SCALE']
+}
+
+if UNIT in ('bit', 'bits'):
+    get_rate_up = lambda: network.get_byterate(NIC, 'up', SAMPLES) * 8
+    get_rate_down = lambda: network.get_byterate(NIC, 'down', SAMPLES) * 8
+    rate2str = lambda r: convert.num2str(r, BINARY) + 'b/s'
+    str2rate = convert.str2bits
+
+elif UNIT in ('byte', 'bytes'):
+    get_rate_up = lambda: network.get_byterate(NIC, 'up', SAMPLES)
+    get_rate_down = lambda: network.get_byterate(NIC, 'down', SAMPLES)
+    rate2str = lambda r: convert.num2str(r, BINARY) + 'B/s'
+    str2rate = convert.str2bytes
+
+def parse_percent(perc, val):
+    # str2rate can handle strings like '10%1k'.
+    return str2rate(str(perc)+str(val) if '%' in perc else perc)
+
+# Convert BANDWIDTH and DISPLAY_MIN to number
+for cfg in (dflt_layout_cfg_up, dflt_layout_cfg_down):
+    cfg['BANDWIDTH'] = str2rate(cfg['BANDWIDTH'])
+    cfg['DISPLAY_MIN'] = parse_percent(cfg['DISPLAY_MIN'], cfg['BANDWIDTH'])
+
+io.debug('{}: BANDWIDTH: down: {} - up: {}'.format(NIC,
+    rate2str(dflt_layout_cfg_down['BANDWIDTH']),
+    rate2str(dflt_layout_cfg_up['BANDWIDTH'])))
+io.debug('{}: DISPLAY_MIN: down: {} - up: {}'.format(NIC,
+    rate2str(dflt_layout_cfg_down['DISPLAY_MIN']),
+    rate2str(dflt_layout_cfg_up['DISPLAY_MIN'])))
+
+# Create default layout from default layout variables
+def make_dflt_layout(direction, cfg):
+    return ('['
+            '<small>({{rate_{DIR}:>8s}}?={{_rate_{DIR}}}>{DISPLAY_MIN}) </small>'
+            'vbar({{_rate_{DIR}}}, max={BANDWIDTH}, scale={SCALE})'
+            '|{{_rate_{DIR}}}:max={BANDWIDTH}:scale={SCALE}:{COLORS}'
+            ']').format(DIR=direction, **cfg)
+
+dflt_layout = make_dflt_layout('up', dflt_layout_cfg_up) + \
+              '  ' + \
+              make_dflt_layout('down', dflt_layout_cfg_down)
+LAYOUT = io.get_var('LAYOUT', default=dflt_layout)
+
+# Default format uses pango markup
+if LAYOUT == dflt_layout:
+    io.push({'markup': 'pango'})
+
+info = template.PrettyDict(
+    nic=NIC, rate_up=get_rate_up, rate_down=get_rate_down,
+    prettifiers={'rate_up': rate2str, 'rate_down': rate2str}
+)
+
+tmplt = template.Template(LAYOUT, name=NIC)
+
+io.push(tmplt.make_blocks(info, init=True))
+while True:
+    delay.sleep(INTERVAL)
+    blocks = tmplt.make_blocks(info, init=False)
+    io.push(blocks)

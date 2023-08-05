@@ -1,0 +1,53 @@
+#!/usr/bin/env python3
+#
+# Released under GPL3 terms (see LICENSE)
+
+
+from i3bfutils import (sensors, template, convert, delay, io)
+
+SENSOR_PATH = io.get_var('SENSOR_PATH')
+INTERVAL = io.get_var('INTERVAL', default=5)
+TEMP_RANGE = io.get_var('TEMP_RANGE', default='40-60')
+
+# These values only take effect with the default LAYOUT string
+dflt_layout_cfg = {
+    'COLORS': io.get_var('COLORS', default='#09B-#C80-#F20'),
+    'DISPLAY_MIN': io.get_var('DISPLAY_MIN', default='0%'),
+    'SCALE': io.get_var('SCALE', default='linear', options=('linear', 'sqrt', 'log')).lower(),
+}
+
+try:
+    dflt_layout_cfg['TEMP_MIN'], dflt_layout_cfg['TEMP_MAX'] = \
+        (int(float(t)) for t in TEMP_RANGE.split('-'))
+except ValueError:
+    io.croak('Invalid TEMP_RANGE value: {!r} (must be "MIN-MAX")'.format(TEMP_RANGE))
+
+if '%' in dflt_layout_cfg['DISPLAY_MIN']:
+    displaymin = convert.percent2num(dflt_layout_cfg['DISPLAY_MIN'])
+    temp_diff = dflt_layout_cfg['TEMP_MAX'] - dflt_layout_cfg['TEMP_MIN']
+    dflt_layout_cfg['DISPLAY_MIN'] = int((temp_diff * displaymin/100) + \
+                                         dflt_layout_cfg['TEMP_MIN'])
+
+io.debug('Relevant temperatures for {}: {TEMP_MIN}-{TEMP_MAX} (DISPLAY_MIN={DISPLAY_MIN})'
+         .format(SENSOR_PATH, **dflt_layout_cfg))
+
+dflt_layout = ('[<small>({{temp}}?={{_temp}}>={DISPLAY_MIN}) </small>'
+               'vbar({{_temp}}, min={TEMP_MIN}, max={TEMP_MAX}, scale={SCALE})'
+               '|{{_temp}}:min={TEMP_MIN}:max={TEMP_MAX}'
+               ':scale={SCALE}:{COLORS}]').format(**dflt_layout_cfg)
+LAYOUT = io.get_var('LAYOUT', default=dflt_layout)
+if LAYOUT == dflt_layout:
+    io.push({'markup': 'pango'})  # Default format uses pango markup
+
+
+tmplt = template.Template(LAYOUT)
+info = template.PrettyDict(prettifiers={'temp': lambda t: '{:.0f}°C'.format(t)})
+info['temp'] = sensors.get_temperature_from_sys(SENSOR_PATH)
+io.push(tmplt.make_blocks(info, init=True))
+
+while True:
+    delay.sleep(INTERVAL)
+    new_temp = sensors.get_temperature_from_sys(SENSOR_PATH)
+    if info['_temp'] != new_temp:
+        info['_temp'] = new_temp
+        io.push(tmplt.make_blocks(info))

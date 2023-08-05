@@ -1,0 +1,88 @@
+#!/usr/bin/env python3
+#
+# Released under GPL3 terms (see LICENSE)
+
+
+from i3bfutils import (storage, convert, template, io, delay)
+
+INTERVAL = io.get_var('INTERVAL', default=1)
+SAMPLES = io.get_var('SAMPLES', default=3)
+BLACKLIST = io.get_var('BLACKLIST', default=[])
+WHITELIST = io.get_var('WHITELIST', default=[])
+PERMALIST = io.get_var('PERMALIST', default=[])
+CLICK_CMDS = {}
+for button in range(1,50):  # Max mouse buttons = 50 should suffice
+    cmd = io.get_var('CLICK{}'.format(button), default='')
+    if cmd:
+        buttonname = 'button{}'.format(button)
+        CLICK_CMDS[buttonname] = cmd
+
+# Generate default format from a bunch of config variables
+dflt_layout_cfg = {
+    'LED_COLORS': io.get_var('LED_COLORS', default='#665-#FF4'),
+    'PATH_COLORS': io.get_var('PATH_COLOR', default='#974-#D95'),
+    'USED_COLORS': io.get_var('USED_COLORS', default='#D95-#F51'),
+    'USED_MIN': convert.percent2num(io.get_var('USED_MIN', default='70%')),
+    'USED_MAX': convert.percent2num(io.get_var('USED_MAX', default='95%')),
+}
+dflt_layout = ('[● |{{_rw}}:max=1M:{LED_COLORS}]'
+               '[{{path}} |{{_mounted}}:max=1:{PATH_COLORS}]'
+               '[<small>({{free}} free?{{_mounted}}=1)</small>|'
+               '{{_used%}}:{USED_COLORS}:min={USED_MIN}:max={USED_MAX}]30').format(**dflt_layout_cfg)
+
+LAYOUT = io.get_var('LAYOUT', default=dflt_layout)
+if LAYOUT == dflt_layout:
+    io.push(markup='pango')  # Default format uses pango markup
+
+MAX = { '{_used%}': 100, '{_free%}': 100 }
+SOFTMAX = { '{_read}': '1M', '{_write}': '1M', '{_rw}': '1M' }
+tmplt = template.Template(LAYOUT, name='{path}',
+                          dflt_limits={'max':MAX, 'softmax':SOFTMAX})
+
+blocks = {}  # Map mountpoint path to ready-to-push list of blocks
+order = []   # Sorted mountpoint paths
+
+def sort_mountpoints():
+    global order
+    order = [path for path in sorted(blocks.keys())]
+
+def init_mountpoint(mp):
+    blocks[mp['_path']] = tmplt.make_blocks(mp, init=True)
+    sort_mountpoints()
+
+def update_mountpoint(mp):
+    blocks[mp['_path']] = tmplt.make_blocks(mp, init=False)
+
+def remove_mountpoint(mp):
+    del(blocks[mp['_path']])
+    sort_mountpoints()
+
+mountpoints = storage.Mountpoints(BLACKLIST, WHITELIST, PERMALIST,
+                                  on_added=[init_mountpoint],
+                                  on_removed=[remove_mountpoint],
+                                  on_updated=[update_mountpoint],
+                                  iosamples=SAMPLES)
+
+def make_click_handler(buttonname, cmd):
+    def handler(click):
+        if buttonname == 'button{}'.format(click['button']):
+            mp = mountpoints[click['name']]
+            io.run(cmd, placeholders=mp)
+    return handler
+
+click_actions = dict(
+    (buttonname, make_click_handler(buttonname, cmd))
+    for buttonname,cmd in CLICK_CMDS.items()
+)
+
+if click_actions:
+    io.push(clicks_enabled=True)
+
+while True:
+    mountpoints.poll()
+    io.push([block
+             for path in order
+             for block in blocks[path]])
+    click = delay.wait_for_click(INTERVAL)
+    if click is not None:
+        io.handle_click(click, **click_actions)

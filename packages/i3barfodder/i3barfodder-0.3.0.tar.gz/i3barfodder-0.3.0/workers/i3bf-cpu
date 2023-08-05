@@ -1,0 +1,53 @@
+#!/usr/bin/env python3
+#
+# Released under GPL3 terms (see LICENSE)
+
+
+from i3bfutils import (cpu, convert, template, io, delay)
+
+INTERVAL = io.get_var('INTERVAL', default=1)
+SAMPLES = io.get_var('SAMPLES', default=2)
+PERCORE = io.get_var('PERCORE', default=False)
+
+# Generate default format from a bunch of config variables
+dflt_layout_cfg = {
+    'COLORS': io.get_var('COLORS', default='#568-#6BF'),
+    'SCALE': io.get_var('SCALE', default='linear', options=('linear', 'sqrt', 'log')).lower(),
+    'DISPLAY_MIN': convert.percent2num(io.get_var('DISPLAY_MIN', default='10%'))
+}
+dflt_layout = ('[<small>({{percent}}?={{_percent}}>{DISPLAY_MIN}) </small>'
+               'vbar({{_percent}}, scale={SCALE})'
+               '|{{_percent}}:{COLORS}]3').format(**dflt_layout_cfg)
+LAYOUT = io.get_var('LAYOUT', default=dflt_layout)
+if LAYOUT == dflt_layout:
+    io.push({'markup': 'pango'})  # Default format uses pango markup
+
+if PERCORE:
+    # One PrettyDict per core
+    info = []
+    for corenum,core_usage in enumerate(cpu.usage_per_core(samples=SAMPLES)):
+        info.append(template.PrettyDict(
+            dict(percent=convert.num2percent),
+            cores=cpu.CORECOUNT, core=corenum+1,
+            percent=core_usage))
+    name_tmplt = 'core#{_core}'
+
+else:
+    # One PrettyDict for combined cores
+    info = template.PrettyDict(dict(percent=convert.num2percent),
+                               cores=cpu.CORECOUNT, core=0,
+                               percent=cpu.usage())
+    name_tmplt = None
+
+tmplt = template.Template(LAYOUT, name=name_tmplt, dflt_limits={'max':{'{_percent}': int(100)}})
+io.push(tmplt.make_blocks(info, init=True))
+while True:
+    delay.sleep(INTERVAL)
+
+    if PERCORE:
+        for i,usage in zip(info, cpu.usage_per_core()):
+            i['percent'] = usage
+    else:
+        info['percent'] = cpu.usage()
+
+    io.push(tmplt.make_blocks(info))

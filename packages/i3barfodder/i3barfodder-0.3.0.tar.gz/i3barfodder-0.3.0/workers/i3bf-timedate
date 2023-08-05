@@ -1,0 +1,74 @@
+#!/usr/bin/env python3
+#
+# Released under GPL3 terms (see LICENSE)
+
+from i3bfutils import (dates, template, io, delay)
+import time
+import calendar
+import locale
+locale.setlocale(locale.LC_ALL, '')
+import sys
+
+args = sys.argv[1:]
+if any(arg in ('--list-datenames', '-l') for arg in args):
+    for date,names in sorted(dates.DATENAMES.items()):
+        print('{}: {}'.format(date, ', '.join(names)))
+    exit(0)
+elif args:
+    io.debug('Unknown option(s): {}'.format(' '.join(args)))
+    exit(1)
+
+INTERVAL = io.get_var('INTERVAL', default=1)
+ALARMINDICATORS = io.get_var('ALARMINDICATORS', default='⚫;⚪;⚬;·').split(';')
+ALARMDATES = io.get_var('ALARMDATES', default='')
+
+alarms = dates.AlarmIndicator(dates.str2dates(ALARMDATES), ALARMINDICATORS)
+io.debug('{} alarm dates: {}'.format(len(alarms), str(alarms)))
+
+# Generate default format from a bunch of config variables
+default_format_values = {
+    'TIME_FORMAT': io.get_var('TIME_FORMAT', default='%X'),
+    'DATE_FORMAT': io.get_var('DATE_FORMAT', default='%x'),
+    'TIME_COLOR': io.get_var('TIME_COLOR', default='#DE3'),
+    'DATE_COLOR': io.get_var('DATE_COLOR', default='#9D3'),
+    'ALARM_COLOR': io.get_var('ALARM_COLOR', default='#FFF')
+}
+default_format = ('[%! |_%!:{ALARM_COLOR}]'
+                  '[{DATE_FORMAT}  |{DATE_COLOR}]'
+                  '[{TIME_FORMAT}|{TIME_COLOR}]').format(**default_format_values)
+LAYOUT = io.get_var('LAYOUT', default=default_format)
+
+# NOTE: The following limits are constants and thus things might slightly
+# break whenever month or year change during runtime. E.g. MAX['%d'] doesn't
+# change from 31 to 30 on 2015-03-31 at 00:00. However, this shouldn't be a
+# problem unless dynamic colors or bars are used in LAYOUT, which is probably
+# an edge-case, and even then the effect should be small.
+YEAR, MONTH = [int(x) for x in time.strftime('%Y %m').split()]
+DAYS_IN_MONTH = calendar.monthrange(YEAR, MONTH)[1]
+MAX = { '%H': 23, '%I': 12, '%M': 59, '%S': 59,
+        '%U': 53,             # Week number of year
+        '%d': DAYS_IN_MONTH,  # Day of month
+        '%m': 12,             # Month
+        '%w': 6,              # Day of week
+        '%j': 366 if calendar.isleap(YEAR) else 365,  # Day of year
+        '_%!': len(ALARMINDICATORS)-1 }  # Days left until next alarm
+MIN = { '%I': 1,  # Hour 1-12
+        '%d': 1,  # Day of month
+        '%m': 1,  # Month
+        '%j': 1 } # Day of year
+
+tmplt = template.Template(LAYOUT, dflt_limits={'max':MAX, 'min':MIN})
+
+def apply_strftime(string):
+    if '%' in string:
+        # If we don't provide the time to strftime(), it seems to have trouble
+        # deciding whether X.001 rounds to X or X-1.
+        string = time.strftime(string, time.localtime(time.time()))
+        string = string.replace('_%!', str(alarms.days_until_alarm))
+        string = string.replace('%!', str(alarms.indicator))
+    return string
+
+io.push(tmplt.make_blocks(apply_strftime, init=True))
+while True:
+    delay.sleep(1)
+    io.push(tmplt.make_blocks(apply_strftime, init=False))
