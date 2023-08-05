@@ -1,0 +1,47 @@
+Metadata-Version: 1.1
+Name: pypo4sel.core
+Version: 0.0.2
+Summary: page object wrapper for selenium webdriver
+Home-page: https://github.com/aksas/pypo4sel
+Author: Oleksii Skliarov
+Author-email: oleksii.skliarov@gmail.com
+License: MIT
+Description: 
+        pypo4sel.core
+        --------------------------------------------------------
+        
+        Wrapper for selenium webdriver to make page objects easy::
+        
+            class SomePageBlock(PageElement):
+                filed = PageElement("#filed_id", timeout=10)
+                button = PageElement("//path/to/element")
+        
+                def do_some_work(self, keys):
+                    self.field.send_keys(keys)
+                    self.button.click()
+                    ...
+        
+            class SomePageObject(PageElementsContainer):
+                element = SomePageBlock(".block_class")
+        
+                def __init__(self, driver):
+                    self.driver = driver
+        
+            page = SomePageObject(get_driver('firefox'))
+            assert page.element.button.is_displayed()
+            page.element.do_some_work("bla-bla")
+        
+        
+        - lazy element loading by request
+        - automated handling of `StaleElementReferenceException`
+        - flexible timeouts
+        - automated detecting of locator type
+        - smart lists of elements, automated logs and much more `here <http://github.com/aksas/pypo4sel>`_.
+        
+Keywords: selenium,webdriver,automated,testing,page object
+Platform: UNKNOWN
+Classifier: Development Status :: 2 - Pre-Alpha
+Classifier: Intended Audience :: Developers
+Classifier: Topic :: Software Development :: Testing
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python :: 2.7
