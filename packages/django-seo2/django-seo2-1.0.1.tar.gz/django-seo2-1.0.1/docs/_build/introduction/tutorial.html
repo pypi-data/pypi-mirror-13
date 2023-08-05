@@ -1,0 +1,238 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>django-seo2 Framework Tutorial &mdash; django-seo2 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="django-seo2 1.0 documentation" href="../index.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="django-seo2-framework-tutorial">
+<span id="introduction-tutorial"></span><h1>django-seo2 Framework Tutorial<a class="headerlink" href="#django-seo2-framework-tutorial" title="Permalink to this headline">¶</a></h1>
+<p>Adding SEO to your Django site is easy, you need to do two things:</p>
+<ul class="simple">
+<li>Define which metadata fields you need</li>
+<li>Add the output to your templates</li>
+</ul>
+<div class="section" id="before-we-start">
+<h2>Before we start<a class="headerlink" href="#before-we-start" title="Permalink to this headline">¶</a></h2>
+<p>This tutorial assumes you already know how to use Django, and that you have a site with some apps already up and running.
+It assumes you have installed the library somewhere where python can get it, and that you&#8217;ve added <code class="docutils literal"><span class="pre">djangoseo</span></code> to your <code class="docutils literal"><span class="pre">INSTALLED_APPS</span></code> setting.</p>
+</div>
+<div class="section" id="metadata-definition">
+<h2>Metadata definition<a class="headerlink" href="#metadata-definition" title="Permalink to this headline">¶</a></h2>
+<p>You can define which fields appear in your metadata by creating a class that subclasses <code class="docutils literal"><span class="pre">seo.Metadata</span></code>. For example, create a new file called <code class="docutils literal"><span class="pre">seo.py</span></code> in an app on your site:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">djangoseo</span> <span class="kn">import</span> <span class="n">seo</span>
+
+<span class="k">class</span> <span class="nc">MyMetadata</span><span class="p">(</span><span class="n">seo</span><span class="o">.</span><span class="n">Metadata</span><span class="p">):</span>
+    <span class="n">title</span>       <span class="o">=</span> <span class="n">seo</span><span class="o">.</span><span class="n">Tag</span><span class="p">(</span><span class="n">head</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">max_length</span><span class="o">=</span><span class="mi">68</span><span class="p">)</span>
+    <span class="n">description</span> <span class="o">=</span> <span class="n">seo</span><span class="o">.</span><span class="n">MetaTag</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">155</span><span class="p">)</span>
+    <span class="n">keywords</span>    <span class="o">=</span> <span class="n">seo</span><span class="o">.</span><span class="n">KeywordTag</span><span class="p">()</span>
+    <span class="n">heading</span>     <span class="o">=</span> <span class="n">seo</span><span class="o">.</span><span class="n">Tag</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&quot;h1&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Done! The above definition outlines four fields:</p>
+<ul class="simple">
+<li>A <code class="docutils literal"><span class="pre">&lt;title&gt;</span></code> field, appearing in the head and limited to 68 characters (most search engines will the first 68 characters before any truncating takes place).</li>
+<li>A <code class="docutils literal"><span class="pre">&lt;meta&gt;</span></code> tag for the description, with a maximum length of 155 (again, to appear in search engine results). <code class="docutils literal"><span class="pre">&lt;meta&gt;</span></code> tags are always set to appear in the head.</li>
+<li>A <code class="docutils literal"><span class="pre">&lt;meta&gt;</span></code> tag for keywords. (you could also use <code class="docutils literal"><span class="pre">seo.MetaTag</span></code>).</li>
+<li>A <code class="docutils literal"><span class="pre">&lt;h1&gt;</span></code> tag for headings, which does not appear in the document head.</li>
+</ul>
+<p>If you run migrate you will also notice that four new models are created:</p>
+<ul class="simple">
+<li>One to attach the metadata to paths</li>
+<li>One to attach the metadata to model instances</li>
+<li>One to attach the metadata to models</li>
+<li>One to attach the metadata to views</li>
+</ul>
+</div>
+<div class="section" id="setting-up-the-admin">
+<h2>Setting up the Admin<a class="headerlink" href="#setting-up-the-admin" title="Permalink to this headline">¶</a></h2>
+<p>To view and edit these in Django&#8217;s admin, add the following to your <code class="docutils literal"><span class="pre">urls.py</span></code>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">djangoseo.admin</span> <span class="kn">import</span> <span class="n">register_seo_admin</span>
+<span class="kn">from</span> <span class="nn">django.contrib</span> <span class="kn">import</span> <span class="n">admin</span>
+<span class="kn">from</span> <span class="nn">myapp.seo</span> <span class="kn">import</span> <span class="n">MyMetadata</span>
+
+<span class="n">register_seo_admin</span><span class="p">(</span><span class="n">admin</span><span class="o">.</span><span class="n">site</span><span class="p">,</span> <span class="n">MyMetadata</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>You should now see the four models in the admin, and will be able to add metadata for each of the fields you defined earlier.</p>
+</div>
+<div class="section" id="adding-the-output-to-your-templates">
+<h2>Adding the output to your templates<a class="headerlink" href="#adding-the-output-to-your-templates" title="Permalink to this headline">¶</a></h2>
+<p>Once again, there isn&#8217;t much to do here. Simply pick a suitable template. Most often this will be <code class="docutils literal"><span class="pre">base.html</span></code>, which is extended by most other templates.
+After loading the <code class="docutils literal"><span class="pre">seo</span></code> template library, simply output all the head elements add the tag <code class="docutils literal"><span class="pre">{%</span> <span class="pre">get_metadata</span> <span class="pre">%}</span></code>, like this:</p>
+<div class="highlight-html"><div class="highlight"><pre>{% load seo %}
+<span class="nt">&lt;html&gt;</span>
+<span class="nt">&lt;head&gt;</span>
+  {% get_metadata %}
+<span class="nt">&lt;/head&gt;</span>
+<span class="nt">&lt;body&gt;</span>
+    <span class="nt">&lt;p&gt;</span>I like gypsy Jazz!<span class="nt">&lt;/p&gt;</span>
+<span class="nt">&lt;/body&gt;</span>
+<span class="nt">&lt;/html&gt;</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Make sure you have <code class="docutils literal"><span class="pre">&quot;django.core.context_processors.request&quot;</span></code> listed in your site&#8217;s <code class="docutils literal"><span class="pre">TEMPLATE_CONTEXT_PROCESSORS</span></code> setting.
+This provides <code class="docutils literal"><span class="pre">{%</span> <span class="pre">get_metadata</span> <span class="pre">%}</span></code> with the current path, allowing it to automatically select the relevant metadata.</p>
+</div>
+</div>
+<div class="section" id="seeing-it-in-action">
+<h2>Seeing it in action<a class="headerlink" href="#seeing-it-in-action" title="Permalink to this headline">¶</a></h2>
+<p>Using the admin site, add some new metadata, attaching it to a (valid) path of your choice.
+Open up your browser and visit the path, to hopefully see something like this in the page source:</p>
+<div class="highlight-html"><div class="highlight"><pre><span class="nt">&lt;html&gt;</span>
+<span class="nt">&lt;head&gt;</span>
+  <span class="nt">&lt;title&gt;</span>My Title<span class="nt">&lt;/html&gt;</span>
+  <span class="nt">&lt;meta</span> <span class="na">name=</span><span class="s">&quot;description&quot;</span> <span class="na">content=</span><span class="s">&quot;My description&quot;</span> <span class="nt">/&gt;</span>
+  <span class="nt">&lt;meta</span> <span class="na">name=</span><span class="s">&quot;keywords&quot;</span> <span class="na">content=</span><span class="s">&quot;My, list, of, keywords&quot;</span> <span class="nt">/&gt;</span>
+<span class="nt">&lt;/head&gt;</span>
+<span class="nt">&lt;body&gt;</span>
+    <span class="nt">&lt;p&gt;</span>I like gypsy Jazz!<span class="nt">&lt;/p&gt;</span>
+<span class="nt">&lt;/body&gt;</span>
+<span class="nt">&lt;/html&gt;</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="fine-tuning-the-display">
+<h2>Fine tuning the display<a class="headerlink" href="#fine-tuning-the-display" title="Permalink to this headline">¶</a></h2>
+<p>Notice that all of the head elements have automatically been added where the <code class="docutils literal"><span class="pre">{%</span> <span class="pre">get_metadata</span> <span class="pre">%}</span></code> tag was used.
+But you&#8217;ll also notice that the heading is missing.
+Because the heading was not defined to appear in the head, it was not automatically added.
+To do that, you will have to explicitly add it to the template. Like this:</p>
+<div class="highlight-html"><div class="highlight"><pre>{% load seo %}
+<span class="nt">&lt;html&gt;</span>
+<span class="nt">&lt;head&gt;</span>
+  {% get_metadata as my_meta %}
+  {{ my_meta }}
+<span class="nt">&lt;/head&gt;</span>
+<span class="nt">&lt;body&gt;</span>
+    {{ my_meta.heading }}
+    <span class="nt">&lt;p&gt;</span>I like gypsy Jazz!<span class="nt">&lt;/p&gt;</span>
+<span class="nt">&lt;/body&gt;</span>
+<span class="nt">&lt;/html&gt;</span>
+</pre></div>
+</div>
+<p>Now your page will show the heading you wanted.
+Notice that <code class="docutils literal"><span class="pre">{%</span> <span class="pre">get_metadata</span> <span class="pre">%}</span></code> no longer outputs the head metadata, but instead creates a new variable <code class="docutils literal"><span class="pre">my_meta</span></code>. The line following it (<code class="docutils literal"><span class="pre">{{</span> <span class="pre">my</span> <span class="pre">meta</span> <span class="pre">}}</span></code>) outputs the head elements for you, and can be used to access other fields, such as the heading.</p>
+<p>But what if your <code class="docutils literal"><span class="pre">&lt;h1&gt;</span></code> needs to have a class?
+You can also retrive the value directly, like this:</p>
+<div class="highlight-html"><div class="highlight"><pre><span class="nt">&lt;h1</span> <span class="na">class=</span><span class="s">&quot;special&quot;</span><span class="nt">&gt;</span>{{ my_meta.heading.value }}<span class="nt">&lt;/h1&gt;</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="what-next">
+<h2>What next?<a class="headerlink" href="#what-next" title="Permalink to this headline">¶</a></h2>
+<p>This is just an introduction to the framework. There are a number of other features including:</p>
+<ul class="simple">
+<li>Variable substitution to access model instance attributes (for model-based metadata) and view context (for view-based metadata)</li>
+<li>Optional support for django sites framework</li>
+<li>Optional i18n (internationalisation) support</li>
+<li>Optional caching</li>
+<li>Auto-population for missing values using other fields, attributes, methods, callables or literal values</li>
+<li>Grouped fields, for both admin editing and output</li>
+<li>Hidden fields, ie not editable in admin</li>
+<li>API for custom fields to provide customised rendering, cleaning, etc</li>
+</ul>
+<p>Complete details on these are provided in the <a class="reference internal" href="../reference/definition.html#reference-definition"><span>API reference</span></a>.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">django-seo2 Framework Tutorial</a><ul>
+<li><a class="reference internal" href="#before-we-start">Before we start</a></li>
+<li><a class="reference internal" href="#metadata-definition">Metadata definition</a></li>
+<li><a class="reference internal" href="#setting-up-the-admin">Setting up the Admin</a></li>
+<li><a class="reference internal" href="#adding-the-output-to-your-templates">Adding the output to your templates</a></li>
+<li><a class="reference internal" href="#seeing-it-in-action">Seeing it in action</a></li>
+<li><a class="reference internal" href="#fine-tuning-the-display">Fine tuning the display</a></li>
+<li><a class="reference internal" href="#what-next">What next?</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/introduction/tutorial.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, Roman Salin.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.7</a>
+      
+      |
+      <a href="../_sources/introduction/tutorial.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

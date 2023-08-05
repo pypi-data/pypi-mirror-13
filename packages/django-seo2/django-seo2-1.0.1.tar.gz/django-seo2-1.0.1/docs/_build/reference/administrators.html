@@ -1,0 +1,181 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Guide for site administrators &mdash; django-seo2 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="django-seo2 1.0 documentation" href="../index.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="guide-for-site-administrators">
+<span id="reference-administrators"></span><h1>Guide for site administrators<a class="headerlink" href="#guide-for-site-administrators" title="Permalink to this headline">¶</a></h1>
+<p>Once the developer has installed the framework, site administrators are able to attach metadata to paths, views, model instances and model classes.
+Metadata can be added though the four options presented in the admin, under the &#8220;Seo&#8221; app.</p>
+<div class="figure align-center" id="id2">
+<img alt="../_images/admin-index.png" src="../_images/admin-index.png" />
+<p class="caption"><span class="caption-text">Sample SEO section from the Django admin index page</span></p>
+</div>
+<div class="section" id="associating-metadata-with-paths">
+<h2>Associating Metadata with Paths<a class="headerlink" href="#associating-metadata-with-paths" title="Permalink to this headline">¶</a></h2>
+<p>The simplest and most flexible way to add metadata is by associating it with a path. Here all you need to do is add the path you want and go for it.</p>
+<div class="figure align-center" id="id3">
+<img alt="../_images/admin-path.png" src="../_images/admin-path.png" />
+<p class="caption"><span class="caption-text">Sample SEO page to add a new set of path associated metadata</span></p>
+</div>
+<p>If your metadata is sensitive to sites and languages, you will see these options as well, allowing you to have specific metadata for a given language or site. Leave them blank and it will be the fallback for any language or site.</p>
+<div class="figure align-center" id="id4">
+<img alt="../_images/admin-sites-i18n.png" src="../_images/admin-sites-i18n.png" />
+<p class="caption"><span class="caption-text">Sample SEO page with language and site options</span></p>
+</div>
+<p>Of course, this isn&#8217;t the most convenient way to add metadata.
+You need to know the path in advance, and if it changes, your metadata won&#8217;t be used anymore.
+If your site has thousands of paths, this approach will also consume a healthy amount of your time.</p>
+</div>
+<div class="section" id="associating-metadata-with-views">
+<h2>Associating Metadata with Views<a class="headerlink" href="#associating-metadata-with-views" title="Permalink to this headline">¶</a></h2>
+<p>Metadata can be assciated with a &#8220;view&#8221;, even if that view is found on a number of paths.
+The site developer will choose a number of suitable views, which can be easily selected from a drop down list.
+Simply choose the appropriate view and the metadata will appear on every relevant path.</p>
+<div class="figure align-center" id="id5">
+<img alt="../_images/admin-view.png" src="../_images/admin-view.png" />
+<p class="caption"><span class="caption-text">Sample SEO page to add a new set of view associated metadata</span></p>
+</div>
+</div>
+<div class="section" id="associating-metadata-with-model-instances">
+<h2>Associating Metadata with Model instances<a class="headerlink" href="#associating-metadata-with-model-instances" title="Permalink to this headline">¶</a></h2>
+<p>To help make things simpler, metadata can be attached to model instances, for example a particular product.
+Any time you add a new product, a matching &#8220;model instance&#8221; metadata will be created automatically. <a class="footnote-reference" href="#f1" id="id1">[1]</a>
+You are then free to add metadata as you please, and any time the path changes, the metadata will follow.
+The metadata will then appear on the relevant &#8220;detail&#8221; page for the given instance.</p>
+<p>If the site developer has enabled it, metadata can also be directly editable alongside the instance itself.
+This is convenient when content authors are also responsible for metadata.</p>
+<div class="figure align-center" id="id6">
+<img alt="../_images/admin-modelinstance-inline.png" src="../_images/admin-modelinstance-inline.png" />
+<p class="caption"><span class="caption-text">Sample model instance page with inline metadata</span></p>
+</div>
+<p class="rubric">Footnotes</p>
+<table class="docutils footnote" frame="void" id="f1" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id1">[1]</a></td><td>Note that the model needs to be listed in <code class="docutils literal"><span class="pre">seo_models</span></code> for this to happen. The site developer will use this to choose which models will automatically create metadata.</td></tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="associating-metadata-with-models">
+<h2>Associating Metadata with Models<a class="headerlink" href="#associating-metadata-with-models" title="Permalink to this headline">¶</a></h2>
+<p>But of course this won&#8217;t help if you have a large number of instances.
+It is possible to define fallback data for when a field is missing.
+This means you can define standard metadata and override a particular field or two for a particular model instance.</p>
+<div class="figure align-center" id="id7">
+<img alt="../_images/admin-model.png" src="../_images/admin-model.png" />
+<p class="caption"><span class="caption-text">Sample SEO page to add a new set of model associated metadata</span></p>
+</div>
+</div>
+<div class="section" id="integrating-existing-data">
+<h2>Integrating Existing Data<a class="headerlink" href="#integrating-existing-data" title="Permalink to this headline">¶</a></h2>
+<p>Quite often metadata will simply comprise of existing information, such as a product title.
+It would be mildly inefficient to have to maintain the same information in two separate places, so it is possible to reuse existing information.
+This can be done in the &#8220;Model&#8221;, &#8220;Model instance&#8221; and &#8220;View&#8221; metadata areas.</p>
+<p>If you would like to reference the relevant model instance, you type the name of the model surrounded by two braces. For example <code class="docutils literal"><span class="pre">Buy</span> <span class="pre">{{</span> <span class="pre">product</span> <span class="pre">}}</span> <span class="pre">today!</span></code>.
+You can go further and reference different fields from the relevant instance, for example <code class="docutils literal"><span class="pre">By</span> <span class="pre">{{</span> <span class="pre">product.name</span> <span class="pre">}}</span> <span class="pre">today!</span></code>.
+The syntax is that of the Django template language.</p>
+<p>This is particularly useful for the &#8220;model&#8221; metadata, where fallback values can be customised for all relevant instances.</p>
+<p>For &#8220;view&#8221; metadata, a different set of information is available, depending on the particular view.
+The site developer will need to let site administrators know which information is available for each view.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Guide for site administrators</a><ul>
+<li><a class="reference internal" href="#associating-metadata-with-paths">Associating Metadata with Paths</a></li>
+<li><a class="reference internal" href="#associating-metadata-with-views">Associating Metadata with Views</a></li>
+<li><a class="reference internal" href="#associating-metadata-with-model-instances">Associating Metadata with Model instances</a></li>
+<li><a class="reference internal" href="#associating-metadata-with-models">Associating Metadata with Models</a></li>
+<li><a class="reference internal" href="#integrating-existing-data">Integrating Existing Data</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/reference/administrators.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, Roman Salin.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.7</a>
+      
+      |
+      <a href="../_sources/reference/administrators.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -1,0 +1,492 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>SEO data definition &mdash; django-seo2 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="django-seo2 1.0 documentation" href="../index.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="seo-data-definition">
+<span id="reference-definition"></span><h1>SEO data definition<a class="headerlink" href="#seo-data-definition" title="Permalink to this headline">¶</a></h1>
+<p>The SEO data definition is used to create a series of Django models to store metadata.
+The definition itself, is similar to the definition of Django models. Here is a simple example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">BasicExample</span><span class="p">(</span><span class="n">seo</span><span class="o">.</span><span class="n">Metadata</span><span class="p">):</span>
+    <span class="n">title</span>       <span class="o">=</span> <span class="n">seo</span><span class="o">.</span><span class="n">Tag</span><span class="p">(</span><span class="n">head</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">keywords</span>    <span class="o">=</span> <span class="n">seo</span><span class="o">.</span><span class="n">MetaTag</span><span class="p">()</span>
+    <span class="n">description</span> <span class="o">=</span> <span class="n">seo</span><span class="o">.</span><span class="n">MetaTag</span><span class="p">()</span>
+    <span class="n">heading</span>     <span class="o">=</span> <span class="n">seo</span><span class="o">.</span><span class="n">Tag</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&quot;h1&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This eventually produces some models, which stores four different pieces of metadata.
+The behaviour can be customised by passing attributes, as the <code class="docutils literal"><span class="pre">heading</span></code> field does.</p>
+<div class="section" id="fields">
+<h2>Fields<a class="headerlink" href="#fields" title="Permalink to this headline">¶</a></h2>
+<p>The are four built-in metadata fields: <code class="docutils literal"><span class="pre">seo.Tag()</span></code>, <code class="docutils literal"><span class="pre">seo.MetaTag()</span></code>, <code class="docutils literal"><span class="pre">seo.KeywordTag()</span></code>  and <code class="docutils literal"><span class="pre">seo.Raw()</span></code>.
+The full range of attributes for each type of field is listed below.</p>
+<div class="section" id="seo-tag">
+<h3><code class="docutils literal"><span class="pre">seo.Tag</span></code><a class="headerlink" href="#seo-tag" title="Permalink to this headline">¶</a></h3>
+<p>This is your standard, every-day HTML tag, like <code class="docutils literal"><span class="pre">&lt;title&gt;</span></code> or <code class="docutils literal"><span class="pre">&lt;h1&gt;</span></code>.</p>
+<dl class="class">
+<dt id="seo.Tag">
+<em class="property">class </em><code class="descclassname">seo.</code><code class="descname">Tag</code><span class="sig-paren">(</span><em>**options</em><span class="sig-paren">)</span><a class="headerlink" href="#seo.Tag" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="name">
+<code class="descname">name</code><a class="headerlink" href="#name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Name of this tag. For example, if name is set to <code class="docutils literal"><span class="pre">h1</span></code>, the following will be rendered: <code class="docutils literal"><span class="pre">&lt;h1&gt;My</span> <span class="pre">heading&lt;/h1&gt;</span></code>.
+By default, this is set to the attribute&#8217;s name.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="valid_tags">
+<code class="descname">valid_tags</code><a class="headerlink" href="#valid_tags" title="Permalink to this definition">¶</a></dt>
+<dd><p>See below for details. This defaults to a list of inline HTML elements.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="seo-metatag">
+<h3><code class="docutils literal"><span class="pre">seo.MetaTag</span></code><a class="headerlink" href="#seo-metatag" title="Permalink to this headline">¶</a></h3>
+<p>Because <code class="docutils literal"><span class="pre">meta</span></code> tags are a common place to store metadata, a special field is provided.
+This field is useful, as it has attribute escaping built in (for eg quotations).</p>
+<dl class="class">
+<dt id="seo.MetaTag">
+<em class="property">class </em><code class="descclassname">seo.</code><code class="descname">MetaTag</code><span class="sig-paren">(</span><em>**options</em><span class="sig-paren">)</span><a class="headerlink" href="#seo.MetaTag" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">name</code></dt>
+<dd><p>The value of the meta element&#8217;s <code class="docutils literal"><span class="pre">name</span></code> attribute.
+For example, if name is set to <code class="docutils literal"><span class="pre">&quot;description&quot;</span></code>, the following will be rendered: <code class="docutils literal"><span class="pre">&lt;meta</span> <span class="pre">name=&quot;description&quot;</span> <span class="pre">content=&quot;My</span> <span class="pre">description&quot;</span> <span class="pre">/&gt;</span></code>
+By default, this is set to the attribute&#8217;s name.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="seo-keywordtag">
+<h3><code class="docutils literal"><span class="pre">seo.KeywordTag</span></code><a class="headerlink" href="#seo-keywordtag" title="Permalink to this headline">¶</a></h3>
+<p>This is simply a <code class="docutils literal"><span class="pre">MetaTag</span></code> with the default name <code class="docutils literal"><span class="pre">keywords</span></code> and small customisations in the admin.
+When a value is entered over multiple lines, each line is joined using a comma.
+In the future, more substantial admin customisations may be employed to help add keywords.</p>
+<dl class="class">
+<dt id="seo.KeywordTag">
+<em class="property">class </em><code class="descclassname">seo.</code><code class="descname">KeywordTag</code><span class="sig-paren">(</span><em>**options</em><span class="sig-paren">)</span><a class="headerlink" href="#seo.KeywordTag" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">name</code></dt>
+<dd><p>The value of the meta element&#8217;s <code class="docutils literal"><span class="pre">name</span></code> attribute. By default, this is set to <code class="docutils literal"><span class="pre">keywords</span></code>.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="seo-raw">
+<h3><code class="docutils literal"><span class="pre">seo.Raw</span></code><a class="headerlink" href="#seo-raw" title="Permalink to this headline">¶</a></h3>
+<p>The raw field allows the admin user to enter raw html data (if you want them to!).
+You can of course restrict the tags available, to ensure that the admin users cannot inadventently break the site
+(they are after all not playing the role of website developer).
+By default, a Django <code class="docutils literal"><span class="pre">TextField</span></code> is used for this field.</p>
+<dl class="class">
+<dt id="seo.Raw">
+<em class="property">class </em><code class="descclassname">seo.</code><code class="descname">Raw</code><span class="sig-paren">(</span><em>**options</em><span class="sig-paren">)</span><a class="headerlink" href="#seo.Raw" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="all-fields">
+<h3>All fields:<a class="headerlink" href="#all-fields" title="Permalink to this headline">¶</a></h3>
+<p>All three fields (<code class="docutils literal"><span class="pre">Tag</span></code>, <code class="docutils literal"><span class="pre">MetaTag</span></code> and <code class="docutils literal"><span class="pre">Raw</span></code>) accept the following parameters.
+Any unknown parameters will be passed onto the underlying Django field (usually a <code class="docutils literal"><span class="pre">CharField</span></code>).</p>
+<dl class="attribute">
+<dt id="field">
+<code class="descname">field</code><a class="headerlink" href="#field" title="Permalink to this definition">¶</a></dt>
+<dd><p>The underlying Django field, either a field class or a field instance. By default this is usually a <code class="docutils literal"><span class="pre">CharField</span></code>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="head">
+<code class="descname">head</code><a class="headerlink" href="#head" title="Permalink to this definition">¶</a></dt>
+<dd><p>Boolean, determines if this should automatically be included in the head</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="editable">
+<code class="descname">editable</code><a class="headerlink" href="#editable" title="Permalink to this definition">¶</a></dt>
+<dd><p>Boolean, determines if this should be user editable (in the admin),
+otherwise the default value will always be used.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="choices">
+<code class="descname">choices</code><a class="headerlink" href="#choices" title="Permalink to this definition">¶</a></dt>
+<dd><p>A list of values, which will be passed to the underlying Django field, making them available in the admin (usually as a drop down list).</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="verbose_name">
+<code class="descname">verbose_name</code><a class="headerlink" href="#verbose_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>A user friendly name for this field, which appears in the admin.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="help_text">
+<code class="descname">help_text</code><a class="headerlink" href="#help_text" title="Permalink to this definition">¶</a></dt>
+<dd><p>A description of what should go in this field, for the admin.
+If a default value is given (using the <code class="docutils literal"><span class="pre">populate_from</span></code> parameter),
+a description of what will be included will appear automatically at the end of the <code class="docutils literal"><span class="pre">help_text</span></code>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="populate_from">
+<code class="descname">populate_from</code><a class="headerlink" href="#populate_from" title="Permalink to this definition">¶</a></dt>
+<dd><p>A default value, when no data is available (as seen above for each of the fields).
+If you do not set this, it will be set to <code class="docutils literal"><span class="pre">None</span></code>, which means the field will not appear.
+You can pass a callable, name of a field, name of a method or a literal value.
+The value is resolved in the following way:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li>if a callable is provided, call it each time the value is to be displayed</li>
+<li>if name of field or method is provided, use the value provided by that field or method</li>
+<li>otherwise, treat the given value as a literal value. Literal values can also be explicitly marked.</li>
+</ol>
+</div></blockquote>
+<p>If a callable or the name of a method is provided,
+it is called (at run time) with the metadata as the first argument
+(or of course <code class="docutils literal"><span class="pre">self</span></code>) and a variable set of keyword arguments.
+For this reason, you should always use <code class="docutils literal"><span class="pre">**kwargs</span></code>
+and default values for the parameters you use.
+Return <code class="docutils literal"><span class="pre">None</span></code> to leave out the tag/meta tag/raw data. For example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">default_title</span><span class="p">(</span><span class="n">metadata</span><span class="p">,</span> <span class="n">model_instance</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">model_instance</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s">&quot;My Website: </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">model_instance</span><span class="o">.</span><span class="n">name</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">None</span>
+</pre></div>
+</div>
+<p>Currently, the keywords are <cite>model_instance</cite>, <cite>view_name</cite>, <cite>content_type</cite>, <cite>path</cite>.
+They won&#8217;t all appear at once, and future version may include more information.</p>
+<p>If you provide a callable, you can describe what the callable will return for the benefit of admin users.
+Do this by setting the <code class="docutils literal"><span class="pre">short_description</span></code> attribute on the callable. For example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">default_title</span><span class="p">(</span><span class="n">metadata</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">return</span> <span class="s">&quot;My Website&quot;</span>
+<span class="n">default_title</span><span class="o">.</span><span class="n">short_description</span> <span class="o">=</span> <span class="s">&quot;Standard title will be used&quot;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="max_length">
+<code class="descname">max_length</code><a class="headerlink" href="#max_length" title="Permalink to this definition">¶</a></dt>
+<dd><p>This is passed directly onto the Django field. By default, it is set to an arbitrary 511 characters, but it is worth setting this manually.
+For a <code class="docutils literal"><span class="pre">&lt;title&gt;</span></code> tag, a limit of 68 will ensure the title fits into most search engine results.
+For the description meta tag, a limit of 155 characters will be safe.
+If the field has been set to use a <code class="docutils literal"><span class="pre">TextField</span></code> Django field, then <code class="docutils literal"><span class="pre">max_length</span></code> cannot be specified.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">valid_tags</code></dt>
+<dd><p>Tags listed here are valid, all other tags will be stipped from the output.</p>
+<p>If this is not set, and <code class="docutils literal"><span class="pre">head</span></code> is set to <code class="docutils literal"><span class="pre">True</span></code>, then this will default to:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">valid_tags</span> <span class="o">=</span> <span class="s">&quot;head title base link meta script&quot;</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>otherwise, it is set to <code class="docutils literal"><span class="pre">None</span></code>, allowing all tags.</p>
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="meta-options">
+<h2>Meta Options<a class="headerlink" href="#meta-options" title="Permalink to this headline">¶</a></h2>
+<p>The metadata definition can take a number of options that are provided in a <code class="docutils literal"><span class="pre">Meta</span></code> class (sorry for the name), much like Django models and forms do. For example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">BasicExample</span><span class="p">(</span><span class="n">seo</span><span class="o">.</span><span class="n">Metadata</span><span class="p">):</span>
+    <span class="n">title</span>       <span class="o">=</span> <span class="n">seo</span><span class="o">.</span><span class="n">Tag</span><span class="p">(</span><span class="n">head</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">keywords</span>    <span class="o">=</span> <span class="n">seo</span><span class="o">.</span><span class="n">MetaTag</span><span class="p">()</span>
+    <span class="n">description</span> <span class="o">=</span> <span class="n">seo</span><span class="o">.</span><span class="n">MetaTag</span><span class="p">()</span>
+    <span class="n">heading</span>     <span class="o">=</span> <span class="n">seo</span><span class="o">.</span><span class="n">Tag</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&quot;h1&quot;</span><span class="p">)</span>
+
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+        <span class="n">use_sites</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="n">use_cache</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="n">use_i18n</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="n">groups</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;optional&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s">&#39;heading&#39;</span><span class="p">,)}</span>
+        <span class="n">seo_models</span> <span class="o">=</span> <span class="p">(</span><span class="s">&#39;my_app&#39;</span><span class="p">,</span> <span class="s">&#39;flatpages.FlatPage&#39;</span><span class="p">)</span>
+        <span class="n">seo_views</span> <span class="o">=</span> <span class="p">(</span><span class="s">&#39;my_app&#39;</span><span class="p">,</span> <span class="p">)</span>
+        <span class="n">backends</span> <span class="o">=</span> <span class="p">(</span><span class="s">&#39;path&#39;</span><span class="p">,</span> <span class="s">&#39;model&#39;</span><span class="p">,</span> <span class="s">&#39;view&#39;</span><span class="p">)</span>
+        <span class="n">verbose_name</span> <span class="o">=</span> <span class="s">&quot;My basic example&quot;</span>
+        <span class="n">verbose_name_plural</span> <span class="o">=</span> <span class="s">&quot;My basic examples&quot;</span>
+</pre></div>
+</div>
+<dl class="attribute">
+<dt id="Meta.use_sites">
+<code class="descclassname">Meta.</code><code class="descname">use_sites</code><a class="headerlink" href="#Meta.use_sites" title="Permalink to this definition">¶</a></dt>
+<dd><p>Boolean, determines if all metadata should be linked to a site in the sites framework.
+Each metadata entry can then be optionally associated with a site, meaning it will only appear if the selected site is the current site.
+If site is set to null on a metadata entry, it will be used for all sites that are missing an explicit entry.
+By default, <code class="docutils literal"><span class="pre">use_sites</span></code> is <code class="docutils literal"><span class="pre">False</span></code>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="Meta.use_cache">
+<code class="descclassname">Meta.</code><code class="descname">use_cache</code><a class="headerlink" href="#Meta.use_cache" title="Permalink to this definition">¶</a></dt>
+<dd><p>If this is <code class="docutils literal"><span class="pre">True</span></code> caching is enabled, meaning that each of the final values for each field on a given path will be cached.
+You may like to turn this off if you are caching the final output in any case.
+By default, <code class="docutils literal"><span class="pre">use_cache</span></code> is <code class="docutils literal"><span class="pre">False</span></code>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="Meta.use_i18n">
+<code class="descclassname">Meta.</code><code class="descname">use_i18n</code><a class="headerlink" href="#Meta.use_i18n" title="Permalink to this definition">¶</a></dt>
+<dd><p>If this is <code class="docutils literal"><span class="pre">True</span></code>, an extra field for language selection is provided. Metadata will only be returned for the given language.
+By default, <code class="docutils literal"><span class="pre">use_i18n</span></code> is <code class="docutils literal"><span class="pre">False</span></code>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="Meta.groups">
+<code class="descclassname">Meta.</code><code class="descname">groups</code><a class="headerlink" href="#Meta.groups" title="Permalink to this definition">¶</a></dt>
+<dd><p>Logical grouping of fields. This will be used in the admin, as well as in the output. Templates can access this directly to output a number of grouped fields at once.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="Meta.seo_models">
+<code class="descclassname">Meta.</code><code class="descname">seo_models</code><a class="headerlink" href="#Meta.seo_models" title="Permalink to this definition">¶</a></dt>
+<dd><p>List of apps and/or models (in the form <code class="docutils literal"><span class="pre">app_name.model_name</span></code>) for which metadata will be attached. When an instance is created, a matching metadata instance is automatically created.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="Meta.seo_views">
+<code class="descclassname">Meta.</code><code class="descname">seo_views</code><a class="headerlink" href="#Meta.seo_views" title="Permalink to this definition">¶</a></dt>
+<dd><p>List of apps and/or view names to which metadata can be attached. When an app name is given, a <code class="docutils literal"><span class="pre">urls.py</span></code> will be used to limit the installed views.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="Meta.backends">
+<code class="descclassname">Meta.</code><code class="descname">backends</code><a class="headerlink" href="#Meta.backends" title="Permalink to this definition">¶</a></dt>
+<dd><p>When you define metadata fields, four django models are created to attach the metadata to various things: paths, model instances, models and views.
+You can restrict which of these are created by setting <code class="docutils literal"><span class="pre">backeneds</span></code> to a list with a subset of the default value: <code class="docutils literal"><span class="pre">(&quot;path&quot;,</span> <span class="pre">&quot;modelinstance&quot;,</span> <span class="pre">&quot;model&quot;,</span> <span class="pre">&quot;view&quot;)</span></code></p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="Meta.verbose_name">
+<code class="descclassname">Meta.</code><code class="descname">verbose_name</code><a class="headerlink" href="#Meta.verbose_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>This is used in the <code class="docutils literal"><span class="pre">verbose_name</span></code> for each of the Django models created.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="Meta.verbose_name_plural">
+<code class="descclassname">Meta.</code><code class="descname">verbose_name_plural</code><a class="headerlink" href="#Meta.verbose_name_plural" title="Permalink to this definition">¶</a></dt>
+<dd><p>This is used in the <code class="docutils literal"><span class="pre">verbose_name_plural</span></code> for each of the Django models created.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="help-text">
+<h2>Help Text<a class="headerlink" href="#help-text" title="Permalink to this headline">¶</a></h2>
+<p>Help text for each of the fields can be provided manually, as in Django, but it can also be provided automatically and using a clean bulk-help-text syntax.</p>
+<div class="section" id="automatic-help-text">
+<h3>Automatic help text<a class="headerlink" href="#automatic-help-text" title="Permalink to this headline">¶</a></h3>
+<p>Help text is sometimes automatically generated for fields that do not have an explicit <code class="docutils literal"><span class="pre">help_text</span></code> set:</p>
+<ul class="simple">
+<li>When <code class="docutils literal"><span class="pre">populate_from</span></code> is set to a literal value, the help text will be set to: <code class="docutils literal"><span class="pre">'If</span> <span class="pre">empty,</span> <span class="pre">&quot;value&quot;</span> <span class="pre">will</span> <span class="pre">be</span> <span class="pre">used.'</span></code></li>
+<li>When <code class="docutils literal"><span class="pre">populate_from</span></code> is set to another field, the help text will be set to: <code class="docutils literal"><span class="pre">'If</span> <span class="pre">empty,</span> <span class="pre">other</span> <span class="pre">field</span> <span class="pre">will</span> <span class="pre">be</span> <span class="pre">used.'</span></code></li>
+<li>When <code class="docutils literal"><span class="pre">populate_from</span></code> is set to a callable, and that callable has an function attribute called <code class="docutils literal"><span class="pre">short_description</span></code>, the help text will be set to: <code class="docutils literal"><span class="pre">'If</span> <span class="pre">empty,</span> <span class="pre">short</span> <span class="pre">description</span></code></li>
+</ul>
+</div>
+<div class="section" id="bulk-help-text">
+<h3>Bulk help text<a class="headerlink" href="#bulk-help-text" title="Permalink to this headline">¶</a></h3>
+<p>You can also edit the help text for a number of fields in a convenient syntax. For example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">BasicExample</span><span class="p">(</span><span class="n">seo</span><span class="o">.</span><span class="n">Metadata</span><span class="p">):</span>
+    <span class="n">title</span>       <span class="o">=</span> <span class="n">seo</span><span class="o">.</span><span class="n">Tag</span><span class="p">(</span><span class="n">head</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">keywords</span>    <span class="o">=</span> <span class="n">seo</span><span class="o">.</span><span class="n">MetaTag</span><span class="p">()</span>
+    <span class="n">description</span> <span class="o">=</span> <span class="n">seo</span><span class="o">.</span><span class="n">MetaTag</span><span class="p">()</span>
+    <span class="n">heading</span>     <span class="o">=</span> <span class="n">seo</span><span class="o">.</span><span class="n">Tag</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&quot;h1&quot;</span><span class="p">)</span>
+
+    <span class="k">class</span> <span class="nc">HelpText</span><span class="p">:</span>
+        <span class="n">title</span>  <span class="o">=</span> <span class="s">&quot;This will appear in the window/tab name, as well as in search results.&quot;</span>
+        <span class="n">keywords</span> <span class="o">=</span> <span class="s">&quot;A comma separated list of words or phrases that describe the content&quot;</span>
+        <span class="n">heading</span> <span class="o">=</span> <span class="s">&quot;This will appear in the &lt;h1&gt; element&quot;</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="templates">
+<h2>Templates<a class="headerlink" href="#templates" title="Permalink to this headline">¶</a></h2>
+<p>A single template tag is provided to output metadata in templates. It requires loading the <code class="docutils literal"><span class="pre">seo</span></code> template library, and can be called in a number of ways:</p>
+<div class="highlight-html"><div class="highlight"><pre>{% get_metadata %}
+</pre></div>
+</div>
+<p>This gets the metadata for the current path (if <cite>RequestContext</cite> is used) and outputs all metadata flagged to appear in the <code class="docutils literal"><span class="pre">&lt;head&gt;</span></code>.</p>
+<div class="highlight-html"><div class="highlight"><pre>{% get_metadata for obj %}
+</pre></div>
+</div>
+<p>This time, the metadata is retrieved for the path belonging to the given object. The object can be a model instance (actually, anything with <code class="docutils literal"><span class="pre">get_absolute_url</span></code>) or a path itself.</p>
+<div class="highlight-html"><div class="highlight"><pre>{% get_metadata as var %}
+{{ var }}
+
+{% get_metadata for obj as var %}
+{{ var }}
+</pre></div>
+</div>
+<p>To exercise a little more flexibility, you can store the retrieved metadata as a context variable. Outputting the variable by itself will output all metadata flagged to appear in the <code class="docutils literal"><span class="pre">&lt;head&gt;</span></code>.</p>
+<p>If you have multiple metadata definitions, you can choose the relevant one by providing the name of the class. Here are your alternatives for doing so:</p>
+<div class="highlight-html"><div class="highlight"><pre>{% get_metadata MetadataClass %}
+{% get_metadata MetadataClass for obj %}
+{% get_metadata MetadataClass as var %}
+{% get_metadata MetadataClass for obj as var %}
+</pre></div>
+</div>
+<div class="section" id="metadata-template-objects">
+<h3>Metadata template objects<a class="headerlink" href="#metadata-template-objects" title="Permalink to this headline">¶</a></h3>
+<p>As seen above, you can store the fetched metadata as a variable. This variable can then be used to access specific metadata fields, groups and values. For example:</p>
+<div class="highlight-html"><div class="highlight"><pre>{{ var }}                   Full output for all metadata flagged to appear in <span class="nt">&lt;head&gt;</span>
+{{ var.field_name }}        Full output for the given field
+{{ var.group_name }}        Full output for all fields in the given group
+{{ var.field_name.value }}  Output only the value for the given field
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="admin">
+<h2>Admin<a class="headerlink" href="#admin" title="Permalink to this headline">¶</a></h2>
+<p>To add the models of your defined metadata to an admin site, make a single call to <code class="docutils literal"><span class="pre">register_seo_admin</span></code>. For example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">djangoseo.admin</span> <span class="kn">import</span> <span class="n">register_seo_admin</span>
+<span class="kn">from</span> <span class="nn">django.contrib</span> <span class="kn">import</span> <span class="n">admin</span>
+<span class="kn">from</span> <span class="nn">myapp.seo</span> <span class="kn">import</span> <span class="n">MyMetadata</span>
+
+<span class="n">register_seo_admin</span><span class="p">(</span><span class="n">admin</span><span class="o">.</span><span class="n">site</span><span class="p">,</span> <span class="n">MyMetadata</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>An admin inline can also be created, to add metadata as an inline form on the admin page of a model instance. For example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">djangoseo.admin</span> <span class="kn">import</span> <span class="n">get_inline</span>
+<span class="kn">from</span> <span class="nn">django.contrib</span> <span class="kn">import</span> <span class="n">admin</span>
+<span class="kn">from</span> <span class="nn">myapp.seo</span> <span class="kn">import</span> <span class="n">MyMetadata</span>
+
+<span class="k">class</span> <span class="nc">MyModelAdmin</span><span class="p">(</span><span class="n">admin</span><span class="o">.</span><span class="n">ModelAdmin</span><span class="p">):</span>
+    <span class="n">inlines</span> <span class="o">=</span> <span class="p">[</span><span class="n">get_inline</span><span class="p">(</span><span class="n">MyMetadata</span><span class="p">)]</span>
+</pre></div>
+</div>
+<p>To add an inline for every relevant model registered on an admin site, use the <code class="docutils literal"><span class="pre">auto_register_inlines</span></code> function.
+This function will add inlines for every model listed in <code class="docutils literal"><span class="pre">seo_models</span></code> both before and after the function is called.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">djangoseo.admin</span> <span class="kn">import</span> <span class="n">auto_register_inlines</span>
+<span class="kn">from</span> <span class="nn">django.contrib</span> <span class="kn">import</span> <span class="n">admin</span>
+<span class="kn">from</span> <span class="nn">myapp.seo</span> <span class="kn">import</span> <span class="n">MyMetadata</span>
+
+<span class="n">auto_register_inlines</span><span class="p">(</span><span class="n">admin</span><span class="o">.</span><span class="n">site</span><span class="p">,</span> <span class="n">MyMetadata</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Note that this is purely for convenience, where the admin site is not customised in any way.
+It is only for the truly, unashamed lazy. Please, please use <code class="docutils literal"><span class="pre">get_inlines</span></code>.
+The reason is (and I&#8217;m not proud of it) that <code class="docutils literal"><span class="pre">auto_register_inlines</span></code> does some
+violent monkey-patching of both the <code class="docutils literal"><span class="pre">Admin</span></code> classes in the site&#8217;s registry AND
+the <code class="docutils literal"><span class="pre">register</span></code> function of the site itself.
+It is not a pythonic feature, and I am considering removing it unless there is strong support.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">SEO data definition</a><ul>
+<li><a class="reference internal" href="#fields">Fields</a><ul>
+<li><a class="reference internal" href="#seo-tag"><code class="docutils literal"><span class="pre">seo.Tag</span></code></a></li>
+<li><a class="reference internal" href="#seo-metatag"><code class="docutils literal"><span class="pre">seo.MetaTag</span></code></a></li>
+<li><a class="reference internal" href="#seo-keywordtag"><code class="docutils literal"><span class="pre">seo.KeywordTag</span></code></a></li>
+<li><a class="reference internal" href="#seo-raw"><code class="docutils literal"><span class="pre">seo.Raw</span></code></a></li>
+<li><a class="reference internal" href="#all-fields">All fields:</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#meta-options">Meta Options</a></li>
+<li><a class="reference internal" href="#help-text">Help Text</a><ul>
+<li><a class="reference internal" href="#automatic-help-text">Automatic help text</a></li>
+<li><a class="reference internal" href="#bulk-help-text">Bulk help text</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#templates">Templates</a><ul>
+<li><a class="reference internal" href="#metadata-template-objects">Metadata template objects</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#admin">Admin</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/reference/definition.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, Roman Salin.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.7</a>
+      
+      |
+      <a href="../_sources/reference/definition.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
