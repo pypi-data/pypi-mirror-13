@@ -1,0 +1,35 @@
+{% extends widget.get_base_template %}
+{% load applicationcontent_tags %}
+
+
+{% load leonardo_tags i18n %}
+
+<!-- contains hAtom microformats proposed by http://www.readability.com/publishers/guidelines/ -->
+{% block content %}
+{% fragment request "_page_title" %}{% block page_title %}{{ entry }}{% endblock %}{% endfragment %}
+<article class="hentry">
+    <header>
+        <h1 class="entry-title">{{ entry }}</h1>
+        <span class="small byline">
+            {% for category in entry.categories.all %}
+                <a href="{{ category.get_absolute_url }}">{{ category }}</a>{% if not forloop.last %},{% else %} | {% endif %}
+            {% endfor %}
+            {% if entry.author.get_full_name %}
+            <span class="author source-org vcard">
+                {% trans 'by' %} <span class="fn">{{ entry.author.get_full_name }}</span> |
+            </span>
+            {% endif %}
+            <time datetime="{{ entry.published_on|date:'c' }}" pubdate>{{ entry.published_on|date:"SHORT_DATE_FORMAT" }}</time>
+            <time class="updated" datetime="{{ entry.last_changed|date:'c' }}"></time>
+        </span>
+    </header>
+    <div class="entry-content">
+        {% feincms_render_region entry "main" request %}
+        {% render_region_tools entry "main" request %}
+    </div>
+    {% if request.LEONARDO_CONFIG.DISQUS_COMMENTS %}
+    {% include 'elephantblog/_disqus_comments.html' %}
+    {% endif %}
+
+</article>
+{% endblock %}
