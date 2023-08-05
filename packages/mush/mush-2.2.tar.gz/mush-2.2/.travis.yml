@@ -1,0 +1,31 @@
+language: python
+
+# for container-y googdness:
+sudo: false
+
+python:
+  - "3.5"
+  - "3.4"
+  - "3.3"
+  - "2.7"
+
+# command to install dependencies
+install: "pip install -Ue .[test,build]"
+
+# command to run tests, e.g. python setup.py test
+script: nosetests --with-cov --cov=mush
+
+after_success:
+  - coveralls
+
+deploy:
+  provider: pypi
+  user: chrisw
+  password:
+    secure: f28D/cZT27Ejv++FA8Er1GIwD9KG6t82J/AHUlzGvbjQpP9js6TIgZ51nxhf/lhJrACNONOrd3XhjMc1QRgkCKOLHjSHpozO0qPa2lZ3+4c+BP5lZTXmI3uS8YBaidOpWFZjkxf38zK59yab7ntkl02UNibo5RWzoaYJIPcjizA=
+  on:
+    tags: true
+    repo: Simplistix/mush
+    python: "3.4"
+  skip_cleanup: true
+  distributions: "sdist bdist_wheel"

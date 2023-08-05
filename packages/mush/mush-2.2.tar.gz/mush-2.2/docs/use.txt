@@ -1,0 +1,805 @@
+How Mush works
+==============
+
+.. currentmodule:: mush
+
+.. note:: 
+
+  This documentation explains how Mush works using fairly abstract
+  examples. If you'd prefer more "real world" examples please see the
+  :doc:`examples` documentation.
+
+.. _constructing-runners:
+
+Constructing runners
+--------------------
+
+Mush works by assembling a number of callables into a :class:`Runner`:
+
+.. code-block:: python
+
+  from mush import Runner
+
+  def func1():
+      print('func1')
+
+  def func2():
+      print('func2')
+
+  runner = Runner(func1, func2)
+
+Once assembled, a runner can be called any number of times. Each time
+it is called, it will call each of its callables in turn:
+
+>>> runner()
+func1
+func2
+
+More callables can be added to a runner:
+
+.. code-block:: python
+
+ def func3():
+     print('func3')
+
+ runner.add(func3)
+
+If you want to add several callables in one go, you can use the
+runner's :meth:`~Runner.extend` method:
+
+.. code-block:: python
+
+ def func4():
+     print('func4')
+
+ def func5():
+     print('func5')
+
+ runner.extend(func4, func5)
+
+Now, when called, the runner will call all five functions:
+
+>>> runner()
+func1
+func2
+func3
+func4
+func5
+
+Runners can also be added together to create a new runner:
+
+.. code-block:: python
+
+  runner1 = Runner(func1)
+  runner2 = Runner(func2)
+  runner3 = runner1 + runner2
+
+This addition does not modify the existing runners, but does give the
+result you'd expect:
+
+>>> runner1()
+func1
+>>> runner2()
+func2
+>>> runner3()
+func1
+func2
+
+This can also be done by passing runners in when creating a new runner
+or calling the extend method on a runner, for example:
+
+.. code-block:: python
+
+  runner1 = Runner(func1)
+  runner2 = Runner(func2)
+  runner4_1 = Runner(runner1, runner2)
+  runner4_2 = Runner()
+  runner4_2.extend(runner1, runner2)
+
+In both cases, the results are as you would expect:
+
+>>> runner4_1()
+func1
+func2
+>>> runner4_2()
+func1
+func2
+
+Finally, runners can be cloned, providing a way to encapsulate commonly
+used base runners that can then be extended for each specific use case:
+
+.. code-block:: python
+
+  runner5 = runner3.clone()
+  runner5.add(func4)
+
+The existing runner is not modified, while the new runner behaves as
+expected:
+
+>>> runner3()
+func1
+func2
+>>> runner5()
+func1
+func2
+func4
+
+.. _configuring-resources:
+
+Configuring Resources
+---------------------
+Where Mush becomes useful is when the callables in a runner either
+produce or require objects of a certain type. Given the right
+configuration, Mush will wire these together enabling you to write
+easily testable and reusable callables that encapsulate specific
+pieces of functionality. This configuration is done either
+imperatively, declaratively or using a combination of the two styles
+as described in the sections below.
+
+For the examples, we'll assume we have three types of resources:
+
+.. code-block:: python
+
+  class Apple: 
+      def __str__(self):
+          return 'an apple'
+      __repr__ = __str__
+
+  class Orange: 
+      def __str__(self):
+          return 'an orange'
+      __repr__ = __str__
+
+  class Juice:
+      def __str__(self):
+          return 'a refreshing fruit beverage' 
+      __repr__ = __str__
+
+Specifying requirements
+~~~~~~~~~~~~~~~~~~~~~~~
+
+When callables take parameters, Mush can be configured to pass objects of the
+correct type that have been returned from previous callables in the runner.
+For example, consider the following functions:
+
+.. code-block:: python
+
+ def apple_tree():
+      print('I made an apple')
+      return Apple()
+
+ def magician(fruit):
+      print('I turned {0} into an orange'.format(fruit))
+      return Orange()
+
+ def juicer(fruit1, fruit2):
+      print('I made juice out of {0} and {1}'.format(fruit1, fruit2))
+
+The requirements are specified by passing the required type in the `requires`
+parameter when adding the callable to the runner using :meth:`~Runner.add`.
+If more complex requirements need to be specified, a :class:`requires` instance
+can be passed which accepts both positional and keyword parameters that
+specify the types required by the callable being added:
+
+.. code-block:: python
+
+  from mush import Runner, requires
+
+  runner = Runner()
+  runner.add(apple_tree)
+  runner.add(magician, requires=Apple)
+  runner.add(juicer, requires(Apple, fruit2=Orange))
+
+Calling this runner will now manage the resources, collecting them and
+passing them in as configured:
+
+>>> runner()
+I made an apple
+I turned an apple into an orange
+I made juice out of an apple and an orange
+
+Optional requirements
+~~~~~~~~~~~~~~~~~~~~~
+
+It may be that, while a callable needs an object of a particular type, a default
+can be used if no such object is present. Runners can be configured to
+take this into account. Take the following function:
+
+.. code-block:: python
+
+  def greet(name='stranger'):
+      print('Hello ' + name + '!')
+
+If a name is not always be available, it can be added to a runner as follows:
+
+.. code-block:: python
+
+  from mush import Runner, optional
+
+  runner = Runner()
+  runner.add(greet, requires=optional(str))
+
+Now, when this runner is called, the default will be used:
+
+>>> runner()
+Hello stranger!
+
+The same callable can be added to a runner where the required strings is
+available:
+
+.. code-block:: python
+
+  from mush import Runner, optional
+
+  def my_name_is():
+     return 'Slim Shady'
+
+  runner = Runner(my_name_is)
+  runner.add(greet, requires=optional(str))
+
+In this case, the string returned will be used:
+
+>>> runner()
+Hello Slim Shady!
+
+.. _resource-parts:
+
+Using parts of a resource
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Resources can have attributes or items that are directly required by callables.
+For example, consider these two functions that return such resources:
+
+.. code-block:: python
+
+    class Stuff(object):
+        fruit = 'apple'
+        tree = dict(fruit='pear')
+
+    def some_attributes():
+        return Stuff()
+
+    def some_items():
+        return dict(fruit='orange')
+
+Also consider this function:
+
+.. code-block:: python
+
+    def pick(fruit1, fruit2, fruit3):
+        print('I picked {0}, {1} and {2}'.format(fruit1, fruit2, fruit3))
+
+All three can be added to a runner such that mush will pass the correct parts
+of the returns resources through to the :func:`pick` function:
+
+.. code-block:: python
+
+    from mush import Runner, attr, item, requires
+
+    runner = Runner(some_attributes, some_items)
+    runner.add(pick, requires(fruit1=attr(Stuff, 'fruit'),
+                              fruit2=item(dict, 'fruit'),
+                              fruit3=item(attr(Stuff, 'tree'), 'fruit')))
+
+So now we can pick fruit from some interesting places:
+
+>>> runner()
+I picked apple, orange and pear
+
+The :func:`pick` function, however, remains usable and testable on its own:
+
+>>> pick('apple', 'orange', 'pear')
+I picked apple, orange and pear
+
+Specifying returned resources
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+As seen above, Mush will track resources returned by callables based on the type
+of any object returned. This is usually what you want, but in some cases you
+may want to specify something different.
+For example, if you have a callable that returns a sequence of resources, this
+would be added to a runner as follows:
+
+.. code-block:: python
+
+  from mush import Runner, returns_sequence
+
+  def all_fruit():
+      print('I made fruit')
+      return Apple(), Orange()
+
+
+  runner = Runner()
+  runner.add(all_fruit, returns=returns_sequence())
+  runner.add(juicer, requires(Apple, Orange))
+
+Now, the juicer will use all the fruit returned:
+
+>>> runner()
+I made fruit
+I made juice out of an apple and an orange
+
+In rarer circumstances, you may need to override the types returned by a
+callable. This can be done as follows:
+
+.. code-block:: python
+
+  from mush import Runner, returns
+
+  class Tomato:
+      def __str__(self):
+          return 'a tomato'
+
+  class Cucumber:
+      def __str__(self):
+          return 'a cucumber'
+
+  def vegetables():
+      print('I made vegetables')
+      return Tomato(), Cucumber()
+
+  runner = Runner()
+  runner.add(vegetables, returns=returns(Apple, Orange))
+  runner.add(juicer, requires(Apple, Orange))
+
+Now, even when a callable requires fruit, we can force it to be happy with
+vegetables:
+
+>>> runner()
+I made vegetables
+I made juice out of a tomato and a cucumber
+
+The :class:`returns` indicator can be used even if a single object is returned.
+
+Another way that the type used to track the resource can be different from the
+type of the resource itself is if a callable returns a mapping and Mush is
+configured to use the types from that mapping:
+
+.. code-block:: python
+
+  from mush import Runner, returns_mapping
+
+  def desperation():
+      print('I sold vegetables as fruit')
+      return {Apple: Tomato(), Orange: Cucumber()}
+
+  runner = Runner()
+  runner.add(desperation, returns=returns_mapping())
+  runner.add(juicer, requires(Apple, Orange))
+
+One again, we can happily make juice out of vegetables:
+
+>>> runner()
+I sold vegetables as fruit
+I made juice out of a tomato and a cucumber
+
+.. _named-resources:
+
+Named resources
+~~~~~~~~~~~~~~~
+
+Sometimes the types of resources are too common for them to uniquely identify
+a resource:
+
+.. code-block:: python
+
+  def age():
+      return 37
+
+  def meaning():
+      return 42
+
+A callable such as the following cannot be configured to require the correct
+resource from these two functions by type alone:
+
+.. code-block:: python
+
+  def profound(age, it):
+      print('by the age of %s I realised the meaning of life was %s' % (
+          age, it
+      ))
+
+For these situations, Mush supports the ability to name a resource using a
+string:
+
+.. code-block:: python
+
+  runner = Runner()
+  runner.add(age, returns='age')
+  runner.add(meaning, returns='meaning')
+  runner.add(profound, requires('age', it='meaning'))
+
+Anywhere that a type can be used, a string name can be used instead:
+
+>>> runner()
+by the age of 37 I realised the meaning of life was 42
+
+Declarative configuration
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+While the imperative configuration used so far means that callables do not
+need to be modified, the helpers for specifying requirements and return types
+can also be used as decorators:
+
+.. code-block:: python
+
+  from mush import requires
+
+  def apple_tree():
+      print('I made an apple')
+      return Apple()
+
+  @requires(Apple)
+  @returns('citrus')
+  def magician(fruit):
+      print('I turned {0} into an orange'.format(fruit))
+      return Orange()
+
+  @requires(fruit1=Apple, fruit2='citrus')
+  def juicer(fruit1, fruit2):
+      print('I made juice out of {0} and {1}'.format(fruit1, fruit2))
+      return Juice()
+
+These can now be combined into a runner and executed. The runner will
+extract the requirements stored by the decorator and will use them to
+map the parameters as appropriate:
+
+>>> runner = Runner(apple_tree, magician, juicer)
+>>> runner()
+I made an apple
+I turned an apple into an orange
+I made juice out of an apple and an orange
+a refreshing fruit beverage
+
+Hybrid configuration
+~~~~~~~~~~~~~~~~~~~~
+
+The two styles of configuration are entirely interchangeable, with
+declarative requirements being inspected whenever a callable is added
+to a runner, and imperative requirements being taken whenever they are
+passed via the :meth:`~Runner.add` method:
+
+.. code-block:: python
+
+  @requires(Juice)
+  def packager(juice):
+      print('I put {0} in a bottle'.format(juice))
+  
+  def orange_tree():
+      print('I made an orange')
+      return Orange()
+
+  trees = Runner(apple_tree)
+  trees.add(orange_tree, returns='citrus')
+  runner = trees.clone()
+  runner.extend(juicer, packager)
+  
+This runner now ends up with bottled juice:
+
+>>> runner()
+I made an apple
+I made an orange
+I made juice out of an apple and an orange
+I put a refreshing fruit beverage in a bottle
+
+It's useful to note that imperative configuration will be used in
+preference to declarative configuration where both are present:
+
+.. code-block:: python
+
+  runner = trees.clone()
+  runner.add(juicer, requires('citrus', Apple))
+
+This runner will give us juice made in a different order:
+
+>>> runner()
+I made an apple
+I made an orange
+I made juice out of an orange and an apple
+a refreshing fruit beverage
+
+.. _labels:
+
+Labels
+------
+
+One of the motivating reasons for Mush to be created was the ability to insert
+callables at a point in a runner other than the end. This allows abstraction
+of common sequences of calls without the risks of extracting them into a base
+class.
+
+The points at which more callables can be inserted are created by specifying a
+label when adding a callable to the runner. This marks the point at which that
+callable is included so that it can be retrieved and appended to later. As an
+example, consider a ring and some things that can be done to it:
+
+.. code-block:: python
+
+  class Ring:
+      def __str__(self):
+          return 'a ring'
+
+  def forge():
+      return Ring()
+
+  def engrave(ring):
+      print('engraving {0}'.format(ring))
+
+These might be added to a runner as follows:
+
+.. code-block:: python
+
+  from mush import Runner
+
+  runner = Runner()
+  runner.add(forge, label='forged')
+  runner.add(engrave, label='engraved', requires=Ring)
+
+Now, suppose we want to polish the ring before it's engraved and then
+package it up when we're done:
+
+.. code-block:: python
+
+  def polish(ring):
+      print('polishing {0}'.format(ring))
+
+  def package(ring):
+      print('packaging {0}'.format(ring))
+
+We can insert these callables into the runner at the right points as follows:
+
+.. code-block:: python
+
+  runner['forged'].add(polish, requires=Ring)
+  runner.add(package, requires=Ring)
+
+This results in the desired call order:
+
+>>> runner()
+polishing a ring
+engraving a ring
+packaging a ring
+
+Now, suppose we want to polish the ring again after it's been engraved. We can
+insert another callable at the appropriate point:
+
+.. code-block:: python
+
+  def more_polish(ring):
+      print('polishing {0} again'.format(ring))
+
+  runner['engraved'].add(more_polish, requires=Ring)
+
+Mush wish do the right thing when this runner is called:
+
+>>> runner()
+polishing a ring
+engraving a ring
+polishing a ring again
+packaging a ring
+
+When using labels, it's often good to be able to see exactly what is in a
+runner, what order it is in and where any labels point. For this reason,
+the representation of a runner gives all this information:
+
+>>> runner
+<Runner>
+    <function forge ...> requires() returns_result_type()
+    <function polish ...> requires(Ring) returns_result_type() <-- forged
+    <function engrave ...> requires(Ring) returns_result_type()
+    <function more_polish ...> requires(Ring) returns_result_type() <-- engraved
+    <function package at ...> requires(Ring) returns_result_type()
+</Runner>
+
+As you can see above, when a callable is inserted at a label, the label
+moves to that callable. You may wish to keep track of the initial point that
+was labelled, so Mush supports multiple labels at each point:
+
+>>> runner = Runner()
+>>> point = runner.add(forge)
+>>> point.add_label('before_polish')
+>>> point.add_label('after_polish')
+>>> runner
+<Runner>
+    <function forge ...> requires() returns_result_type() <-- after_polish, before_polish
+</Runner>
+
+Now, when you add to a specific label, only that label is moved:
+
+>>> point = runner['after_polish']
+>>> point.add(polish)
+>>> runner
+<Runner>
+    <function forge ...> requires() returns_result_type() <-- before_polish
+    <function polish ...> requires() returns_result_type() <-- after_polish
+</Runner>
+
+Of course, you can still add to the end of the runner:
+
+>>> runner.add(package)
+<mush.modifier.Modifier...>
+>>> runner
+<Runner>
+    <function forge ...> requires() returns_result_type() <-- before_polish
+    <function polish ...> requires() returns_result_type() <-- after_polish
+    <function package ...> requires() returns_result_type()
+</Runner>
+
+However, the point modifier returned by getting a label from a runner will
+keep on moving the label as more callables are added using it:
+
+>>> point.add(more_polish)
+>>> runner
+<Runner>
+    <function forge ...> requires() returns_result_type() <-- before_polish
+    <function polish ...> requires() returns_result_type()
+    <function more_polish ...> requires() returns_result_type() <-- after_polish
+    <function package ...> requires() returns_result_type()
+</Runner>
+
+.. _context-managers:
+
+Context manager resources
+-------------------------
+
+A frequent requirement when writing scripts is to make sure that
+when unexpected things happen they are logged, transactions are
+aborted, and other necessary cleanup is done. Mush supports this
+pattern by allowing context managers to be added as callables:
+
+.. code-block:: python
+
+    from mush import Runner, requires
+
+    class Transactions(object):
+
+        def __enter__(self):
+            print('starting transaction')
+
+        def __exit__(self, type, obj, tb):
+            if type:
+                print(obj)
+                print('aborting transaction')
+            else:
+                print('committing transaction')
+            return True
+
+    def a_func():
+        print('doing my thing')
+
+    def good_func():
+        print('I have done my thing')
+
+    def bad_func():
+        raise Exception("I don't want to do my thing")
+
+The context manager is wrapped around all callables that are called
+after it:
+
+>>> runner = Runner(Transactions, a_func, good_func)
+>>> runner()
+starting transaction
+doing my thing
+I have done my thing
+committing transaction
+
+This gives it a chance to clear up when things go wrong:
+
+>>> runner = Runner(Transactions, a_func, bad_func)
+>>> runner()
+starting transaction
+doing my thing
+I don't want to do my thing
+aborting transaction
+
+.. _testing:
+
+Testing
+-------
+
+Mush has a couple of features to help with automated testing of runners.
+For example, if you wanted to test a runner that got configuration by calling
+a remote web service:
+
+.. code-block:: python
+
+  @returns('config')
+  def load_config():
+      return json.loads(urllib2.urlopen('...').read())
+
+  @requires(item('config', 'username'), item('config', 'password'))
+  def do_stuff(username, password):
+      print('doing stuff as ' + username + ' with '+ password)
+
+  runner = Runner(load_config, do_stuff)
+
+When testing this runner, we may want to inject a hard-coded config. This can
+be done by cloning the original runner and replacing the :func:`load_config`
+callable:
+
+>>> def test_config():
+...     return dict(username='test', password='pw')
+>>> test_runner = runner.clone()
+>>> test_runner.replace(load_config, test_config)
+>>> test_runner()
+doing stuff as test with pw
+
+If you have a base runner such as this:
+
+.. code-block:: python
+
+  def load_config():
+      return json.loads(urllib2.urlopen('...').read())
+
+  def finalise_things():
+      print('all done')
+
+  base_runner = Runner()
+  point = base_runner.add(load_config, returns='config', label='config')
+  point.add_label('body')
+  base_runner.add(finalise_things, label='ending')
+
+That runner might be used for a specific script as follows:
+
+.. code-block:: python
+
+  @requires(item('config', 'username'), item('config', 'password'))
+  def do_stuff(username, password):
+      print('doing stuff as ' + username + ' with '+ password)
+
+  runner = base_runner.clone()
+  runner['body'].add(do_stuff)
+
+To test this runner, we want to use a dummy configuration and not have any
+finalisation take place. This can be achieved as follows:
+
+>>> test_runner = Runner()
+>>> test_runner.add(test_config, returns='config')
+<mush.modifier.Modifier ...>
+>>> test_runner += runner.clone(start_label='config', end_label='ending')
+>>> test_runner()
+doing stuff as test with pw
+
+Debugging
+---------
+
+Mush has a couple of features to aid debugging of runners. The first of which
+is that the representation of a runner will show everything in it, in the order
+it will be called and what each callable has been declared as requiring and
+returning along with where any labels currently point.
+
+For example, consider this runner:
+
+.. code-block:: python
+
+  from mush import Runner
+
+  @returns('config')
+  def make_config():
+      return {'foo': 'bar'}
+
+  @requires(item('config', 'foo'))
+  def connect(foo):
+      return 'connection'
+
+  def process(connection):
+      print('using ' + repr(connection))
+
+  runner = Runner()
+  point = runner.add(make_config, label='config')
+  point.add(connect)
+  runner.add(process)
+
+To see how the configuration panned out, we would look at the :func:`repr`:
+
+>>> runner
+<Runner>
+    <function make_config ...> requires() returns('config')
+    <function connect ...> requires('config'['foo']) returns_result_type() <-- config
+    <function process ...> requires() returns_result_type()
+</Runner>
+
+As you can see, there is a problem with this configuration that will be exposed
+when it is run. To help make sense of these kinds of problems, Mush will add
+more context when a :class:`TypeError` or :class:`~.context.ContextError`
+is raised.
