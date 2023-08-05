@@ -1,0 +1,164 @@
+{#
+    Copyright (c) 2015 Chintalagiri Shashank
+    Released under the MIT license
+#}
+
+{% extends "base_templates/base.html" %}
+
+{% block main %}
+
+<p></p>
+
+<h4> Inventory Transform {{ stage.loc.name }} ({{ stage.loc._name }})</h4>
+
+<div class="small-12 columns" data-equalizer>
+    {% if stage.loc._reader._xlf %}
+    <ul style="list-style-type: none;">
+        <li class="small-12 medium-5 columns panel radius text-center" data-equalizer-watch>
+            <b>Transform Path</b> <br>
+            {{ stage.tf._tfpath }}
+        </li>
+        <li class="small-12 medium-5 columns panel radius text-center" data-equalizer-watch>
+            <b>File Path</b> <br>
+            {{ stage.loc._reader.filepath }}
+        </li>
+        <li class="small-12 medium-2 columns panel radius text-center" data-equalizer-watch>
+            Sheet Name <br>
+            <b>{{ stage.loc._reader.sheetname }}</b>
+        </li>
+    </ul>
+    {% endif %}
+</div>
+
+<script>
+    function edit_form(row){
+        rval = '<div><form method="POST"><fieldset><legend>Edit Transform Row</legend>';
+        rval += '{{ stage.form.hidden_tag() }}';
+        rval += '<div class="large-4 small-12 columns">';
+        rval += '<label>Contextual Representation<input type="text" name="contextual" value="';
+        rval += row.data()[1] + '" readonly></label>';
+        rval += '</div>';
+        rval += '<div class="large-4 small-12 columns">';
+        rval += '<label>Canonical Representation<input type="text" id="canonical_' + row.index();
+        rval += '" list="json-identlist" name="canonical" value="';
+        rval += row.data()[2] + '"></label>';
+        rval += '</div>';
+        rval += '<div class="large-1 small-5 columns">';
+        rval += '<label>Status<input type="text" name="status" value="REVIEW"'
+        rval += '{% if not current_user.has_roles('inventory_admin') %}readonly{% endif %} list="statuslist"></label>';
+        rval += '</div>';
+        rval += '<div class="large-1 small-5 columns">';
+        rval += '<input type="submit" class="button small expand radius" value="Submit">';
+        rval += '</div>';
+        rval += '</fieldset></form></div>';
+        return rval;
+    }
+</script>
+
+<div class="small-12 columns" data-magellan-destination="transformtable">
+<a name="transformtable"></a>
+        <div class="small-12 columns">
+            <table id="transform_table" class="display" data-paging='false' width="100%">
+                <thead>
+                <tr>
+                    <th class="all"> Edit </th>
+                    <th class="all">Contextual Representation</th>
+                    <th class="all">Canonical Representation</th>
+                    <th class="all text-center">Status</th>
+                    <th class="all text-center">In gsymlib</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for key in stage.tf.names %}
+                    <tr>
+                        <td class="details-control"></td>
+                        <td> {{ key }} </td>
+                        <td> {{ stage.tf.get_canonical_repr(key) }} </td>
+                        {% set status = stage.tf.get_status(key) %}
+                        <td class="text-center
+                            {% if status=='NEW' %} resultcell-fail
+                            {% elif status=='OK' %} resultcell-pass
+                            {% else %} resultcell-yellow {% endif %}
+                        "> {{ status }} </td>
+                        <td
+                            {% if stage.tf.get_canonical_repr(key) in stage.gsymlib_idents %}
+                                class="resultcell-pass"> Yes
+                            {% else %}
+                                class="resultcell-fail"> No
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <script type="text/javascript">
+            $(document).ready( function () {
+                var table = $('#transform_table').DataTable({
+                    /* Disable initial sort */
+                    "order": [[ 1, "asc" ]],
+                    "columnDefs":[
+                        {"width": "8em", "targets": [3,4]},
+                    ],
+                    {% include 'parts/datatable_defaults.html' %}
+                });
+                table.buttons().container()
+                    .appendTo( '#transform_table_wrapper .small-12.medium-6.columns:eq(0)' );
+
+                // Load in the library information
+                var dataList = document.getElementById('json-identlist');
+                var request = new XMLHttpRequest();
+
+                // Handle state changes for the request.
+                request.onreadystatechange = function(response) {
+                  if (request.readyState === 4) {
+                    if (request.status === 200) {
+                      // Parse the JSON
+                      var jsonOptions = JSON.parse(request.responseText);
+
+                      // Loop over the JSON array.
+                      jsonOptions.idents.forEach(function(item) {
+                        // Create a new <option> element.
+                        var option = document.createElement('option');
+                        // Set the value using the item in the JSON array.
+                        option.value = item;
+                        // Add the <option> element to the <datalist>.
+                        dataList.appendChild(option);
+                      });
+                    }
+                  }
+                };
+
+                request.open('GET', '/gsymlib/idents.json', true);
+                request.send();
+
+                // Add event listener for opening and closing details
+                $('#transform_table tbody').on('click', 'td.details-control', function () {
+                    var tr = $(this).closest('tr');
+                    var data_id = tr.attr('data-id');
+                    var row = table.row( tr );
+
+                    if ( row.child.isShown() ) {
+                        // This row is already open - close it
+                        row.child.hide();
+                        tr.removeClass('shown');
+                    }
+                    else {
+                        // Open this row
+                        row.child( edit_form(row) ).show();
+                        tr.addClass('shown');
+                    }
+                });
+            });
+        </script>
+</div>
+
+<datalist id="json-identlist"></datalist>
+<datalist id="statuslist">
+    <option value="NEW">NEW</option>
+	<option value="REVIEW">REVIEW</option>
+	<option value="OK">OK</option>
+	<option value="BAD">BAD</option>
+</datalist>
+
+{% endblock %}
