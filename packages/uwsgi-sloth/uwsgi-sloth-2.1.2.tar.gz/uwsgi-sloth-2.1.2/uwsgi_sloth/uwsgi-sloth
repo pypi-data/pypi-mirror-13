@@ -1,0 +1,27 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""UWSGI access log analyzer, perfect tool for analyzing slow requests"""
+import argparse
+
+parser = argparse.ArgumentParser(description='Realtime uwsgi log analyzer.')
+subparsers = parser.add_subparsers()
+
+# COMMAND: uwsgi-sloth analyze
+from uwsgi_sloth.commands.analyze import load_subcommand
+load_subcommand(subparsers)
+# COMMAND: uwsgi-sloth start
+from uwsgi_sloth.commands.start import load_subcommand
+load_subcommand(subparsers)
+# COMMAND: uwsgi-sloth echo_conf
+from uwsgi_sloth.commands.echo_conf import load_subcommand
+load_subcommand(subparsers)
+
+
+def main():
+    args = parser.parse_args()
+    args.func(args)
+
+
+if __name__ == "__main__":
+    main()
+
