@@ -1,0 +1,132 @@
+django-pj-budget
+================
+
+.. image:: https://badge.fury.io/py/django-pj-budget.png
+    :target: https://badge.fury.io/py/django-pj-budget
+
+.. image:: https://travis-ci.org/jokimies/django-pj-budget.png?branch=master
+    :target: https://travis-ci.org/jokimies/django-pj-budget
+
+In practice this is fork of `django-budget
+<https://www.howtoforge.com/how-to-run-your-own-git-server-with-gitlabhq-on-ubuntu-14.04>`_
+adapted to my needs
+
+Cookiecutter Tools Used in Making This Package
+----------------------------------------------
+
+*  cookiecutter
+*  cookiecutter-djangopackage
+
+
+Changelog
+=========
+
+v2.2.2 (2015-12-20)
+-------------------
+
+- *montly summary*: Broken monthly summary fixed. [Petri Jokimies]
+
+
+
+
+
+
+
+v2.2.1 (2015-12-19)
+-------------------
+
+Fix
+~~~
+
+- *dashboard*: Estimate has no repeast field. [Petri Jokimies]
+
+
+
+
+
+
+
+
+v2.2.0 (2015-12-19)
+-------------------
+
+New features
+~~~~~~~~~~~~
+
+- *estimate setup*: Months used in estimate. [Petri Jokimies]
+
+
+
+
+
+
+
+Other
+~~~~~
+
+- Version increase. [Petri Jokimies]
+
+- *yearly summary*: Colorize Actual column. [Petri Jokimies]
+
+- *yearly summary*: Limit number of decimals to two. [Petri Jokimies]
+
+v2.1.2 (2015-12-14)
+-------------------
+
+- *yearly summary*: Corrected counting & display. [Petri Jokimies]
+
+
+
+
+
+
+
+v2.1.1 (2015-09-22)
+-------------------
+
+Documentation
+~~~~~~~~~~~~~
+
+- Attempt to fix rst formatting on PyPi. [Petri Jokimies]
+
+Other
+~~~~~
+
+- Change history for new version. [Petri Jokimies]
+
+v2.1.0 (2015-09-22)
+-------------------
+
+New features
+~~~~~~~~~~~~
+
+- Python3 changes, added possibility to run tests with.pytest. [Petri
+  Jokimies]
+
+- *docs*: gitchangelog taken into use. [Petri Jokimies]
+
+Refactor
+~~~~~~~~
+
+- *summary*: Yearly summary with details (#2) [Petri Jokimies]
+
+- *views*: Moving logic away from views (#1) [Petri Jokimies]
+
+
+
+
+
+
+
+Other
+~~~~~
+
+- New version. [Petri Jokimies]
+
+v2.0.0 (2015-09-06)
+-------------------
+
+- Django-pj-budget: Initial import of all the changes made to original
+  django-budget. [Petri Jokimies]
+
+
