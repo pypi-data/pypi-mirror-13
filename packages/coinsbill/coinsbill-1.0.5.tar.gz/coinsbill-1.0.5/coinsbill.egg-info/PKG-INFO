@@ -1,0 +1,80 @@
+Metadata-Version: 1.1
+Name: coinsbill
+Version: 1.0.5
+Summary: Python interaction with the CoinsBill API.
+Home-page: https://www.coinsbill.com/developers
+Author: CoinsBill
+Author-email: support@coinsbill.com
+License: Apache License, Version 2.0, January 2004
+Description: ===== 
+        Title 
+        ===== 
+        
+        
+        This is a python library for interacting with the 
+        
+        CoinsBill API, at `CoinsBill 
+        <https://www.coinsbill.com/developers>`_.
+        
+        Example Usage 
+        --------------
+        
+        simple usage::
+        
+            from coinsbill import CoinsBill
+            access_token = 'a9esthaVUjOuvzTCSTXsJUCK0lCMCk'
+            api = CoinsBill(access_token)
+        
+            # Create New Invoice
+            response = api.invoice.create( 
+                email="bill@dow.com",
+                currency="USD",
+                country="US",
+                billing_first_name="Sam",
+                items=[{
+                        "name": "fruits", 
+                        "quantity": 10, 
+                        "unit_price": 2
+                        }, 
+                        {
+                        "name": "coffee", 
+                        "quantity": "4", 
+                        "unit_price": 3 
+                        }] 
+                )
+        
+            assert response.status_code == 201  # Successfull Create Invoice 
+            response.json()   # Load the body's JSON data.
+        
+            # Get all Invoices
+            response = api.invoice.get()
+            assert response.status_code == 200  # Make sure we got back a successful response.
+        
+            # Get Invoice by ID
+            response = api.invoice.get('8G98A')
+            assert response.status_code == 200  # Make sure we got back a successful response.
+        
+        
+        
+        
+        Installation  
+        --------
+        
+        
+        This package is called coinsbill  ``coinsbill``  on PyPI. Install using::
+        
+             $ pip install --upgrade  coinsbill
+           
+        
+        
+Keywords: coinsbill,bitcoin,payment
+Platform: UNKNOWN
+Classifier: Development Status :: 4 - Beta
+Classifier: Environment :: Console
+Classifier: Environment :: Web Environment
+Classifier: Intended Audience :: End Users/Desktop
+Classifier: Intended Audience :: Developers
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python
+Classifier: Topic :: Internet
+Classifier: Topic :: Software Development :: Libraries :: Python Modules
