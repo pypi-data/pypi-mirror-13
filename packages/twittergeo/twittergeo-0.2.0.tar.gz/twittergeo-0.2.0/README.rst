@@ -1,0 +1,110 @@
+Twittergeo
+==========
+
+Export geotagged tweets to GeoJSON.
+
+Install
+-------
+
+Open your terminal and run:
+
+.. code:: bash
+
+    pip install twittergeo
+
+(`Don't have Pip? <https://pip.pypa.io/en/stable/installing.html>`__)
+
+Use
+---
+
+To use the tool, you'll need a application registered with Twitter.
+Instructions from Twitter: https://apps.twitter.com.
+
+When your application is set, you'll get two keys, which need to be
+added to a config file.
+
+Setting up a config file
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+Pasting in your consumer key and secret every time is boring. Save a
+config file like so:
+
+.. code:: yaml
+
+    apps:
+        twittergeo:
+            consumer_key: ...
+            consumer_secret: ...
+
+Call the file bots.yaml and save it in your home directory, and
+``twittergeo`` will find it automatically. Or use a custom file:
+
+.. code:: bash
+
+    $ twittergeo --search "some words" --config configfile.yaml -o some_words.geojson
+
+Smaller files
+~~~~~~~~~~~~~
+
+Use the ``--lite`` option to get smaller files. The only properties
+saved will be the tweet's text and ID, and the user's screen\_name and
+userid.
+
+.. code:: bash
+
+    $ twittergeo --search "some words" --lite > some_words.geojson
+
+Get more tweets
+~~~~~~~~~~~~~~~
+
+By default, Twitter returns only 15 tweets, which is pretty weak. Use
+the ``--count`` parameter to request more. Note that Twittergeo will
+return ``count`` tweets, but ignore non-geotagged tweets, so your files
+will likely be much shorter. The Twitter API doesn't have a way request
+only geotagged tweets.
+
+.. code:: bash
+
+    $ twittergeo --search "some words" --count 100 > some_words.geojson
+
+Geocode parameter
+~~~~~~~~~~~~~~~~~
+
+When using the search option, you can request tweets close to a
+particular point. The format to use is ``latitude,longitude,radius``,
+where radius is either in miles (``mi``) or kilometers (``km``).
+
+.. code:: bash
+
+    $ twittergeo --search "some words" --geocode 37.781157,-122.398720,1mi -o some_words_a.geojson
+    $ twittergeo --search "some words" --geocode 37.781157,-74.2644,10km -o some_words_b.geojson
+
+Options
+~~~~~~~
+
+::
+
+    usage: twittergeo [-h] [-c path] [--app APP] [-u screen_name | -f search]
+                      [--lite] [--count COUNT] [--geocode LAT,LON,RADIUS]
+                      [--since ID] [--max ID] [-o OUTPUT]
+
+    Pull Twitter searches into GeoJSON
+
+    optional arguments:
+      -h, --help            show this help message and exit
+      -c path, --config path
+                            jsom or yaml config file
+      --app APP             Twitter app to read in config (default: twittergeo)
+      -u screen_name, --user screen_name
+                            User timeline to search
+      -f search, --search search
+                            Search string
+      --lite                Output minimal information about tweets
+      --count COUNT         Maximum number of tweets to return (default: 100)
+      --geocode LAT,LON,RADIUS
+                            optional geocode parameter when searching
+      --since ID            Fetch tweets since this ID
+      --max ID              Fetch tweets before this ID
+      -o OUTPUT, --output OUTPUT
+                            output file (default: stdout)
+
