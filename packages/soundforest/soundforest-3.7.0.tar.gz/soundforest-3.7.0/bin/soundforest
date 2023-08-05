@@ -1,0 +1,408 @@
+#!/usr/bin/env python
+# coding=utf-8
+"""
+Soundforest database manipulation tool
+"""
+
+import os
+import sys
+import re
+import shutil
+import argparse
+
+from soundforest import SoundforestError
+from soundforest.cli import Script, ScriptCommand, ScriptError
+from soundforest.prefixes import TreePrefixes
+from soundforest.sync import SyncManager, SyncError
+from soundforest.tree import Tree, Track, Album
+
+
+class SoundforestCommand(ScriptCommand):
+    def parse_args(self, args):
+        args = super(SoundforestCommand, self).parse_args(args)
+
+        if 'paths' in args and args.paths:
+            paths = []
+            for v in args.paths:
+                if v == '-':
+                    for line in [x.rstrip() for x in sys.stdin.readlines()]:
+                        if line not in paths:
+                            paths.append(line)
+
+                else:
+                    stripped = v.rstrip()
+                    # Root path / gets empty here
+                    if stripped == '':
+                        stripped = v
+                    if stripped not in paths:
+                        paths.append(stripped)
+
+            args.paths = paths
+
+        return args
+
+
+class CodecsCommand(SoundforestCommand):
+    def run(self, args):
+        args = super(CodecsCommand, self).parse_args(args)
+
+        if args.action == 'list':
+            for name, codec in self.db.codecs.items():
+                self.message('{0} ({1})'.format(codec, codec.description))
+                self.message('Extensions')
+                self.message('  {0}'.format(','.join(x.extension for x in codec.extensions)))
+
+                self.message('Decoders')
+                for decoder in codec.decoders:
+                    self.message('  ', decoder.command)
+
+                self.message('Encoders')
+                for encoder in codec.encoders:
+                    self.message('  ', encoder.command)
+
+                if codec.testers:
+                    self.message('Testers')
+                    for tester in codec.testers:
+                        self.message('  ', tester.command)
+
+                self.message('')
+
+
+class ConfigCommand(SoundforestCommand):
+    def run(self, args):
+        args = super(ConfigCommand, self).parse_args(args)
+
+        if args.action == 'list':
+            for setting in self.db.registered_settings:
+                self.message('{0:16s} {1}'.format(setting.key, setting.value))
+
+
+class PlaylistsCommand(SoundforestCommand):
+    def run(self, args):
+        args = super(PlaylistsCommand, self).parse_args(args)
+
+        if args.action == 'list':
+            for playlist in self.db.playlists:
+                self.message(playlist)
+
+
+class SyncConfigCommand(SoundforestCommand):
+    def run(self, args):
+        args = super(SyncConfigCommand, self).parse_args(args)
+
+        if args.action == 'list':
+            for s in self.db.registered_sync_targets:
+                self.message(s)
+
+        if args.action == 'register':
+            try:
+                self.db.register_sync_target(args.name, args.type, args.src, args.dst, args.flags)
+            except SoundforestError, emsg:
+                self.exit(1, emsg)
+
+        if args.action == 'unregister':
+            try:
+                self.db.unregister_sync_target(args.name)
+            except SoundforestError, emsg:
+                self.exit(1, emsg)
+
+
+class SyncCommand(SoundforestCommand):
+
+    def run(self, args):
+        args = super(SyncCommand, self).parse_args(args)
+
+        self.manager = SyncManager(threads=args.threads, delete=args.delete, debug=args.debug)
+
+        if args.list:
+            for name, settings in self.db.sync.items():
+                if args.paths and name not in args.paths:
+                    continue
+
+                self.message('{0}'.format(name))
+                self.message('  Type:        {0}'.format(settings['type']))
+                self.message('  Source:      {0}'.format(settings['src']))
+                self.message('  Destination: {0}'.format(settings['dst']))
+                self.message('  Flags:       {0}'.format(settings['flags']))
+
+            script.exit(0)
+
+        if args.directories:
+            if len([d for d in args.paths if os.path.isdir(d)]) != 2:
+                self.script.exit(1, 'Directory sync requires two existing directory paths')
+
+            src = Tree(args.paths[0])
+            dst = Tree(args.paths[1])
+            self.manager.enqueue({
+                'type': 'directory',
+                'src': src,
+                'dst': dst,
+                'rename': args.rename,
+            })
+
+        elif args.paths:
+            for arg in args.paths:
+                target = self.manager.parse_target(arg)
+                if not target:
+                    self.script.exit(1, 'No such target: {0}'.format(arg))
+
+                self.manager.enqueue(target)
+
+        else:
+            for target in self.db.registered_sync_targets:
+                self.manager.enqueue(target.as_dict())
+
+        if len(self.manager):
+            self.manager.run()
+        else:
+            self.script.exit(1, 'No sync targets found')
+
+
+class TagsCommand(SoundforestCommand):
+    def run(self, args):
+        args = super(TagsCommand, self).parse_args(args)
+
+        if args.action == 'list':
+            if args.tree:
+                trees = [self.db.get_tree(args.tree)]
+            else:
+                trees = self.db.trees
+
+            for tree in trees:
+                for path in args.paths:
+                    for track in tree.filter_tracks(self.db.session, path):
+                        for entry in track.tags:
+                            self.message('  {0} = {1}'.format(entry.tag, entry.value))
+
+
+class PrefixCommand(SoundforestCommand):
+    def run(self, args):
+        args = super(PrefixCommand, self).parse_args(args)
+
+        if args.action == 'match':
+            prefixes = TreePrefixes()
+            for path in args.paths:
+                m = prefixes.match(path)
+                if m:
+                    self.message(m)
+
+        if args.action == 'register':
+            for path in args.paths:
+                self.db.register_prefix(path)
+
+        if args.action == 'unregister':
+            for path in args.paths:
+                try:
+                    self.db.unregister_prefix(path)
+                except SoundforestError, emsg:
+                    self.message(emsg)
+
+        if args.action == 'list':
+            for prefix in self.db.prefixes:
+                if args.paths and not self.match_prefix(prefix.path, args.paths):
+                    continue
+
+                self.message(prefix)
+
+
+class TracksCommand(SoundforestCommand):
+    def run(self, args):
+        args = super(TracksCommand, self).parse_args(args)
+
+        tracks = []
+        if args.paths:
+            for path in args.paths:
+                tracks.extend(self.db.find_tracks(path))
+        else:
+            for tree in self.db.trees:
+                tracks.extend(tree.tracks)
+
+        for track in tracks:
+            if args.action == 'list':
+                if args.checksum:
+                    self.message('{0} {1}'.format(track.checksum, track.relative_path()))
+                else:
+                    self.message(track.relative_path())
+
+            if args.action == 'tags':
+                self.message(track.relative_path())
+                for tag in track.tags:
+                    print '  {0}={1}'.format(tag.tag, tag.value)
+
+
+
+class TreeCommand(SoundforestCommand):
+    def run(self, args):
+        args = super(TreeCommand, self).parse_args(args)
+
+        if args.tree_type and args.tree_type not in script.db.registered_tree_types:
+            self.script.exit(1, 'Unsupported tree type: {0}'.format(args.tree_type))
+
+        if args.action == 'register':
+            for path in args.paths:
+                self.db.register_tree(path, tree_type=args.tree_type)
+
+        if args.action == 'unregister':
+            for path in args.paths:
+                self.db.unregister_tree(path)
+
+        if args.action == 'update':
+            for tree in self.db.trees:
+                if args.paths and tree.path not in args.paths:
+                    continue
+                self.db.update_tree(Tree(tree.path))
+
+        if args.action == 'list':
+            for tree in self.db.trees:
+                if args.tree_type and tree.type != args.tree_type:
+                    continue
+
+                if args.paths and not self.match_path(tree.path, args.paths):
+                    continue
+
+                self.message( tree)
+
+
+class TreeTypesCommand(SoundforestCommand):
+    def run(self, args):
+        args = super(TreeTypesCommand, self).parse_args(args)
+
+        if args.action == 'list':
+            for tt in self.db.registered_tree_types:
+                self.message( '{0:14s} {1}'.format(tt.name, tt.description))
+
+        if args.action == 'register':
+            for tt in args.types:
+                self.db.register_tree_type(tt)
+
+        if args.action == 'unregister':
+            for tt in args.types:
+                self.db.unregister_tree_type(tt)
+
+
+class TesterCommand(SoundforestCommand):
+    def testresult(self, track, result, errors='', stdout=None, stderr=None):
+        if not result:
+            self.message( '{0} {1}{2}'.format('NOK', track.path, errors and ': {0}'.format(errors) or ''))
+
+    def run(self, args):
+        args = super(TesterCommand, self).parse_args(args)
+
+        errors = False
+        for path in args.paths:
+            realpath = os.path.realpath(path)
+            if os.path.isdir(realpath):
+                if Tree(path).test(callback=self.testresult) != 0:
+                    errors = True
+
+            elif os.path.isfile(realpath):
+                if Track(path).test(callback=self.testresult) != 0:
+                    errors = True
+
+        if errors:
+            self.exit(1)
+
+        else:
+            self.exit(0)
+
+
+class ChecksumCommand(SoundforestCommand):
+    def verify(self, track):
+        db_track = self.db.get_track(track.path)
+
+        if db_track is not None:
+            status = db_track.checksum == track.checksum and 'OK' or 'NOK'
+        else:
+            status = 'NOTFOIND'
+        self.message('{0:8} {1}'.format(status, track.path))
+
+    def update(self, track):
+        checksum = self.db.update_track_checksum(track)
+        if checksum is not None:
+            self.message('{0:24} {1}'.format(checksum, track.path))
+
+    def process(self, action, track):
+        if action == 'update':
+            self.update(track)
+        elif action == 'verify':
+            self.verify(track)
+
+    def run(self, args):
+        args = super(ChecksumCommand, self).parse_args(args)
+
+        for path in args.paths:
+            realpath = os.path.realpath(path)
+
+            if os.path.isdir(realpath):
+                tree = Tree(path)
+                for track in tree:
+                    self.process(args.action, track)
+
+            elif os.path.isfile(realpath):
+                self.process(args.action, Track(path))
+
+
+# Register parser and sub commands
+script = Script()
+
+c = script.add_subcommand(ChecksumCommand('checksum', description='Check and update track checksums'))
+c.add_argument('action', choices=('verify', 'update'), help='Checksum action')
+c.add_argument('paths', nargs='*', help='Paths to process')
+
+c = script.add_subcommand(CodecsCommand('codec', 'Codec database manipulations'))
+c.add_argument('-v', '--verbose', action='store_true', help='Verbose details')
+c.add_argument('action', choices=('list',), help='Codec database action')
+
+c = script.add_subcommand(ConfigCommand('config', 'Configuration database manipulations'))
+c.add_argument('action', choices=('list',), help='List trees in database')
+c.add_argument('-v', '--verbose', action='store_true', help='Verbose details')
+
+c = script.add_subcommand(PlaylistsCommand('playlist', 'Playlist database manipulations'))
+c.add_argument('-t', '--tree', help='Tree to match')
+c.add_argument('action', choices=('list',), help='List trees in database')
+c.add_argument('paths', nargs='*', help='Paths to trees to process')
+
+c = script.add_subcommand(SyncConfigCommand('sync-config', 'Manage tree sync configurations'))
+c.add_argument('action', choices=('list', 'register', 'unregister',), help='Action to perform')
+c.add_argument('name', nargs='?', help='Sync target name')
+c.add_argument('type', choices=('rsync', 'directory',), nargs='?', help='Sync type')
+c.add_argument('flags', nargs='?', help='Flags for sync command')
+c.add_argument('src', nargs='?', help='Source path')
+c.add_argument('dst', nargs='?', help='Destination path')
+
+c = script.add_subcommand(SyncCommand('sync', 'Synchronize files and trees'))
+c.add_argument('-d', '--directories', action='store_true', help='Sync directories, not configured targets')
+c.add_argument('-l', '--list', action='store_true', help='List configured sync targets')
+c.add_argument('-r', '--rename', help='Directory sync target filesystem rename callback')
+c.add_argument('-D', '--delete', action='store_true', help='Remove unknown files from target')
+c.add_argument('-t', '--threads', type=int, help='Number of sync threads to use')
+c.add_argument('paths', metavar='path', nargs='*', help='Paths to process')
+
+c = script.add_subcommand(TagsCommand('tag', 'Track tag database manipulations'))
+c.add_argument('-t', '--tree', help='Tree to match')
+c.add_argument('action', choices=('list',), help='List trees in database')
+c.add_argument('paths', nargs='*', help='Paths to trees to process')
+
+c = script.add_subcommand(TracksCommand('track', 'Tree database manipulations'))
+c.add_argument('-c', '--checksum', action='store_true', help='Show track checksum')
+c.add_argument('action', choices=('list', 'tags',), help='List tracks in database')
+c.add_argument('paths', nargs='*', help='Paths to trees to matches')
+
+c = script.add_subcommand(PrefixCommand('prefix', description='Prefix database manipulations'))
+c.add_argument('action', choices=('list', 'match', 'register', 'unregister'), help='Prefix database action')
+c.add_argument('paths', nargs='*', help='Paths to prefixes to process')
+
+c = script.add_subcommand(TreeCommand('tree', description='Tree database manipulations'))
+c.add_argument('-t', '--tree-type', help='Type of audio files in tree')
+c.add_argument('action', choices=('list', 'update', 'register', 'unregister'), help='Tree database action')
+c.add_argument('paths', nargs='*', help='Paths to trees to process')
+
+c = script.add_subcommand(TreeTypesCommand('tree-type', description='Tree type database manipulations'))
+c.add_argument('action', choices=('list', 'register', 'unregister'), help='List tree types in database')
+c.add_argument('types', nargs='*', help='Tree type names to process')
+
+c = script.add_subcommand(TesterCommand('test', 'Test file integrity'))
+c.add_argument('paths', nargs='*', help='Paths to test')
+
+script.run()
+
