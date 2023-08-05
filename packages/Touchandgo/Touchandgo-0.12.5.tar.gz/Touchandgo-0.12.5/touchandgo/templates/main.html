@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+        <script src="//code.jquery.com/jquery-2.1.1.min.js"></script>
+        <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+        <title>Touchandgo</title>
+        <style>
+          .row:hover {
+            background-color: #F5F5F5;
+          }
+          .row {
+            padding-top: 10px;
+            padding-bottom: 10px;
+            border-radius: 9px;
+          }
+          .video {
+            margin: 20px 0;
+            text-align: center;
+          }
+          .video video {
+            min-height: 480px;
+            min-width: 640px;
+            max-width: 100%;
+            display: none;
+          }
+          .video .progress {
+            width: 640px;
+            margin: auto;
+            display: none;
+          }
+        </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="page-header">
+          <h1>Touchandgo</h1>
+          <h2>Search <small> for a show or movie</small></h2>
+        </div>
+        <div class="container">
+          <form class="form-inline" role="form">
+            <div class="form-group">
+              <input class="form-control" type="text" id="title" placeholder="Title" value="{{magnet}}">
+              <input class="form-control" type="text" id="season" placeholder="Season">
+              <input class="form-control" type="text" id="episode" placeholder="Episode">
+            </div>
+            <button id="play" class="btn btn-default">Play</button>
+          </form>
+        </div>
+        <div class="container video">
+          <video poster="//c2.staticflickr.com/6/5498/10148998914_e6c85c8415_b.jpg" autoplay="autoplay" controls></video>
+          <div class="progress">
+            <div class="progress-bar progress-bar-info progress-bar-striped active" style="width: 0%">
+              <span class="sr-only"><span class="completion">0</span>% Complete</span>
+            </div>
+          </div>
+        </div>
+        <div class="page-header">
+          <h2>History <small> These are your last played items</small></h2>
+        </div>
+        <div class="container history">
+        {%for item in items%}
+          <div class="row">
+            <div class="col-xs-8">
+              <span class="text-capitalize">{{item.name}}{%if item.season%} {{item.season}} {{item.episode}}{%endif%}</span>
+            </div>
+            <div class="col-xs-4">
+            {%if item.season%}
+              <a class="btn btn-xs btn-primary" href="/{{item.name}}/{{item.season}}/{{item.episode}}">Watch</a>
+              <a class="btn btn-xs btn-default" href="/{{item.name}}/{{item.season}}/{{item.next}}">Next Ep.</a>
+            {%else%}
+              <a class="btn btn-xs btn-primary" href="/{{item.name}}">Watch</a>
+            {%endif%}
+            </div>
+          </div>
+        {%endfor%}
+        </div>
+        <button type="button" class="btn btn-info" id="register">Register as browser magnet handler</button>
+        <button type="button" class="btn btn-info" id="docs">Read the docs</button>
+        <button type="button" class="btn btn-warning" id="report">Report a bug</button>
+        <button id="kill" class="btn btn-danger">Kill current stream</button>
+    </div>
+    </body>
+    <script>
+      var streamingURL = '';
+      var maxIterations = 10;
+
+      function loadVideo(url){
+        $.get(url);
+        $('video').attr('src', streamingURL+'?1');
+          $('.progress-bar').css('width', '5%');
+        $('.video, .progress').show();
+      }
+
+      $('.history').on('click', 'a',  function(e){
+        e.preventDefault();
+        streamingURL = this.href;
+        loadVideo(this.href);
+      });
+      $('#docs').on('click', function(e){
+        location.href='http://touchandgo.rtfd.org'
+      });
+      $('#report').on('click', function(e){
+        location.href='http://github.com/touchandgo-devs/touchandgo/issues/new'
+      });
+
+      $('#kill').on('click',  function(e){
+        e.preventDefault();
+        $.get('//' + window.location.host + '/kill').done(function(){
+          $('video').attr('src', '');
+          $('.video, .video video').hide();
+        });
+      });
+
+      $('#register').on('click', function(e){
+        e.preventDefault();
+        navigator.registerProtocolHandler(
+          "magnet",
+          "//" + window.location.host + "/?m=%s",
+          "Touchandgo"
+        );
+      });
+
+      $('#play').on('click', function(e){
+        e.preventDefault()
+        var title   = encodeURIComponent(document.querySelector('#title').value);
+        var episode = encodeURIComponent(document.querySelector('#episode').value);
+        var season  = encodeURIComponent(document.querySelector('#season').value);
+        var url = '//' + window.location.host + '/';
+
+        if (title.indexOf('magnet%3A') == 0){
+          url += 'magnet?m=' + title;
+        } else {
+          url += title;
+          if (season || episode) {
+            // If there's a season or episode, treat this as series
+            url += '/' + season + '/' + episode;
+          }
+        }
+        loadVideo(url);
+      });
+
+      $('video').on('error', function(){
+        var iterations = parseInt($('video').attr('src').match(/[0-9]+$/)[0], 10);
+
+        if (iterations > maxIterations) {
+          return
+        }
+
+        window.setTimeout(function(){
+          $('.progress-bar').css('width', (iterations * 10) + '%');
+          $('.progress .completion').text(iterations * 10);
+          $('video').attr('src', streamingURL + '?' + ++iterations);
+        }, iterations * 10 * 1000, false);
+      }).on('canplay', function(){
+        console.log('sarasa')
+        $('video').show();
+        $('.progress').hide();
+      });
+
+      {%if magnet%}
+      loadVideo('//'+window.location.host+'/magnet?m='+encodeURIComponent($('#title').val()))
+      {%endif%}
+
+    </script>
+</html>
