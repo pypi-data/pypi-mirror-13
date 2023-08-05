@@ -1,0 +1,156 @@
+Consider building an scrypt encoder. With scrypt you are not confined to 512 
+bits. You can ask for as many bits (actually bytes) as you like.
+
+You can also try bcrypt:
+    yum install py-bcrypt
+    import bcrypt
+    bcrypt.kdf(passwd, salt, len, rounds)
+        produces len bytes
+
+
+Services
+========
+
+To make the new abraxas very flexible, a series of services will be defined and 
+plugins will be developed to provide those services.
+
+1. Account discovery:
+   inputs:
+      access to account fields including url
+      may also have parameters, such as window title information (regex or glob)
+   outputs:
+      boolean indicating a match
+   versions:
+      hostname in titlebar version
+      glob version
+      regular expression version
+      also checks username, hostname, cwd, etc.
+
+2. Secret generator:
+   inputs:
+      raw bit stream
+      generator parameters (perhaps specified directly to generator or taken account)
+   outputs:
+      secret
+   versions:
+      passphrase
+      password
+      date ...
+      override(local gpg encrypted)
+
+3. Secret writer
+   These would not be specified on the account, they would be use at user request.
+   inputs:
+      access to account fields such as username, email, and such
+      access to secret
+   outputs:
+      the secret
+   versions:
+      stdout writer
+      tty writer
+      xdotool writer
+      pexpect writer
+      clipboard writer
+      browser write (starts the browser and opens the page)
+          --- can generalize this to run a program with information from the account
+
+4. Seed generator
+   The seeds are the components that are used to feed the raw bit stream generator.
+   The seed generators can be chained. So abraxas provides a master seed to the 
+   first seed generator, and the secret selected also provides a seed, and each 
+   generator in the chain can add a seed.
+   inputs:
+      seeds
+   outputs:
+      seeds
+   versions:
+      interactive password requestor (unlocks a seed if password is given properly).
+      multiple master passwords (this allows to generate a master password on 
+          behalf of sue and barrie, but only if you all three share master 
+          passwords pairwise (you could generate and share yet another master 
+          password, but this avoids that). (This is weak, it is hard to see it 
+          getting used).
+
+The data is arranged in accounts, each account has account information in the 
+form of attributes, and it has a list of secrets that can be generated. The 
+secrets would take the form of an object or class that would allow the above 
+services to be configured individually if desired, or preconfigured. It might 
+make sense to provide predefined secret types, and it might also be good to 
+allow the common information for shared secrets. For example, it may be that 
+all the secrets share the same account discovery (you go to a banks website and 
+it requests for password and one of the 4 pre-configured security questions, 
+you click autotype and it offers you a choice of all the various secrets for 
+that website).
+
+
+
+TODO ...
+1. Write the accounts module, take as much as you can from existing code, but 
+   trim the functions so that they only contain 20-30 lines.
+
+2. Write Logging facility.
+
+3. Then provide base classes for Encrypted, Secret, Discovery.
+
+4. Once account files are being read, both plain text and encrypted, add 
+   subclass Encrypted class with GPG and PlainText to read both strings that 
+   are encrypted with GPG or not encrypted (could even support rot13).
+
+5. Allow glob strings in URLs (not the first url of course). This was we could 
+   support things like *designers-guide.com so it would work will subdomains.
+
+
+Multiple Master Keys
+When explaining this, explain that it is helps partition your passwords into 
+sets that can be used on different machines. For example, you can have 
+a separate work and home master key. You can also have high security and low 
+security masters. For example, you might associate your bank account to your 
+high security key and your netflix account to your low security. That way you 
+can move your low security key to other machines (your media machine, your 
+family machine, etc) without putting your high security accounts in jeopardy.
+
+A good idea is to partition the accounts into separate files that might be used 
+on different machines. For example, your high-security secrets that you use on 
+your primary machine (ssh, gpg, login, email, etc) might go in one file, and 
+all your web passwords might go on another (so you can keep it on your surfing 
+VM), low security accounts may go in yet another file that can be placed on any 
+machine. 
+
+Autotype
+Autotype is becoming increasingly unhelpful because:
+    Firefox does not reliably accept carriage returns
+    Websites (gmail, etc.) spread the login process over multiple pages
+To address this:
+1. Consider supporting python website automation (kale may help with this)
+   This could be linked to the -b or -B option to allow the user to specify 
+   that when the -b option is given, a particular page should be opened in 
+   a particular browser, and then particular values are to be entered into 
+   particular fields.
+2. Consider a version of autotype that simply entered the first field in to the 
+   webpage and then echoed the remainder of the information to the tty.
+
+Machine Dependent Accounts
+   Provide a field that indicates which machines the account is available on.
+   In this way the more sensitive passwords are not available on the less 
+   secure machines, but the accounts file is shared. Or could simply hide the 
+   account if the master password is not available. That way you can simple 
+   delete master keys on the less secure machines. In this model, the user 
+   would create a series of master keys, and then associate them with different 
+   levels of security.
+
+
+
+Hostname in Titlebar::
+It has gone away, and its replacement, KeePass Helper, is gone too (they are 
+off the firefox store, but you can still find it here: 
+https://www.assembla.com/wiki/show/slipstream/KeePass_Helper
+
+.  However, the code can be found at: 
+http://subversion.assembla.com/svn/slipstream/mozilla_addons/bughunter2@hostnameintitlebar/
+
+There seem to be some possible replacements:
+https://addons.mozilla.org/en-us/firefox/addon/add-url-to-window-title/
+https://addons.mozilla.org/en-US/firefox/addon/page-title/
+
+
+
