@@ -1,0 +1,226 @@
+{% load sql_debug_info %}
+
+<style>
+    div#sql_debugger_view {
+        font-family: sans-serif;
+        font-size: 14px;
+        position:fixed;
+        left:60px;
+        bottom:10px;
+        display: none;
+        overflow: auto;
+        width:70%;
+        min-height:500px;
+        height:90%;
+        background: white;
+        z-index: 1000;
+        box-shadow: 0 0 10px rgba(0,0,0,0.5);
+    }
+
+    div#sql_debugger_button {
+        display: table-cell;
+        font-family: sans-serif;
+        position:fixed;
+        bottom: 10px;
+        left:10px;
+        width: 40px;
+        height: 40px;
+        background: white;
+        opacity: 0.5;
+        border-radius: 25px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.5);    
+        text-align: center;
+    }
+
+    span#sql_debugger_requests_count {
+        line-height: 40px;
+    }
+
+    div#sql_debugger_button:hover {
+        opacity: 1;
+    }
+
+    div.sql_debugger_request_box {
+        border:1px solid gray;
+        margin:10px;
+    }
+
+    div.sql_debugger_box_error {
+        border:1px solid #C38080;
+    }
+
+    div.sql_debugger_box_error_content_text {
+        white-space:pre-wrap;
+    }
+
+    div.sql_debugger_request_box_header {
+        padding:5px;
+        background: gray;
+        color:white;
+        cursor:pointer;
+        font-size: 14px;
+    }
+
+    div.sql_debugger_header_error {
+        background: #C38080;
+    }
+
+    div.sql_debugger_request_box_contents {
+        display:none;
+        padding:5px;
+    }
+
+    div.sql_debugger_sql_box {
+        padding:10px;
+    }
+
+    div.sql_debugger_traceback {
+        padding-top:5px;
+        padding-left: 10px;
+        cursor: pointer;
+    }
+
+    div.sql_debugger_traceback_header {
+        cursor: pointer;
+        font-weight: bold;
+    }
+
+    div.sql_debugger_traceback_contents {
+        display:none;
+        padding-left: 20px;
+        font-family: monospace;
+        font-size: 12px;
+    }
+
+    span.sql_debugger_traceback_caller_file {
+        color:gray;
+    }
+
+    span.sql_debugger_traceback_caller_method {
+    }
+
+    span.sql_debugger_traceback_called_func {
+        padding-left: 10px;
+    }
+</style>
+
+<div id="sql_debugger_rq_path_info" style="display:none">{{ request.get_full_path }}</div>
+<div id="sql_debugger_rq_sql_info" style="display:none">{% sql_debug_info %}</div>
+
+<div id="sql_debugger_view">
+</div>
+
+<div id="sql_debugger_button">
+    <span id="sql_debugger_requests_count">0</span>
+</div>
+
+<script src="//code.jquery.com/jquery-1.12.0.min.js"></script>
+<script type="text/javascript">
+
+$(document).ready(function(){
+
+    function createEntry() {
+        var reqCount = $(".sql_debugger_request_box").length + 1;
+        var id = 'sql_debugger_request_' + reqCount;
+        var html = '<div id="' + id + '" class="sql_debugger_request_box"> \
+            <div class="sql_debugger_request_box_header"></div> \
+            <div class="sql_debugger_request_box_contents"></div> \
+        </div>';        
+        $("#sql_debugger_view").append(html);    
+
+        $("#" + id).find(".sql_debugger_request_box_header").click(function(){
+            $(this).parent().find(".sql_debugger_request_box_contents").toggle(0);
+        });
+
+        return $("#" + id); 
+    }
+
+    function populateEntry(entry, data, path, errordata) {
+        var rb = entry.find(".sql_debugger_request_box_contents");
+
+        var headerText = path;
+        var header = entry.find(".sql_debugger_request_box_header");
+
+        if (errordata != undefined) {
+            var tbh = '<div class="sql_debugger_box_error_content_text">' + errordata.traceback + '</div>';
+            var errm = '<div class="sql_debugger_box_error_content_text">' + errordata.error + '</div>';
+
+            rb.append(errm);
+            rb.append(tbh);
+
+            header.addClass('sql_debugger_header_error');
+            entry.addClass('sql_debugger_box_error');
+
+        } else if (data != undefined) {
+            for (var i = 0; i < data.length; i++) {
+                var d = data[i];
+                var sbox_h = '<div class="sql_debugger_sql_box"></div>';
+                var sbox = rb.append(sbox_h);
+                var sql = '<div>' + d.sql + '</div>';
+
+                sbox.append(sql);
+                var traceback_h = '<div class="sql_debugger_traceback"><div class="sql_debugger_traceback_header">Traceback</div>\
+                    <div class="sql_debugger_traceback_contents"></div></div>';
+                var tbh = sbox.append(traceback_h).find(".sql_debugger_traceback_contents").eq(i);
+                for (var j = 0; j < d.tb.length; j++) {
+                    var tba = d.tb[j];
+                    var cfile = '<span class="sql_debugger_traceback_caller_file">' + tba[0] + ': </span>'; 
+                    var cmethod = '<span class="sql_debugger_traceback_caller_method">' + tba[2] + ' (' + tba[1] + ')</span>';
+                    var cfunc = '<span class="sql_debugger_traceback_called_func">' + tba[3]+ '</span>';
+                    tbh.append('<div>' + cfile + cmethod + '<br>' + cfunc + '</div>');  
+                };
+            };
+
+            entry.find(".sql_debugger_traceback").click(function(){
+                $(this).find(".sql_debugger_traceback_contents").toggle(0);
+            });
+
+            headerText += ". Requests count: " + data.length;
+
+        } else {
+
+        }
+
+        header.text(headerText);
+
+
+    }
+
+    $("#sql_debugger_button").click(function(){
+        $("#sql_debugger_view").toggle(200);
+    });
+
+    $(document).ajaxComplete(function(event, request){
+
+        var resp = null;
+        var err = false;
+        if (request.responseJSON != undefined) {
+            resp = request.responseJSON;
+        } else {
+            resp = JSON.parse(request.responseText);
+        }
+
+        if (resp != undefined) {
+            var entry = createEntry();
+            populateEntry(entry, resp.sql_debug_info, resp.path, resp.errordata);            
+            var rcount = parseInt($("#sql_debugger_requests_count").text());
+            $("#sql_debugger_requests_count").text(rcount + 1);            
+        }
+
+    });
+
+    function onCreate() {
+        var path = $("#sql_debugger_rq_path_info").text();
+        var rdataJSON = $("#sql_debugger_rq_sql_info").text();
+        var rdata = JSON.parse(rdataJSON);
+        var entry = createEntry();
+        populateEntry(entry, rdata, path);   
+        var rcount = parseInt($("#sql_debugger_requests_count").text());
+        $("#sql_debugger_requests_count").text(rcount + 1);
+    }
+
+    onCreate();
+
+});
+
+</script>
