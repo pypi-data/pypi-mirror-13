@@ -1,0 +1,215 @@
+----------------
+PyHardLinkBackup
+----------------
+
+Hardlink/Deduplication Backups with Python.
+
+* Backups should be saved as normal files in filesystem:
+
+    * accessible without any extra software or extra meta files
+
+    * non-proprietary format
+
+* Create backups with versioning
+
+    * every backup run creates a complete filesystem snapshot tree
+
+    * every snapshot tree can be deleted, without affecting the other snapshots
+
+* Deduplication with hardlinks:
+
+    * Store only changed files, all other via hardlinks
+
+    * find duplicate files everywhere (even if renamed or moved files)
+
+* useable under Windows and Linux
+
+current state:
+
+* python 3 only
+
+* Alpha state
+
+Please, try, fork and contribute! ;)
+
+-------
+Example
+-------
+
+::
+
+    $ phlb backup ~/my/important/documents
+    ...start backup, some time later...
+    $ phlb backup ~/my/important/documents
+    ...
+
+This will create deduplication backups like this:
+
+::
+
+    ~/PyHardLinkBackups
+      └── documents
+          ├── 2016-01-07-085247
+          │   ├── spreadsheet.ods
+          │   ├── brief.odt
+          │   └── important_files.ext
+          └── 2016-01-07-102310
+              ├── spreadsheet.ods
+              ├── brief.odt
+              └── important_files.ext
+
+--------
+Try out:
+--------
+
+on Windows:
+===========
+
+#. install Python 3: `https://www.python.org/downloads/ <https://www.python.org/downloads/>`_
+
+#. Download the file `boot_pyhardlinkbackup.cmd <https://raw.githubusercontent.com/jedie/PyHardLinkBackup/master/boot_pyhardlinkbackup.cmd>`_
+
+#. run **boot_pyhardlinkbackup.cmd**
+
+There will be a virtual env in this path: ``%APPDATA%\PyHardLinkBackup``
+
+call these batch files:
+
+#. ``%APPDATA%\PyHardLinkBackup\pyhlb config.cmd``
+
+#. ``%APPDATA%\PyHardLinkBackup\pyhlb migrate.cmd``
+
+There is also a helper batchfile:
+
+* ``%APPDATA%\PyHardLinkBackup\PyHardLinkBackup this directory.cmd``
+
+Copy this file to a location that should be backup and just call it to run a backup.
+
+on linux follow these steps:
+
+1. Create a virtual env and install:
+====================================
+
+::
+
+    ~$ virtualenv -p python3 PyHardLinkBackupEnv
+    $ cd PyHardLinkBackupEnv/
+    ~/PyHardLinkBackupEnv $ source bin/activate
+    (PyHardLinkBackupEnv) ~/PyHardLinkBackupEnv $ pip install -U pip
+    (PyHardLinkBackupEnv) ~/PyHardLinkBackupEnv $ pip install -e git+https://github.com/jedie/PyHardLinkBackup.git#egg=PyHardLinkBackup
+
+**Note:** If you not use python 3.5+, then '`scandir <https://pypi.python.org/pypi/scandir>`_' will be installed and so you need the **python3-dev** package...
+
+2. setup
+========
+
+create a .ini config file and edit it:
+
+::
+
+    (PyHardLinkBackupEnv) ~/PyHardLinkBackupEnv $ phlb config
+
+Initialize the database:
+
+::
+
+    (PyHardLinkBackupEnv) ~/PyHardLinkBackupEnv $ phlb migrate
+
+3. start a backup run
+=====================
+
+::
+
+    ~$ ./PyHardLinkBackupEnv/bin/phlb backup ~/Photo
+
+or:
+
+::
+
+    ~$ source ./PyHardLinkBackupEnv/bin/activate
+    (PyHardLinkBackupEnv) ~$ phlb backup ~/documents
+
+-------------
+configuration
+-------------
+
+phlb will used a configuration file named: **PyHardLinkBackup.ini**
+
+Search order is:
+
+#. current directory
+
+#. user directory
+
+You can just open the editor with the user directory .ini file with:
+
+::
+
+    (PyHardLinkBackupEnv) ~/PyHardLinkBackupEnv $ phlb config
+
+-------------
+run unittests
+-------------
+
+::
+
+    $ cd PyHardLinkBackupEnv/
+    ~/PyHardLinkBackupEnv $ source bin/activate
+    (PyHardLinkBackupEnv) ~/PyHardLinkBackupEnv $ phlb test
+
+----------
+some notes
+----------
+
+What is 'phlb' ?!?
+==================
+
+the **phlb** executable is the similar to django **manage.py**, but it always
+used the PyHardLinkBackup settings.
+
+Why in hell do you use django?!?
+================================
+
+* Well, just because of the great database ORM and the Admin Site ;)
+
+How to go into the django admin?
+================================
+
+::
+
+    $ cd PyHardLinkBackupEnv/
+    ~/PyHardLinkBackupEnv $ source bin/activate
+    (PyHardLinkBackupEnv) ~/PyHardLinkBackupEnv $ phlb runserver
+
+And then just request 'localhost'
+
+----
+TODO
+----
+
+* copy file meta data like owner, mode etc.
+
+* handle symlinks
+
+* Quick Backup: Don't check the content, just compare file size + modification date
+
+* use: `https://github.com/jedie/bootstrap_env <https://github.com/jedie/bootstrap_env>`_ (So it's better to install it under windows)
+
+* Add some helper files to start a backup (.sh / .cmd scripts)
+
+* write docs
+
+* write more tests
+
+* activate CI
+
+* Far future: Add a GUI
+
+-----
+Links
+-----
+
+* `https://pypi.python.org/pypi/PyHardlinkBackup/ <https://pypi.python.org/pypi/PyHardlinkBackup/>`_
+
+* `https://www.python-forum.de/viewtopic.php?f=6&t=37723 <https://www.python-forum.de/viewtopic.php?f=6&t=37723>`_ (de)
+
