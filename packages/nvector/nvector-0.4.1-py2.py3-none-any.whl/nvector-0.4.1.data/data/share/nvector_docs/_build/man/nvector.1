@@ -1,0 +1,4308 @@
+.\" Man page generated from reStructuredText.
+.
+.TH "NVECTOR" "1" "January 19, 2016" "0.4.1" "nvector"
+.SH NAME
+nvector \- nvector 0.4.1
+.
+.nr rst2man-indent-level 0
+.
+.de1 rstReportMargin
+\\$1 \\n[an-margin]
+level \\n[rst2man-indent-level]
+level margin: \\n[rst2man-indent\\n[rst2man-indent-level]]
+-
+\\n[rst2man-indent0]
+\\n[rst2man-indent1]
+\\n[rst2man-indent2]
+..
+.de1 INDENT
+.\" .rstReportMargin pre:
+. RS \\$1
+. nr rst2man-indent\\n[rst2man-indent-level] \\n[an-margin]
+. nr rst2man-indent-level +1
+.\" .rstReportMargin post:
+..
+.de UNINDENT
+. RE
+.\" indent \\n[an-margin]
+.\" old: \\n[rst2man-indent\\n[rst2man-indent-level]]
+.nr rst2man-indent-level -1
+.\" new: \\n[rst2man-indent\\n[rst2man-indent-level]]
+.in \\n[rst2man-indent\\n[rst2man-indent-level]]u
+..
+\fI\%\fP\fI\%\fP\fI\%\fP\fI\%Code Health\fP\fI\%\fP\fI\%\fP
+.sp
+This is the documentation of \fBnvector\fP 0.4.1 for Python.
+.sp
+Bleeding edge available at: \fI\%https://github.com/pbrod/nvector\fP\&.
+.sp
+Official releases are available at: \fI\%http://pypi.python.org/pypi/nvector\fP\&.
+.sp
+Official homepage are available at: \fI\%http://www.navlab.net/nvector/\fP
+.SH CONTENTS
+.SS Introduction to Nvector
+.sp
+\fI\%nvector_img\fP \fI\%tests_img\fP \fI\%docs_img\fP \fI\%health_img\fP \fI\%coverage_img\fP \fI\%versions_img\fP
+.sp
+Nvector is a suite of tools written in Python to solve geographical position
+calculations like:
+.INDENT 0.0
+.IP \(bu 2
+Calculate the surface distance between two geographical positions.
+.IP \(bu 2
+Convert positions given in one reference frame into another reference frame.
+.IP \(bu 2
+Find the destination point given start point, azimuth/bearing and distance.
+.IP \(bu 2
+Find the mean position (center/midpoint) of several geographical positions.
+.IP \(bu 2
+Find the intersection between two paths.
+.IP \(bu 2
+Find the cross track distance between a path and a position.
+.UNINDENT
+.SS Description
+.sp
+In this library, we represent position with an "n\-vector",  which
+is the normal vector to the Earth model (the same reference ellipsoid that is
+used for latitude and longitude). When using n\-vector, all Earth\-positions are
+treated equally, and there is no need to worry about singularities or
+discontinuities. An additional benefit with using n\-vector is that many
+position calculations can be solved with simple vector algebra
+(e.g. dot product and cross product).
+.sp
+Converting between n\-vector and latitude/longitude is unambiguous and easy
+using the provided functions.
+.sp
+n_E is n\-vector in the program code, while in documents we use nE. E denotes
+an Earth\-fixed coordinate frame, and it indicates that the three components of
+n\-vector are along the three axes of E. More details about the notation and
+reference frames can be found here:
+.SS Documentation and code
+.sp
+Official documentation: \fI\%http://www.navlab.net/nvector/\fP
+.INDENT 0.0
+.TP
+.B \fIKenneth Gade (2010):\fP
+\fI\%A Nonsingular Horizontal Position Representation,
+The Journal of Navigation, Volume 63, Issue 03, pp 395\-417, July 2010.\fP
+.UNINDENT
+.sp
+Bleeding edge: \fI\%https://github.com/pbrod/nvector\fP\&.
+.sp
+Official releases available at: \fI\%http://pypi.python.org/pypi/nvector\fP\&.
+.SS Installation and upgrade:
+.sp
+with pip
+.INDENT 0.0
+.INDENT 3.5
+$ pip install nvector
+.UNINDENT
+.UNINDENT
+.sp
+with easy_install
+.INDENT 0.0
+.INDENT 3.5
+$ easy_install nvector
+.UNINDENT
+.UNINDENT
+.sp
+or
+.INDENT 0.0
+.INDENT 3.5
+$ easy_install upgrade nvector
+.UNINDENT
+.UNINDENT
+.sp
+to upgrade to the newest version
+.SS Unit tests
+.sp
+To test if the toolbox is working paste the following in an interactive
+python session:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+import nvector as nv
+nv.test(coverage=True, doctests=True)
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.SS Acknowledgement
+.sp
+The \fI\%nvector package\fP for
+\fI\%Python\fP was written by Per A. Brodtkorb at
+\fI\%FFI (The Norwegian Defence Research Establishment)\fP
+based on the \fI\%nvector toolbox\fP for
+\fI\%Matlab\fP written by the navigation group at
+\fI\%FFI\fP\&.
+.sp
+Most of the content is based on the following article:
+.INDENT 0.0
+.TP
+.B \fIKenneth Gade (2010):\fP
+\fI\%A Nonsingular Horizontal Position Representation,
+The Journal of Navigation, Volume 63, Issue 03, pp 395\-417, July 2010.\fP
+.UNINDENT
+.sp
+Thus this article should be cited in publications using this page or the
+downloaded program code.
+.SS Getting Started
+.sp
+Below the object\-oriented solution to some common geodesic problems are given.
+In the first example the functional solution is also given.
+The functional solutions to the remaining problems can be found
+\fI\%here\fP\&.
+.sp
+\fBExample 1: "A and B to delta"\fP
+[image]
+.sp
+Given two positions, A and B as latitudes, longitudes and depths relative to
+Earth, E.
+.sp
+Find the exact vector between the two positions, given in meters north, east,
+and down, and find the direction (azimuth) to B, relative to north.
+Assume WGS\-84 ellipsoid. The given depths are from the ellipsoid surface.
+Use position A to define north, east, and down directions.
+(Due to the curvature of Earth and different directions to the North Pole,
+the north, east, and down directions will change (relative to Earth) for
+different places.  A must be outside the poles for the north and east
+directions to be defined.)
+.INDENT 0.0
+.TP
+.B Solution:
+.sp
+.nf
+.ft C
+>>> import numpy as np
+>>> import nvector as nv
+>>> wgs84 = nv.FrameE(name=\(aqWGS84\(aq)
+>>> pointA = wgs84.GeoPoint(latitude=1, longitude=2, z=3, degrees=True)
+>>> pointB = wgs84.GeoPoint(latitude=4, longitude=5, z=6, degrees=True)
+.ft P
+.fi
+.TP
+.B Step 1: Find p_AB_E (delta decomposed in E).
+.sp
+.nf
+.ft C
+>>> p_AB_E = nv.diff_positions(pointA, pointB)
+.ft P
+.fi
+.TP
+.B Step 2: Find p_AB_N (delta decomposed in N).
+.sp
+.nf
+.ft C
+>>> frame_N = nv.FrameN(pointA)
+>>> p_AB_N = p_AB_E.change_frame(frame_N)
+>>> p_AB_N = p_AB_N.pvector.ravel()
+>>> valtxt = \(aq{0:8.2f}, {1:8.2f}, {2:8.2f}\(aq.format(*p_AB_N)
+>>> \(aqEx1: delta north, east, down = {}\(aq.format(valtxt)
+\(aqEx1: delta north, east, down = 331730.23, 332997.87, 17404.27\(aq
+.ft P
+.fi
+.TP
+.B Step3: Also find the direction (azimuth) to B, relative to north:
+.sp
+.nf
+.ft C
+>>> azimuth = np.arctan2(p_AB_N[1], p_AB_N[0])
+>>> \(aqazimuth = {0:4.2f} deg\(aq.format(np.rad2deg(azimuth))
+\(aqazimuth = 45.11 deg\(aq
+.ft P
+.fi
+.TP
+.B Functional Solution:
+.sp
+.nf
+.ft C
+>>> import numpy as np
+>>> import nvector as nv
+>>> from nvector import rad, deg
+.ft P
+.fi
+.sp
+.nf
+.ft C
+>>> lat_EA, lon_EA, z_EA = rad(1), rad(2), 3
+>>> lat_EB, lon_EB, z_EB = rad(4), rad(5), 6
+.ft P
+.fi
+.TP
+.B Step1: Convert to n\-vectors:
+.sp
+.nf
+.ft C
+>>> n_EA_E = nv.lat_lon2n_E(lat_EA, lon_EA)
+>>> n_EB_E = nv.lat_lon2n_E(lat_EB, lon_EB)
+.ft P
+.fi
+.TP
+.B Step2: Find p_AB_E (delta decomposed in E).WGS\-84 ellipsoid is default:
+.sp
+.nf
+.ft C
+>>> p_AB_E = nv.n_EA_E_and_n_EB_E2p_AB_E(n_EA_E, n_EB_E, z_EA, z_EB)
+.ft P
+.fi
+.TP
+.B Step3: Find R_EN for position A:
+.sp
+.nf
+.ft C
+>>> R_EN = nv.n_E2R_EN(n_EA_E)
+.ft P
+.fi
+.TP
+.B Step4: Find p_AB_N (delta decomposed in N).
+.sp
+.nf
+.ft C
+>>> p_AB_N = np.dot(R_EN.T, p_AB_E).ravel()
+>>> valtxt = \(aq{0:8.2f}, {1:8.2f}, {2:8.2f}\(aq.format(*p_AB_N)
+>>> \(aqEx1: delta north, east, down = {}\(aq.format(valtxt)
+\(aqEx1: delta north, east, down = 331730.23, 332997.87, 17404.27\(aq
+.ft P
+.fi
+.TP
+.B Step5: Also find the direction (azimuth) to B, relative to north:
+.sp
+.nf
+.ft C
+>>> azimuth = np.arctan2(p_AB_N[1], p_AB_N[0])
+>>> \(aqazimuth = {0:4.2f} deg\(aq.format(deg(azimuth))
+\(aqazimuth = 45.11 deg\(aq
+.ft P
+.fi
+.TP
+.B See also
+\fI\%Example 1 at www.navlab.net\fP
+.UNINDENT
+.sp
+\fBExample 2: "B and delta to C"\fP
+[image]
+.sp
+A radar or sonar attached to a vehicle B (Body coordinate frame) measures the
+distance and direction to an object C. We assume that the distance and two
+angles (typically bearing and elevation relative to B) are already combined to
+the vector p_BC_B (i.e. the vector from B to C, decomposed in B). The position
+of B is given as n_EB_E and z_EB, and the orientation (attitude) of B is given
+as R_NB (this rotation matrix can be found from roll/pitch/yaw by using zyx2R).
+.sp
+Find the exact position of object C as n\-vector and depth ( n_EC_E and z_EC ),
+assuming Earth ellipsoid with semi\-major axis a and flattening f. For WGS\-72,
+use a = 6 378 135 m and f = 1/298.26.
+.INDENT 0.0
+.TP
+.B Solution:
+.sp
+.nf
+.ft C
+>>> import nvector as nv
+>>> wgs72 = nv.FrameE(name=\(aqWGS72\(aq)
+>>> wgs72 = nv.FrameE(a=6378135, f=1.0/298.26)
+.ft P
+.fi
+.TP
+.B Step 1: Position and orientation of B is given 400m above E:
+.sp
+.nf
+.ft C
+>>> n_EB_E = wgs72.Nvector(nv.unit([[1], [2], [3]]), z=\-400)
+.ft P
+.fi
+.TP
+.B Step 2: Delta BC decomposed in B
+.sp
+.nf
+.ft C
+>>> frame_B = nv.FrameB(n_EB_E, yaw=10, pitch=20, roll=30, degrees=True)
+>>> p_BC_B = frame_B.Pvector(np.r_[3000, 2000, 100].reshape((\-1, 1)))
+.ft P
+.fi
+.TP
+.B Step 3: Decompose delta BC in E
+.sp
+.nf
+.ft C
+>>> p_BC_E = p_BC_B.to_ecef_vector()
+.ft P
+.fi
+.TP
+.B Step 4: Find point C by adding delta BC to EB
+.sp
+.nf
+.ft C
+>>> p_EB_E = n_EB_E.to_ecef_vector()
+>>> p_EC_E = p_EB_E + p_BC_E
+>>> pointC = p_EC_E.to_geo_point()
+.ft P
+.fi
+.sp
+.nf
+.ft C
+>>> lat, lon, z = pointC.latitude_deg, pointC.longitude_deg, pointC.z
+>>> msg = \(aqEx2: PosC: lat, lon = {:4.2f}, {:4.2f} deg,  height = {:4.2f} m\(aq
+>>> msg.format(lat[0], lon[0], \-z[0])
+\(aqEx2: PosC: lat, lon = 53.33, 63.47 deg,  height = 406.01 m\(aq
+.ft P
+.fi
+.TP
+.B See also
+\fI\%Example 2 at www.navlab.net\fP
+.UNINDENT
+.sp
+\fBExample 3: "ECEF\-vector to geodetic latitude"\fP
+[image]
+.sp
+Position B is given as an "ECEF\-vector" p_EB_E (i.e. a vector from E, the
+center of the Earth, to B, decomposed in E).
+Find the geodetic latitude, longitude and height (latEB, lonEB and hEB),
+assuming WGS\-84 ellipsoid.
+.INDENT 0.0
+.TP
+.B Solution:
+.sp
+.nf
+.ft C
+>>> import numpy as np
+>>> import nvector as nv
+>>> wgs84 = nv.FrameE(name=\(aqWGS84\(aq)
+>>> position_B = 6371e3 * np.vstack((0.9, \-1, 1.1))  # m
+>>> p_EB_E = wgs84.ECEFvector(position_B)
+>>> pointB = p_EB_E.to_geo_point()
+.ft P
+.fi
+.sp
+.nf
+.ft C
+>>> lat, lon, h = pointB.latitude_deg, pointB.longitude_deg, \-pointB.z
+>>> msg = \(aqEx3: Pos B: lat, lon = {:4.2f}, {:4.2f} deg, height = {:9.2f} m\(aq
+>>> msg.format(lat[0], lon[0], h[0])
+\(aqEx3: Pos B: lat, lon = 39.38, \-48.01 deg, height = 4702059.83 m\(aq
+.ft P
+.fi
+.TP
+.B See also
+\fI\%Example 3 at www.navlab.net\fP
+.UNINDENT
+.sp
+\fBExample 4: "Geodetic latitude to ECEF\-vector"\fP
+[image]
+.sp
+Geodetic latitude, longitude and height are given for position B as latEB,
+longEB and hEB, find the ECEF\-vector for this position, p_EB_E.
+.INDENT 0.0
+.TP
+.B Solution:
+.sp
+.nf
+.ft C
+>>> import nvector as nv
+>>> wgs84 = nv.FrameE(name=\(aqWGS84\(aq)
+>>> pointB = wgs84.GeoPoint(latitude=1, longitude=2, z=\-3, degrees=True)
+>>> p_EB_E = pointB.to_ecef_vector()
+.ft P
+.fi
+.sp
+.nf
+.ft C
+>>> \(aqEx4: p_EB_E = {} m\(aq.format(p_EB_E.pvector.ravel())
+\(aqEx4: p_EB_E = [ 6373290.27721828   222560.20067474   110568.82718179] m\(aq
+.ft P
+.fi
+.TP
+.B See also
+\fI\%Example 4 at www.navlab.net\fP
+.UNINDENT
+.sp
+\fBExample 5: "Surface distance"\fP
+[image]
+.sp
+Find the surface distance sAB (i.e. great circle distance) between two
+positions A and B. The heights of A and B are ignored, i.e. if they don\(aqt have
+zero height, we seek the distance between the points that are at the surface of
+the Earth, directly above/below A and B. The Euclidean distance (chord length)
+dAB should also be found. Use Earth radius 6371e3 m.
+Compare the results with exact calculations for the WGS\-84 ellipsoid.
+.INDENT 0.0
+.TP
+.B Solution for a sphere:
+.sp
+.nf
+.ft C
+>>> import numpy as np
+>>> import nvector as nv
+>>> frame_E = nv.FrameE(a=6371e3, f=0)
+>>> positionA = frame_E.GeoPoint(latitude=88, longitude=0, degrees=True)
+>>> positionB = frame_E.GeoPoint(latitude=89, longitude=\-170, degrees=True)
+.ft P
+.fi
+.sp
+.nf
+.ft C
+>>> s_AB, _azia, _azib = positionA.distance_and_azimuth(positionB)
+>>> p_AB_E = positionB.to_ecef_vector() \- positionA.to_ecef_vector()
+>>> d_AB = np.linalg.norm(p_AB_E.pvector, axis=0)[0]
+.ft P
+.fi
+.sp
+.nf
+.ft C
+>>> msg = \(aqEx5: Great circle and Euclidean distance = {}\(aq
+>>> msg = msg.format(\(aq{:5.2f} km, {:5.2f} km\(aq)
+>>> msg.format(s_AB / 1000, d_AB / 1000)
+\(aqEx5: Great circle and Euclidean distance = 332.46 km, 332.42 km\(aq
+.ft P
+.fi
+.TP
+.B Alternative sphere solution:
+.sp
+.nf
+.ft C
+>>> path = nv.GeoPath(positionA, positionB)
+>>> s_AB2 = path.track_distance(method=\(aqgreatcircle\(aq).ravel()
+>>> d_AB2 = path.track_distance(method=\(aqeuclidean\(aq).ravel()
+>>> msg.format(s_AB2[0] / 1000, d_AB2[0] / 1000)
+\(aqEx5: Great circle and Euclidean distance = 332.46 km, 332.42 km\(aq
+.ft P
+.fi
+.TP
+.B Exact solution for the WGS84 ellipsoid:
+.sp
+.nf
+.ft C
+>>> wgs84 = nv.FrameE(name=\(aqWGS84\(aq)
+>>> point1 = wgs84.GeoPoint(latitude=88, longitude=0, degrees=True)
+>>> point2 = wgs84.GeoPoint(latitude=89, longitude=\-170, degrees=True)
+>>> s_12, _azi1, _azi2 = point1.distance_and_azimuth(point2)
+.ft P
+.fi
+.sp
+.nf
+.ft C
+>>> p_12_E = point2.to_ecef_vector() \- point1.to_ecef_vector()
+>>> d_12 = np.linalg.norm(p_12_E.pvector, axis=0)[0]
+>>> msg = \(aqEllipsoidal and Euclidean distance = {:5.2f} km, {:5.2f} km\(aq
+>>> msg.format(s_12 / 1000, d_12 / 1000)
+\(aqEllipsoidal and Euclidean distance = 333.95 km, 333.91 km\(aq
+.ft P
+.fi
+.TP
+.B See also
+\fI\%Example 5 at www.navlab.net\fP
+.UNINDENT
+.sp
+\fBExample 6 "Interpolated position"\fP
+[image]
+.sp
+Given the position of B at time t0 and t1, n_EB_E(t0) and n_EB_E(t1).
+.sp
+Find an interpolated position at time ti, n_EB_E(ti). All positions are given
+as n\-vectors.
+.INDENT 0.0
+.TP
+.B Solution:
+.sp
+.nf
+.ft C
+>>> import nvector as nv
+>>> wgs84 = nv.FrameE(name=\(aqWGS84\(aq)
+>>> n_EB_E_t0 = wgs84.GeoPoint(89, 0, degrees=True).to_nvector()
+>>> n_EB_E_t1 = wgs84.GeoPoint(89, 180, degrees=True).to_nvector()
+>>> path = nv.GeoPath(n_EB_E_t0, n_EB_E_t1)
+.ft P
+.fi
+.sp
+.nf
+.ft C
+>>> t0 = 10.
+>>> t1 = 20.
+>>> ti = 16.  # time of interpolation
+>>> ti_n = (ti \- t0) / (t1 \- t0) # normalized time of interpolation
+.ft P
+.fi
+.sp
+.nf
+.ft C
+>>> g_EB_E_ti = path.interpolate(ti_n).to_geo_point()
+.ft P
+.fi
+.sp
+.nf
+.ft C
+>>> lat_ti, lon_ti = g_EB_E_ti.latitude_deg, g_EB_E_ti.longitude_deg
+>>> msg = \(aqEx6, Interpolated position: lat, long = {} deg, {} deg\(aq
+>>> msg.format(lat_ti, lon_ti)
+\(aqEx6, Interpolated position: lat, long = [ 89.7999805] deg, [ 180.] deg\(aq
+.ft P
+.fi
+.TP
+.B See also
+\fI\%Example 6 at www.navlab.net\fP
+.UNINDENT
+.sp
+\fBExample 7: "Mean position"\fP
+[image]
+.sp
+Three positions A, B, and C are given as n\-vectors n_EA_E, n_EB_E, and n_EC_E.
+Find the mean position, M, given as n_EM_E.
+Note that the calculation is independent of the depths of the positions.
+.INDENT 0.0
+.TP
+.B Solution:
+.sp
+.nf
+.ft C
+>>> import nvector as nv
+>>> points = nv.GeoPoint(latitude=[90, 60, 50],
+\&...                      longitude=[0, 10, \-20], degrees=True)
+>>> nvectors = points.to_nvector()
+>>> n_EM_E = nvectors.mean_horizontal_position()
+>>> g_EM_E = n_EM_E.to_geo_point()
+>>> lat, lon = g_EM_E.latitude_deg, g_EM_E.longitude_deg
+>>> msg = \(aqEx7: Pos M: lat, lon = {:4.2f}, {:4.2f} deg\(aq
+>>> msg.format(lat[0], lon[0])
+\(aqEx7: Pos M: lat, lon = 67.24, \-6.92 deg\(aq
+.ft P
+.fi
+.TP
+.B See also
+\fI\%Example 7 at www.navlab.net\fP
+.UNINDENT
+.sp
+\fBExample 8: "A and azimuth/distance to B"\fP
+[image]
+.sp
+We have an initial position A, direction of travel given as an azimuth
+(bearing) relative to north (clockwise), and finally the
+distance to travel along a great circle given as sAB.
+Use Earth radius 6371e3 m to find the destination point B.
+.sp
+In geodesy this is known as "The first geodetic problem" or
+"The direct geodetic problem" for a sphere, and we see that this is similar to
+\fI\%Example 2\fP, but now the delta is
+given as an azimuth and a great circle distance. ("The second/inverse geodetic
+problem" for a sphere is already solved in Examples
+\fI\%1\fP and
+\fI\%5\fP\&.)
+.INDENT 0.0
+.TP
+.B Solution:
+.sp
+.nf
+.ft C
+>>> import nvector as nv
+>>> frame = nv.FrameE(a=6371e3, f=0)
+>>> pointA = frame.GeoPoint(latitude=80, longitude=\-90, degrees=True)
+>>> pointB, _azimuthb = pointA.geo_point(distance=1000, azimuth=200,
+\&...                                      degrees=True)
+>>> lat, lon = pointB.latitude_deg, pointB.longitude_deg
+.ft P
+.fi
+.sp
+.nf
+.ft C
+>>> msg = \(aqEx8, Destination: lat, lon = {:4.2f} deg, {:4.2f} deg\(aq
+>>> msg.format(lat, lon)
+\(aqEx8, Destination: lat, lon = 79.99 deg, \-90.02 deg\(aq
+.ft P
+.fi
+.TP
+.B See also
+\fI\%Example 8 at www.navlab.net\fP
+.UNINDENT
+.sp
+\fBExample 9: "Intersection of two paths"\fP
+[image]
+.sp
+Define a path from two given positions (at the surface of a spherical Earth),
+as the great circle that goes through the two points.
+.sp
+Path A is given by A1 and A2, while path B is given by B1 and B2.
+.sp
+Find the position C where the two paths intersect.
+.INDENT 0.0
+.TP
+.B Solution:
+.sp
+.nf
+.ft C
+>>> import nvector as nv
+>>> pointA1 = nv.GeoPoint(10, 20, degrees=True)
+>>> pointA2 = nv.GeoPoint(30, 40, degrees=True)
+>>> pointB1 = nv.GeoPoint(50, 60, degrees=True)
+>>> pointB2 = nv.GeoPoint(70, 80, degrees=True)
+>>> pathA = nv.GeoPath(pointA1, pointA2)
+>>> pathB = nv.GeoPath(pointB1, pointB2)
+.ft P
+.fi
+.sp
+.nf
+.ft C
+>>> pointC = pathA.intersection(pathB)
+.ft P
+.fi
+.sp
+.nf
+.ft C
+>>> lat, lon = pointC.latitude_deg, pointC.longitude_deg
+>>> msg = \(aqEx9, Intersection: lat, long = {:4.2f}, {:4.2f} deg\(aq
+>>> msg.format(lat[0], lon[0])
+\(aqEx9, Intersection: lat, long = 40.32, 55.90 deg\(aq
+.ft P
+.fi
+.TP
+.B See also
+\fI\%Example 9 at www.navlab.net\fP
+.UNINDENT
+.sp
+\fBExample 10: "Cross track distance"\fP
+[image]
+.sp
+Path A is given by the two positions A1 and A2 (similar to the previous
+example).
+.sp
+Find the cross track distance sxt between the path A (i.e. the great circle
+through A1 and A2) and the position B (i.e. the shortest distance at the
+surface, between the great circle and B).
+.sp
+Also find the Euclidean distance dxt between B and the plane defined by the
+great circle. Use Earth radius 6371e3.
+.INDENT 0.0
+.TP
+.B Solution:
+.sp
+.nf
+.ft C
+>>> import nvector as nv
+>>> frame = nv.FrameE(a=6371e3, f=0)
+>>> pointA1 = frame.GeoPoint(0, 0, degrees=True)
+>>> pointA2 = frame.GeoPoint(10, 0, degrees=True)
+>>> pointB = frame.GeoPoint(1, 0.1, degrees=True)
+.ft P
+.fi
+.sp
+.nf
+.ft C
+>>> pathA = nv.GeoPath(pointA1, pointA2)
+.ft P
+.fi
+.sp
+.nf
+.ft C
+>>> s_xt = pathA.cross_track_distance(pointB, method=\(aqgreatcircle\(aq).ravel()
+>>> d_xt = pathA.cross_track_distance(pointB, method=\(aqeuclidean\(aq).ravel()
+>>> val_txt = \(aq{:4.2f} km, {:4.2f} km\(aq.format(s_xt[0]/1000, d_xt[0]/1000)
+>>> \(aqEx10: Cross track distance: s_xt, d_xt = {}\(aq.format(val_txt)
+\(aqEx10: Cross track distance: s_xt, d_xt = 11.12 km, 11.12 km\(aq
+.ft P
+.fi
+.TP
+.B See also
+\fI\%Example 10 at www.navlab.net\fP
+.UNINDENT
+.SS See also
+.sp
+\fI\%geographiclib\fP
+.SS Functional examples
+.sp
+Below the functional solution to some common geodesic problems are given.
+In the first example the object\-oriented solution is also given.
+The object\-oriented solutions to the remaining problems can be found
+\fI\%here\fP\&.
+.sp
+\fBExample 1: "A and B to delta"\fP
+[image]
+.sp
+Given two positions, A and B as latitudes, longitudes and depths relative to
+Earth, E.
+.sp
+Find the exact vector between the two positions, given in meters north, east,
+and down, and find the direction (azimuth) to B, relative to north.
+Assume WGS\-84 ellipsoid. The given depths are from the ellipsoid surface.
+Use position A to define north, east, and down directions.
+(Due to the curvature of Earth and different directions to the North Pole,
+the north, east, and down directions will change (relative to Earth) for
+different places.  A must be outside the poles for the north and east
+directions to be defined.)
+.INDENT 0.0
+.TP
+.B Solution:
+.sp
+.nf
+.ft C
+>>> import numpy as np
+>>> import nvector as nv
+>>> from nvector import rad, deg
+.ft P
+.fi
+.sp
+.nf
+.ft C
+>>> lat_EA, lon_EA, z_EA = rad(1), rad(2), 3
+>>> lat_EB, lon_EB, z_EB = rad(4), rad(5), 6
+.ft P
+.fi
+.TP
+.B Step1: Convert to n\-vectors:
+.sp
+.nf
+.ft C
+>>> n_EA_E = nv.lat_lon2n_E(lat_EA, lon_EA)
+>>> n_EB_E = nv.lat_lon2n_E(lat_EB, lon_EB)
+.ft P
+.fi
+.TP
+.B Step2: Find p_AB_E (delta decomposed in E).WGS\-84 ellipsoid is default:
+.sp
+.nf
+.ft C
+>>> p_AB_E = nv.n_EA_E_and_n_EB_E2p_AB_E(n_EA_E, n_EB_E, z_EA, z_EB)
+.ft P
+.fi
+.TP
+.B Step3: Find R_EN for position A:
+.sp
+.nf
+.ft C
+>>> R_EN = nv.n_E2R_EN(n_EA_E)
+.ft P
+.fi
+.TP
+.B Step4: Find p_AB_N (delta decomposed in N).
+.sp
+.nf
+.ft C
+>>> p_AB_N = np.dot(R_EN.T, p_AB_E).ravel()
+>>> valtxt = \(aq{0:8.2f}, {1:8.2f}, {2:8.2f}\(aq.format(*p_AB_N)
+>>> \(aqEx1: delta north, east, down = {}\(aq.format(valtxt)
+\(aqEx1: delta north, east, down = 331730.23, 332997.87, 17404.27\(aq
+.ft P
+.fi
+.TP
+.B Step5: Also find the direction (azimuth) to B, relative to north:
+.sp
+.nf
+.ft C
+>>> azimuth = np.arctan2(p_AB_N[1], p_AB_N[0])
+>>> \(aqazimuth = {0:4.2f} deg\(aq.format(deg(azimuth))
+\(aqazimuth = 45.11 deg\(aq
+.ft P
+.fi
+.TP
+.B OO\-Solution:
+.sp
+.nf
+.ft C
+>>> import numpy as np
+>>> import nvector as nv
+>>> wgs84 = nv.FrameE(name=\(aqWGS84\(aq)
+>>> pointA = wgs84.GeoPoint(latitude=1, longitude=2, z=3, degrees=True)
+>>> pointB = wgs84.GeoPoint(latitude=4, longitude=5, z=6, degrees=True)
+.ft P
+.fi
+.TP
+.B Step 1: Find p_AB_E (delta decomposed in E).
+.sp
+.nf
+.ft C
+>>> p_AB_E = nv.diff_positions(pointA, pointB)
+.ft P
+.fi
+.TP
+.B Step 2: Find p_AB_N (delta decomposed in N).
+.sp
+.nf
+.ft C
+>>> frame_N = nv.FrameN(pointA)
+>>> p_AB_N = p_AB_E.change_frame(frame_N)
+>>> p_AB_N = p_AB_N.pvector.ravel()
+>>> valtxt = \(aq{0:8.2f}, {1:8.2f}, {2:8.2f}\(aq.format(*p_AB_N)
+>>> \(aqEx1: delta north, east, down = {}\(aq.format(valtxt)
+\(aqEx1: delta north, east, down = 331730.23, 332997.87, 17404.27\(aq
+.ft P
+.fi
+.TP
+.B Step3: Also find the direction (azimuth) to B, relative to north:
+.sp
+.nf
+.ft C
+>>> azimuth = np.arctan2(p_AB_N[1], p_AB_N[0])
+>>> \(aqazimuth = {0:4.2f} deg\(aq.format(np.rad2deg(azimuth))
+\(aqazimuth = 45.11 deg\(aq
+.ft P
+.fi
+.TP
+.B See also
+\fI\%Example 1 at www.navlab.net\fP
+.UNINDENT
+.sp
+\fBExample 2: "B and delta to C"\fP
+[image]
+.sp
+A radar or sonar attached to a vehicle B (Body coordinate frame) measures the
+distance and direction to an object C. We assume that the distance and two
+angles (typically bearing and elevation relative to B) are already combined to
+the vector p_BC_B (i.e. the vector from B to C, decomposed in B). The position
+of B is given as n_EB_E and z_EB, and the orientation (attitude) of B is given
+as R_NB (this rotation matrix can be found from roll/pitch/yaw by using zyx2R).
+.sp
+Find the exact position of object C as n\-vector and depth ( n_EC_E and z_EC ),
+assuming Earth ellipsoid with semi\-major axis a and flattening f. For WGS\-72,
+use a = 6 378 135 m and f = 1/298.26.
+.INDENT 0.0
+.TP
+.B Solution:
+.sp
+.nf
+.ft C
+>>> import numpy as np
+>>> import nvector as nv
+>>> from nvector import rad, deg
+.ft P
+.fi
+.TP
+.B A custom reference ellipsoid is given (replacing WGS\-84):
+.sp
+.nf
+.ft C
+>>> wgs72 = dict(a=6378135, f=1.0/298.26)
+.ft P
+.fi
+.TP
+.B Step 1 Position and orientation of B is 400m above E:
+.sp
+.nf
+.ft C
+>>> n_EB_E = nv.unit([[1], [2], [3]])  # unit to get unit length of vector
+>>> z_EB = \-400
+.ft P
+.fi
+.TP
+.B Step 2: Delta BC decomposed in B
+.sp
+.nf
+.ft C
+>>> p_BC_B = np.r_[3000, 2000, 100].reshape((\-1, 1))
+.ft P
+.fi
+.sp
+.nf
+.ft C
+>>> yaw, pitch, roll = rad(10), rad(20), rad(30)
+>>> R_NB = nv.zyx2R(yaw, pitch, roll)
+.ft P
+.fi
+.TP
+.B Step 3: Find R_EN:
+.sp
+.nf
+.ft C
+>>> R_EN = nv.n_E2R_EN(n_EB_E)
+.ft P
+.fi
+.TP
+.B Step 4: Find R_EB, from R_EN and R_NB:
+R_EB = np.dot(R_EN, R_NB)  # Note: closest frames cancel
+.TP
+.B Step 5: Decompose the delta BC vector in E:
+p_BC_E = np.dot(R_EB, p_BC_B)
+.TP
+.B Step 6: Find the position of C, using the functions that goes from one
+.sp
+.nf
+.ft C
+>>> n_EC_E, z_EC = n_EA_E_and_p_AB_E2n_EB_E(n_EB_E, p_BC_E, z_EB, **wgs72)
+.ft P
+.fi
+.sp
+.nf
+.ft C
+>>> lat_EC, long_EC = n_E2lat_lon(n_EC_E)
+>>> lat, lon = deg(lat_EC), deg(lon_EC)
+>>> msg = \(aqEx2: PosC: lat, lon = {:4.2f}, {:4.2f} deg,  height = {:4.2f} m\(aq
+>>> msg.format(lat[0], lon[0], \-z[0])
+\(aqEx2: PosC: lat, lon = 53.33, 63.47 deg,  height = 406.01 m\(aq
+.ft P
+.fi
+.TP
+.B See also
+\fI\%Example 2 at www.navlab.net\fP
+.UNINDENT
+.sp
+\fBExample 3: "ECEF\-vector to geodetic latitude"\fP
+[image]
+.sp
+Position B is given as an "ECEF\-vector" p_EB_E (i.e. a vector from E, the
+center of the Earth, to B, decomposed in E).
+Find the geodetic latitude, longitude and height (latEB, lonEB and hEB),
+assuming WGS\-84 ellipsoid.
+.INDENT 0.0
+.TP
+.B Solution:
+.sp
+.nf
+.ft C
+>>> import numpy as np
+>>> import nvector as nv
+>>> from nvector import deg
+>>> wgs84 = dict(a=6378137.0, f=1.0/298.257223563)
+>>> p_EB_E = 6371e3 * np.vstack((0.9, \-1, 1.1))  # m
+.ft P
+.fi
+.sp
+.nf
+.ft C
+>>> n_EB_E, z_EB = nv.p_EB_E2n_EB_E(p_EB_E, **wgs84)
+.ft P
+.fi
+.sp
+.nf
+.ft C
+>>> lat_EB, lon_EB = nv.n_E2lat_lon(n_EB_E)
+>>> h = \-z_EB
+>>> lat, lon = deg(lat_EB), deg(lon_EB)
+.ft P
+.fi
+.sp
+.nf
+.ft C
+>>> msg = \(aqEx3: Pos B: lat, lon = {:4.2f}, {:4.2f} deg, height = {:9.2f} m\(aq
+>>> msg.format(lat[0], lon[0], h[0])
+\(aqEx3: Pos B: lat, lon = 39.38, \-48.01 deg, height = 4702059.83 m\(aq
+.ft P
+.fi
+.TP
+.B See also
+\fI\%Example 3 at www.navlab.net\fP
+.UNINDENT
+.sp
+\fBExample 4: "Geodetic latitude to ECEF\-vector"\fP
+[image]
+.sp
+Geodetic latitude, longitude and height are given for position B as latEB,
+longEB and hEB, find the ECEF\-vector for this position, p_EB_E.
+.INDENT 0.0
+.TP
+.B Solution:
+.sp
+.nf
+.ft C
+>>> import nvector as nv
+>>> from nvector import rad
+>>> wgs84 = dict(a=6378137.0, f=1.0/298.257223563)
+>>> lat_EB, lon_EB = rad(1), rad(2)
+>>> h_EB = 3
+>>> n_EB_E = lat_lon2n_E(lat_EB, lon_EB)
+>>> p_EB_E = n_EB_E2p_EB_E(n_EB_E, \-h_EB, **wgs84)
+.ft P
+.fi
+.sp
+.nf
+.ft C
+>>> \(aqEx4: p_EB_E = {} m\(aq.format(p_EB_E.ravel())
+\(aqEx4: p_EB_E = [ 6373290.27721828   222560.20067474   110568.82718179] m\(aq
+.ft P
+.fi
+.TP
+.B See also
+\fI\%Example 4 at www.navlab.net\fP
+.UNINDENT
+.sp
+\fBExample 5: "Surface distance"\fP
+[image]
+.sp
+Find the surface distance sAB (i.e. great circle distance) between two
+positions A and B. The heights of A and B are ignored, i.e. if they don\(aqt have
+zero height, we seek the distance between the points that are at the surface of
+the Earth, directly above/below A and B. The Euclidean distance (chord length)
+dAB should also be found. Use Earth radius 6371e3 m.
+Compare the results with exact calculations for the WGS\-84 ellipsoid.
+.INDENT 0.0
+.TP
+.B Solution for a sphere:
+.sp
+.nf
+.ft C
+>>> import numpy as np
+>>> import nvector as nv
+>>> from nvector import rad
+.ft P
+.fi
+.sp
+.nf
+.ft C
+>>> n_EA_E = nv.lat_lon2n_E(rad(88), rad(0))
+>>> n_EB_E = nv.lat_lon2n_E(rad(89), rad(\-170))
+.ft P
+.fi
+.sp
+.nf
+.ft C
+>>> r_Earth = 6371e3  # m, mean Earth radius
+>>> s_AB = nv.great_circle_distance(n_EA_E, n_EB_E, radius=r_Earth)[0]
+>>> d_AB = nv.euclidean_distance(n_EA_E, n_EB_E, radius=r_Earth)[0]
+.ft P
+.fi
+.sp
+.nf
+.ft C
+>>> msg = \(aqEx5: Great circle and Euclidean distance = {}\(aq
+>>> msg = msg.format(\(aq{:5.2f} km, {:5.2f} km\(aq)
+>>> msg.format(s_AB / 1000, d_AB / 1000)
+\(aqEx5: Great circle and Euclidean distance = 332.46 km, 332.42 km\(aq
+.ft P
+.fi
+.TP
+.B Exact solution for the WGS84 ellipsoid:
+.sp
+.nf
+.ft C
+>>> wgs84 = nv.FrameE(name=\(aqWGS84\(aq)
+>>> point1 = wgs84.GeoPoint(latitude=88, longitude=0, degrees=True)
+>>> point2 = wgs84.GeoPoint(latitude=89, longitude=\-170, degrees=True)
+>>> s_12, _azi1, _azi2 = point1.distance_and_azimuth(point2)
+.ft P
+.fi
+.sp
+.nf
+.ft C
+>>> p_12_E = point2.to_ecef_vector() \- point1.to_ecef_vector()
+>>> d_12 = np.linalg.norm(p_12_E.pvector, axis=0)[0]
+>>> msg = \(aqEllipsoidal and Euclidean distance = {:5.2f} km, {:5.2f} km\(aq
+>>> msg.format(s_12 / 1000, d_12 / 1000)
+\(aqEllipsoidal and Euclidean distance = 333.95 km, 333.91 km\(aq
+.ft P
+.fi
+.TP
+.B See also
+\fI\%Example 5 at www.navlab.net\fP
+.UNINDENT
+.sp
+\fBExample 6 "Interpolated position"\fP
+[image]
+.sp
+Given the position of B at time t0 and t1, n_EB_E(t0) and n_EB_E(t1).
+.sp
+Find an interpolated position at time ti, n_EB_E(ti). All positions are given
+as n\-vectors.
+.INDENT 0.0
+.TP
+.B Solution:
+.sp
+.nf
+.ft C
+>>> import nvector as nv
+>>> from nvector import rad, deg
+>>> n_EB_E_t0 = nv.lat_lon2n_E(rad(89), rad(0))
+>>> n_EB_E_t1 = nv.lat_lon2n_E(rad(89), rad(180))
+.ft P
+.fi
+.sp
+.nf
+.ft C
+>>> t0 = 10.
+>>> t1 = 20.
+>>> ti = 16.  # time of interpolation
+>>> ti_n = (ti \- t0) / (t1 \- t0) # normalized time of interpolation
+.ft P
+.fi
+.sp
+.nf
+.ft C
+>>> n_EB_E_ti = nv.unit(n_EB_E_t0 + ti_n * (n_EB_E_t1 \- n_EB_E_t0))
+>>> lat_EB_ti, lon_EB_ti = n_E2lat_lon(n_EB_E_ti)
+.ft P
+.fi
+.sp
+.nf
+.ft C
+>>> lat_ti, lon_ti = deg(lat_EB_ti), deg(lon_EB_ti)
+>>> msg = \(aqEx6, Interpolated position: lat, long = {} deg, {} deg\(aq
+>>> msg.format(lat_ti, lon_ti)
+\(aqEx6, Interpolated position: lat, long = [ 89.7999805] deg, [ 180.] deg\(aq
+.ft P
+.fi
+.TP
+.B See also
+\fI\%Example 6 at www.navlab.net\fP
+.UNINDENT
+.sp
+\fBExample 7: "Mean position"\fP
+[image]
+.sp
+Three positions A, B, and C are given as n\-vectors n_EA_E, n_EB_E, and n_EC_E.
+Find the mean position, M, given as n_EM_E.
+Note that the calculation is independent of the depths of the positions.
+.INDENT 0.0
+.TP
+.B Solution:
+.sp
+.nf
+.ft C
+>>> import numpy as np
+>>> import nvector as nv
+>>> from nvector import rad, deg
+.ft P
+.fi
+.sp
+.nf
+.ft C
+>>> n_EA_E = lat_lon2n_E(rad(90), rad(0))
+>>> n_EB_E = lat_lon2n_E(rad(60), rad(10))
+>>> n_EC_E = lat_lon2n_E(rad(50), rad(\-20))
+.ft P
+.fi
+.sp
+.nf
+.ft C
+>>> n_EM_E = unit(n_EA_E + n_EB_E + n_EC_E)
+.ft P
+.fi
+.TP
+.B or
+.sp
+.nf
+.ft C
+>>> n_EM_E = nv.mean_horizontal_position(np.hstack((n_EA_E, n_EB_E, n_EC_E)))
+.ft P
+.fi
+.sp
+.nf
+.ft C
+>>> lat, lon = nv.n_E2lat_lon(n_EM_E)
+>>> lat, lon = deg(lat), deg(lon)
+>>> msg = \(aqEx7: Pos M: lat, lon = {:4.2f}, {:4.2f} deg\(aq
+>>> msg.format(lat[0], lon[0])
+\(aqEx7: Pos M: lat, lon = 67.24, \-6.92 deg\(aq
+.ft P
+.fi
+.TP
+.B See also
+\fI\%Example 7 at www.navlab.net\fP
+.UNINDENT
+.sp
+\fBExample 8: "A and azimuth/distance to B"\fP
+[image]
+.sp
+We have an initial position A, direction of travel given as an azimuth
+(bearing) relative to north (clockwise), and finally the
+distance to travel along a great circle given as sAB.
+Use Earth radius 6371e3 m to find the destination point B.
+.sp
+In geodesy this is known as "The first geodetic problem" or
+"The direct geodetic problem" for a sphere, and we see that this is similar to
+\fI\%Example 2\fP, but now the delta is
+given as an azimuth and a great circle distance. ("The second/inverse geodetic
+problem" for a sphere is already solved in Examples
+\fI\%1\fP and
+\fI\%5\fP\&.)
+.INDENT 0.0
+.TP
+.B Solution:
+.sp
+.nf
+.ft C
+>>> import nvector as nv
+>>> from nvector import rad, deg
+>>> lat, lon = rad(80), rad(\-90)
+.ft P
+.fi
+.sp
+.nf
+.ft C
+>>> n_EA_E = nv.lat_lon2n_E(lat, lon)
+>>> azimuth = rad(200)
+>>> s_AB = 1000.0  # m
+>>> r_Earth = 6371e3  # m, mean Earth radius
+.ft P
+.fi
+.sp
+.nf
+.ft C
+>>> distance_rad = s_AB / r_Earth
+>>> n_EB_E = nv.n_EA_E_distance_and_azimuth2n_EB_E(n_EA_E, distance_rad,
+\&...                                                azimuth)
+>>> lat_EB, lon_EB = nv.n_E2lat_lon(n_EB_E)
+>>> lat, lon = deg(lat_EB), deg(lon_EB)
+>>> msg = \(aqEx8, Destination: lat, lon = {:4.2f} deg, {:4.2f} deg\(aq
+>>> msg.format(lat[0], lon[0])
+\(aqEx8, Destination: lat, lon = 79.99 deg, \-90.02 deg\(aq
+.ft P
+.fi
+.TP
+.B See also
+\fI\%Example 8 at www.navlab.net\fP
+.UNINDENT
+.sp
+\fBExample 9: "Intersection of two paths"\fP
+[image]
+.sp
+Define a path from two given positions (at the surface of a spherical Earth),
+as the great circle that goes through the two points.
+.sp
+Path A is given by A1 and A2, while path B is given by B1 and B2.
+.sp
+Find the position C where the two paths intersect.
+.INDENT 0.0
+.TP
+.B Solution:
+.sp
+.nf
+.ft C
+>>> import numpy as np
+>>> import nvector as nv
+>>> from nvector import rad, deg
+.ft P
+.fi
+.sp
+.nf
+.ft C
+>>> n_EA1_E = lat_lon2n_E(rad(10), rad(20))
+>>> n_EA2_E = lat_lon2n_E(rad(30), rad(40))
+>>> n_EB1_E = lat_lon2n_E(rad(50), rad(60))
+>>> n_EB2_E = lat_lon2n_E(rad(70), rad(80))
+.ft P
+.fi
+.sp
+.nf
+.ft C
+>>> n_EC_E_tmp = unit(np.cross(np.cross(n_EA1_E, n_EA2_E, axis=0),
+\&...                            np.cross(n_EB1_E, n_EB2_E, axis=0), axis=0))
+.ft P
+.fi
+.sp
+.nf
+.ft C
+>>> n_EC_E = np.sign(np.dot(n_EC_E_tmp.T, n_EA1_E)) * n_EC_E_tmp
+>>> lat_EC, lon_EC = n_E2lat_lon(n_EC_E)
+.ft P
+.fi
+.sp
+.nf
+.ft C
+>>> lat, lon = deg(lat_EC), deg(lon_EC)
+>>> msg = \(aqEx9, Intersection: lat, lon = {:4.2f}, {:4.2f} deg\(aq
+>>> msg.format(lat[0], lon[0])
+\(aqEx9, Intersection: lat, lon = 40.32, 55.90 deg\(aq
+.ft P
+.fi
+.TP
+.B See also
+\fI\%Example 9 at www.navlab.net\fP
+.UNINDENT
+.sp
+\fBExample 10: "Cross track distance"\fP
+[image]
+.sp
+Path A is given by the two positions A1 and A2 (similar to the previous
+example).
+.sp
+Find the cross track distance sxt between the path A (i.e. the great circle
+through A1 and A2) and the position B (i.e. the shortest distance at the
+surface, between the great circle and B).
+.sp
+Also find the Euclidean distance dxt between B and the plane defined by the
+great circle. Use Earth radius 6371e3.
+.INDENT 0.0
+.TP
+.B Solution:
+.sp
+.nf
+.ft C
+>>> import numpy as np
+>>> import nvector as nv
+>>> n_EA1_E = lat_lon2n_E(rad(0), rad(0))
+>>> n_EA2_E = lat_lon2n_E(rad(10), rad(0))
+>>> n_EB_E = lat_lon2n_E(rad(1), rad(0.1))
+.ft P
+.fi
+.sp
+.nf
+.ft C
+>>> r_Earth = 6371e3  # m, mean Earth radius
+.ft P
+.fi
+.TP
+.B Find the unit normal to the great circle:
+.sp
+.nf
+.ft C
+>>> c_E = unit(np.cross(n_EA1_E, n_EA2_E, axis=0))
+.ft P
+.fi
+.TP
+.B Find the great circle cross track distance:
+.sp
+.nf
+.ft C
+>>> s_xt = (np.arccos(np.dot(c_E.T, n_EB_E)) \- np.pi / 2) * r_Earth
+.ft P
+.fi
+.TP
+.B Find the Euclidean cross track distance:
+.sp
+.nf
+.ft C
+>>> d_xt = \-np.dot(c_E.T, n_EB_E) * r_Earth
+.ft P
+.fi
+.sp
+.nf
+.ft C
+>>> val_txt = \(aq{:4.2f} km, {:4.2f} km\(aq.format(s_xt[0]/1000, d_xt[0]/1000)
+>>> \(aqEx10: Cross track distance: s_xt, d_xt = {}\(aq.format(val_txt)
+\(aqEx10: Cross track distance: s_xt, d_xt = 11.12 km, 11.12 km\(aq
+.ft P
+.fi
+.TP
+.B See also
+\fI\%Example 10 at www.navlab.net\fP
+.UNINDENT
+.SS License
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+The content of this library is based on the following publication:
+
+Gade, K. (2010). A Nonsingular Horizontal Position Representation, The Journal
+of Navigation, Volume 63, Issue 03, pp 395\-417, July 2010.
+(www.navlab.net/Publications/A_Nonsingular_Horizontal_Position_Representation.pdf)
+
+This paper should be cited in publications using this library.
+
+Copyright (c) 2015, Norwegian Defence Research Establishment (FFI)
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above publication
+information, copyright notice, this list of conditions and the following
+disclaimer.
+
+2. Redistributions in binary form must reproduce the above publication
+information, copyright notice, this list of conditions and the following
+disclaimer in the documentation and/or other materials provided with the
+distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS
+BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+THE POSSIBILITY OF SUCH DAMAGE.
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.SS Developers
+.INDENT 0.0
+.IP \(bu 2
+Kenneth Gade, FFI
+.IP \(bu 2
+Kristian Svartveit, FFI
+.IP \(bu 2
+Brita Hafskjold Gade, FFI
+.IP \(bu 2
+Per A. Brodtkorb FFI
+.UNINDENT
+.SS Changelog
+.sp
+Created with gitcommand: git shortlog v0.1.3..v0.4.1
+.SS Version 0.4.1, Januar 19, 2016
+.sp
+pbrod (46):
+.INDENT 0.0
+.INDENT 3.5
+.INDENT 0.0
+.IP \(bu 2
+Cosmetic updates
+.IP \(bu 2
+Updated README.rst
+.IP \(bu 2
+updated docs and removed unused code
+.IP \(bu 2
+updated README.rst and .coveragerc
+.IP \(bu 2
+Refactored out _check_frames
+.IP \(bu 2
+Refactored out _default_frame
+.IP \(bu 2
+Updated .coveragerc
+.IP \(bu 2
+Added link to geographiclib
+.IP \(bu 2
+Updated external link
+.IP \(bu 2
+Updated documentation
+.IP \(bu 2
+Added figures to examples
+.IP \(bu 2
+Added GeoPath.interpolate + interpolation example 6
+.IP \(bu 2
+Added links to FFI homepage.
+.IP \(bu 2
+.INDENT 2.0
+.TP
+.B Updated documentation:
+.INDENT 7.0
+.IP \(bu 2
+Added link to nvector toolbox for matlab
+.IP \(bu 2
+For each example added links to the more detailed explanation on the homepage
+.UNINDENT
+.UNINDENT
+.IP \(bu 2
+Updated link to nvector toolbox for matlab
+.IP \(bu 2
+Added link to nvector on  pypi
+.IP \(bu 2
+Updated documentation fro FrameB, FrameE, FrameL and FrameN.
+.IP \(bu 2
+updated __all__ variable
+.IP \(bu 2
+Added missing R_Ee to function n_EA_E_and_n_EB_E2azimuth + updated documentation
+.IP \(bu 2
+Updated CHANGES.rst
+.IP \(bu 2
+Updated conf.py
+.IP \(bu 2
+Renamed info.py to _info.py
+.IP \(bu 2
+All examples are now generated from _examples.py.
+.UNINDENT
+.UNINDENT
+.UNINDENT
+.SS Version 0.1.3, Januar 1, 2016
+.sp
+pbrod (31):
+.INDENT 0.0
+.INDENT 3.5
+.INDENT 0.0
+.IP \(bu 2
+Refactored
+.IP \(bu 2
+Updated tests
+.IP \(bu 2
+Updated docs
+.IP \(bu 2
+Moved tests to nvector/tests
+.IP \(bu 2
+Updated .coverage     Added travis.yml, .landscape.yml
+.IP \(bu 2
+Deleted obsolete LICENSE
+.IP \(bu 2
+Updated README.rst
+.IP \(bu 2
+Removed ngs version
+.IP \(bu 2
+Fixed bug in .travis.yml
+.IP \(bu 2
+Updated .travis.yml
+.IP \(bu 2
+Removed dependence on navigator.py
+.IP \(bu 2
+Updated README.rst
+.IP \(bu 2
+Updated examples
+.IP \(bu 2
+Deleted skeleton.py and added tox.ini
+.IP \(bu 2
+Small refactoring     Renamed distance_rad_bearing_rad2point to n_EA_E_distance_and_azimuth2n_EB_E     updated tests
+.IP \(bu 2
+Renamed azimuth to n_EA_E_and_n_EB_E2azimuth     Added tests for R2xyz as well as R2zyx
+.IP \(bu 2
+Removed backward compatibility     Added test_n_E_and_wa2R_EL
+.IP \(bu 2
+Refactored tests
+.IP \(bu 2
+Commented out failing tests on python 3+
+.IP \(bu 2
+updated CHANGES.rst
+.IP \(bu 2
+Removed bug in setup.py
+.UNINDENT
+.UNINDENT
+.UNINDENT
+.SS Version 0.1.1, Januar 1, 2016
+.INDENT 0.0
+.TP
+.B pbrod (31):
+.INDENT 7.0
+.IP \(bu 2
+Initial commit: Translated code from Matlab to Python.
+.IP \(bu 2
+Added object oriented interface to nvector library
+.IP \(bu 2
+Added tests for object oriented interface
+.IP \(bu 2
+Added geodesic tests.
+.UNINDENT
+.UNINDENT
+.SS Modules
+.INDENT 0.0
+.TP
+.B Release
+0.4.1
+.TP
+.B Date
+January 19, 2016
+.UNINDENT
+.sp
+This reference manual details functions, modules, and objects
+included in nvector, describing what they are and what they do.
+.SS nvector package
+.SS Geodesic functions
+.TS
+center;
+|l|l|.
+_
+T{
+\fBlat_lon2n_E\fP(latitude, longitude[, R_Ee])
+T}	T{
+Converts latitude and longitude to n\-vector.
+T}
+_
+T{
+\fBn_E2lat_lon\fP(n_E[, R_Ee])
+T}	T{
+Converts n\-vector to latitude and longitude.
+T}
+_
+T{
+\fBn_EB_E2p_EB_E\fP(n_EB_E[, depth, a, f, R_Ee])
+T}	T{
+Converts n\-vector to Cartesian position vector in meters.
+T}
+_
+T{
+\fBp_EB_E2n_EB_E\fP(p_EB_E[, a, f, R_Ee])
+T}	T{
+Converts Cartesian position vector in meters to n\-vector.
+T}
+_
+T{
+\fBn_EA_E_and_n_EB_E2p_AB_E\fP(n_EA_E, n_EB_E[, ...])
+T}	T{
+Return the delta vector from position A to B.
+T}
+_
+T{
+\fBn_EA_E_and_p_AB_E2n_EB_E\fP(n_EA_E, p_AB_E[, ...])
+T}	T{
+Return position B from position A and delta.
+T}
+_
+T{
+\fBn_EA_E_and_n_EB_E2azimuth\fP(n_EA_E, n_EB_E[, ...])
+T}	T{
+Return azimuth from A to B, relative to North:
+T}
+_
+T{
+\fBn_EA_E_distance_and_azimuth2n_EB_E\fP(n_EA_E, ...)
+T}	T{
+Return position B from azimuth and distance from position A
+T}
+_
+T{
+\fBgreat_circle_distance\fP(n_EA_E, n_EB_E[, radius])
+T}	T{
+Return great circle distance between two positions
+T}
+_
+T{
+\fBeuclidean_distance\fP(n_EA_E, n_EB_E[, radius])
+T}	T{
+Return Euclidean distance between two positions
+T}
+_
+T{
+\fBmean_horizontal_position\fP(n_EB_E)
+T}	T{
+Return the n\-vector of the horizontal mean position.
+T}
+_
+.TE
+.SS nvector._core.lat_lon2n_E
+.INDENT 0.0
+.TP
+.B nvector._core.lat_lon2n_E(latitude, longitude, R_Ee=None)
+Converts latitude and longitude to n\-vector.
+.INDENT 7.0
+.TP
+.B Parameters
+\fBlatitude, longitude: real scalars or vectors of length n.\fP
+.INDENT 7.0
+.INDENT 3.5
+Geodetic latitude and longitude given in [rad]
+.UNINDENT
+.UNINDENT
+.sp
+\fBR_Ee\fP : 2d array
+.INDENT 7.0
+.INDENT 3.5
+rotation matrix defining the axes of the coordinate frame E.
+.UNINDENT
+.UNINDENT
+.TP
+.B Returns
+n_E: 3 x n array
+.INDENT 7.0
+.INDENT 3.5
+n\-vector(s) [no unit] decomposed in E.
+.UNINDENT
+.UNINDENT
+.UNINDENT
+.sp
+\fBSEE ALSO:\fP
+.INDENT 7.0
+.INDENT 3.5
+\fBn_E2lat_lon\fP
+.UNINDENT
+.UNINDENT
+.UNINDENT
+.SS nvector._core.n_E2lat_lon
+.INDENT 0.0
+.TP
+.B nvector._core.n_E2lat_lon(n_E, R_Ee=None)
+Converts n\-vector to latitude and longitude.
+.INDENT 7.0
+.TP
+.B Parameters
+\fBn_E: 3 x n array\fP
+.INDENT 7.0
+.INDENT 3.5
+n\-vector [no unit] decomposed in E.
+.UNINDENT
+.UNINDENT
+.sp
+\fBR_Ee\fP : 2d array
+.INDENT 7.0
+.INDENT 3.5
+rotation matrix defining the axes of the coordinate frame E.
+.UNINDENT
+.UNINDENT
+.TP
+.B Returns
+latitude, longitude: real scalars or vectors of lengt n.
+.INDENT 7.0
+.INDENT 3.5
+Geodetic latitude and longitude given in [rad]
+.UNINDENT
+.UNINDENT
+.UNINDENT
+.sp
+\fBSEE ALSO:\fP
+.INDENT 7.0
+.INDENT 3.5
+\fBlat_lon2n_E\fP
+.UNINDENT
+.UNINDENT
+.UNINDENT
+.SS nvector._core.n_EB_E2p_EB_E
+.INDENT 0.0
+.TP
+.B nvector._core.n_EB_E2p_EB_E(n_EB_E, depth=0, a=6378137, f=0.0033528106647474805, R_Ee=None)
+.INDENT 7.0
+.INDENT 3.5
+Converts n\-vector to Cartesian position vector in meters.
+.UNINDENT
+.UNINDENT
+.INDENT 7.0
+.TP
+.B Parameters
+\fBn_EB_E:  3 x n array\fP
+.INDENT 7.0
+.INDENT 3.5
+.INDENT 0.0
+.INDENT 3.5
+n\-vector(s) [no unit] of position B, decomposed in E.
+.UNINDENT
+.UNINDENT
+.INDENT 0.0
+.TP
+.B depth:  1 x n array
+Depth(s) [m] of system B, relative to the ellipsoid (depth = \-height)
+.TP
+.B a: real scalar, default WGS\-84 ellipsoid.
+Semi\-major axis of the Earth ellipsoid given in [m].
+.TP
+.B f: real scalar, default WGS\-84 ellipsoid.
+Flattening [no unit] of the Earth ellipsoid. If f==0 then spherical
+Earth with radius a is used in stead of WGS\-84.
+.TP
+.B R_Ee
+2d array
+rotation matrix defining the axes of the coordinate frame E.
+.UNINDENT
+.UNINDENT
+.UNINDENT
+.TP
+.B Returns
+p_EB_E:  3 x n array
+.INDENT 7.0
+.INDENT 3.5
+Cartesian position vector(s) from E to B, decomposed in E.
+.UNINDENT
+.UNINDENT
+.UNINDENT
+Notes
+.sp
+The position of B (typically body) relative to E (typically Earth) is
+given into this function as n\-vector, n_EB_E. The function converts
+to cartesian position vector ("ECEF\-vector"), p_EB_E, in meters.
+The calculation is excact, taking the ellipsity of the Earth into account.
+It is also non\-singular as both n\-vector and p\-vector are non\-singular
+(except for the center of the Earth).
+The default ellipsoid model used is WGS\-84, but other ellipsoids/spheres
+might be specified.
+Examples
+.sp
+\fBExample 4: "Geodetic latitude to ECEF\-vector"\fP
+[image]
+.sp
+Geodetic latitude, longitude and height are given for position B as latEB,
+longEB and hEB, find the ECEF\-vector for this position, p_EB_E.
+.INDENT 7.0
+.TP
+.B Solution:
+.sp
+.nf
+.ft C
+>>> import nvector as nv
+>>> from nvector import rad
+>>> wgs84 = dict(a=6378137.0, f=1.0/298.257223563)
+>>> lat_EB, lon_EB = rad(1), rad(2)
+>>> h_EB = 3
+>>> n_EB_E = lat_lon2n_E(lat_EB, lon_EB)
+>>> p_EB_E = n_EB_E2p_EB_E(n_EB_E, \-h_EB, **wgs84)
+.ft P
+.fi
+.sp
+.nf
+.ft C
+>>> \(aqEx4: p_EB_E = {} m\(aq.format(p_EB_E.ravel())
+\(aqEx4: p_EB_E = [ 6373290.27721828   222560.20067474   110568.82718179] m\(aq
+.ft P
+.fi
+.TP
+.B See also
+\fI\%Example 4 at www.navlab.net\fP
+.UNINDENT
+.UNINDENT
+.SS nvector._core.p_EB_E2n_EB_E
+.INDENT 0.0
+.TP
+.B nvector._core.p_EB_E2n_EB_E(p_EB_E, a=6378137, f=0.0033528106647474805, R_Ee=None)
+.INDENT 7.0
+.INDENT 3.5
+Converts Cartesian position vector in meters to n\-vector.
+.UNINDENT
+.UNINDENT
+.INDENT 7.0
+.TP
+.B Parameters
+\fBp_EB_E:  3 x n array\fP
+.INDENT 7.0
+.INDENT 3.5
+.INDENT 0.0
+.INDENT 3.5
+Cartesian position vector(s) from E to B, decomposed in E.
+.UNINDENT
+.UNINDENT
+.INDENT 0.0
+.TP
+.B a: real scalar, default WGS\-84 ellipsoid.
+Semi\-major axis of the Earth ellipsoid given in [m].
+.TP
+.B f: real scalar, default WGS\-84 ellipsoid.
+Flattening [no unit] of the Earth ellipsoid. If f==0 then spherical
+Earth with radius a is used in stead of WGS\-84.
+.TP
+.B R_Ee
+2d array
+rotation matrix defining the axes of the coordinate frame E.
+.UNINDENT
+.UNINDENT
+.UNINDENT
+.TP
+.B Returns
+n_EB_E:  3 x n array
+.INDENT 7.0
+.INDENT 3.5
+.INDENT 0.0
+.INDENT 3.5
+n\-vector(s) [no unit] of position B, decomposed in E.
+.UNINDENT
+.UNINDENT
+.INDENT 0.0
+.TP
+.B depth:  1 x n array
+Depth(s) [m] of system B, relative to the ellipsoid (depth = \-height)
+.UNINDENT
+.UNINDENT
+.UNINDENT
+.UNINDENT
+Notes
+.sp
+The position of B (typically body) relative to E (typically Earth) is
+given into this function as cartesian position vector p_EB_E, in meters.
+("ECEF\-vector"). The function converts to n\-vector, n_EB_E and its
+depth, depth.
+The calculation is excact, taking the ellipsity of the Earth into account.
+It is also non\-singular as both n\-vector and p\-vector are non\-singular
+(except for the center of the Earth).
+The default ellipsoid model used is WGS\-84, but other ellipsoids/spheres
+might be specified.
+Examples
+.sp
+\fBExample 3: "ECEF\-vector to geodetic latitude"\fP
+[image]
+.sp
+Position B is given as an "ECEF\-vector" p_EB_E (i.e. a vector from E, the
+center of the Earth, to B, decomposed in E).
+Find the geodetic latitude, longitude and height (latEB, lonEB and hEB),
+assuming WGS\-84 ellipsoid.
+.INDENT 7.0
+.TP
+.B Solution:
+.sp
+.nf
+.ft C
+>>> import numpy as np
+>>> import nvector as nv
+>>> from nvector import deg
+>>> wgs84 = dict(a=6378137.0, f=1.0/298.257223563)
+>>> p_EB_E = 6371e3 * np.vstack((0.9, \-1, 1.1))  # m
+.ft P
+.fi
+.sp
+.nf
+.ft C
+>>> n_EB_E, z_EB = nv.p_EB_E2n_EB_E(p_EB_E, **wgs84)
+.ft P
+.fi
+.sp
+.nf
+.ft C
+>>> lat_EB, lon_EB = nv.n_E2lat_lon(n_EB_E)
+>>> h = \-z_EB
+>>> lat, lon = deg(lat_EB), deg(lon_EB)
+.ft P
+.fi
+.sp
+.nf
+.ft C
+>>> msg = \(aqEx3: Pos B: lat, lon = {:4.2f}, {:4.2f} deg, height = {:9.2f} m\(aq
+>>> msg.format(lat[0], lon[0], h[0])
+\(aqEx3: Pos B: lat, lon = 39.38, \-48.01 deg, height = 4702059.83 m\(aq
+.ft P
+.fi
+.TP
+.B See also
+\fI\%Example 3 at www.navlab.net\fP
+.UNINDENT
+.UNINDENT
+.SS nvector._core.n_EA_E_and_n_EB_E2p_AB_E
+.INDENT 0.0
+.TP
+.B nvector._core.n_EA_E_and_n_EB_E2p_AB_E(n_EA_E, n_EB_E, z_EA=0, z_EB=0, a=6378137, f=0.0033528106647474805, R_Ee=None)
+.INDENT 7.0
+.INDENT 3.5
+Return the delta vector from position A to B.
+.UNINDENT
+.UNINDENT
+.INDENT 7.0
+.TP
+.B Parameters
+\fBn_EA_E, n_EB_E:  3 x n array\fP
+.INDENT 7.0
+.INDENT 3.5
+.INDENT 0.0
+.INDENT 3.5
+n\-vector(s) [no unit] of position A and B, decomposed in E.
+.UNINDENT
+.UNINDENT
+.INDENT 0.0
+.TP
+.B z_EA, z_EB:  1 x n array
+Depth(s) [m] of system A and B, relative to the ellipsoid.
+(z_EA = \-height, z_EB = \-height)
+.TP
+.B a: real scalar, default WGS\-84 ellipsoid.
+Semi\-major axis of the Earth ellipsoid given in [m].
+.TP
+.B f: real scalar, default WGS\-84 ellipsoid.
+Flattening [no unit] of the Earth ellipsoid. If f==0 then spherical
+Earth with radius a is used in stead of WGS\-84.
+.TP
+.B R_Ee
+2d array
+rotation matrix defining the axes of the coordinate frame E.
+.UNINDENT
+.UNINDENT
+.UNINDENT
+.TP
+.B Returns
+p_AB_E:  3 x n array
+.INDENT 7.0
+.INDENT 3.5
+Cartesian position vector(s) from A to B, decomposed in E.
+.UNINDENT
+.UNINDENT
+.UNINDENT
+Notes
+.sp
+The n\-vectors for positions A (n_EA_E) and B (n_EB_E) are given. The
+output is the delta vector from A to B (p_AB_E).
+The calculation is excact, taking the ellipsity of the Earth into account.
+It is also non\-singular as both n\-vector and p\-vector are non\-singular
+(except for the center of the Earth).
+The default ellipsoid model used is WGS\-84, but other ellipsoids/spheres
+might be specified.
+Examples
+.sp
+\fBExample 1: "A and B to delta"\fP
+[image]
+.sp
+Given two positions, A and B as latitudes, longitudes and depths relative to
+Earth, E.
+.sp
+Find the exact vector between the two positions, given in meters north, east,
+and down, and find the direction (azimuth) to B, relative to north.
+Assume WGS\-84 ellipsoid. The given depths are from the ellipsoid surface.
+Use position A to define north, east, and down directions.
+(Due to the curvature of Earth and different directions to the North Pole,
+the north, east, and down directions will change (relative to Earth) for
+different places.  A must be outside the poles for the north and east
+directions to be defined.)
+.INDENT 7.0
+.TP
+.B Solution:
+.sp
+.nf
+.ft C
+>>> import numpy as np
+>>> import nvector as nv
+>>> from nvector import rad, deg
+.ft P
+.fi
+.sp
+.nf
+.ft C
+>>> lat_EA, lon_EA, z_EA = rad(1), rad(2), 3
+>>> lat_EB, lon_EB, z_EB = rad(4), rad(5), 6
+.ft P
+.fi
+.TP
+.B Step1: Convert to n\-vectors:
+.sp
+.nf
+.ft C
+>>> n_EA_E = nv.lat_lon2n_E(lat_EA, lon_EA)
+>>> n_EB_E = nv.lat_lon2n_E(lat_EB, lon_EB)
+.ft P
+.fi
+.TP
+.B Step2: Find p_AB_E (delta decomposed in E).WGS\-84 ellipsoid is default:
+.sp
+.nf
+.ft C
+>>> p_AB_E = nv.n_EA_E_and_n_EB_E2p_AB_E(n_EA_E, n_EB_E, z_EA, z_EB)
+.ft P
+.fi
+.TP
+.B Step3: Find R_EN for position A:
+.sp
+.nf
+.ft C
+>>> R_EN = nv.n_E2R_EN(n_EA_E)
+.ft P
+.fi
+.TP
+.B Step4: Find p_AB_N (delta decomposed in N).
+.sp
+.nf
+.ft C
+>>> p_AB_N = np.dot(R_EN.T, p_AB_E).ravel()
+>>> valtxt = \(aq{0:8.2f}, {1:8.2f}, {2:8.2f}\(aq.format(*p_AB_N)
+>>> \(aqEx1: delta north, east, down = {}\(aq.format(valtxt)
+\(aqEx1: delta north, east, down = 331730.23, 332997.87, 17404.27\(aq
+.ft P
+.fi
+.TP
+.B Step5: Also find the direction (azimuth) to B, relative to north:
+.sp
+.nf
+.ft C
+>>> azimuth = np.arctan2(p_AB_N[1], p_AB_N[0])
+>>> \(aqazimuth = {0:4.2f} deg\(aq.format(deg(azimuth))
+\(aqazimuth = 45.11 deg\(aq
+.ft P
+.fi
+.TP
+.B See also
+\fI\%Example 1 at www.navlab.net\fP
+.UNINDENT
+.UNINDENT
+.SS nvector._core.n_EA_E_and_p_AB_E2n_EB_E
+.INDENT 0.0
+.TP
+.B nvector._core.n_EA_E_and_p_AB_E2n_EB_E(n_EA_E, p_AB_E, z_EA=0, a=6378137, f=0.0033528106647474805, R_Ee=None)
+Return position B from position A and delta.
+.INDENT 7.0
+.TP
+.B Parameters
+\fBn_EA_E:  3 x n array\fP
+.INDENT 7.0
+.INDENT 3.5
+n\-vector(s) [no unit] of position A, decomposed in E.
+.UNINDENT
+.UNINDENT
+.sp
+\fBp_AB_E:  3 x n array\fP
+.INDENT 7.0
+.INDENT 3.5
+Cartesian position vector(s) from A to B, decomposed in E.
+.UNINDENT
+.UNINDENT
+.sp
+\fBz_EA:  1 x n array\fP
+.INDENT 7.0
+.INDENT 3.5
+Depth(s) [m] of system A, relative to the ellipsoid. (z_EA = \-height)
+.UNINDENT
+.UNINDENT
+.sp
+\fBa: real scalar, default WGS\-84 ellipsoid.\fP
+.INDENT 7.0
+.INDENT 3.5
+Semi\-major axis of the Earth ellipsoid given in [m].
+.UNINDENT
+.UNINDENT
+.sp
+\fBf: real scalar, default WGS\-84 ellipsoid.\fP
+.INDENT 7.0
+.INDENT 3.5
+Flattening [no unit] of the Earth ellipsoid. If f==0 then spherical
+Earth with radius a is used in stead of WGS\-84.
+.UNINDENT
+.UNINDENT
+.sp
+\fBR_Ee\fP : 2d array
+.INDENT 7.0
+.INDENT 3.5
+rotation matrix defining the axes of the coordinate frame E.
+.UNINDENT
+.UNINDENT
+.TP
+.B Returns
+n_EB_E:  3 x n array
+.INDENT 7.0
+.INDENT 3.5
+n\-vector(s) [no unit] of position B, decomposed in E.
+.UNINDENT
+.UNINDENT
+.sp
+z_EB:  1 x n array
+.INDENT 7.0
+.INDENT 3.5
+Depth(s) [m] of system B, relative to the ellipsoid.
+(z_EB = \-height)
+.UNINDENT
+.UNINDENT
+.UNINDENT
+.sp
+\fBSEE ALSO:\fP
+.INDENT 7.0
+.INDENT 3.5
+\fBn_EA_E_and_n_EB_E2p_AB_E\fP, \fBp_EB_E2n_EB_E\fP, \fBn_EB_E2p_EB_E\fP
+.UNINDENT
+.UNINDENT
+Notes
+.sp
+The n\-vector for position A (n_EA_E) and the position\-vector from position
+A to position B (p_AB_E) are given. The output is the n\-vector of position
+B (n_EB_E) and depth of B (z_EB).
+The calculation is excact, taking the ellipsity of the Earth into account.
+It is also non\-singular as both n\-vector and p\-vector are non\-singular
+(except for the center of the Earth).
+The default ellipsoid model used is WGS\-84, but other ellipsoids/spheres
+might be specified.
+.UNINDENT
+.SS nvector._core.n_EA_E_and_n_EB_E2azimuth
+.INDENT 0.0
+.TP
+.B nvector._core.n_EA_E_and_n_EB_E2azimuth(n_EA_E, n_EB_E, a=6378137, f=0.0033528106647474805, R_Ee=None)
+Return azimuth from A to B, relative to North:
+.INDENT 7.0
+.TP
+.B Parameters
+\fBn_EA_E, n_EB_E:  3 x n array\fP
+.INDENT 7.0
+.INDENT 3.5
+n\-vector(s) [no unit] of position A and B, respectively,
+decomposed in E.
+.UNINDENT
+.UNINDENT
+.sp
+\fBa: real scalar, default WGS\-84 ellipsoid.\fP
+.INDENT 7.0
+.INDENT 3.5
+Semi\-major axis of the Earth ellipsoid given in [m].
+.UNINDENT
+.UNINDENT
+.sp
+\fBf: real scalar, default WGS\-84 ellipsoid.\fP
+.INDENT 7.0
+.INDENT 3.5
+Flattening [no unit] of the Earth ellipsoid. If f==0 then spherical
+Earth with radius a is used in stead of WGS\-84.
+.UNINDENT
+.UNINDENT
+.sp
+\fBR_Ee\fP : 2d array
+.INDENT 7.0
+.INDENT 3.5
+rotation matrix defining the axes of the coordinate frame E.
+.UNINDENT
+.UNINDENT
+.TP
+.B Returns
+azimuth: n, array
+.INDENT 7.0
+.INDENT 3.5
+Angle [rad] the line makes with a meridian, taken clockwise from north.
+.UNINDENT
+.UNINDENT
+.UNINDENT
+.UNINDENT
+.SS nvector._core.n_EA_E_distance_and_azimuth2n_EB_E
+.INDENT 0.0
+.TP
+.B nvector._core.n_EA_E_distance_and_azimuth2n_EB_E(n_EA_E, distance_rad, azimuth, R_Ee=None)
+.INDENT 7.0
+.INDENT 3.5
+Return position B from azimuth and distance from position A
+.UNINDENT
+.UNINDENT
+.INDENT 7.0
+.TP
+.B Parameters
+\fBn_EA_E:  3 x n array\fP
+.INDENT 7.0
+.INDENT 3.5
+.INDENT 0.0
+.INDENT 3.5
+n\-vector(s) [no unit] of position A decomposed in E.
+.UNINDENT
+.UNINDENT
+.INDENT 0.0
+.TP
+.B distance_rad: n, array
+great circle distance [rad] from position A to B
+.TP
+.B azimuth: n, array
+Angle [rad] the line makes with a meridian, taken clockwise from north.
+.UNINDENT
+.UNINDENT
+.UNINDENT
+.TP
+.B Returns
+n_EB_E:  3 x n array
+.INDENT 7.0
+.INDENT 3.5
+n\-vector(s) [no unit] of position B decomposed in E.
+.UNINDENT
+.UNINDENT
+.UNINDENT
+Examples
+.sp
+\fBExample 8: "A and azimuth/distance to B"\fP
+[image]
+.sp
+We have an initial position A, direction of travel given as an azimuth
+(bearing) relative to north (clockwise), and finally the
+distance to travel along a great circle given as sAB.
+Use Earth radius 6371e3 m to find the destination point B.
+.sp
+In geodesy this is known as "The first geodetic problem" or
+"The direct geodetic problem" for a sphere, and we see that this is similar to
+\fI\%Example 2\fP, but now the delta is
+given as an azimuth and a great circle distance. ("The second/inverse geodetic
+problem" for a sphere is already solved in Examples
+\fI\%1\fP and
+\fI\%5\fP\&.)
+.INDENT 7.0
+.TP
+.B Solution:
+.sp
+.nf
+.ft C
+>>> import nvector as nv
+>>> from nvector import rad, deg
+>>> lat, lon = rad(80), rad(\-90)
+.ft P
+.fi
+.sp
+.nf
+.ft C
+>>> n_EA_E = nv.lat_lon2n_E(lat, lon)
+>>> azimuth = rad(200)
+>>> s_AB = 1000.0  # m
+>>> r_Earth = 6371e3  # m, mean Earth radius
+.ft P
+.fi
+.sp
+.nf
+.ft C
+>>> distance_rad = s_AB / r_Earth
+>>> n_EB_E = nv.n_EA_E_distance_and_azimuth2n_EB_E(n_EA_E, distance_rad,
+\&...                                                azimuth)
+>>> lat_EB, lon_EB = nv.n_E2lat_lon(n_EB_E)
+>>> lat, lon = deg(lat_EB), deg(lon_EB)
+>>> msg = \(aqEx8, Destination: lat, lon = {:4.2f} deg, {:4.2f} deg\(aq
+>>> msg.format(lat[0], lon[0])
+\(aqEx8, Destination: lat, lon = 79.99 deg, \-90.02 deg\(aq
+.ft P
+.fi
+.TP
+.B See also
+\fI\%Example 8 at www.navlab.net\fP
+.UNINDENT
+.UNINDENT
+.SS nvector._core.great_circle_distance
+.INDENT 0.0
+.TP
+.B nvector._core.great_circle_distance(n_EA_E, n_EB_E, radius=6371009.0)
+Return great circle distance between two positions
+.INDENT 7.0
+.TP
+.B Parameters
+\fBn_EA_E, n_EB_E:  3 x n array\fP
+.INDENT 7.0
+.INDENT 3.5
+.INDENT 0.0
+.INDENT 3.5
+n\-vector(s) [no unit] of position A and B, decomposed in E.
+.UNINDENT
+.UNINDENT
+.INDENT 0.0
+.TP
+.B radius: real scalar
+radius of sphere.
+.UNINDENT
+.sp
+Formulae is given by equation (16) in Gade (2010) and is well
+conditioned for all angles.
+.UNINDENT
+.UNINDENT
+.UNINDENT
+Examples
+.sp
+\fBExample 5: "Surface distance"\fP
+[image]
+.sp
+Find the surface distance sAB (i.e. great circle distance) between two
+positions A and B. The heights of A and B are ignored, i.e. if they don\(aqt have
+zero height, we seek the distance between the points that are at the surface of
+the Earth, directly above/below A and B. The Euclidean distance (chord length)
+dAB should also be found. Use Earth radius 6371e3 m.
+Compare the results with exact calculations for the WGS\-84 ellipsoid.
+.INDENT 7.0
+.TP
+.B Solution for a sphere:
+.sp
+.nf
+.ft C
+>>> import numpy as np
+>>> import nvector as nv
+>>> from nvector import rad
+.ft P
+.fi
+.sp
+.nf
+.ft C
+>>> n_EA_E = nv.lat_lon2n_E(rad(88), rad(0))
+>>> n_EB_E = nv.lat_lon2n_E(rad(89), rad(\-170))
+.ft P
+.fi
+.sp
+.nf
+.ft C
+>>> r_Earth = 6371e3  # m, mean Earth radius
+>>> s_AB = nv.great_circle_distance(n_EA_E, n_EB_E, radius=r_Earth)[0]
+>>> d_AB = nv.euclidean_distance(n_EA_E, n_EB_E, radius=r_Earth)[0]
+.ft P
+.fi
+.sp
+.nf
+.ft C
+>>> msg = \(aqEx5: Great circle and Euclidean distance = {}\(aq
+>>> msg = msg.format(\(aq{:5.2f} km, {:5.2f} km\(aq)
+>>> msg.format(s_AB / 1000, d_AB / 1000)
+\(aqEx5: Great circle and Euclidean distance = 332.46 km, 332.42 km\(aq
+.ft P
+.fi
+.TP
+.B Exact solution for the WGS84 ellipsoid:
+.sp
+.nf
+.ft C
+>>> wgs84 = nv.FrameE(name=\(aqWGS84\(aq)
+>>> point1 = wgs84.GeoPoint(latitude=88, longitude=0, degrees=True)
+>>> point2 = wgs84.GeoPoint(latitude=89, longitude=\-170, degrees=True)
+>>> s_12, _azi1, _azi2 = point1.distance_and_azimuth(point2)
+.ft P
+.fi
+.sp
+.nf
+.ft C
+>>> p_12_E = point2.to_ecef_vector() \- point1.to_ecef_vector()
+>>> d_12 = np.linalg.norm(p_12_E.pvector, axis=0)[0]
+>>> msg = \(aqEllipsoidal and Euclidean distance = {:5.2f} km, {:5.2f} km\(aq
+>>> msg.format(s_12 / 1000, d_12 / 1000)
+\(aqEllipsoidal and Euclidean distance = 333.95 km, 333.91 km\(aq
+.ft P
+.fi
+.TP
+.B See also
+\fI\%Example 5 at www.navlab.net\fP
+.UNINDENT
+.UNINDENT
+.SS nvector._core.euclidean_distance
+.INDENT 0.0
+.TP
+.B nvector._core.euclidean_distance(n_EA_E, n_EB_E, radius=6371009.0)
+Return Euclidean distance between two positions
+.INDENT 7.0
+.TP
+.B Parameters
+\fBn_EA_E, n_EB_E:  3 x n array\fP
+.INDENT 7.0
+.INDENT 3.5
+.INDENT 0.0
+.INDENT 3.5
+n\-vector(s) [no unit] of position A and B, decomposed in E.
+.UNINDENT
+.UNINDENT
+.INDENT 0.0
+.TP
+.B radius: real scalar
+radius of sphere.
+.UNINDENT
+.UNINDENT
+.UNINDENT
+.UNINDENT
+Examples
+.sp
+\fBExample 5: "Surface distance"\fP
+[image]
+.sp
+Find the surface distance sAB (i.e. great circle distance) between two
+positions A and B. The heights of A and B are ignored, i.e. if they don\(aqt have
+zero height, we seek the distance between the points that are at the surface of
+the Earth, directly above/below A and B. The Euclidean distance (chord length)
+dAB should also be found. Use Earth radius 6371e3 m.
+Compare the results with exact calculations for the WGS\-84 ellipsoid.
+.INDENT 7.0
+.TP
+.B Solution for a sphere:
+.sp
+.nf
+.ft C
+>>> import numpy as np
+>>> import nvector as nv
+>>> from nvector import rad
+.ft P
+.fi
+.sp
+.nf
+.ft C
+>>> n_EA_E = nv.lat_lon2n_E(rad(88), rad(0))
+>>> n_EB_E = nv.lat_lon2n_E(rad(89), rad(\-170))
+.ft P
+.fi
+.sp
+.nf
+.ft C
+>>> r_Earth = 6371e3  # m, mean Earth radius
+>>> s_AB = nv.great_circle_distance(n_EA_E, n_EB_E, radius=r_Earth)[0]
+>>> d_AB = nv.euclidean_distance(n_EA_E, n_EB_E, radius=r_Earth)[0]
+.ft P
+.fi
+.sp
+.nf
+.ft C
+>>> msg = \(aqEx5: Great circle and Euclidean distance = {}\(aq
+>>> msg = msg.format(\(aq{:5.2f} km, {:5.2f} km\(aq)
+>>> msg.format(s_AB / 1000, d_AB / 1000)
+\(aqEx5: Great circle and Euclidean distance = 332.46 km, 332.42 km\(aq
+.ft P
+.fi
+.TP
+.B Exact solution for the WGS84 ellipsoid:
+.sp
+.nf
+.ft C
+>>> wgs84 = nv.FrameE(name=\(aqWGS84\(aq)
+>>> point1 = wgs84.GeoPoint(latitude=88, longitude=0, degrees=True)
+>>> point2 = wgs84.GeoPoint(latitude=89, longitude=\-170, degrees=True)
+>>> s_12, _azi1, _azi2 = point1.distance_and_azimuth(point2)
+.ft P
+.fi
+.sp
+.nf
+.ft C
+>>> p_12_E = point2.to_ecef_vector() \- point1.to_ecef_vector()
+>>> d_12 = np.linalg.norm(p_12_E.pvector, axis=0)[0]
+>>> msg = \(aqEllipsoidal and Euclidean distance = {:5.2f} km, {:5.2f} km\(aq
+>>> msg.format(s_12 / 1000, d_12 / 1000)
+\(aqEllipsoidal and Euclidean distance = 333.95 km, 333.91 km\(aq
+.ft P
+.fi
+.TP
+.B See also
+\fI\%Example 5 at www.navlab.net\fP
+.UNINDENT
+.UNINDENT
+.SS nvector._core.mean_horizontal_position
+.INDENT 0.0
+.TP
+.B nvector._core.mean_horizontal_position(n_EB_E)
+.INDENT 7.0
+.INDENT 3.5
+Return the n\-vector of the horizontal mean position.
+.UNINDENT
+.UNINDENT
+.INDENT 7.0
+.TP
+.B Parameters
+\fBn_EB_E:  3 x n array\fP
+.INDENT 7.0
+.INDENT 3.5
+n\-vectors [no unit] of positions Bi, decomposed in E.
+.UNINDENT
+.UNINDENT
+.TP
+.B Returns
+p_EM_E:  3 x 1 array
+.INDENT 7.0
+.INDENT 3.5
+n\-vector [no unit] of the mean positions of all Bi, decomposed in E.
+.UNINDENT
+.UNINDENT
+.UNINDENT
+Examples
+.sp
+\fBExample 7: "Mean position"\fP
+[image]
+.sp
+Three positions A, B, and C are given as n\-vectors n_EA_E, n_EB_E, and n_EC_E.
+Find the mean position, M, given as n_EM_E.
+Note that the calculation is independent of the depths of the positions.
+.INDENT 7.0
+.TP
+.B Solution:
+.sp
+.nf
+.ft C
+>>> import numpy as np
+>>> import nvector as nv
+>>> from nvector import rad, deg
+.ft P
+.fi
+.sp
+.nf
+.ft C
+>>> n_EA_E = lat_lon2n_E(rad(90), rad(0))
+>>> n_EB_E = lat_lon2n_E(rad(60), rad(10))
+>>> n_EC_E = lat_lon2n_E(rad(50), rad(\-20))
+.ft P
+.fi
+.sp
+.nf
+.ft C
+>>> n_EM_E = unit(n_EA_E + n_EB_E + n_EC_E)
+.ft P
+.fi
+.TP
+.B or
+.sp
+.nf
+.ft C
+>>> n_EM_E = nv.mean_horizontal_position(np.hstack((n_EA_E, n_EB_E, n_EC_E)))
+.ft P
+.fi
+.sp
+.nf
+.ft C
+>>> lat, lon = nv.n_E2lat_lon(n_EM_E)
+>>> lat, lon = deg(lat), deg(lon)
+>>> msg = \(aqEx7: Pos M: lat, lon = {:4.2f}, {:4.2f} deg\(aq
+>>> msg.format(lat[0], lon[0])
+\(aqEx7: Pos M: lat, lon = 67.24, \-6.92 deg\(aq
+.ft P
+.fi
+.TP
+.B See also
+\fI\%Example 7 at www.navlab.net\fP
+.UNINDENT
+.UNINDENT
+.SS Rotation matrices and angles
+.TS
+center;
+|l|l|.
+_
+T{
+\fBn_E2R_EN\fP(n_E[, R_Ee])
+T}	T{
+Returns the rotation matrix R_EN from n\-vector.
+T}
+_
+T{
+\fBn_E_and_wa2R_EL\fP(n_E, wander_azimuth[, R_Ee])
+T}	T{
+Returns rotation matrix R_EL from n\-vector and wander azimuth angle.
+T}
+_
+T{
+\fBR_EL2n_E\fP(R_EL)
+T}	T{
+Returns n\-vector from the rotation matrix R_EL.
+T}
+_
+T{
+\fBR_EN2n_E\fP(R_EN)
+T}	T{
+Returns n\-vector from the rotation matrix R_EN.
+T}
+_
+T{
+\fBR2xyz\fP(R_AB)
+T}	T{
+Returns the angles about new axes in the xyz\-order from a rotation matrix.
+T}
+_
+T{
+\fBR2zyx\fP(R_AB)
+T}	T{
+Returns the angles about new axes in the zxy\-order from a rotation matrix.
+T}
+_
+T{
+\fBxyz2R\fP(x, y, z)
+T}	T{
+Returns rotation matrix from 3 angles about new axes in the xyz\-order.
+T}
+_
+T{
+\fBzyx2R\fP(z, y, x)
+T}	T{
+Returns rotation matrix from 3 angles about new axes in the zyx\-order.
+T}
+_
+.TE
+.SS nvector._core.n_E2R_EN
+.INDENT 0.0
+.TP
+.B nvector._core.n_E2R_EN(n_E, R_Ee=None)
+Returns the rotation matrix R_EN from n\-vector.
+.INDENT 7.0
+.TP
+.B Parameters
+\fBn_E: 3 x 1 array\fP
+.INDENT 7.0
+.INDENT 3.5
+n\-vector [no unit] decomposed in E
+.UNINDENT
+.UNINDENT
+.sp
+\fBR_Ee\fP : 2d array
+.INDENT 7.0
+.INDENT 3.5
+rotation matrix defining the axes of the coordinate frame E.
+.UNINDENT
+.UNINDENT
+.TP
+.B Returns
+R_EN:  3 x 3 array
+.INDENT 7.0
+.INDENT 3.5
+The resulting rotation matrix [no unit] (direction cosine matrix).
+.UNINDENT
+.UNINDENT
+.UNINDENT
+.sp
+\fBSEE ALSO:\fP
+.INDENT 7.0
+.INDENT 3.5
+\fBR_EN2n_E\fP, \fBn_E_and_wa2R_EL\fP, \fBR_EL2n_E\fP
+.UNINDENT
+.UNINDENT
+.UNINDENT
+.SS nvector._core.n_E_and_wa2R_EL
+.INDENT 0.0
+.TP
+.B nvector._core.n_E_and_wa2R_EL(n_E, wander_azimuth, R_Ee=None)
+Returns rotation matrix R_EL from n\-vector and wander azimuth angle.
+.sp
+R_EL = n_E_and_wa2R_EL(n_E,wander_azimuth) Calculates the rotation matrix
+(direction cosine matrix) R_EL using n\-vector (n_E) and the wander
+azimuth angle.
+When wander_azimuth=0, we have that N=L (See Table 2 in Gade (2010) for
+details)
+.INDENT 7.0
+.TP
+.B Parameters
+\fBn_E: 3 x 1 array\fP
+.INDENT 7.0
+.INDENT 3.5
+n\-vector [no unit] decomposed in E
+.UNINDENT
+.UNINDENT
+.sp
+\fBwander_azimuth: real scalar\fP
+.INDENT 7.0
+.INDENT 3.5
+Angle [rad] between L\(aqs x\-axis and north, positive about L\(aqs z\-axis.
+.UNINDENT
+.UNINDENT
+.sp
+\fBR_Ee\fP : 2d array
+.INDENT 7.0
+.INDENT 3.5
+rotation matrix defining the axes of the coordinate frame E.
+.UNINDENT
+.UNINDENT
+.TP
+.B Returns
+R_EL: 3 x 3 array
+.INDENT 7.0
+.INDENT 3.5
+The resulting rotation matrix.       [no unit]
+.UNINDENT
+.UNINDENT
+.UNINDENT
+.sp
+\fBSEE ALSO:\fP
+.INDENT 7.0
+.INDENT 3.5
+\fBR_EL2n_E\fP, \fBR_EN2n_E\fP, \fBn_E2R_EN\fP
+.UNINDENT
+.UNINDENT
+.UNINDENT
+.SS nvector._core.R_EL2n_E
+.INDENT 0.0
+.TP
+.B nvector._core.R_EL2n_E(R_EL)
+Returns n\-vector from the rotation matrix R_EL.
+.INDENT 7.0
+.TP
+.B Parameters
+\fBR_EL: 3 x 3 array\fP
+.INDENT 7.0
+.INDENT 3.5
+Rotation matrix (direction cosine matrix) [no unit]
+.UNINDENT
+.UNINDENT
+.TP
+.B Returns
+n_E: 3 x 1 array
+.INDENT 7.0
+.INDENT 3.5
+n\-vector [no unit] decomposed in E.
+.UNINDENT
+.UNINDENT
+.UNINDENT
+.sp
+\fBSEE ALSO:\fP
+.INDENT 7.0
+.INDENT 3.5
+\fBR_EN2n_E\fP, \fBn_E_and_wa2R_EL\fP, \fBn_E2R_EN\fP
+.UNINDENT
+.UNINDENT
+.UNINDENT
+.SS nvector._core.R_EN2n_E
+.INDENT 0.0
+.TP
+.B nvector._core.R_EN2n_E(R_EN)
+Returns n\-vector from the rotation matrix R_EN.
+.INDENT 7.0
+.TP
+.B Parameters
+\fBR_EN: 3 x 3 array\fP
+.INDENT 7.0
+.INDENT 3.5
+Rotation matrix (direction cosine matrix) [no unit]
+.UNINDENT
+.UNINDENT
+.TP
+.B Returns
+n_E: 3 x 1 array
+.INDENT 7.0
+.INDENT 3.5
+n\-vector [no unit] decomposed in E.
+.UNINDENT
+.UNINDENT
+.UNINDENT
+.sp
+\fBSEE ALSO:\fP
+.INDENT 7.0
+.INDENT 3.5
+\fBn_E2R_EN\fP, \fBR_EL2n_E\fP, \fBn_E_and_wa2R_EL\fP
+.UNINDENT
+.UNINDENT
+.UNINDENT
+.SS nvector._core.R2xyz
+.INDENT 0.0
+.TP
+.B nvector._core.R2xyz(R_AB)
+Returns the angles about new axes in the xyz\-order from a rotation matrix.
+.INDENT 7.0
+.TP
+.B Parameters
+\fBR_AB: 3x3 array\fP
+.INDENT 7.0
+.INDENT 3.5
+rotation matrix [no unit] (direction cosine matrix) such that the
+relation between a vector v decomposed in A and B is given by:
+v_A = np.dot(R_AB, v_B)
+.UNINDENT
+.UNINDENT
+.TP
+.B Returns
+x, y, z: real scalars
+.INDENT 7.0
+.INDENT 3.5
+Angles [rad] of rotation about new axes.
+.UNINDENT
+.UNINDENT
+.UNINDENT
+.sp
+\fBSEE ALSO:\fP
+.INDENT 7.0
+.INDENT 3.5
+\fBxyz2R\fP, \fBR2zyx\fP, \fBxyz2R\fP
+.UNINDENT
+.UNINDENT
+Notes
+.sp
+The x, y, z angles are called Euler angles or Tait\-Bryan angles and are
+defined by the following procedure of successive rotations:
+Given two arbitrary coordinate frames A and B. Consider a temporary frame
+T that initially coincides with A. In order to make T align with B, we
+first rotate T an angle x about its x\-axis (common axis for both A and T).
+Secondly, T is rotated an angle y about the NEW y\-axis of T. Finally, T
+is rotated an angle z about its NEWEST z\-axis. The final orientation of
+T now coincides with the orientation of B.
+.sp
+The signs of the angles are given by the directions of the axes and the
+right hand rule.
+.UNINDENT
+.SS nvector._core.R2zyx
+.INDENT 0.0
+.TP
+.B nvector._core.R2zyx(R_AB)
+Returns the angles about new axes in the zxy\-order from a rotation matrix.
+.INDENT 7.0
+.TP
+.B Parameters
+\fBR_AB:  3x3 array\fP
+.INDENT 7.0
+.INDENT 3.5
+rotation matrix [no unit] (direction cosine matrix) such that the
+relation between a vector v decomposed in A and B is given by:
+v_A = np.dot(R_AB, v_B)
+.UNINDENT
+.UNINDENT
+.TP
+.B Returns
+z, y, x: real scalars
+.INDENT 7.0
+.INDENT 3.5
+Angles [rad] of rotation about new axes.
+.UNINDENT
+.UNINDENT
+.UNINDENT
+.sp
+\fBSEE ALSO:\fP
+.INDENT 7.0
+.INDENT 3.5
+\fBzyx2R\fP, \fBxyz2R\fP, \fBR2xyz\fP
+.UNINDENT
+.UNINDENT
+Notes
+.sp
+The z, x, y angles are called Euler angles or Tait\-Bryan angles and are
+defined by the following procedure of successive rotations:
+Given two arbitrary coordinate frames A and B. Consider a temporary frame
+T that initially coincides with A. In order to make T align with B, we
+first rotate T an angle z about its z\-axis (common axis for both A and T).
+Secondly, T is rotated an angle y about the NEW y\-axis of T. Finally, T
+is rotated an angle x about its NEWEST x\-axis. The final orientation of
+T now coincides with the orientation of B.
+.sp
+The signs of the angles are given by the directions of the axes and the
+right hand rule.
+.sp
+Note that if A is a north\-east\-down frame and B is a body frame, we
+have that z=yaw, y=pitch and x=roll.
+.UNINDENT
+.SS nvector._core.xyz2R
+.INDENT 0.0
+.TP
+.B nvector._core.xyz2R(x, y, z)
+Returns rotation matrix from 3 angles about new axes in the xyz\-order.
+.INDENT 7.0
+.TP
+.B Parameters
+\fBx,y,z: real scalars\fP
+.INDENT 7.0
+.INDENT 3.5
+Angles [rad] of rotation about new axes.
+.UNINDENT
+.UNINDENT
+.TP
+.B Returns
+R_AB: 3 x 3 array
+.INDENT 7.0
+.INDENT 3.5
+rotation matrix [no unit] (direction cosine matrix) such that the
+relation between a vector v decomposed in A and B is given by:
+v_A = np.dot(R_AB, v_B)
+.UNINDENT
+.UNINDENT
+.UNINDENT
+.sp
+\fBSEE ALSO:\fP
+.INDENT 7.0
+.INDENT 3.5
+\fBR2xyz\fP, \fBzyx2R\fP, \fBR2zyx\fP
+.UNINDENT
+.UNINDENT
+Notes
+.sp
+The rotation matrix R_AB is created based on 3 angles x,y,z about new axes
+(intrinsic) in the order x\-y\-z. The angles are called Euler angles or
+Tait\-Bryan angles and are defined by the following procedure of successive
+rotations:
+Given two arbitrary coordinate frames A and B. Consider a temporary frame
+T that initially coincides with A. In order to make T align with B, we
+first rotate T an angle x about its x\-axis (common axis for both A and T).
+Secondly, T is rotated an angle y about the NEW y\-axis of T. Finally, T
+is rotated an angle z about its NEWEST z\-axis. The final orientation of
+T now coincides with the orientation of B.
+.sp
+The signs of the angles are given by the directions of the axes and the
+right hand rule.
+.UNINDENT
+.SS nvector._core.zyx2R
+.INDENT 0.0
+.TP
+.B nvector._core.zyx2R(z, y, x)
+Returns rotation matrix from 3 angles about new axes in the zyx\-order.
+.INDENT 7.0
+.TP
+.B Parameters
+\fBz, y, x: real scalars\fP
+.INDENT 7.0
+.INDENT 3.5
+Angles [rad] of rotation about new axes.
+.UNINDENT
+.UNINDENT
+.TP
+.B Returns
+R_AB: 3 x 3 array
+.INDENT 7.0
+.INDENT 3.5
+rotation matrix [no unit] (direction cosine matrix) such that the
+relation between a vector v decomposed in A and B is given by:
+v_A = np.dot(R_AB, v_B)
+.UNINDENT
+.UNINDENT
+.UNINDENT
+.sp
+\fBSEE ALSO:\fP
+.INDENT 7.0
+.INDENT 3.5
+\fBR2zyx\fP, \fBxyz2R\fP, \fBR2xyz\fP
+.UNINDENT
+.UNINDENT
+Notes
+.sp
+The rotation matrix R_AB is created based on 3 angles
+z,y,x about new axes (intrinsic) in the order z\-y\-x. The angles are called
+Euler angles or Tait\-Bryan angles and are defined by the following
+procedure of successive rotations:
+Given two arbitrary coordinate frames A and B. Consider a temporary frame
+T that initially coincides with A. In order to make T align with B, we
+first rotate T an angle z about its z\-axis (common axis for both A and T).
+Secondly, T is rotated an angle y about the NEW y\-axis of T. Finally, T
+is rotated an angle x about its NEWEST x\-axis. The final orientation of
+T now coincides with the orientation of B.
+.sp
+The signs of the angles are given by the directions of the axes and the
+right hand rule.
+.sp
+Note that if A is a north\-east\-down frame and B is a body frame, we
+have that z=yaw, y=pitch and x=roll.
+.UNINDENT
+.SS Misc functions
+.TS
+center;
+|l|l|.
+_
+T{
+\fBnthroot\fP(x, n)
+T}	T{
+Return the n\(aqth root of x to machine precision
+T}
+_
+T{
+\fBdeg\fP(rad_angle)
+T}	T{
+Converts angle in radians to degrees.
+T}
+_
+T{
+\fBrad\fP(deg_angle)
+T}	T{
+Converts angle in degrees to radians.
+T}
+_
+T{
+\fBunit\fP(vector[, norm_zero_vector])
+T}	T{
+Convert input vector to a vector of unit length.
+T}
+_
+.TE
+.SS nvector._core.nthroot
+.INDENT 0.0
+.TP
+.B nvector._core.nthroot(x, n)
+Return the n\(aqth root of x to machine precision
+.sp
+Parameters
+x, n
+Examples.sp
+.nf
+.ft C
+>>> import nvector as nv
+>>> nv.nthroot(27.0, 3)
+array(3.0)
+.ft P
+.fi
+.UNINDENT
+.SS nvector._core.deg
+.INDENT 0.0
+.TP
+.B nvector._core.deg(rad_angle)
+Converts angle in radians to degrees.
+.INDENT 7.0
+.TP
+.B Parameters
+\fBrad_angle:\fP
+.INDENT 7.0
+.INDENT 3.5
+angle in radians
+.UNINDENT
+.UNINDENT
+.TP
+.B Returns
+deg_angle:
+.INDENT 7.0
+.INDENT 3.5
+angle in degrees
+.UNINDENT
+.UNINDENT
+.UNINDENT
+.sp
+\fBSEE ALSO:\fP
+.INDENT 7.0
+.INDENT 3.5
+\fBrad\fP
+.UNINDENT
+.UNINDENT
+.UNINDENT
+.SS nvector._core.rad
+.INDENT 0.0
+.TP
+.B nvector._core.rad(deg_angle)
+Converts angle in degrees to radians.
+.INDENT 7.0
+.TP
+.B Parameters
+\fBdeg_angle:\fP
+.INDENT 7.0
+.INDENT 3.5
+angle in degrees
+.UNINDENT
+.UNINDENT
+.TP
+.B Returns
+rad_angle:
+.INDENT 7.0
+.INDENT 3.5
+angle in radians
+.UNINDENT
+.UNINDENT
+.UNINDENT
+.sp
+\fBSEE ALSO:\fP
+.INDENT 7.0
+.INDENT 3.5
+\fBdeg\fP
+.UNINDENT
+.UNINDENT
+.UNINDENT
+.SS nvector._core.unit
+.INDENT 0.0
+.TP
+.B nvector._core.unit(vector, norm_zero_vector=1)
+Convert input vector to a vector of unit length.
+.INDENT 7.0
+.TP
+.B Parameters
+\fBvector\fP : 3 x m array
+.INDENT 7.0
+.INDENT 3.5
+m column vectors
+.UNINDENT
+.UNINDENT
+.TP
+.B Returns
+\fBunitvector\fP : 3 x m array
+.INDENT 7.0
+.INDENT 3.5
+normalized unitvector(s) along axis==0.
+.UNINDENT
+.UNINDENT
+.UNINDENT
+Examples.sp
+.nf
+.ft C
+>>> import nvector as nv
+>>> nv.unit([[1],[1],[1]])
+array([[ 0.57735027],
+       [ 0.57735027],
+       [ 0.57735027]])
+.ft P
+.fi
+.UNINDENT
+.SS OO interface to Geodesic functions
+.TS
+center;
+|l|l|.
+_
+T{
+\fBFrameE\fP([a, f, name, axes])
+T}	T{
+Earth\-fixed frame
+T}
+_
+T{
+\fBFrameN\fP(position)
+T}	T{
+North\-East\-Down frame
+T}
+_
+T{
+\fBFrameL\fP(position[, wander_azimuth])
+T}	T{
+Local level, Wander azimuth frame
+T}
+_
+T{
+\fBFrameB\fP(position[, yaw, pitch, roll, degrees])
+T}	T{
+Body frame
+T}
+_
+T{
+\fBECEFvector\fP(pvector[, frame])
+T}	T{
+Geographical position given as Cartesian position vector in frame E
+T}
+_
+T{
+\fBGeoPoint\fP(latitude, longitude[, z, frame, ...])
+T}	T{
+Geographical position given as latitude, longitude, depth in frame E
+T}
+_
+T{
+\fBNvector\fP(normal[, z, frame])
+T}	T{
+Geographical position given as n\-vector and depth in frame E
+T}
+_
+T{
+\fBGeoPath\fP(positionA, positionB)
+T}	T{
+Geographical path between two positions in Frame E
+T}
+_
+T{
+\fBPvector\fP(pvector, frame)
+T}	T{
+T}
+_
+T{
+\fBdiff_positions\fP(positionA, positionB)
+T}	T{
+Return delta vector from positions A to B.
+T}
+_
+.TE
+.SS nvector.objects.FrameE
+.INDENT 0.0
+.TP
+.B class nvector.objects.FrameE(a=None, f=None, name=\(aqWGS84\(aq, axes=\(aqe\(aq)
+Earth\-fixed frame
+.INDENT 7.0
+.TP
+.B Parameters
+\fBa: real scalar, default WGS\-84 ellipsoid.\fP
+.INDENT 7.0
+.INDENT 3.5
+Semi\-major axis of the Earth ellipsoid given in [m].
+.UNINDENT
+.UNINDENT
+.sp
+\fBf: real scalar, default WGS\-84 ellipsoid.\fP
+.INDENT 7.0
+.INDENT 3.5
+Flattening [no unit] of the Earth ellipsoid. If f==0 then spherical
+Earth with radius a is used in stead of WGS\-84.
+.UNINDENT
+.UNINDENT
+.sp
+\fBname: string\fP
+.INDENT 7.0
+.INDENT 3.5
+defining the default ellipsoid.
+.UNINDENT
+.UNINDENT
+.sp
+\fBaxes: \(aqe\(aq or \(aqE\(aq\fP
+.INDENT 7.0
+.INDENT 3.5
+defines axes orientation of E frame. Default is axes=\(aqe\(aq which means
+that the orientation of the axis is such that:
+z\-axis \-> North Pole, x\-axis \-> Latitude=Longitude=0.
+.UNINDENT
+.UNINDENT
+.UNINDENT
+.sp
+\fBSEE ALSO:\fP
+.INDENT 7.0
+.INDENT 3.5
+\fBFrameN\fP, \fBFrameL\fP, \fBFrameB\fP
+.UNINDENT
+.UNINDENT
+Notes
+.sp
+The frame is Earth\-fixed (rotates and moves with the Earth) where the
+origin coincides with Earth\(aqs centre (geometrical centre of ellipsoid
+model).
+.INDENT 7.0
+.TP
+.B __init__(a=None, f=None, name=\(aqWGS84\(aq, axes=\(aqe\(aq)
+.UNINDENT
+Methods
+.TS
+center;
+|l|l|.
+_
+T{
+\fBECEFvector\fP(*args, **kwds)
+T}	T{
+Geographical position given as Cartesian position vector in frame E
+T}
+_
+T{
+\fBGeoPoint\fP(*args, **kwds)
+T}	T{
+Geographical position given as latitude, longitude, depth in frame E
+T}
+_
+T{
+\fBNvector\fP(*args, **kwds)
+T}	T{
+Geographical position given as n\-vector and depth in frame E
+T}
+_
+T{
+\fI\%__init__\fP([a, f, name, axes])
+T}	T{
+T}
+_
+T{
+\fBdirect\fP(lat_a, lon_a, azimuth, distance[, z, ...])
+T}	T{
+Return position B computed from position A, distance and azimuth.
+T}
+_
+T{
+\fBinverse\fP(lat_a, lon_a, lat_b, lon_b[, z, ...])
+T}	T{
+Return ellipsoidal distance between positions as well as the direction.
+T}
+_
+.TE
+.UNINDENT
+.SS nvector.objects.FrameN
+.INDENT 0.0
+.TP
+.B class nvector.objects.FrameN(position)
+.INDENT 7.0
+.INDENT 3.5
+North\-East\-Down frame
+.UNINDENT
+.UNINDENT
+.INDENT 7.0
+.TP
+.B Parameters
+\fBposition: ECEFvector, GeoPoint or Nvector object\fP
+.INDENT 7.0
+.INDENT 3.5
+position of the vehicle (B) which also defines the origin of the local
+frame N. The origin is directly beneath or above the vehicle (B), at
+Earth\(aqs surface (surface of ellipsoid model).
+.UNINDENT
+.UNINDENT
+.UNINDENT
+Notes
+.sp
+The Cartesian frame is local and oriented North\-East\-Down, i.e.,
+the x\-axis points towards north, the y\-axis points towards east (both are
+horizontal), and the z\-axis is pointing down.
+.sp
+When moving relative to the Earth, the frame rotates about its z\-axis
+to allow the x\-axis to always point towards north. When getting close
+to the poles this rotation rate will increase, being infinite at the
+poles. The poles are thus singularities and the direction of the
+x\- and y\-axes are not defined here. Hence, this coordinate frame is
+NOT SUITABLE for general calculations.
+Examples
+.sp
+\fBExample 1: "A and B to delta"\fP
+[image]
+.sp
+Given two positions, A and B as latitudes, longitudes and depths relative to
+Earth, E.
+.sp
+Find the exact vector between the two positions, given in meters north, east,
+and down, and find the direction (azimuth) to B, relative to north.
+Assume WGS\-84 ellipsoid. The given depths are from the ellipsoid surface.
+Use position A to define north, east, and down directions.
+(Due to the curvature of Earth and different directions to the North Pole,
+the north, east, and down directions will change (relative to Earth) for
+different places.  A must be outside the poles for the north and east
+directions to be defined.)
+.INDENT 7.0
+.TP
+.B Solution:
+.sp
+.nf
+.ft C
+>>> import numpy as np
+>>> import nvector as nv
+>>> wgs84 = nv.FrameE(name=\(aqWGS84\(aq)
+>>> pointA = wgs84.GeoPoint(latitude=1, longitude=2, z=3, degrees=True)
+>>> pointB = wgs84.GeoPoint(latitude=4, longitude=5, z=6, degrees=True)
+.ft P
+.fi
+.TP
+.B Step 1: Find p_AB_E (delta decomposed in E).
+.sp
+.nf
+.ft C
+>>> p_AB_E = nv.diff_positions(pointA, pointB)
+.ft P
+.fi
+.TP
+.B Step 2: Find p_AB_N (delta decomposed in N).
+.sp
+.nf
+.ft C
+>>> frame_N = nv.FrameN(pointA)
+>>> p_AB_N = p_AB_E.change_frame(frame_N)
+>>> p_AB_N = p_AB_N.pvector.ravel()
+>>> valtxt = \(aq{0:8.2f}, {1:8.2f}, {2:8.2f}\(aq.format(*p_AB_N)
+>>> \(aqEx1: delta north, east, down = {}\(aq.format(valtxt)
+\(aqEx1: delta north, east, down = 331730.23, 332997.87, 17404.27\(aq
+.ft P
+.fi
+.TP
+.B Step3: Also find the direction (azimuth) to B, relative to north:
+.sp
+.nf
+.ft C
+>>> azimuth = np.arctan2(p_AB_N[1], p_AB_N[0])
+>>> \(aqazimuth = {0:4.2f} deg\(aq.format(np.rad2deg(azimuth))
+\(aqazimuth = 45.11 deg\(aq
+.ft P
+.fi
+.TP
+.B See also
+\fI\%Example 1 at www.navlab.net\fP
+.UNINDENT
+.INDENT 7.0
+.TP
+.B __init__(position)
+.UNINDENT
+Methods
+.TS
+center;
+|l|l|.
+_
+T{
+\fBPvector\fP(pvector)
+T}	T{
+T}
+_
+T{
+\fI\%__init__\fP(position)
+T}	T{
+T}
+_
+.TE
+.UNINDENT
+.SS nvector.objects.FrameL
+.INDENT 0.0
+.TP
+.B class nvector.objects.FrameL(position, wander_azimuth=0)
+Local level, Wander azimuth frame
+.INDENT 7.0
+.TP
+.B Parameters
+\fBposition: ECEFvector, GeoPoint or Nvector object\fP
+.INDENT 7.0
+.INDENT 3.5
+position of the vehicle (B) which also defines the origin of the local
+frame L. The origin is directly beneath or above the vehicle (B), at
+Earth\(aqs surface (surface of ellipsoid model).
+.UNINDENT
+.UNINDENT
+.sp
+\fBwander_azimuth: real scalar\fP
+.INDENT 7.0
+.INDENT 3.5
+Angle between the x\-axis of L and the north direction.
+.UNINDENT
+.UNINDENT
+.UNINDENT
+.sp
+\fBSEE ALSO:\fP
+.INDENT 7.0
+.INDENT 3.5
+\fBFrameE\fP, \fBFrameN\fP, \fBFrameB\fP
+.UNINDENT
+.UNINDENT
+Notes
+.sp
+The Cartesian frame is local and oriented Wander\-azimuth\-Down. This means
+that the z\-axis is pointing down. Initially, the x\-axis points towards
+north, and the y\-axis points towards east, but as the vehicle moves they
+are not rotating about the z\-axis (their angular velocity relative to the
+Earth has zero component along the z\-axis).
+.sp
+(Note: Any initial horizontal direction of the x\- and y\-axes is valid
+for L, but if the initial position is outside the poles, north and east
+are usually chosen for convenience.)
+.sp
+The L\-frame is equal to the N\-frame except for the rotation about the
+z\-axis, which is always zero for this frame (relative to E). Hence, at
+a given time, the only difference between the frames is an angle
+between the x\-axis of L and the north direction; this angle is called
+the wander azimuth angle. The L\-frame is well suited for general
+calculations, as it is non\-singular.
+.INDENT 7.0
+.TP
+.B __init__(position, wander_azimuth=0)
+.UNINDENT
+Methods
+.TS
+center;
+|l|l|.
+_
+T{
+\fBPvector\fP(pvector)
+T}	T{
+T}
+_
+T{
+\fI\%__init__\fP(position[, wander_azimuth])
+T}	T{
+T}
+_
+.TE
+.UNINDENT
+.SS nvector.objects.FrameB
+.INDENT 0.0
+.TP
+.B class nvector.objects.FrameB(position, yaw=0, pitch=0, roll=0, degrees=False)
+.INDENT 7.0
+.INDENT 3.5
+Body frame
+.UNINDENT
+.UNINDENT
+.INDENT 7.0
+.TP
+.B Parameters
+\fBposition: ECEFvector, GeoPoint or Nvector object\fP
+.INDENT 7.0
+.INDENT 3.5
+.INDENT 0.0
+.INDENT 3.5
+position of the vehicle\(aqs reference point which also coincides with
+the origin of the frame B.
+.UNINDENT
+.UNINDENT
+.INDENT 0.0
+.TP
+.B yaw, pitch, roll: real scalars
+defining the orientation of frame B in [deg] or [rad].
+.TP
+.B degrees
+bool
+if True yaw, pitch, roll are given in degrees otherwise in radians
+.UNINDENT
+.UNINDENT
+.UNINDENT
+.UNINDENT
+Notes
+.sp
+The frame is fixed to the vehicle where the x\-axis points forward, the
+y\-axis to the right (starboard) and the z\-axis in the vehicle\(aqs down
+direction.
+Examples
+.sp
+\fBExample 2: "B and delta to C"\fP
+[image]
+.sp
+A radar or sonar attached to a vehicle B (Body coordinate frame) measures the
+distance and direction to an object C. We assume that the distance and two
+angles (typically bearing and elevation relative to B) are already combined to
+the vector p_BC_B (i.e. the vector from B to C, decomposed in B). The position
+of B is given as n_EB_E and z_EB, and the orientation (attitude) of B is given
+as R_NB (this rotation matrix can be found from roll/pitch/yaw by using zyx2R).
+.sp
+Find the exact position of object C as n\-vector and depth ( n_EC_E and z_EC ),
+assuming Earth ellipsoid with semi\-major axis a and flattening f. For WGS\-72,
+use a = 6 378 135 m and f = 1/298.26.
+.INDENT 7.0
+.TP
+.B Solution:
+.sp
+.nf
+.ft C
+>>> import nvector as nv
+>>> wgs72 = nv.FrameE(name=\(aqWGS72\(aq)
+>>> wgs72 = nv.FrameE(a=6378135, f=1.0/298.26)
+.ft P
+.fi
+.TP
+.B Step 1: Position and orientation of B is given 400m above E:
+.sp
+.nf
+.ft C
+>>> n_EB_E = wgs72.Nvector(nv.unit([[1], [2], [3]]), z=\-400)
+.ft P
+.fi
+.TP
+.B Step 2: Delta BC decomposed in B
+.sp
+.nf
+.ft C
+>>> frame_B = nv.FrameB(n_EB_E, yaw=10, pitch=20, roll=30, degrees=True)
+>>> p_BC_B = frame_B.Pvector(np.r_[3000, 2000, 100].reshape((\-1, 1)))
+.ft P
+.fi
+.TP
+.B Step 3: Decompose delta BC in E
+.sp
+.nf
+.ft C
+>>> p_BC_E = p_BC_B.to_ecef_vector()
+.ft P
+.fi
+.TP
+.B Step 4: Find point C by adding delta BC to EB
+.sp
+.nf
+.ft C
+>>> p_EB_E = n_EB_E.to_ecef_vector()
+>>> p_EC_E = p_EB_E + p_BC_E
+>>> pointC = p_EC_E.to_geo_point()
+.ft P
+.fi
+.sp
+.nf
+.ft C
+>>> lat, lon, z = pointC.latitude_deg, pointC.longitude_deg, pointC.z
+>>> msg = \(aqEx2: PosC: lat, lon = {:4.2f}, {:4.2f} deg,  height = {:4.2f} m\(aq
+>>> msg.format(lat[0], lon[0], \-z[0])
+\(aqEx2: PosC: lat, lon = 53.33, 63.47 deg,  height = 406.01 m\(aq
+.ft P
+.fi
+.TP
+.B See also
+\fI\%Example 2 at www.navlab.net\fP
+.UNINDENT
+.INDENT 7.0
+.TP
+.B __init__(position, yaw=0, pitch=0, roll=0, degrees=False)
+.UNINDENT
+Methods
+.TS
+center;
+|l|l|.
+_
+T{
+\fBPvector\fP(pvector)
+T}	T{
+T}
+_
+T{
+\fI\%__init__\fP(position[, yaw, pitch, roll, degrees])
+T}	T{
+T}
+_
+.TE
+Attributes
+.TS
+center;
+|l|l|.
+_
+T{
+\fBR_EN\fP
+T}	T{
+T}
+_
+.TE
+.UNINDENT
+.SS nvector.objects.ECEFvector
+.INDENT 0.0
+.TP
+.B class nvector.objects.ECEFvector(pvector, frame=None)
+Geographical position given as Cartesian position vector in frame E
+.INDENT 7.0
+.TP
+.B Parameters
+\fBpvector: 3 x n array\fP
+.INDENT 7.0
+.INDENT 3.5
+Cartesian position vector(s) [m] from E to B, decomposed in E.
+.UNINDENT
+.UNINDENT
+.sp
+\fBframe: FrameE object\fP
+.INDENT 7.0
+.INDENT 3.5
+reference ellipsoid. The default ellipsoid model used is WGS84, but
+other ellipsoids/spheres might be specified.
+.UNINDENT
+.UNINDENT
+.UNINDENT
+.sp
+\fBSEE ALSO:\fP
+.INDENT 7.0
+.INDENT 3.5
+\fBGeoPoint\fP, \fI\%ECEFvector\fP, \fBPvector\fP
+.UNINDENT
+.UNINDENT
+Notes
+.sp
+The position of B (typically body) relative to E (typically Earth) is
+given into this function as p\-vector, p_EB_E relative to the center of the
+frame.
+.INDENT 7.0
+.TP
+.B __init__(pvector, frame=None)
+.UNINDENT
+Methods
+.TS
+center;
+|l|l|.
+_
+T{
+\fI\%__init__\fP(pvector[, frame])
+T}	T{
+T}
+_
+T{
+\fBchange_frame\fP(frame)
+T}	T{
+Converts to Cartesian position vector in another frame
+T}
+_
+T{
+\fBto_geo_point\fP()
+T}	T{
+Converts ECEF\-vector to geo\-point.
+T}
+_
+T{
+\fBto_nvector\fP()
+T}	T{
+Converts ECEF\-vector to n\-vector.
+T}
+_
+.TE
+.UNINDENT
+.SS nvector.objects.GeoPoint
+.INDENT 0.0
+.TP
+.B class nvector.objects.GeoPoint(latitude, longitude, z=0, frame=None, degrees=False)
+Geographical position given as latitude, longitude, depth in frame E
+.INDENT 7.0
+.TP
+.B Parameters
+\fBlatitude, longitude: real scalars or vectors of length n.\fP
+.INDENT 7.0
+.INDENT 3.5
+Geodetic latitude and longitude given in [rad or deg]
+.UNINDENT
+.UNINDENT
+.sp
+\fBz: real scalar or vector of length n.\fP
+.INDENT 7.0
+.INDENT 3.5
+Depth(s) [m]  relative to the ellipsoid (depth = \-height)
+.UNINDENT
+.UNINDENT
+.sp
+\fBframe: FrameE object\fP
+.INDENT 7.0
+.INDENT 3.5
+reference ellipsoid. The default ellipsoid model used is WGS84, but
+other ellipsoids/spheres might be specified.
+.UNINDENT
+.UNINDENT
+.sp
+\fBdegrees: bool\fP
+.INDENT 7.0
+.INDENT 3.5
+True if input are given in degrees otherwise radians are assumed.
+.UNINDENT
+.UNINDENT
+.UNINDENT
+Examples
+.sp
+Solve geodesic problems.
+.sp
+The following illustrates its use
+.sp
+.nf
+.ft C
+>>> import nvector as nv
+>>> wgs84 = nv.FrameE(name=\(aqWGS84\(aq)
+.ft P
+.fi
+.sp
+The geodesic inverse problem
+.sp
+.nf
+.ft C
+>>> positionA = wgs84.GeoPoint(\-41.32, 174.81, degrees=True))
+>>> positionB = wgs84.GeoPoint(40.96, \-5.50, degrees=True)
+>>> s12, az1, az2 = positionA.distance_and_azimuth(positionB, degrees=True)
+>>> \(aqs12 = {:5.2f}, az1 = {:5.2f}, az2 = {:5.2f}\(aq.format(s12, az1, az2)
+\(aqs12 = 19959679.27, az1 = 161.07, az2 = 18.83\(aq
+.ft P
+.fi
+.sp
+The geodesic direct problem
+.sp
+.nf
+.ft C
+>>> positionA = wgs84.GeoPoint(40.6, \-73.8, degrees=True)
+>>> az1, distance = 45, 10000e3
+>>> positionB, az2 = positionA.geo_point(distance, az1, degrees=True)
+>>> lat2, lon2 = positionB.latitude_deg, positionB.longitude_deg
+>>> msg = \(aqlat2 = {:5.2f}, lon2 = {:5.2f}, az2 = {:5.2f}\(aq
+>>> msg.format(lat2, lon2, az2)
+\(aqlat2 = 32.64, lon2 = 49.01, az2 = 140.37\(aq
+.ft P
+.fi
+.INDENT 7.0
+.TP
+.B __init__(latitude, longitude, z=0, frame=None, degrees=False)
+.UNINDENT
+Methods
+.TS
+center;
+|l|l|.
+_
+T{
+\fI\%__init__\fP(latitude, longitude[, z, frame, ...])
+T}	T{
+T}
+_
+T{
+\fBdistance_and_azimuth\fP(point[, long_unroll, ...])
+T}	T{
+Return ellipsoidal distance between positions as well as the direction.
+T}
+_
+T{
+\fBgeo_point\fP(distance, azimuth[, long_unroll, ...])
+T}	T{
+Return position B computed from current position, distance and azimuth.
+T}
+_
+T{
+\fBto_ecef_vector\fP()
+T}	T{
+Converts latitude and longitude to ECEF\-vector.
+T}
+_
+T{
+\fBto_nvector\fP()
+T}	T{
+Converts latitude and longitude to n\-vector.
+T}
+_
+.TE
+Attributes
+.TS
+center;
+|l|l|.
+_
+T{
+\fBlatitude_deg\fP
+T}	T{
+T}
+_
+T{
+\fBlongitude_deg\fP
+T}	T{
+T}
+_
+.TE
+.UNINDENT
+.SS nvector.objects.Nvector
+.INDENT 0.0
+.TP
+.B class nvector.objects.Nvector(normal, z=0, frame=None)
+Geographical position given as n\-vector and depth in frame E
+.INDENT 7.0
+.TP
+.B Parameters
+\fBnormal: 3 x n array\fP
+.INDENT 7.0
+.INDENT 3.5
+n\-vector(s) [no unit] decomposed in E.
+.UNINDENT
+.UNINDENT
+.sp
+\fBz: real scalar or vector of length n.\fP
+.INDENT 7.0
+.INDENT 3.5
+Depth(s) [m]  relative to the ellipsoid (depth = \-height)
+.UNINDENT
+.UNINDENT
+.sp
+\fBframe: FrameE object\fP
+.INDENT 7.0
+.INDENT 3.5
+reference ellipsoid. The default ellipsoid model used is WGS84, but
+other ellipsoids/spheres might be specified.
+.UNINDENT
+.UNINDENT
+.UNINDENT
+.sp
+\fBSEE ALSO:\fP
+.INDENT 7.0
+.INDENT 3.5
+\fBGeoPoint\fP, \fBECEFvector\fP, \fBPvector\fP
+.UNINDENT
+.UNINDENT
+Notes
+.sp
+The position of B (typically body) relative to E (typically Earth) is
+given into this function as n\-vector, n_EB_E and a depth, z relative to the
+ellipsiod.
+.INDENT 7.0
+.TP
+.B __init__(normal, z=0, frame=None)
+.UNINDENT
+Methods
+.TS
+center;
+|l|l|.
+_
+T{
+\fI\%__init__\fP(normal[, z, frame])
+T}	T{
+T}
+_
+T{
+\fBmean_horizontal_position\fP()
+T}	T{
+Return horizontal mean position of the n\-vectors.
+T}
+_
+T{
+\fBto_ecef_vector\fP()
+T}	T{
+Converts n\-vector to Cartesian position vector ("ECEF\-vector")
+T}
+_
+T{
+\fBto_geo_point\fP()
+T}	T{
+Converts n\-vector to geo\-point.
+T}
+_
+T{
+\fBto_nvector\fP()
+T}	T{
+T}
+_
+.TE
+.UNINDENT
+.SS nvector.objects.GeoPath
+.INDENT 0.0
+.TP
+.B class nvector.objects.GeoPath(positionA, positionB)
+.INDENT 7.0
+.INDENT 3.5
+Geographical path between two positions in Frame E
+.UNINDENT
+.UNINDENT
+.INDENT 7.0
+.TP
+.B Parameters
+\fBpositionA, positionB: Nvector, GeoPoint or ECEFvector objects\fP
+.INDENT 7.0
+.INDENT 3.5
+The path is defined by the line between position A and B, decomposed
+in E.
+.UNINDENT
+.UNINDENT
+.UNINDENT
+Examples
+.sp
+\fBExample 5: "Surface distance"\fP
+[image]
+.sp
+Find the surface distance sAB (i.e. great circle distance) between two
+positions A and B. The heights of A and B are ignored, i.e. if they don\(aqt have
+zero height, we seek the distance between the points that are at the surface of
+the Earth, directly above/below A and B. The Euclidean distance (chord length)
+dAB should also be found. Use Earth radius 6371e3 m.
+Compare the results with exact calculations for the WGS\-84 ellipsoid.
+.INDENT 7.0
+.TP
+.B Solution for a sphere:
+.sp
+.nf
+.ft C
+>>> import numpy as np
+>>> import nvector as nv
+>>> frame_E = nv.FrameE(a=6371e3, f=0)
+>>> positionA = frame_E.GeoPoint(latitude=88, longitude=0, degrees=True)
+>>> positionB = frame_E.GeoPoint(latitude=89, longitude=\-170, degrees=True)
+.ft P
+.fi
+.sp
+.nf
+.ft C
+>>> s_AB, _azia, _azib = positionA.distance_and_azimuth(positionB)
+>>> p_AB_E = positionB.to_ecef_vector() \- positionA.to_ecef_vector()
+>>> d_AB = np.linalg.norm(p_AB_E.pvector, axis=0)[0]
+.ft P
+.fi
+.sp
+.nf
+.ft C
+>>> msg = \(aqEx5: Great circle and Euclidean distance = {}\(aq
+>>> msg = msg.format(\(aq{:5.2f} km, {:5.2f} km\(aq)
+>>> msg.format(s_AB / 1000, d_AB / 1000)
+\(aqEx5: Great circle and Euclidean distance = 332.46 km, 332.42 km\(aq
+.ft P
+.fi
+.TP
+.B Alternative sphere solution:
+.sp
+.nf
+.ft C
+>>> path = nv.GeoPath(positionA, positionB)
+>>> s_AB2 = path.track_distance(method=\(aqgreatcircle\(aq).ravel()
+>>> d_AB2 = path.track_distance(method=\(aqeuclidean\(aq).ravel()
+>>> msg.format(s_AB2[0] / 1000, d_AB2[0] / 1000)
+\(aqEx5: Great circle and Euclidean distance = 332.46 km, 332.42 km\(aq
+.ft P
+.fi
+.TP
+.B Exact solution for the WGS84 ellipsoid:
+.sp
+.nf
+.ft C
+>>> wgs84 = nv.FrameE(name=\(aqWGS84\(aq)
+>>> point1 = wgs84.GeoPoint(latitude=88, longitude=0, degrees=True)
+>>> point2 = wgs84.GeoPoint(latitude=89, longitude=\-170, degrees=True)
+>>> s_12, _azi1, _azi2 = point1.distance_and_azimuth(point2)
+.ft P
+.fi
+.sp
+.nf
+.ft C
+>>> p_12_E = point2.to_ecef_vector() \- point1.to_ecef_vector()
+>>> d_12 = np.linalg.norm(p_12_E.pvector, axis=0)[0]
+>>> msg = \(aqEllipsoidal and Euclidean distance = {:5.2f} km, {:5.2f} km\(aq
+>>> msg.format(s_12 / 1000, d_12 / 1000)
+\(aqEllipsoidal and Euclidean distance = 333.95 km, 333.91 km\(aq
+.ft P
+.fi
+.TP
+.B See also
+\fI\%Example 5 at www.navlab.net\fP
+.UNINDENT
+.sp
+\fBExample 6 "Interpolated position"\fP
+[image]
+.sp
+Given the position of B at time t0 and t1, n_EB_E(t0) and n_EB_E(t1).
+.sp
+Find an interpolated position at time ti, n_EB_E(ti). All positions are given
+as n\-vectors.
+.INDENT 7.0
+.TP
+.B Solution:
+.sp
+.nf
+.ft C
+>>> import nvector as nv
+>>> wgs84 = nv.FrameE(name=\(aqWGS84\(aq)
+>>> n_EB_E_t0 = wgs84.GeoPoint(89, 0, degrees=True).to_nvector()
+>>> n_EB_E_t1 = wgs84.GeoPoint(89, 180, degrees=True).to_nvector()
+>>> path = nv.GeoPath(n_EB_E_t0, n_EB_E_t1)
+.ft P
+.fi
+.sp
+.nf
+.ft C
+>>> t0 = 10.
+>>> t1 = 20.
+>>> ti = 16.  # time of interpolation
+>>> ti_n = (ti \- t0) / (t1 \- t0) # normalized time of interpolation
+.ft P
+.fi
+.sp
+.nf
+.ft C
+>>> g_EB_E_ti = path.interpolate(ti_n).to_geo_point()
+.ft P
+.fi
+.sp
+.nf
+.ft C
+>>> lat_ti, lon_ti = g_EB_E_ti.latitude_deg, g_EB_E_ti.longitude_deg
+>>> msg = \(aqEx6, Interpolated position: lat, long = {} deg, {} deg\(aq
+>>> msg.format(lat_ti, lon_ti)
+\(aqEx6, Interpolated position: lat, long = [ 89.7999805] deg, [ 180.] deg\(aq
+.ft P
+.fi
+.TP
+.B See also
+\fI\%Example 6 at www.navlab.net\fP
+.UNINDENT
+.sp
+\fBExample 9: "Intersection of two paths"\fP
+[image]
+.sp
+Define a path from two given positions (at the surface of a spherical Earth),
+as the great circle that goes through the two points.
+.sp
+Path A is given by A1 and A2, while path B is given by B1 and B2.
+.sp
+Find the position C where the two paths intersect.
+.INDENT 7.0
+.TP
+.B Solution:
+.sp
+.nf
+.ft C
+>>> import nvector as nv
+>>> pointA1 = nv.GeoPoint(10, 20, degrees=True)
+>>> pointA2 = nv.GeoPoint(30, 40, degrees=True)
+>>> pointB1 = nv.GeoPoint(50, 60, degrees=True)
+>>> pointB2 = nv.GeoPoint(70, 80, degrees=True)
+>>> pathA = nv.GeoPath(pointA1, pointA2)
+>>> pathB = nv.GeoPath(pointB1, pointB2)
+.ft P
+.fi
+.sp
+.nf
+.ft C
+>>> pointC = pathA.intersection(pathB)
+.ft P
+.fi
+.sp
+.nf
+.ft C
+>>> lat, lon = pointC.latitude_deg, pointC.longitude_deg
+>>> msg = \(aqEx9, Intersection: lat, long = {:4.2f}, {:4.2f} deg\(aq
+>>> msg.format(lat[0], lon[0])
+\(aqEx9, Intersection: lat, long = 40.32, 55.90 deg\(aq
+.ft P
+.fi
+.TP
+.B See also
+\fI\%Example 9 at www.navlab.net\fP
+.UNINDENT
+.sp
+\fBExample 10: "Cross track distance"\fP
+[image]
+.sp
+Path A is given by the two positions A1 and A2 (similar to the previous
+example).
+.sp
+Find the cross track distance sxt between the path A (i.e. the great circle
+through A1 and A2) and the position B (i.e. the shortest distance at the
+surface, between the great circle and B).
+.sp
+Also find the Euclidean distance dxt between B and the plane defined by the
+great circle. Use Earth radius 6371e3.
+.INDENT 7.0
+.TP
+.B Solution:
+.sp
+.nf
+.ft C
+>>> import nvector as nv
+>>> frame = nv.FrameE(a=6371e3, f=0)
+>>> pointA1 = frame.GeoPoint(0, 0, degrees=True)
+>>> pointA2 = frame.GeoPoint(10, 0, degrees=True)
+>>> pointB = frame.GeoPoint(1, 0.1, degrees=True)
+.ft P
+.fi
+.sp
+.nf
+.ft C
+>>> pathA = nv.GeoPath(pointA1, pointA2)
+.ft P
+.fi
+.sp
+.nf
+.ft C
+>>> s_xt = pathA.cross_track_distance(pointB, method=\(aqgreatcircle\(aq).ravel()
+>>> d_xt = pathA.cross_track_distance(pointB, method=\(aqeuclidean\(aq).ravel()
+>>> val_txt = \(aq{:4.2f} km, {:4.2f} km\(aq.format(s_xt[0]/1000, d_xt[0]/1000)
+>>> \(aqEx10: Cross track distance: s_xt, d_xt = {}\(aq.format(val_txt)
+\(aqEx10: Cross track distance: s_xt, d_xt = 11.12 km, 11.12 km\(aq
+.ft P
+.fi
+.TP
+.B See also
+\fI\%Example 10 at www.navlab.net\fP
+.UNINDENT
+.INDENT 7.0
+.TP
+.B __init__(positionA, positionB)
+.UNINDENT
+Methods
+.TS
+center;
+|l|l|.
+_
+T{
+\fI\%__init__\fP(positionA, positionB)
+T}	T{
+T}
+_
+T{
+\fBcross_track_distance\fP(point[, method, radius])
+T}	T{
+Return cross track distance from the path to a point.
+T}
+_
+T{
+\fBinterpolate\fP(ti)
+T}	T{
+Return the interpolated point along the path
+T}
+_
+T{
+\fBintersection\fP(path)
+T}	T{
+Return the intersection between the paths
+T}
+_
+T{
+\fBnvectors\fP()
+T}	T{
+Return positionA and positionB as n\-vectors
+T}
+_
+T{
+\fBtrack_distance\fP([method, radius])
+T}	T{
+Return the distance of the path.
+T}
+_
+.TE
+.UNINDENT
+.SS nvector.objects.Pvector
+.INDENT 0.0
+.TP
+.B class nvector.objects.Pvector(pvector, frame)
+.INDENT 7.0
+.TP
+.B __init__(pvector, frame)
+.UNINDENT
+Methods
+.TS
+center;
+|l|l|.
+_
+T{
+\fI\%__init__\fP(pvector, frame)
+T}	T{
+T}
+_
+T{
+\fBto_ecef_vector\fP()
+T}	T{
+T}
+_
+T{
+\fBto_geo_point\fP()
+T}	T{
+T}
+_
+T{
+\fBto_nvector\fP()
+T}	T{
+T}
+_
+.TE
+.UNINDENT
+.SS nvector.objects.diff_positions
+.INDENT 0.0
+.TP
+.B nvector.objects.diff_positions(positionA, positionB)
+.INDENT 7.0
+.INDENT 3.5
+Return delta vector from positions A to B.
+.UNINDENT
+.UNINDENT
+.INDENT 7.0
+.TP
+.B Parameters
+\fBpositionA, positionB: Nvector, GeoPoint or ECEFvector objects\fP
+.INDENT 7.0
+.INDENT 3.5
+position A and B, decomposed in E.
+.UNINDENT
+.UNINDENT
+.TP
+.B Returns
+p_AB_E:  ECEFvector
+.INDENT 7.0
+.INDENT 3.5
+Cartesian position vector(s) from A to B, decomposed in E.
+.UNINDENT
+.UNINDENT
+.UNINDENT
+Notes
+.sp
+The calculation is excact, taking the ellipsity of the Earth into account.
+It is also non\-singular as both n\-vector and p\-vector are non\-singular
+(except for the center of the Earth).
+Examples
+.sp
+\fBExample 1: "A and B to delta"\fP
+[image]
+.sp
+Given two positions, A and B as latitudes, longitudes and depths relative to
+Earth, E.
+.sp
+Find the exact vector between the two positions, given in meters north, east,
+and down, and find the direction (azimuth) to B, relative to north.
+Assume WGS\-84 ellipsoid. The given depths are from the ellipsoid surface.
+Use position A to define north, east, and down directions.
+(Due to the curvature of Earth and different directions to the North Pole,
+the north, east, and down directions will change (relative to Earth) for
+different places.  A must be outside the poles for the north and east
+directions to be defined.)
+.INDENT 7.0
+.TP
+.B Solution:
+.sp
+.nf
+.ft C
+>>> import numpy as np
+>>> import nvector as nv
+>>> wgs84 = nv.FrameE(name=\(aqWGS84\(aq)
+>>> pointA = wgs84.GeoPoint(latitude=1, longitude=2, z=3, degrees=True)
+>>> pointB = wgs84.GeoPoint(latitude=4, longitude=5, z=6, degrees=True)
+.ft P
+.fi
+.TP
+.B Step 1: Find p_AB_E (delta decomposed in E).
+.sp
+.nf
+.ft C
+>>> p_AB_E = nv.diff_positions(pointA, pointB)
+.ft P
+.fi
+.TP
+.B Step 2: Find p_AB_N (delta decomposed in N).
+.sp
+.nf
+.ft C
+>>> frame_N = nv.FrameN(pointA)
+>>> p_AB_N = p_AB_E.change_frame(frame_N)
+>>> p_AB_N = p_AB_N.pvector.ravel()
+>>> valtxt = \(aq{0:8.2f}, {1:8.2f}, {2:8.2f}\(aq.format(*p_AB_N)
+>>> \(aqEx1: delta north, east, down = {}\(aq.format(valtxt)
+\(aqEx1: delta north, east, down = 331730.23, 332997.87, 17404.27\(aq
+.ft P
+.fi
+.TP
+.B Step3: Also find the direction (azimuth) to B, relative to north:
+.sp
+.nf
+.ft C
+>>> azimuth = np.arctan2(p_AB_N[1], p_AB_N[0])
+>>> \(aqazimuth = {0:4.2f} deg\(aq.format(np.rad2deg(azimuth))
+\(aqazimuth = 45.11 deg\(aq
+.ft P
+.fi
+.TP
+.B See also
+\fI\%Example 1 at www.navlab.net\fP
+.UNINDENT
+.UNINDENT
+.SH INDICES AND TABLES
+.INDENT 0.0
+.IP \(bu 2
+genindex
+.IP \(bu 2
+modindex
+.IP \(bu 2
+search
+.UNINDENT
+.SH COPYRIGHT
+2015, Norwegian Defence Research Establishment (FFI)
+.\" Generated by docutils manpage writer.
+.
