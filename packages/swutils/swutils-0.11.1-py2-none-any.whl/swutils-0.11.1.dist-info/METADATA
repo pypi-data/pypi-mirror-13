@@ -1,0 +1,101 @@
+Metadata-Version: 2.0
+Name: swutils
+Version: 0.11.1
+Summary: ScraperWiki box utility library
+Home-page: https://github.com/reubano/swutils
+Author: Reuben Cummings
+Author-email: reubano@gmail.com
+License: MIT
+Keywords: swutils
+Platform: MacOS X
+Platform: Windows
+Platform: Linux
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Development Status :: 4 - Beta
+Classifier: Natural Language :: English
+Classifier: Programming Language :: Python :: 2
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Environment :: Console
+Classifier: Intended Audience :: Developers
+Classifier: Intended Audience :: End Users/Desktop
+Classifier: Operating System :: MacOS :: MacOS X
+Classifier: Operating System :: POSIX
+Classifier: Operating System :: POSIX :: Linux
+Requires-Dist: scraperwiki (==0.4.1)
+Requires-Dist: pkutils (==0.6.1)
+Requires-Dist: schedule (==0.3.2)
+Requires-Dist: SQLAlchemy (==1.0.6)
+Requires-Dist: tabutils (==0.23.1)
+
+# swutils
+
+## Introduction
+
+swutils is a Python library for interacting with [ScraperWiki](https://scraperwiki.com/products/data-science-platform) boxes.
+
+With swutils, you can
+
+- Schedule jobs to run on daily basis
+- Get email notifications if a job fails
+- and much more...
+
+## Requirements
+
+swutils has been tested on the following configuration:
+
+- MacOS X 10.9.5
+- Python 2.7.10
+
+swutils requires the following in order to run properly:
+
+- [Python >= 2.7](http://www.python.org/download) (MacOS X comes with python preinstalled)
+
+## Installation
+
+(You are using a [virtualenv](http://www.virtualenv.org/en/latest/index.html), right?)
+
+    pip install swutils
+
+## Usage
+
+```python
+import swutils
+
+job = lambda: 'Code to update SW database'
+exc_handler = swutils.ExceptionHandler('reubano@gmail.com').handler
+swutils.run_or_schedule(job, True, exc_handler)
+```
+
+## Scripts
+
+swutils comes with a built in task manager `manage.py` and a `Makefile`.
+
+### Setup
+
+    pip install -r dev-requirements.txt
+
+### Examples
+
+*Run python linter and nose tests*
+
+```bash
+manage lint
+manage test
+```
+
+Or if `make` is more your speed...
+
+```bash
+make lint
+make test
+```
+
+## Contributing
+
+View [CONTRIBUTING.rst](https://github.com/reubano/swutils/blob/master/CONTRIBUTING.rst)
+
+## License
+
+swutils is distributed under the [MIT License](http://opensource.org/licenses/MIT).
+
+
