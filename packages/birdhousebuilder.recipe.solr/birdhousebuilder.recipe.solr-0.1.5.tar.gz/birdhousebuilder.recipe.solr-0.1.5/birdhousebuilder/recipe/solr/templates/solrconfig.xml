@@ -1,0 +1,377 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!-- 
+     For more details about configurations options that may appear in
+     this file, see http://wiki.apache.org/solr/SolrConfigXml. 
+-->
+<config>
+  <luceneMatchVersion>5.2.1</luceneMatchVersion>
+
+  <!-- Data Directory
+
+       Used to specify an alternate directory to hold all index data
+       other than the default ./data under the Solr home.  If
+       replication is in use, this should match the replication
+       configuration.
+    -->
+  <dataDir>${solr.data.dir:}</dataDir>
+
+  <directoryFactory name="DirectoryFactory" 
+                    class="${solr.directoryFactory:solr.NRTCachingDirectoryFactory}">
+  </directoryFactory> 
+
+  <codecFactory class="solr.SchemaCodecFactory"/>
+  <schemaFactory class="ClassicIndexSchemaFactory"/>
+
+  <indexConfig>
+
+    <!-- LockFactory 
+
+         This option specifies which Lucene LockFactory implementation
+         to use.
+      
+         single = SingleInstanceLockFactory - suggested for a
+                  read-only index or when there is no possibility of
+                  another process trying to modify the index.
+         native = NativeFSLockFactory - uses OS native file locking.
+                  Do not use when multiple solr webapps in the same
+                  JVM are attempting to share a single index.
+         simple = SimpleFSLockFactory  - uses a plain file for locking
+
+         Defaults: 'native' is default for Solr3.6 and later, otherwise
+                   'simple' is the default
+
+         More details on the nuances of each LockFactory...
+         http://wiki.apache.org/lucene-java/AvailableLockFactories
+    -->
+    <lockType>${solr.lock.type:native}</lockType>
+    <infoStream>true</infoStream>
+  </indexConfig>
+
+
+  <!-- JMX
+       
+       This example enables JMX if and only if an existing MBeanServer
+       is found, use this if you want to configure JMX through JVM
+       parameters. Remove this to disable exposing Solr configuration
+       and statistics to JMX.
+
+       For more details see http://wiki.apache.org/solr/SolrJmx
+    -->
+  <jmx />
+
+  <!-- The default high-performance update handler -->
+  <updateHandler class="solr.DirectUpdateHandler2">
+
+    <!-- Enables a transaction log, used for real-time get, durability, and
+         and solr cloud replica recovery.  The log can grow as big as
+         uncommitted changes to the index, so use of a hard autoCommit
+         is recommended (see below).
+         "dir" - the target directory for transaction logs, defaults to the
+                solr data directory.
+         "numVersionBuckets" - sets the number of buckets used to keep
+                track of max version values when checking for re-ordered
+                updates; increase this value to reduce the cost of
+                synchronizing access to version buckets during high-volume
+                indexing, this requires 8 bytes (long) * numVersionBuckets
+                of heap space per Solr core.
+    -->
+    <updateLog>
+      <str name="dir">${solr.ulog.dir:}</str>
+      <int name="numVersionBuckets">${solr.ulog.numVersionBuckets:65536}</int>
+    </updateLog>
+ 
+    <!-- AutoCommit
+
+         Perform a hard commit automatically under certain conditions.
+         Instead of enabling autoCommit, consider using "commitWithin"
+         when adding documents. 
+
+         http://wiki.apache.org/solr/UpdateXmlMessages
+
+         maxDocs - Maximum number of documents to add since the last
+                   commit before automatically triggering a new commit.
+
+         maxTime - Maximum amount of time in ms that is allowed to pass
+                   since a document was added before automatically
+                   triggering a new commit. 
+         openSearcher - if false, the commit causes recent index changes
+           to be flushed to stable storage, but does not cause a new
+           searcher to be opened to make those changes visible.
+
+         If the updateLog is enabled, then it's highly recommended to
+         have some sort of hard autoCommit to limit the log size.
+      -->
+     <autoCommit> 
+       <maxTime>${solr.autoCommit.maxTime:15000}</maxTime> 
+       <openSearcher>false</openSearcher> 
+     </autoCommit>
+
+    <!-- softAutoCommit is like autoCommit except it causes a
+         'soft' commit which only ensures that changes are visible
+         but does not ensure that data is synced to disk.  This is
+         faster and more near-realtime friendly than a hard commit.
+      -->
+     <autoSoftCommit> 
+       <maxTime>${solr.autoSoftCommit.maxTime:-1}</maxTime> 
+     </autoSoftCommit>
+
+  </updateHandler>
+  
+  <query>
+    <maxBooleanClauses>1024</maxBooleanClauses>
+
+
+    <filterCache class="solr.FastLRUCache"
+                 size="512"
+                 initialSize="512"
+                 autowarmCount="0"/>
+
+    <queryResultCache class="solr.LRUCache"
+                     size="512"
+                     initialSize="512"
+                     autowarmCount="0"/>
+   
+    <documentCache class="solr.LRUCache"
+                   size="512"
+                   initialSize="512"
+                   autowarmCount="0"/>
+    
+    <!-- custom cache currently used by block join --> 
+    <cache name="perSegFilter"
+      class="solr.search.LRUCache"
+      size="10"
+      initialSize="0"
+      autowarmCount="10"
+      regenerator="solr.NoOpRegenerator" />
+
+    <!-- Lazy Field Loading
+
+         If true, stored fields that are not requested will be loaded
+         lazily.  This can result in a significant speed improvement
+         if the usual case is to not load all stored fields,
+         especially if the skipped fields are large compressed text
+         fields.
+    -->
+    <enableLazyFieldLoading>true</enableLazyFieldLoading>
+
+   <!-- Result Window Size
+
+        An optimization for use with the queryResultCache.  When a search
+        is requested, a superset of the requested number of document ids
+        are collected.  For example, if a search for a particular query
+        requests matching documents 10 through 19, and queryWindowSize is 50,
+        then documents 0 through 49 will be collected and cached.  Any further
+        requests in that range can be satisfied via the cache.  
+     -->
+   <queryResultWindowSize>20</queryResultWindowSize>
+   <queryResultMaxDocsCached>200</queryResultMaxDocsCached>
+
+    <!-- Use Cold Searcher
+
+         If a search request comes in and there is no current
+         registered searcher, then immediately register the still
+         warming searcher and use it.  If "false" then all requests
+         will block until the first searcher is done warming.
+      -->
+    <useColdSearcher>false</useColdSearcher>
+
+    <!-- Max Warming Searchers
+         
+         Maximum number of searchers that may be warming in the
+         background concurrently.  An error is returned if this limit
+         is exceeded.
+
+         Recommend values of 1-2 for read-only slaves, higher for
+         masters w/o cache warming.
+      -->
+    <maxWarmingSearchers>2</maxWarmingSearchers>
+
+  </query>
+
+
+
+  <requestDispatcher handleSelect="false" >
+    <requestParsers enableRemoteStreaming="true" 
+                    multipartUploadLimitInKB="2048000"
+                    formdataUploadLimitInKB="2048"
+                    addHttpRequestToContext="false"/>
+
+    <httpCaching never304="true" />
+
+  </requestDispatcher>
+
+  <requestHandler name="/select" class="solr.SearchHandler">
+     <lst name="defaults">
+       <str name="echoParams">explicit</str>
+       <int name="rows">10</int>
+     </lst>
+
+  </requestHandler>
+
+  <!-- A request handler that returns indented JSON by default -->
+  <requestHandler name="/query" class="solr.SearchHandler">
+     <lst name="defaults">
+       <str name="echoParams">explicit</str>
+       <str name="wt">json</str>
+       <str name="indent">true</str>
+       <str name="df">text</str>
+     </lst>
+  </requestHandler>
+
+  <!--
+    The export request handler is used to export full sorted result sets.
+    Do not change these defaults.
+  -->
+  <requestHandler name="/export" class="solr.SearchHandler">
+    <lst name="invariants">
+      <str name="rq">{!xport}</str>
+      <str name="wt">xsort</str>
+      <str name="distrib">false</str>
+    </lst>
+
+    <arr name="components">
+      <str>query</str>
+    </arr>
+  </requestHandler>
+
+
+  <initParams path="/update/**,/query,/select,/tvrh,/elevate,/spell">
+    <lst name="defaults">
+      <str name="update.chain">dedupe</str>
+      <str name="df">tags</str>
+    </lst>
+  </initParams>
+
+  <!-- Field Analysis Request Handler
+
+       RequestHandler that provides much the same functionality as
+       analysis.jsp. Provides the ability to specify multiple field
+       types and field names in the same request and outputs
+       index-time and query-time analysis for each of them.
+
+       Request parameters are:
+       analysis.fieldname - field name whose analyzers are to be used
+
+       analysis.fieldtype - field type whose analyzers are to be used
+       analysis.fieldvalue - text for index-time analysis
+       q (or analysis.q) - text for query time analysis
+       analysis.showmatch (true|false) - When set to true and when
+           query analysis is performed, the produced tokens of the
+           field value analysis will be marked as "matched" for every
+           token that is produces by the query analysis
+   -->
+  <requestHandler name="/analysis/field" 
+                  startup="lazy"
+                  class="solr.FieldAnalysisRequestHandler" />
+
+
+  <!-- Document Analysis Handler
+
+       http://wiki.apache.org/solr/AnalysisRequestHandler
+
+       An analysis handler that provides a breakdown of the analysis
+       process of provided documents. This handler expects a (single)
+       content stream with the following format:
+
+       <docs>
+         <doc>
+           <field name="id">1</field>
+           <field name="name">The Name</field>
+           <field name="text">The Text Value</field>
+         </doc>
+         <doc>...</doc>
+         <doc>...</doc>
+         ...
+       </docs>
+
+    Note: Each document must contain a field which serves as the
+    unique key. This key is used in the returned response to associate
+    an analysis breakdown to the analyzed document.
+
+    Like the FieldAnalysisRequestHandler, this handler also supports
+    query analysis by sending either an "analysis.query" or "q"
+    request parameter that holds the query text to be analyzed. It
+    also supports the "analysis.showmatch" parameter which when set to
+    true, all field tokens that match the query tokens will be marked
+    as a "match". 
+  -->
+  <requestHandler name="/analysis/document" 
+                  class="solr.DocumentAnalysisRequestHandler" 
+                  startup="lazy" />
+
+  <!-- Echo the request contents back to the client -->
+  <requestHandler name="/debug/dump" class="solr.DumpRequestHandler" >
+    <lst name="defaults">
+     <str name="echoParams">explicit</str> 
+     <str name="echoHandler">true</str>
+    </lst>
+  </requestHandler>
+  
+
+
+  <!-- Search Components
+
+       Search components are registered to SolrCore and used by 
+       instances of SearchHandler (which can access them by name)
+       
+       By default, the following components are available:
+       
+       <searchComponent name="query"     class="solr.QueryComponent" />
+       <searchComponent name="facet"     class="solr.FacetComponent" />
+       <searchComponent name="mlt"       class="solr.MoreLikeThisComponent" />
+       <searchComponent name="highlight" class="solr.HighlightComponent" />
+       <searchComponent name="stats"     class="solr.StatsComponent" />
+       <searchComponent name="debug"     class="solr.DebugComponent" />
+       
+     -->
+
+  <!-- Terms Component
+
+       http://wiki.apache.org/solr/TermsComponent
+
+       A component to return terms and document frequency of those
+       terms
+    -->
+  <searchComponent name="terms" class="solr.TermsComponent"/>
+
+  <!-- A request handler for demonstrating the terms component -->
+  <requestHandler name="/terms" class="solr.SearchHandler" startup="lazy">
+     <lst name="defaults">
+      <bool name="terms">true</bool>
+      <bool name="distrib">false</bool>
+    </lst>     
+    <arr name="components">
+      <str>terms</str>
+    </arr>
+  </requestHandler>
+
+
+  <!-- Deduplication
+
+       An example dedup update processor that creates the "id" field
+       on the fly based on the hash code of some other fields.  This
+       example has overwriteDupes set to false since we are using the
+       id field as the signatureField and Solr will maintain
+       uniqueness based on that anyway.  
+       
+    -->
+
+  <updateRequestProcessorChain name="dedupe">
+    <processor class="solr.processor.SignatureUpdateProcessorFactory">
+      <bool name="enabled">true</bool>
+      <str name="signatureField">id</str>
+      <bool name="overwriteDupes">false</bool>
+      <str name="fields">source,url</str>
+      <str name="signatureClass">solr.processor.Lookup3Signature</str>
+    </processor>
+    <processor class="solr.LogUpdateProcessorFactory" />
+    <processor class="solr.RunUpdateProcessorFactory" />
+  </updateRequestProcessorChain>
+
+  <!-- Legacy config for the admin interface -->
+  <admin>
+    <defaultQuery>*:*</defaultQuery>
+  </admin>
+
+</config>

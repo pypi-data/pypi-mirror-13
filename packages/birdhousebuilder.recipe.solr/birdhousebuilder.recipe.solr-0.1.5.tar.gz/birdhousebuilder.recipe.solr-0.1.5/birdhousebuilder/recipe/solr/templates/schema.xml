@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+
+<!--  
+ For more information, on how to customize this file, please see
+ http://wiki.apache.org/solr/SchemaXml
+
+ PERFORMANCE NOTE: this schema includes many optional features and should not
+ be used for benchmarking.  To improve performance one could
+  - set stored="false" for all fields possible (esp large fields) when you
+    only need to search on the field but don't need to return the original
+    value.
+  - set indexed="false" if you don't need to search on the field, but only
+    return the field as a result of searching on other indexed fields.
+  - remove all unneeded copyField statements
+  - for best index size and searching performance, set "index" to false
+    for all general text fields, use copyField to copy them to the
+    catchall "text" field, and use that for searching.
+  - For maximum indexing performance, use the ConcurrentUpdateSolrServer
+    java client.
+  - Remember to run the JVM in server mode, and use a higher logging level
+    that avoids logging every request
+-->
+
+<schema name="birdhouse" version="1.5">
+  
+   <!-- If you remove this field, you must _also_ disable the update log in solrconfig.xml
+      or Solr won't start. _version_ and update log are required for SolrCloud
+   --> 
+   <field name="_version_" type="long" indexed="true" stored="true"/>
+   
+   <field name="id" type="string" indexed="true" stored="true" required="true" multiValued="false" /> 
+
+   <!-- metadata fields for birdhouse -->
+   <field name="source" type="source" indexed="true" stored="true"/>
+   <field name="abstract" type="text_general" indexed="false" stored="true"/>
+
+   <!-- Common metadata fields -->
+   <field name="title" type="text_general" indexed="false" stored="true"/>
+   <field name="subject" type="text_general" indexed="false" stored="true"/>
+   <field name="description" type="text_general" indexed="false" stored="true"/>
+   <field name="comments" type="text_general" indexed="false" stored="true"/>
+   <field name="author" type="text_general" indexed="false" stored="true"/>
+   <field name="keywords" type="string" indexed="true" stored="true" multiValued="true"/>
+   <field name="category" type="string" indexed="true" stored="true"/>
+   <field name="resourcename" type="string" indexed="false" stored="true"/>
+   <field name="url" type="string" indexed="false" stored="true"/>
+   <field name="content_type" type="string" indexed="true" stored="true"/>
+   <field name="last_modified" type="date" indexed="true" stored="true"/>
+
+   <!-- thredds catalog specific fields -->
+   <field name="catalog_url" type="string" indexed="false" stored="true"/>
+   <field name="opendap_url" type="string" indexed="false" stored="true"/>
+   <field name="wms_url" type="string" indexed="false" stored="true"/>
+
+   <!-- ESGF/NetCDF specific fields -->
+   <field name="variable" type="string" indexed="true" stored="true" multiValued="true"/>
+   <field name="variable_long_name" type="string" indexed="true" stored="true" multiValued="true"/>
+   <field name="cf_standard_name" type="string" indexed="true" stored="true" multiValued="true"/>
+   <field name="units" type="string" indexed="true" stored="true" multiValued="true"/>
+   <field name="institute" type="string" indexed="true" stored="true"/>
+   <field name="experiment" type="string" indexed="true" stored="true"/>
+   <field name="project" type="string" indexed="true" stored="true"/>
+   <field name="model" type="string" indexed="true" stored="true"/>
+   <field name="creation_date" type="date" indexed="true" stored="true"/>
+   <field name="frequency" type="string" indexed="true" stored="true"/>
+   
+   
+   <!-- Default search field: tags build from title, variable, ... -->
+   <field name="tags" type="tag" indexed="true" stored="false" multiValued="true"/>
+
+
+   <uniqueKey>id</uniqueKey>
+   <solrQueryParser defaultOperator="AND"/>
+
+   <!-- Create abstract -->
+   <copyField source="resourcename" dest="abstract"/>
+   <copyField source="description" dest="abstract"/>
+
+   <!-- Create keywords -->
+   <copyField source="category" dest="keywords"/>
+   <copyField source="content_type" dest="keywords"/>
+   <copyField source="variable" dest="keywords"/>
+   <copyField source="cf_standard_name" dest="keywords"/>
+   <copyField source="institute" dest="keywords"/>
+   <copyField source="experiment" dest="keywords"/>
+   <copyField source="project" dest="keywords"/>
+   <copyField source="model" dest="keywords"/>
+   <copyField source="frequency" dest="keywords"/>
+
+   <!-- Text fields from SolrCell to search by default in our catch-all field -->
+   <copyField source="title" dest="tags"/>
+   <copyField source="resourcename" dest="tags"/>
+   <copyField source="category" dest="tags"/>
+   <copyField source="author" dest="tags"/>
+   <copyField source="content_type" dest="tags"/>
+   <copyField source="variable" dest="tags"/>
+   <copyField source="cf_standard_name" dest="tags"/>
+   <copyField source="variable_long_name" dest="tags"/>
+   <copyField source="units" dest="tags"/>
+   <copyField source="institute" dest="tags"/>
+   <copyField source="experiment" dest="tags"/>
+   <copyField source="project" dest="tags"/>
+   <copyField source="model" dest="tags"/>
+   <copyField source="frequency" dest="tags"/>
+
+   <!-- The StrField type is not analyzed, but indexed/stored verbatim.
+       It supports doc values but in that case the field needs to be
+       single-valued and either required or have a default value.
+      -->
+   <fieldType name="string" class="solr.StrField" sortMissingLast="true" />
+   <fieldType name="long" class="solr.TrieLongField" precisionStep="0" positionIncrementGap="0"/>
+   <fieldType name="date" class="solr.TrieDateField" precisionStep="0" positionIncrementGap="0"/>
+   <fieldType name="boolean" class="solr.BoolField" sortMissingLast="true"/>
+
+   <!-- A text field used for tags -->
+   <fieldType name="tag" class="solr.TextField" positionIncrementGap="100">
+     <analyzer type="index">
+       <tokenizer class="solr.PatternTokenizerFactory" pattern="[A-Za-z0-9]*" group="0"/>
+       <filter class="solr.LowerCaseFilterFactory"/>
+     </analyzer>
+     <analyzer type="query">
+       <tokenizer class="solr.PatternTokenizerFactory" pattern="[A-Za-z0-9]*" group="0"/>
+       <filter class="solr.LowerCaseFilterFactory"/>
+     </analyzer>
+   </fieldType>
+
+ 
+   <!-- A text field used for common text -->
+   <fieldType name="text_general" class="solr.TextField" positionIncrementGap="100">
+     <analyzer type="index">
+       <tokenizer class="solr.StandardTokenizerFactory"/>
+       <filter class="solr.LowerCaseFilterFactory"/>
+     </analyzer>
+     <analyzer type="query">
+       <tokenizer class="solr.StandardTokenizerFactory"/>
+       <filter class="solr.LowerCaseFilterFactory"/>
+     </analyzer>
+   </fieldType>
+
+   <!-- A text field used for source descriptions -->
+   <fieldType name="source" class="solr.TextField" positionIncrementGap="100">
+     <analyzer type="index">
+       <tokenizer class="solr.KeywordTokenizerFactory"/>
+       <filter class="solr.PatternReplaceFilterFactory" pattern="[:/]" replacement="_"/>
+     </analyzer>
+     <analyzer type="query">
+       <tokenizer class="solr.KeywordTokenizerFactory"/>
+       <filter class="solr.PatternReplaceFilterFactory" pattern="[:/]" replacement="_"/>
+     </analyzer>
+   </fieldType>
+
+</schema>
