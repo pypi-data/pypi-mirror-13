@@ -1,0 +1,2 @@
+Run VPython in an IPython/Jupyter notebook, using the GlowScript VPython API, documented in the VPython Help at glowscript.org. VPython makes it unusually easy to create navigable real-time 3D animations. The one-line program "box()" produces a 3D cube with appropriate lighting and with the camera positioned so that the scene fills the view. It also turns on mouse interactions to zoom and rotate the camera view. The 3D scene appears in the Jupyter notebook, using the WebGL-based GlowScript 3D graphics library.
+
