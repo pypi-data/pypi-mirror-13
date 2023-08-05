@@ -1,0 +1,63 @@
+
+{% load compress %}
+
+<meta content='text/html; charset=utf-8' http-equiv='Content-Type' />
+<meta name="viewport" content="width=device-width, initial-scale=1">
+{% if feincms_page %}
+<title>{{ feincms_page.page_title|default:feincms_page.title }}</title>
+<meta name="description" content="{{ feincms_page.meta_description|default:request.leonardo_options.meta_description }}">
+<meta name="keywords" content="{{ feincms_page.meta_keywords|default:request.leonardo_options.meta_keywords }}">
+{% else %}
+<meta name="keywords" content="{{ request.leonardo_options.meta_keywords|default:'CMS, Django' }}">
+<meta name="description" content="{{ request.leonardo_options.meta_description|default:'Leonardo' }}">
+<title>{{ request.leonardo_options.site.name }} - {{ request.leonardo_options.meta_title }}</title>
+{% endif %}
+
+<link rel="shortcut icon" href="/favicon.ico" />
+
+{% include "base/head_meta.html" %}
+
+{% block css %}
+  {% include "_stylesheets.html" %}
+{% endblock %}
+
+{% block css_extra %}
+{% endblock %}
+
+{% block page_css %}
+
+{% compress css %}
+<link href='{{ STATIC_URL }}leonardo/scss/page.scss' type='text/scss' media='screen' rel='stylesheet' />
+{% if feincms_page %}
+<link href='{{ STATIC_URL }}themes/{{ feincms_page.theme.name }}/{{ feincms_page.color_scheme.name|lower }}/scheme.scss' type='text/scss' media='screen' rel='stylesheet' />
+{% endif %}
+<link href="{{ STATIC_URL }}horizon/lib/font-awesome/scss/font-awesome.scss" type="text/scss" media="screen" rel="stylesheet" />
+<link href="{{ STATIC_URL }}horizon/lib/bootstrap_datepicker/datepicker3.css" type="text/css" media="screen" rel="stylesheet" />
+{% for file in HORIZON_CONFIG.scss_files %}
+<link href="{{ STATIC_URL }}{{ file }}" type="text/scss" media="screen" rel="stylesheet" />
+{% endfor %}
+{% for file in HORIZON_CONFIG.css_files %}
+<link href="{{ STATIC_URL }}{{ file }}" type="text/css" media="screen" rel="stylesheet" />
+{% endfor %}
+<style type="text/css" media='screen'>
+{% for widget in request.leonardo_options.widgets %}
+  {{ widget.theme.style|safe }}
+{% endfor %}
+</style>
+{% endcompress %}
+
+{% endblock %}
+
+{% block widget_css %}
+{% endblock %}
+
+{% include "horizon/_conf.html" %}
+{% include "horizon/client_side/_script_loader.html" %}
+{% include "horizon/_custom_head_js.html" %}
+{% include "_custom_head_js.html" %}
+
+<link rel="shortcut icon" href="/favicon.ico" />
+
+{% if request.user.is_staff %}
+  {% include "leonardo/common/_frontend_edit_sidebar.html" %}
+{% endif %}
