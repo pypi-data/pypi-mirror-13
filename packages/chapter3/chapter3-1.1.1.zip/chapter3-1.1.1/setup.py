@@ -1,0 +1,1 @@
+from distutils.core import setupsetup(    name='chapter3',    version='1.1.1',    py_modules = ['tab'],    author='Max',    author_email='cailige2012@163.com',    description='This is for chapter4.(Head First)' ,    url='www.baidu.com')
