@@ -1,0 +1,50 @@
+#!python
+# -*- coding:utf-8 -*-
+from __future__ import print_function
+
+import argparse
+import os
+import random
+
+import boto.ec2
+
+parser = argparse.ArgumentParser(
+    description="Output ec2 public host names for active hosts in random "
+                "order, optionally match a tag which defaults to 'Name' or "
+                "environment variable EC2_HOST_TAG."
+)
+parser.add_argument('value', type=str, nargs='?',
+                    help='the value the tag should equal')
+parser.add_argument('-t', '--tag', type=str,
+                    default=os.getenv('EC2_HOST_TAG', 'Name'),
+                    help='which tag to search')
+
+
+def main():
+    args = parser.parse_args()
+    instances = get_instances(args.tag, args.value)
+    random.shuffle(instances)
+    for instance in instances:
+        print(instance)
+
+
+def get_instances(tag, value):
+    conn = boto.ec2.connection.EC2Connection()
+
+    if value:
+        filters = {'tag:' + tag: value}
+    else:
+        filters = {}
+
+    reservations = conn.get_all_instances(filters=filters)
+
+    instances = []
+    for reservation in reservations:
+        for instance in reservation.instances:
+            if instance.public_dns_name:
+                instances.append(instance.public_dns_name)
+    return instances
+
+
+if __name__ == '__main__':
+    main()

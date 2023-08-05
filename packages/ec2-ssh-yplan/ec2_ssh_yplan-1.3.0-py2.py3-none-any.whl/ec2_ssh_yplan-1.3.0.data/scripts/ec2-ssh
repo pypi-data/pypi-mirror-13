@@ -1,0 +1,63 @@
+#!/bin/bash
+
+set -e
+
+usage() {
+    cat<<EOF
+Usage: ec2-ssh [-t TAG] [username@]<tag-value> [extra-ssh-args]
+
+SSH into an ec2 host where <tag-value> matches a tag which defaults to 'Name'
+or environment variable EC2_HOST_TAG. In the case there is more than one such
+instance, one will be chosen at random. 'username' defaults to ubuntu.  A small
+bashrc file is added over ssh to give a nice prompt. Any extra arguments at the
+end are passed to ssh directly.
+
+  -h            display this help and exit
+  -t, TAG       Tag name to match, defaults to 'Name' or env var EC2_HOST_TAG
+EOF
+}
+
+# Print usage message and exit if no arguments are given
+test $# -eq 0 && { usage; exit; }
+
+
+# Process options
+tag=$EC2_HOST_TAG  # default
+while getopts ":h:t:" opt; do
+    case $opt in
+        h  ) usage; exit 1;;
+        t  ) tag=$OPTARG
+    esac
+done
+shift $((OPTIND - 1))
+
+# support user@instance-name format
+IFS="@"; declare -a hostparts=($1)
+
+inst="${hostparts[1]}"
+user="${hostparts[0]}"
+
+if [ -z "$inst" ]; then
+  inst="$1"
+  user="ubuntu"
+fi
+
+# get host from ec2-host command - if more than one, take first
+host_cmd="ec2-host"
+if [ "$tag" ]; then
+    host_cmd="$host_cmd -t $tag"
+fi
+host=$(eval "$host_cmd $inst" | head -n 1)
+
+if test "${@:2}"; then
+    # Pass extra parameters direct to ssh
+    ssh_cmd=${@:2}
+else
+    # If no extra parameters, set a nice prompt
+    ssh_cmd="\"echo \\\". ~/.bashrc && PS1='\[\e]0;$inst: \w\\\a\]\[\\\033[01;32m\]$inst\[\\\033[00m\]:\[\\\033[01;34m\]\w\[\\\033[00m\]\\\$ '\\\" > ~/.ec2sshrc; /bin/bash --rcfile .ec2sshrc -i\""
+fi
+ssh_cmd="ssh -t $user@$host $ssh_cmd"
+
+test -n "$host" && \
+    echo "Connecting to $host." >&2 && \
+    exec sh -c "$ssh_cmd"
