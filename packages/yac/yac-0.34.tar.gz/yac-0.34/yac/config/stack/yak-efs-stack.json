@@ -1,0 +1,78 @@
+{  
+  "Parameters" : {
+    "EFSName" : {
+      "Description" : "The name of the EFS",
+      "Type"        : "String"
+    },
+    "ASGCidr" : {
+      "Description" : "The CIDR of the subnet where the ASG lives",
+      "Type"        : "String"
+    }
+  },  
+  "Resources": {
+    "AppEFS": {
+      "Type" : "AWS::EFS::FileSystem",
+      "Properties" : {
+        "FileSystemTags" : [ 
+          { "Key": "Name", "Value" : { "Ref": "EFSName" }  },
+          { "Key": "Owner", "Value": { "Ref": "Owner" }  },
+          { "Key": "CostCenter", "Value": { "Ref": "CostCenter" }  }
+        ]
+      }
+    },
+    "EFSMT1": {
+      "Type": "AWS::EFS::MountTarget",
+      "Properties": {
+        "FileSystemId": { "Ref": "AppEFS" },
+        "SubnetId": { "Fn::Select" : [0, { "Ref": "PrivateSubnets" }]},
+        "SecurityGroups": [ { "Ref": "EFSSG" } ]        
+      }
+    },
+    "EFSMT2": {
+      "Type": "AWS::EFS::MountTarget",
+      "Properties": {
+        "FileSystemId": { "Ref": "AppEFS" },
+        "SubnetId": { "Fn::Select" : [1, { "Ref": "PrivateSubnets" }]},
+        "SecurityGroups": [ { "Ref": "EFSSG" } ]        
+      }
+    },
+    "EFSSG" : {
+      "Type" : "AWS::EC2::SecurityGroup",
+      "Properties" : {
+        "GroupDescription" : "Enable inbound access from the VPC where app lives",
+        "SecurityGroupIngress" : [
+          {
+            "IpProtocol" : "tcp",
+            "FromPort" : "0",
+            "ToPort" : "65535",
+            "CidrIp" : { "Ref": "ASGCidr" }
+          },
+          {
+            "IpProtocol" : "udp",
+            "FromPort" : "0",
+            "ToPort" : "65535",
+            "CidrIp" : { "Ref": "ASGCidr" }
+          }          
+        ],
+        "SecurityGroupEgress" : [
+          {
+            "IpProtocol" : "tcp",
+            "FromPort" : "0",
+            "ToPort" : "65535",
+            "CidrIp" : { "Ref": "ASGCidr" }
+          },
+          {
+            "IpProtocol" : "udp",
+            "FromPort" : "0",
+            "ToPort" : "65535",
+            "CidrIp" : { "Ref": "ASGCidr" }
+          }
+        ],        
+        "VpcId": {"Ref" : "VpcId" },
+        "Tags" : [ {"Key": "Name", "Value" : {  "Fn::Join" : ["-", [ { "Ref": "EFSName" }, "SG" ]] } },
+                     { "Key": "Owner", "Value": { "Ref": "Owner" } },
+                     { "Key": "CostCenter", "Value": { "Ref": "CostCenter" } } ]
+      }
+    }  
+  }
+}
