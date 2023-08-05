@@ -1,0 +1,133 @@
+import logging
+
+import pygame
+
+from trosnoth.game import LocalGame
+from trosnoth.settings import (
+    DisplaySettings, SoundSettings, IdentitySettings, ConnectionSettings,
+)
+from trosnoth.trosnothgui import interface
+from trosnoth.themes import Theme
+from trosnoth.model.mapLayout import LayoutDatabase
+from trosnoth.network.lobby import UDPMulticaster
+from trosnoth.network.networkDefines import serverVersion
+from trosnoth.network.server import TrosnothServerFactory
+
+from trosnoth.gui import app
+
+log = logging.getLogger(__name__)
+
+GAME_TITLE = 'Trosnoth'
+
+
+class Main(app.MultiWindowApplication):
+    '''Instantiating the Main class will set up the game. Calling the run()
+    method will run the reactor. This class handles the three steps of joining
+    a game: (1) get list of clients; (2) connect to a server; (3) join the
+    game.'''
+
+    standardInterfaceFactory = interface.Interface
+    keySettingsInterfaceFactory = interface.KeySettingsInterface
+    archivesInterfaceFactory = interface.ArchivesInterface
+    singleInterfaceFactory = interface.SingleAuthInterface
+
+    def __init__(self, serverDetails=None):
+        '''Initialise the game.'''
+        pygame.init()
+
+        self.serverDetails = serverDetails
+        self.server = None
+        self.serverInvisible = False
+
+        self.displaySettings = DisplaySettings(self)
+        self.soundSettings = SoundSettings(self)
+        self.identitySettings = IdentitySettings(self)
+        self.connectionSettings = ConnectionSettings(self)
+
+        pygame.font.init()
+        if self.serverDetails is None:
+            iface = self.standardInterfaceFactory
+        else:
+            iface = self.singleInterfaceFactory
+
+        super(Main, self).__init__(
+            self.displaySettings.getSize(),
+            self.displaySettings.fullScreen,
+            GAME_TITLE, iface)
+
+        # Set the master sound volume.
+        self.soundSettings.apply()
+
+        # Since we haven't connected to the server, there is no world.
+        self.layoutDatabase = LayoutDatabase(self)
+
+        # Start listening for game requests on the lan.
+        self.multicaster = UDPMulticaster(self.getGames)
+
+    def __str__(self):
+        return 'Trosnoth Main Object'
+
+    def getConsoleLocals(self):
+        result = {
+            'server': self.server,
+        }
+        try:
+            result['game'] = self.interface.game
+        except AttributeError:
+            pass
+        return result
+
+    def stopping(self):
+        # Shut down the server if one's running.
+        if self.server is not None:
+            self.server.shutdown()
+
+        self.multicaster.stop()
+        super(Main, self).stopping()
+
+    def initialise(self):
+        super(Main, self).initialise()
+
+        # Loading the theme loads the fonts.
+        self.theme = Theme(self)
+
+    def getFontFilename(self, fontName):
+        '''
+        Tells the UI framework where to find the given font.
+        '''
+        return self.theme.getPath('fonts', fontName)
+
+    def changeScreenSize(self, size, fullScreen):
+        self.screenManager.setScreenProperties(size, fullScreen, GAME_TITLE)
+
+    def startServer(
+            self, halfMapWidth=3, mapHeight=2,
+            gameDuration=0, invisibleGame=False):
+        if self.server is not None and self.server.running:
+            return
+        game = LocalGame(
+            self.layoutDatabase, halfMapWidth, mapHeight,
+            duration=gameDuration * 60,
+            saveReplay=True, gamePrefix='LAN')
+        self.server = TrosnothServerFactory(game)
+        self.serverInvisible = invisibleGame
+
+        self.server.onShutdown.addListener(self._serverShutdown)
+        self.server.startListening()
+
+    def getGames(self):
+        '''
+        Called by multicast listener when a game request comes in.
+        '''
+        if self.server and not self.serverInvisible:
+            gameInfo = {
+                'version': serverVersion,
+                'port': self.server.getTCPPort(),
+            }
+            return [gameInfo]
+        return []
+
+    def _serverShutdown(self):
+        self.server.stopListening()
+        self.server = None
+        self.serverInvisible = False
