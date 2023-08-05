@@ -1,0 +1,115 @@
+#!/usr/bin/env python
+
+import os
+import sys
+from subprocess import check_output, call
+from pick import pick
+import argparse
+
+def inGitRepo ():
+    cmd = "git rev-parse --show-toplevel 2>/dev/null"
+    try:
+        output = check_output(cmd, shell=True)
+        return True
+    except:
+       return False
+
+def getCommits (filename, skip = 0, limit = 10, logformat="%H - %ar, %an blessed the code thusly: %<(50,trunc)%s"):
+    rows, columns = os.popen('stty size', 'r').read().split()
+    width = int(columns) - 7
+    commits = []
+    cmd = "git log --skip={0} --max-count={1} --pretty=format:\"{2}\" -- {3}".format(skip, limit, logformat, filename)
+    try:
+        output = check_output(cmd, shell=True)
+        for line in output.split("\n"):
+            if not isBlank(line):
+                if width < len(line):
+                    commits.append(line[:width] + "..." )
+                else:
+                    commits.append(line)
+    except:
+        pass
+    return commits
+
+def gitAbsolutePath (filename):
+    try:
+        cmd = "git ls-tree --full-name --name-only HEAD {0}".format(filename)
+        return check_output(cmd, shell=True).strip()
+    except:
+        return filename
+
+def getAbsolutePath (path):
+    if path is None:
+        return path
+    return os.path.abspath(os.path.expandvars(os.path.expanduser(path)))
+
+def setupParser ():
+    parser = argparse.ArgumentParser(description='terminal git log browser')
+    parser.add_argument('filename', help="Path to filename")
+    parser.add_argument('-e', '--editor', help="Editor to use", default="vim")
+    parser.add_argument('-s', '--skip', help="Starting commit offset", default=0)
+    parser.add_argument('-l', '--limit', help="Total commits to show", default=10)
+    parser.add_argument('-f', '--logformat', help='Pretty format for git commit', default="%H - %ar, %an blessed the code thusly: %s")
+    return parser
+
+def isBlank (myString):
+    return not (myString and myString.strip())
+
+def isFileReadable (path):
+    if os.path.isfile(path):
+        if os.access(path, os.R_OK):
+            return True
+        else:
+            print "File {0} is not readable".format(path)
+    else:
+        print "File {0} does not exist".format(path)
+    return False
+
+def crux ():
+    parser = setupParser()
+    args = parser.parse_args()
+
+    if not inGitRepo():
+        print "Not in a git repo."
+        sys.exit(1)
+
+    absFilename = getAbsolutePath(args.filename)
+    
+    if not isFileReadable(absFilename):
+        sys.exit(5)
+
+    gitAbsFilename = gitAbsolutePath(absFilename)
+    title = 'Pick your git commit id'
+    skip = args.skip
+    limit = args.limit
+    current_index = 0
+    while True:
+        options = getCommits(absFilename, skip, limit, args.logformat)
+        if (len(options) == 0):
+            print "No commits for " + absFilename
+            sys.exit(2)
+
+        try:
+            if len(options) == limit:
+                options.append("next page")
+            if skip > 0:
+                options.append("previous page")
+            options.append("exit")
+            option, index = pick(options, title, "=>", current_index)
+            if option == "exit":
+                sys.exit(0)
+            if option == "next page":
+                skip = skip + limit
+                continue
+            if option == "previous page":
+                skip = skip - limit
+                continue
+
+            current_index = index
+            commit = option.split()[0]
+            cmd = "git show {0}:{1} | {2} - ".format(commit, gitAbsFilename, args.editor)
+            call(cmd, shell = True)
+        except:
+            sys.exit(3)
+
+if __name__ == "__main__":  crux()
