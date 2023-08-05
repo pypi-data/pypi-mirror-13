@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Обновления сайта - {{ block.super }}{% endblock %}
+
+{% block page_title %}Обновления сайта{% endblock %}
+
+{% block page_content %}
+    <div class="block" >
+        {% for news_entry in news_list %}
+            <div>
+                <h2><a href="{% url 'news-page' news_entry.slug %}">{{ news_entry.title }}</a></h2>
+                <div>
+                    <div class="small text-muted">{{ news_entry.date }}</div>
+                    <div>{% if news_entry.short %}
+                        {{ news_entry.short|safe }}
+                    {% else %}
+                        {{ news_entry.text|default_if_none:""|truncatewords_html:30|safe }}
+                    {% endif %} </div>
+                </div>
+            </div>
+        {% empty %}
+            <p class="text-muted"><em>На сейте еще нет обновлений</em></p>
+        {% endfor %}
+    </div>
+{% endblock %}
