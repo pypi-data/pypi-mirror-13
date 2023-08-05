@@ -1,0 +1,2 @@
+MAX_LIMIT = 50000
+DEFAULT_API_PREFIX = "/resource/"
