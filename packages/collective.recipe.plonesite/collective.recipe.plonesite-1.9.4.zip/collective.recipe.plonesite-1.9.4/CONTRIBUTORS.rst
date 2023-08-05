@@ -1,0 +1,13 @@
+- Clayton Parker [claytron], Author
+- Andrew Burkhalter [andrewb]
+- JeanMichel FRANCOIS [toutpt]
+- Andreas Jung [ajung]
+- Jeff Kowalczyk [jeffk]
+- Pelle Krogholt [pelle]
+- Michael Davis [davismr]
+- Nolan Brubaker [nrb]
+- David Blewett [davidblewett]
+- Toni Mueller [muellert]
+- Fabio Rauber [fabiorauber]
+- Bryan Wilson [bryanlandia]
+
