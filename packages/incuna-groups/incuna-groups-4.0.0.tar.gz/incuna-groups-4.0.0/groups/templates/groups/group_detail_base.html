@@ -1,0 +1,31 @@
+{% extends "groups/base.html" %}
+
+{% block groups_title %}Discussions on {{ group.name }}{% endblock groups_title %}
+
+{% block groups_subtitle %}
+    <h2>Discussions on {{ group.name }}</h2>
+{% endblock groups_subtitle %}
+
+{% block back_link %}
+    <p><a href="{% url 'group-list' %}">Back to all groups</a></p>
+{% endblock back_link %}
+
+{% block groups_main_content %}
+    {% include "groups/group_subscribe_button.html" %}
+    <a href="{% url 'discussion-create' group.pk %}">Start a new discussion</a>
+    <ul>
+        {% for discussion in object_list %}
+            <li>
+                <ul>
+                    <li><a href="{{ discussion.get_absolute_url }}">{{ discussion.name }}</a></li>
+                    <li>{{ discussion.get_total_replies }} Replies</li>
+                    <li>Last Post: {{ discussion.get_latest_comment.date_created }}</li>
+                    <li>Created by {{ discussion.creator }}</li>
+                </ul>
+            </li>
+        {% endfor %}
+    </ul>
+
+    {% include "includes/_pagination.html" %}
+
+{% endblock groups_main_content %}
