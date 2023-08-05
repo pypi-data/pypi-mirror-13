@@ -1,0 +1,6 @@
+
+
+
+def getGreece():
+	return "Tsipras!"
+
