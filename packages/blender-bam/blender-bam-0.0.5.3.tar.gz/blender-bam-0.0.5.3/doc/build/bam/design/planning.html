@@ -1,0 +1,450 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Pipeline &mdash; BAM - Blender Asset Manager 0.0.1 alpha documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="BAM - Blender Asset Manager 0.0.1 alpha documentation" href="../index.html"/>
+        <link rel="next" title="Milestones" href="milestones.html"/>
+        <link rel="prev" title="Installation and requirements" href="../install/index.html"/> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> BAM - Blender Asset Manager
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../manual/index.html">User manual</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/index.html">Bam Command Line</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../install/index.html">Installation and requirements</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">Pipeline</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#asset-managment">Asset Managment</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#architecture-overview">Architecture Overview</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#server">Server</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#client">Client</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#user-stories">User Stories</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#layout-artist">Layout Artist</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#animator">Animator</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#editor">Editor</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#implementation-details">Implementation Details</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#overview">Overview</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#svn-commit-abstraction">SVN Commit Abstraction</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#components">Components</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id1">Client</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id2">Server</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#project-management">Project Management</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#automated-tasks">Automated Tasks</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id3">Components</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id4">User Stories</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#implementation">Implementation</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#dashboard">Dashboard</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id5">Server</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#worker">Worker</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="milestones.html">Milestones</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../index.html">BAM - Blender Asset Manager</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../index.html">Docs</a> &raquo;</li>
+      
+    <li>Pipeline</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="../_sources/design/planning.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="pipeline">
+<h1>Pipeline<a class="headerlink" href="#pipeline" title="Permalink to this headline">¶</a></h1>
+<p><strong>The Story Tool</strong></p>
+<p><em>This is the over arching goal of the project.</em></p>
+<ul class="simple">
+<li>Asset Management <em>Manage Files &amp; Content</em></li>
+<li>Project Management <em>Manage People &amp; Tasks</em></li>
+<li>Automated Tasks <em>Manage Geneated Content</em></li>
+</ul>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>Design Goals</p>
+<p class="last">...this is a tool, not a framework,
+for anyone making animation(s) with Blender.</p>
+</div>
+<ul class="simple">
+<li>Handle multiple projects.</li>
+<li>Foresee use of other tools (as well as Blender), in the work-flow.</li>
+<li>Support multi-site/distributed work-flow.</li>
+<li>Support <strong>some</strong> of the functionality in the Blender-Cloud.</li>
+<li>Design to <strong>allow</strong> for swappable modular components, even if we end up sticking with single technologies.</li>
+</ul>
+<div class="section" id="asset-managment">
+<h2>Asset Managment<a class="headerlink" href="#asset-managment" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Assets &lt;-&gt; Users
+- Revisions
+- Variations</li>
+</ul>
+<div class="section" id="architecture-overview">
+<h3>Architecture Overview<a class="headerlink" href="#architecture-overview" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="server">
+<h4>Server<a class="headerlink" href="#server" title="Permalink to this headline">¶</a></h4>
+<ul class="simple">
+<li>File asset</li>
+<li>Tools (blend file packer, evaluate sequencer, visualize deps, automated tasks ...)</li>
+<li>Public API (web service), <em>communicates with client.</em></li>
+</ul>
+</div>
+<div class="section" id="client">
+<h4>Client<a class="headerlink" href="#client" title="Permalink to this headline">¶</a></h4>
+<ul class="simple">
+<li>Interface GUI/CLI (Blender/Web-UI also)</li>
+<li>Tools (manage files on the client, cache.)</li>
+<li>Local files (models, images)</li>
+</ul>
+</div>
+</div>
+<div class="section" id="user-stories">
+<h3>User Stories<a class="headerlink" href="#user-stories" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="layout-artist">
+<h4>Layout Artist<a class="headerlink" href="#layout-artist" title="Permalink to this headline">¶</a></h4>
+<p>Mathieu has to update the camera motion in an existing shot in layout stage.</p>
+<p>Since he&#8217;s in the middle of the project, he loads Blender and accesses the &#8216;Recent Projects Menu&#8217;
+Which shows an interface to open the file he&#8217;s looking for.
+In this case someone modified a prop, giving the message &#8220;Shader changed, by Pablo&#8221;.
+Which he updates because it only takes a few seconds.</p>
+<p>Now he&#8217;s able to edit the camera and save his work (exit Blender, reopen...etc)
+When he&#8217;s happy with the changes he opens the file menu <strong>File -&gt; BAM -&gt; Commit Changes</strong></p>
+<p>This prompts him with a dialog showing a list of the changed files.
+He enters a commit message explaining the change and presses <strong>Commit</strong>.</p>
+<p>a progress bar appears while the data is being uploaded.</p>
+<p>He finally receives confirmation that the commit uploaded correctly.</p>
+</div>
+<div class="section" id="animator">
+<h4>Animator<a class="headerlink" href="#animator" title="Permalink to this headline">¶</a></h4>
+<p>Hjalti opens the project management web site and finds he&#8217;s been assigned a new shot to animate.</p>
+<p>He opens Blender and selects <strong>File -&gt; BAM -&gt; Load</strong>,
+this prompts him with a browser which he uses to locate the shot,
+which he can easily identify by the name: <code class="docutils literal"><span class="pre">shot_012_anim.blend</span></code></p>
+<p>He confirms the action, which shows a download progress bar which immediately loads the file in Blender.</p>
+<p>He is presented with a low poly scene containing rigs with the characters in the shot and the props they interact with.
+as well as a low resolution version of the environment.</p>
+<p>He can work on the animation, and modify the file, and commit... <em>as Mathieu did</em></p>
+</div>
+<div class="section" id="editor">
+<h4>Editor<a class="headerlink" href="#editor" title="Permalink to this headline">¶</a></h4>
+<p>Mathieu is going through his daily review of the edit in Blender,</p>
+<p>He opens the edit blend <strong>File -&gt; BAM -&gt; Recent Files -&gt; Edit</strong>,</p>
+<p>This shows the sequencer view with each shot as a strip,</p>
+<p>He can add a new shot into the edit <strong>Sequencer Header -&gt; Add -&gt; BAM Shot</strong></p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>exactly how this is done is yet to be decieded,</p>
+<p class="last">however the shots will be created and managed on the server (likely via a web-ui)</p>
+</div>
+<p>A popup will appear with a list of shots which can be selected to add.</p>
+<p>At this point the sequencer can be used as usual,</p>
+<p><strong>However</strong> the clip in the sequencer is now <strong>the</strong> reference for length/timing of the shot,
+its values are propagated to the server (<em>once committed</em>).</p>
+</div>
+</div>
+<div class="section" id="implementation-details">
+<h3>Implementation Details<a class="headerlink" href="#implementation-details" title="Permalink to this headline">¶</a></h3>
+<p>This document describes the layout for Blender pipeline.</p>
+<div class="section" id="overview">
+<h4>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h4>
+<ul class="simple">
+<li>Use SVN for internal storage.</li>
+<li>SVN repository is for internal storage (but keep usable as <em>last resort</em>)</li>
+<li>Support extracting single <code class="docutils literal"><span class="pre">.blend</span></code> file, and committing it back (without a full checkout),
+useful for remote artists.</li>
+</ul>
+</div>
+<div class="section" id="svn-commit-abstraction">
+<h4>SVN Commit Abstraction<a class="headerlink" href="#svn-commit-abstraction" title="Permalink to this headline">¶</a></h4>
+<p>Motivation:</p>
+<p>Artists need to be able to work on jobs without downloading entire repository.</p>
+<p>Workflow:</p>
+<ul class="simple">
+<li>Select an asset to <em>checkout</em> (Likely via a web-ui/blender-ui).</li>
+<li>Download the asset and its dependencies (web/cli/blender-ui).</li>
+<li>Modify data locally (images, 3d... text... etc).</li>
+<li>Submit task back with commit log (blender-ui/cli/web?).
+(Server handles commit).</li>
+</ul>
+<p>Technical details:</p>
+<ul class="simple">
+<li>Server handles SVN integration which is hidden from the client.</li>
+<li>The job submission and editing workflow is handled by client/server,
+Server creates binary blobs for the bundles,
+client handles download and create a usable directory for editing.</li>
+<li>Path remapping of <code class="docutils literal"><span class="pre">.blend</span></code> files must be handled
+(in both directions, likely using <code class="docutils literal"><span class="pre">blendfile.py</span></code>).</li>
+<li>Use cache on client to avoid re-downloading the same resources.</li>
+</ul>
+</div>
+</div>
+<div class="section" id="components">
+<h3>Components<a class="headerlink" href="#components" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id1">
+<h4>Client<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h4>
+<ul class="simple">
+<li>UI (list + checkout (remote assets), edit + commit (local assets))
+- CLI (command line tool for low level access, scripts TD can use... etc)
+- Blender/Integrated UI
+- Web-UI (browse assets, limited access).</li>
+<li>Tools
+- browse remote repo
+- downloader (simple zip)
+- checkout/commit workflow (check what to download, commit whats changed, manage cache internally avoid re-download)</li>
+<li>Data
+- Files/Assets (blend files, textures)
+- Cache (physics assets which can be regenerated on the server)</li>
+</ul>
+</div>
+<div class="section" id="id2">
+<h4>Server<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h4>
+<ul class="simple">
+<li>Write blend file extractor / packager.</li>
+<li>Write online SVN browser.</li>
+<li>... TODO</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="section" id="project-management">
+<h2>Project Management<a class="headerlink" href="#project-management" title="Permalink to this headline">¶</a></h2>
+<p>Use phabricator! DONE :D</p>
+</div>
+<div class="section" id="automated-tasks">
+<h2>Automated Tasks<a class="headerlink" href="#automated-tasks" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id3">
+<h3>Components<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
+<p>There are 2 types of tasks to be automated.</p>
+<ul class="simple">
+<li>User submitted tasks.</li>
+<li>Tasks generated by events such as commit hooks, finished rendering... etc.</li>
+</ul>
+<p>Automated tasks are broken into 3 steps.</p>
+<ul class="simple">
+<li>Creation (API/CLI/GUI)</li>
+<li>Scheduling/queueing (Managed by the server)</li>
+<li>Execution/job management (Controlled via the server, though API&#8217;s &amp; UI&#8217;s)</li>
+</ul>
+</div>
+<div class="section" id="id4">
+<h3>User Stories<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
+<p>Heres a list of tasks we would expect the system to support</p>
+<ul class="simple">
+<li>Generating Renderfarm Preview</li>
+<li>Low resolution textures for animation</li>
+<li>High Resolution Simulation (hair, smoke)</li>
+<li>Final Render a Scene</li>
+<li>OpenGL Preview Every Shot</li>
+<li>Bundle a Blend file into a ZIP</li>
+<li>Synchronizing Data (SVN/Database... repositories... backups)</li>
+<li>Consistency checks (automated tasks to validate the state of the project)</li>
+<li>Blend file hygiene/lint (unused datablocks, images not used anywhere)</li>
+<li>Building Blender</li>
+</ul>
+</div>
+<div class="section" id="implementation">
+<h3>Implementation<a class="headerlink" href="#implementation" title="Permalink to this headline">¶</a></h3>
+<p>We plan to develop a very simple system leveraging existing technologies.</p>
+<div class="section" id="dashboard">
+<h4>Dashboard<a class="headerlink" href="#dashboard" title="Permalink to this headline">¶</a></h4>
+<p>UI (web based), allows manual creation of tasks.</p>
+</div>
+<div class="section" id="id5">
+<h4>Server<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h4>
+<p>Backend connected to database and scheduler, managing &amp; assigning jobs to workers.</p>
+</div>
+<div class="section" id="worker">
+<h4>Worker<a class="headerlink" href="#worker" title="Permalink to this headline">¶</a></h4>
+<p>Simple client, exposes control of the machine via an API.</p>
+</div>
+</div>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="milestones.html" class="btn btn-neutral float-right" title="Milestones" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="../install/index.html" class="btn btn-neutral" title="Installation and requirements" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'0.0.1 alpha',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
