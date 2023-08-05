@@ -1,0 +1,117 @@
+{% extends "revuo/base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+{% block restrict_active %}active{% endblock %}
+
+{% block page_body %}
+<div class="container">
+    <div class="publisher-panel base-panel">
+    <h1>Dashboard</h1>
+
+    {% for section in sections %}
+        <div class="row-fluid"><br>
+            <h4><span>{{ section.section }}</span>
+                <span style="float:right;">
+                    {% if multi_page_info.has_previous %}
+                        <a href="?page={{ multi_page_info.previous_page }}" class="btn btn-default">
+                            <span class="glyphicon glyphicon-chevron-left"></span></a>
+                    {% endif %}
+
+                    Page {{ multi_page_info.current }} / {{ multi_page_info.num_pages }}
+
+                    {% if multi_page_info.has_next %}
+                        <a href="?page={{ multi_page_info.next_page }}" class="btn btn-default">
+                            <span class="glyphicon glyphicon-chevron-right"></span></a>
+                    {% endif %}
+                </span>
+            </h4>
+        </div>
+        <div class="row-fluid"><br>
+            <div class="span10">
+                <table class="table table-striped tabled-bordered">
+                    <thead>
+                        <tr>
+                            <th width="30%">Item</th>
+                            <th width="25%">Author</th>
+                            <th class="10%">Published</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in section.items %}
+                            <tr>
+                                <td><a href="{{ item.get_url }}">{{ item.title }}</a></td>
+                                <td><a href="{% url 'revuo:staff_view' item.author.id %}">{{ item.author }}</a></td>
+                                <td>{{ item.authorized }}</td>
+                                <td>
+
+                                    <!-- TODO: check editor rights -->
+                                        <button type="button" class="btn btn-default" aria-label="Approve Item"
+                                                title="Approve"
+                                            {% if item.authorized %}disabled{% endif %}
+                                            onclick="auth_item('{{ item.category }}', '{{ item.id }}')">
+                                            <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
+                                        </button>
+                                        <button type="button" class="btn btn-default" aria-label="Suspend Item"
+                                                title="Suspend"
+                                            {% if not item.authorized %}disabled{% endif %}
+                                            onclick="suspend_item('{{ item.category }}', '{{ item.id }}')">
+                                            <span class="glyphicon glyphicon-lock" aria-hidden="true"></span>
+                                        </button>
+                                        <button type="button" class="btn btn-default" aria-label="Trash Item"
+                                                title="Delete"
+                                                {% if item.authorized %}disabled{% endif %}
+                                                onclick="del_item('{{ item.category }}', '{{ item.id }}')">
+                                            <span class="glyphicon glyphicon-trash" aria-hidden="true"></span>
+                                        </button>
+
+                                    <a class="btn btn-default"
+                                        href="{% url 'revuo:item_edit' item.category item.id %}"
+                                        title="Edit"
+                                        {% if not item.author.user == user %}disabled{% endif %}>
+                                        <span class="glyphicon glyphicon-edit"></span>
+                                    </a>
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="4">No items for this category</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <hr>
+    {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function auth_item(item_category, item_id){
+        result = $.get("/restricted/publisher/" + item_category  + "/" + item_id,
+            function(data) {
+                document.location.reload();
+            },
+            "json")
+    }
+
+    function suspend_item(item_category, item_id){
+        result = $.get("/restricted/suspender/" + item_category  + "/" + item_id,
+            function(data) {
+                document.location.reload();
+            },
+            "json")
+    }
+
+    function del_item(item_category, item_id){
+        result = $.get("/restricted/deleter/" + item_category  + "/" + item_id,
+            function(data) {
+                document.location.reload();
+            },
+            "json")
+    }
+</script>
+{% endblock %}
