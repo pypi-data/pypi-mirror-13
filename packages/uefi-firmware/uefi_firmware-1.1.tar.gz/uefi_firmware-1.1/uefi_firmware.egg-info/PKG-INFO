@@ -1,0 +1,193 @@
+Metadata-Version: 1.1
+Name: uefi-firmware
+Version: 1.1
+Summary: Various data structures and parsing tools for UEFI firmware.
+Home-page: UNKNOWN
+Author: Teddy Reed
+Author-email: teddy@prosauce.org
+License: Copyright (c) 2014 Teddy Reed <teddy@prosauce.org>
+Copyright (c) 2013 Hector Martin <hector@marcansoft.com>
+
+Please also see inline licenses included with contributed work.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+Description: UEFI Firmware Parser
+        ====================
+        
+        .. image:: https://travis-ci.org/theopolis/uefi-firmware-parser.svg?branch=master
+            :target: https://travis-ci.org/theopolis/uefi-firmware-parser
+        
+        
+        The UEFI firmware parser is a simple module and set of scripts for parsing, extracting, 
+        and recreating UEFI firmware volumes.
+        This includes parsing modules for BIOS, OptionROM, Intel ME and other formats too. 
+        Please use the example scripts for parsing tutorials.
+        
+        Installation
+        ------------
+        ::
+        
+          $ sudo python ./setup.py install
+        
+        **Requirements**
+        
+        - Python development headers, usually found in the ``python-dev`` package.
+        - The compression/decompression features will use the python headers and ``gcc``.
+        - ``pefile`` is optional, and may be used for additional parsing.
+        
+        Usage
+        -----
+        Example scripts are provided in ``/scripts``
+        
+        ::
+        
+          $ python ./scripts/fv_parser.py -h
+          usage: fv_parser.py [-h] [--type {VARIOUS_TYPES}]
+                              [-b] [-q] [-o OUTPUT] [-e] [-g GENERATE] [--test]
+                              file [file ...]
+        
+          Parse, and optionally output, details and data on UEFI-related firmware.
+        
+          positional arguments:
+            file                  The file(s) to work on
+        
+          optional arguments:
+            -h, --help            show this help message and exit
+            --type {VARIOUS_TYPES}
+                                  Parse files as a specific firmware type.
+            -b, --brute           The input is a blob and may contain FV headers.
+            -q, --quiet           Do not show info.
+            -o OUTPUT, --output OUTPUT
+                                  Dump EFI Files to this folder.
+            -e, --extract         Extract all files/sections/volumes.
+            -g GENERATE, --generate GENERATE
+                                  Generate a FDF, implies extraction
+            --test                Test file parsing, output name/success.
+        
+        To test a file or directory of files:
+        
+        ::
+        
+          $ python ./scripts/fv_parser.py --test ~/firmware/*
+          ~/firmware/970E32_1.40: UEFIFirmwareVolume
+          ~/firmware/CO5975P.BIO: EFICapsule
+          ~/firmware/me-03.obj: IntelME
+          ~/firmware/O990-A03.exe: None
+          ~/firmware/O990-A03.exe.hdr: DellPFS
+        
+        The firmware-type checker will decide how to best parse the file or you may
+        set the type manually:
+        
+        ::
+        
+          $ python ./scripts/fv_parser.py --type UEFI_VOLUME ~/firmware/970E32_1.40
+          $ python ./scripts/fv_parser.py ~/firmware/970E32_1.40
+        
+        **Features**
+        
+        - UEFI Firmware Volumes, Capsules, FileSystems, Files, Sections parsing
+        - Intel PCH Flash Descriptors
+        - Intel ME modules parsing (for ARC5)
+        - Dell PFS (HDR) updates parsing
+        - Tiano/EFI, and native LZMA (7z) [de]compression
+        
+        - Complete UEFI Firmware volume object heirarchy display
+        - Firmware descriptor [re]generation using the parsed input volumes
+        - Firmware File Section injection
+        
+        **GUID Injection**
+        
+        Injection or GUID replacement (no addition/subtraction yet) can be performed on sections within a UEFI firmware file, or on UEFI firmware files within a firmware filesystem.
+        
+        :: 
+        
+          $ python ./scripts/fv_injector.py -h
+          usage: fv_injector.py [-h] [-c] [-p] [-f] [--guid GUID] --injection INJECTION
+                                [-o OUTPUT]
+                                file
+        
+          Search a file for UEFI firmware volumes, parse and output.
+        
+          positional arguments:
+            file                  The file to work on
+        
+          optional arguments:
+            -h, --help            show this help message and exit
+            -c, --capsule         The input file is a firmware capsule.
+            -p, --pfs             The input file is a Dell PFS.
+            -f, --ff              Inject payload into firmware file.
+            --guid GUID           GUID to replace (inject).
+            --injection INJECTION
+                                  Pre-generated EFI file to inject.
+            -o OUTPUT, --output OUTPUT
+                                  Name of the output file.
+        
+        Note: when injecting into a firmware file the user will be prompted for which section to replace. At the moment this is not-yet-scriptable. 
+        
+        **IDA Python support**
+        
+        There is an included script to generate additional GUID labels to import into IDA Python
+        using Snare's plugins. Using the ``-g LABEL`` the script will generate a Python dictionary-formatted output. This project will try to keep up-to-date with popular vendor GUIDs automatically.
+        
+        ::
+        
+          $ python ./scripts/uefi_guids.py -h
+          usage: uefi_guids.py [-h] [-c] [-b] [-d] [-g GENERATE] [-u] file
+        
+          Output GUIDs for files, optionally write GUID structure file.
+        
+          positional arguments:
+            file                  The file to work on
+        
+          optional arguments:
+            -h, --help            show this help message and exit
+            -c, --capsule         The input file is a firmware capsule, do not search.
+            -b, --brute           The input file is a blob, search for firmware volume
+                                  headers.
+            -d, --flash           The input file is a flash descriptor.
+            -g GENERATE, --generate GENERATE
+                                  Generate a behemonth-style GUID output.
+            -u, --unknowns        When generating also print unknowns.
+        
+        **Supported Vendors**
+        
+        This module has been tested on BIOS/UEFI/firmware updates from the following vendors.
+        Not every update for every product will parse, some may required a-prioi decompression
+        or extraction from the distribution update mechanism (typically a PE). 
+        
+        - ASRock
+        - Dell
+        - Gigabyte
+        - Intel
+        - Lenovo
+        - HP
+        - MSI
+        - VMware
+        - Apple
+        
+Keywords: security uefi firmware parsing bios
+Platform: UNKNOWN
+Classifier: Development Status :: 4 - Beta
+Classifier: Intended Audience :: System Administrators
+Classifier: Topic :: Security
+Classifier: License :: OSI Approved :: BSD License
+Classifier: Programming Language :: Python :: 2
+Classifier: Programming Language :: Python :: 2.6
+Classifier: Programming Language :: Python :: 2.7
