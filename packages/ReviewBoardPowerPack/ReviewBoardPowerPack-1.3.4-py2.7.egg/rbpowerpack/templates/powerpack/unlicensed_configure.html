@@ -1,0 +1,57 @@
+{% extends "extensions/configure_extension.html" %}
+{% load beanbag_licensing djblets_extensions i18n %}
+
+
+{# CSS #}
+{% block css %}
+{{block.super}}
+
+<style>
+  .powerpack-license-buttons {
+    margin: 1.5em 0;
+  }
+
+  .powerpack-license-buttons .btn {
+    margin-right: 0.5em;
+    padding: 0.6em 1.2em;
+  }
+</style>
+{% endblock css %}
+
+
+{# Form title #}
+{% block form_title %}
+{%  trans "Activate Power Pack" %}
+{% endblock form_title%}
+
+
+{# Config form content #}
+{% block form_content %}
+<div class="form-row">
+ <h1>{% trans "Power Pack is not licensed" %}</h1>
+ <p>
+{%  blocktrans %}
+  You can try all of Power Pack's features free for 30 days with no commitment,
+  or purchase a license today for your server.
+{%  endblocktrans %}
+ </p>
+ <div class="powerpack-license-buttons">
+  <a class="btn primary" href="{% licensing_trial_url extension %}">
+   {% trans "Try it free for 30 days" %}
+  </a>
+  <a class="btn primary" href="{% licensing_purchase_url extension %}">
+   {% trans "Purchase a license" %}
+  </a>
+ </div>
+ <p>
+{%  blocktrans %}
+  If you already have a license file, you can browse for it:
+{%  endblocktrans %}
+ </p>
+
+ <p>
+  {{form.license_file.errors}}
+  {{form.license_file}}
+ </p>
+</div>
+{% endblock form_content %}
