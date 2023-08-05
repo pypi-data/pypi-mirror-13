@@ -1,0 +1,77 @@
+<configure
+    xmlns="http://namespaces.zope.org/zope"
+    xmlns:five="http://namespaces.zope.org/five"
+    xmlns:i18n="http://namespaces.zope.org/i18n"
+    xmlns:genericsetup="http://namespaces.zope.org/genericsetup"
+    xmlns:zcml="http://namespaces.zope.org/zcml"
+    xmlns:browser="http://namespaces.zope.org/browser"
+    xmlns:profilehook="http://namespaces.zope.org/profilehook"
+    i18n_domain="ftw.file">
+
+  <includeDependencies package="." />
+  <five:registerPackage package="." initialize=".initialize" />
+
+  <include package="ftw.profilehook" />
+
+  <i18n:registerTranslations directory="locales" />
+
+  <include file="permissions.zcml" />
+
+  <include package=".browser" />
+  <include package=".content" />
+  <include package=".rules" />
+  <include package=".viewlets" />
+  <include package=".upgrades" />
+
+  <include zcml:condition="installed ftw.lawgiver" file="lawgiver.zcml" />
+
+  <genericsetup:registerProfile
+      name="default"
+      title="ftw.file"
+      directory="profiles/default"
+      description="Installs the ftw.file package"
+      provides="Products.GenericSetup.interfaces.EXTENSION"
+      />
+
+  <profilehook:hook
+      profile="ftw.file:default"
+      handler=".hooks.installed"
+      />
+
+  <adapter
+      for="ftw.file.fields.FileField"
+      factory="plone.app.imaging.scaling.ImageScaleFactory" />
+
+  <browser:resource
+      file="resources/hideOriginFilenameField.js"
+      name="hideOriginFilenameField.js" />
+
+  <browser:resource
+      file="resources/uploader.js"
+      name="ftw.file-uploader.js" />
+
+  <browser:resource
+      file="resources/main.js"
+      name="ftw.file-main.js" />
+
+  <browser:resource
+      file="resources/progress.js"
+      name="ftw.file-progress.js" />
+
+  <browser:resource
+      file="resources/uploader.css"
+      name="ftw.file-uploader.css" />
+
+  <browser:resource
+      file="resources/fail.svg"
+      name="ftw.file-fail.svg" />
+
+  <browser:resource
+      file="resources/tick.png"
+      name="ftw.file-tick.png" />
+
+<browser:resource
+      file="resources/upload.png"
+      name="ftw.file-upload.png" />
+
+</configure>
