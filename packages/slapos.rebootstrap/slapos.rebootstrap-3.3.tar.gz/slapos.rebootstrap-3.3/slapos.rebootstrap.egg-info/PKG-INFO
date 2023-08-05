@@ -1,0 +1,855 @@
+Metadata-Version: 1.1
+Name: slapos.rebootstrap
+Version: 3.3
+Summary: A zc.buildout extension to solve chicken-and-egg problem of using python which is built by itself
+Home-page: https://lab.nexedi.com/nexedi/slapos.rebootstrap
+Author: Kazuhiko Shiozaki
+Author-email: kazuhiko@nexedi.com
+License: ZPL 2.1
+Description: Rerun buildout with a python provided by buildout
+        ===============================================
+        
+        Buildout 2.0 no-longer supports using multiple versions of Python in a
+        single buildout. This extension makes it possible to use 'yet another
+        single' version of python, by building a specified python part and its
+        dependencies first then reinvoking buildout with the executable.
+        
+        Usage
+        -----
+        
+        A part to build python is required. You need to specify it by `python`
+        parameter in `buildout` section, just same as buildout 1.x. The python
+        section must provide executable option that gives the path to a Python
+        executable.
+        
+        And add slapos.rebootstrap to `extensions` parameter in `buildout` section.
+        
+        Use whatever python to bootstrap and run buildout. If this extension
+        detects that sys.executable used to run buildout is different than
+        executable provided in python section, it will try to find this
+        executable. If it does not exists, it will install this section and
+        then reinstall buildout using new python executable. Later buildout
+        run will continue using new python.
+        
+        Example profile and invocation
+        ------------------------------
+        ::
+        
+          [buildout]
+          extensions = slapos.rebootstrap
+          python = slapospython
+          
+          parts =
+            realrun
+          
+          [slapospython]
+          recipe = plone.recipe.command
+          stop-on-error = true
+          command = mkdir -p ${buildout:parts-directory}/${:__section_name__}/bin &&
+            cp -f /usr/bin/python ${:executable}
+          
+          [realrun]
+          recipe = plone.recipe.command
+          command =
+            echo Running with python ${buildout:executable}
+          update-command = ${:command}
+        
+        After bootstrapping and running this buildout it will print:
+        
+        Running with python /path/to/buildout/parts/slapospython/bin/slapospython
+        
+        Running tests
+        -------------
+        
+        Test for this package can be run as simple as:
+        
+         $ python setup.py test
+        
+        Please keep in mind that clean python environment is required -- the best one is
+        provided by buildout or virtualenv *WITHOUT* site packages.
+        
+        
+        Changes
+        =======
+        
+        3.3 (2016-01-20)
+        ----------------
+        
+         * Ignore MissingSection exception in _uninstall_part().
+        
+        3.2 (2015-11-10)
+        ----------------
+        
+         * Support zc.buildout >= 2.0.0.
+         * Same parts directory as the normal buildout is used so that we can
+           build faster and also make the code simpler.
+         * Python part is now specified by `python` parameter in `buildout`
+           section.
+         * Restart automatically with the original python when running python
+           part is removed.
+        
+        3.1 (2011-06-24)
+        ----------------
+        
+         * Support eggs parameter in rebootstrap section in order to add additional
+           eggs for rebootstrapped buildout. [Łukasz Nowak]
+        
+        3.0 (2011-05-27)
+        ----------------
+        
+         * Renamed from slapos.tool.rebootstrap 2.4 [Łukasz Nowak]
+        
+        Technical documentation
+        =======================
+        
+        Support for extensions
+        ----------------------
+        
+        >>> import sys
+        >>> mkdir(sample_buildout, 'recipes')
+        >>> write(sample_buildout, 'recipes', 'setup.py',
+        ... """
+        ... from setuptools import setup
+        ...
+        ... setup(
+        ...     name = "recipes",
+        ...     entry_points = {'zc.buildout':[
+        ...             'pyinstall = pyinstall:Pyinstall',
+        ...             'pyshow = pyshow:Pyshow',
+        ...     ],
+        ...     'zc.buildout.extension': ['ext = extension:extension'],},
+        ...     )
+        ... """)
+        >>> write(sample_buildout, 'recipes', 'README.txt', " ")
+        >>> write(sample_buildout, 'recipes', 'extension.py',
+        ... """
+        ... def extension(buildout):
+        ...     print 'Special extension run'
+        ... """)
+        >>> write(sample_buildout, 'recipes', 'pyinstall.py',
+        ... """
+        ... import os, zc.buildout, shutil, sys
+        ...
+        ... class Pyinstall:
+        ...
+        ...     def __init__(self, buildout, name, options):
+        ...         self.name, self.options = name, options
+        ...         self.destination = os.path.join(buildout['buildout'][
+        ...             'parts-directory'], self.options.get('python', name))
+        ...
+        ...     def install(self):
+        ...         for d in [self.destination, os.path.join(self.destination, 'bin')]:
+        ...           if not os.path.exists(d):
+        ...               os.mkdir(d)
+        ...         python = os.path.join(self.destination, 'bin', self.name)
+        ...         if not os.path.exists(python):
+        ...             shutil.copy(sys.executable, python)
+        ...         return []
+        ...
+        ...     update = install
+        ... """)
+        >>> write(sample_buildout, 'recipes', 'pyshow.py',
+        ... """
+        ... import os, zc.buildout, shutil, sys
+        ...
+        ... class Pyshow:
+        ...
+        ...     def __init__(self, buildout, name, options):
+        ...         self.name, self.options = name, options
+        ...
+        ...     def install(self):
+        ...         print 'Running with:', sys.executable
+        ...         return []
+        ...
+        ...     update = install
+        ... """)
+        >>> write(sample_buildout, 'buildout.cfg',
+        ... """
+        ... [buildout]
+        ... develop = recipes
+        ... parts =
+        ... """)
+        >>> print system(buildout),
+        Develop: '/sample-buildout/recipes'
+        >>> write(sample_buildout, 'buildout.cfg',
+        ... """
+        ... [buildout]
+        ... develop = recipes
+        ... extensions = slapos.rebootstrap recipes
+        ...
+        ... parts =
+        ...   realrun
+        ...
+        ... [rebootstrap]
+        ... section =
+        ...   installpython
+        ... version =
+        ...   1
+        ...
+        ... [installpython]
+        ... recipe = recipes:pyinstall
+        ...
+        ... [realrun]
+        ... recipe = recipes:pyshow
+        ... """ % dict(syspython=sys.executable))
+        >>> print system(buildout),
+        slapos.rebootstrap: Installing section 'installpython' to provide '/sample-buildout/rebootstrap.1.parts/installpython/bin/installpython' in '/sample-buildout/rebootstrap.1.parts'
+        slapos.rebootstrap: Rerunning buildout to install section installpython with arguments ['/sample-buildout/bin/buildout', 'buildout:parts=installpython', 'buildout:extensions=recipes', '/sample-buildout/rebootstrap.1.parts', 'buildout:installed=.rebootstrap.1.installed.cfg'].
+        Special extension run
+        Creating directory '/sample-buildout/rebootstrap.1.parts'.
+        Develop: '/sample-buildout/recipes'
+        Installing installpython.
+        slapos.rebootstrap: 
+        ************ REBOOTSTRAP: IMPORTANT NOTICE ************
+        bin/buildout is being reinstalled right now, as new python:
+          /sample_buildout/rebootstrap.1.parts/installpython/bin/installpython
+        is available, and buildout is using another python:
+          /system_python
+        Buildout will be restarted automatically to have this change applied.
+        ************ REBOOTSTRAP: IMPORTANT NOTICE ************
+        <BLANKLINE>
+        Generated script '/sample-buildout/bin/buildout'.
+        Special extension run
+        Develop: '/sample-buildout/recipes'
+        Installing realrun.
+        Running with: /sample_buildout/rebootstrap.1.parts/installpython/bin/installpython
+        
+        
+        Default invocation
+        ------------------
+        
+        >>> import sys
+        >>> mkdir(sample_buildout, 'recipes')
+        >>> write(sample_buildout, 'recipes', 'setup.py',
+        ... """
+        ... from setuptools import setup
+        ...
+        ... setup(
+        ...     name = "recipes",
+        ...     entry_points = {'zc.buildout':[
+        ...             'pyinstall = pyinstall:Pyinstall',
+        ...             'pyshow = pyshow:Pyshow',
+        ...     ]},
+        ...     )
+        ... """)
+        >>> write(sample_buildout, 'recipes', 'README.txt', " ")
+        >>> write(sample_buildout, 'recipes', 'pyinstall.py',
+        ... """
+        ... import os, zc.buildout, shutil, sys
+        ...
+        ... class Pyinstall:
+        ...
+        ...     def __init__(self, buildout, name, options):
+        ...         self.name, self.options = name, options
+        ...         self.destination = os.path.join(buildout['buildout'][
+        ...             'parts-directory'], self.options.get('python', name))
+        ...
+        ...     def install(self):
+        ...         for d in [self.destination, os.path.join(self.destination, 'bin')]:
+        ...           if not os.path.exists(d):
+        ...               os.mkdir(d)
+        ...         python = os.path.join(self.destination, 'bin', self.name)
+        ...         if not os.path.exists(python):
+        ...             shutil.copy(sys.executable, python)
+        ...         return []
+        ...
+        ...     update = install
+        ... """)
+        >>> write(sample_buildout, 'recipes', 'pyshow.py',
+        ... """
+        ... import os, zc.buildout, shutil, sys
+        ...
+        ... class Pyshow:
+        ...
+        ...     def __init__(self, buildout, name, options):
+        ...         self.name, self.options = name, options
+        ...
+        ...     def install(self):
+        ...         print 'Running with:', sys.executable
+        ...         return []
+        ...
+        ...     update = install
+        ... """)
+        >>> write(sample_buildout, 'buildout.cfg',
+        ... """
+        ... [buildout]
+        ... develop = recipes
+        ... parts =
+        ... """)
+        >>> print system(buildout),
+        Develop: '/sample-buildout/recipes'
+        >>> write(sample_buildout, 'buildout.cfg',
+        ... """
+        ... [buildout]
+        ... develop = recipes
+        ... extensions = slapos.rebootstrap
+        ...
+        ... parts =
+        ...   realrun
+        ...
+        ... [rebootstrap]
+        ... section =
+        ...   installpython
+        ... version =
+        ...   1
+        ...
+        ... [installpython]
+        ... recipe = recipes:pyinstall
+        ...
+        ... [realrun]
+        ... recipe = recipes:pyshow
+        ... """ % dict(syspython=sys.executable))
+        >>> print system(buildout),
+        slapos.rebootstrap: Installing section 'installpython' to provide '/sample-buildout/rebootstrap.1.parts/installpython/bin/installpython' in '/sample-buildout/rebootstrap.1.parts'
+        slapos.rebootstrap: Rerunning buildout to install section installpython with arguments ['/sample-buildout/bin/buildout', 'buildout:parts=installpython', 'buildout:extensions=', '/sample-buildout/rebootstrap.1.parts', 'buildout:installed=.rebootstrap.1.installed.cfg'].
+        Creating directory '/sample-buildout/rebootstrap.1.parts'.
+        Develop: '/sample-buildout/recipes'
+        Installing installpython.
+        slapos.rebootstrap: 
+        ************ REBOOTSTRAP: IMPORTANT NOTICE ************
+        bin/buildout is being reinstalled right now, as new python:
+          /sample_buildout/rebootstrap.1.parts/installpython/bin/installpython
+        is available, and buildout is using another python:
+          /system_python
+        Buildout will be restarted automatically to have this change applied.
+        ************ REBOOTSTRAP: IMPORTANT NOTICE ************
+        <BLANKLINE>
+        Generated script '/sample-buildout/bin/buildout'.
+        Develop: '/sample-buildout/recipes'
+        Installing realrun.
+        Running with: /sample_buildout/rebootstrap.1.parts/installpython/bin/installpython
+        
+        
+        Support of cases when reboostrap part exists
+        --------------------------------------------
+        
+        >>> import sys
+        >>> mkdir(sample_buildout, 'recipes')
+        >>> write(sample_buildout, 'recipes', 'setup.py',
+        ... """
+        ... from setuptools import setup
+        ...
+        ... setup(
+        ...     name = "recipes",
+        ...     entry_points = {'zc.buildout':[
+        ...             'pyinstall = pyinstall:Pyinstall',
+        ...             'pyshow = pyshow:Pyshow',
+        ...     ]},
+        ...     )
+        ... """)
+        >>> write(sample_buildout, 'recipes', 'README.txt', " ")
+        >>> write(sample_buildout, 'recipes', 'pyinstall.py',
+        ... """
+        ... import os, zc.buildout, shutil, sys
+        ...
+        ... class Pyinstall:
+        ...
+        ...     def __init__(self, buildout, name, options):
+        ...         self.name, self.options = name, options
+        ...         self.destination = os.path.join(buildout['buildout'][
+        ...             'parts-directory'], self.options.get('python', name))
+        ...
+        ...     def install(self):
+        ...         for d in [self.destination, os.path.join(self.destination, 'bin')]:
+        ...           if not os.path.exists(d):
+        ...               os.mkdir(d)
+        ...         python = os.path.join(self.destination, 'bin', self.name)
+        ...         if not os.path.exists(python):
+        ...             shutil.copy(sys.executable, python)
+        ...         return []
+        ...
+        ...     update = install
+        ... """)
+        >>> write(sample_buildout, 'recipes', 'pyshow.py',
+        ... """
+        ... import os, zc.buildout, shutil, sys
+        ...
+        ... class Pyshow:
+        ...
+        ...     def __init__(self, buildout, name, options):
+        ...         self.name, self.options = name, options
+        ...
+        ...     def install(self):
+        ...         print 'Running with:', sys.executable
+        ...         return []
+        ...
+        ...     update = install
+        ... """)
+        >>> write(sample_buildout, 'buildout.cfg',
+        ... """
+        ... [buildout]
+        ... develop = recipes
+        ... parts =
+        ... """)
+        >>> print system(buildout),
+        Develop: '/sample-buildout/recipes'
+        >>> write(sample_buildout, 'buildout.cfg',
+        ... """
+        ... [buildout]
+        ... develop = recipes
+        ... extensions = slapos.rebootstrap
+        ...
+        ... parts =
+        ...   realrun
+        ...
+        ... [rebootstrap]
+        ... section =
+        ...   installpython
+        ... version =
+        ...   1
+        ...
+        ... [installpython]
+        ... recipe = recipes:pyinstall
+        ...
+        ... [realrun]
+        ... recipe = recipes:pyshow
+        ... """ % dict(syspython=sys.executable))
+        >>> import os
+        >>> os.mkdir('rebootstrap.1.parts')
+        >>> print system(buildout),
+        slapos.rebootstrap: Installing section 'installpython' to provide '/sample-buildout/rebootstrap.1.parts/installpython/bin/installpython' in '/sample-buildout/rebootstrap.1.parts'
+        slapos.rebootstrap: Rerunning buildout to install section installpython with arguments ['/sample-buildout/bin/buildout', 'buildout:parts=installpython', 'buildout:extensions=', '/sample-buildout/rebootstrap.1.parts', 'buildout:installed=.rebootstrap.1.installed.cfg'].
+        Develop: '/sample-buildout/recipes'
+        Installing installpython.
+        slapos.rebootstrap: 
+        ************ REBOOTSTRAP: IMPORTANT NOTICE ************
+        bin/buildout is being reinstalled right now, as new python:
+          /sample_buildout/rebootstrap.1.parts/installpython/bin/installpython
+        is available, and buildout is using another python:
+          /system_python
+        Buildout will be restarted automatically to have this change applied.
+        ************ REBOOTSTRAP: IMPORTANT NOTICE ************
+        <BLANKLINE>
+        Generated script '/sample-buildout/bin/buildout'.
+        Develop: '/sample-buildout/recipes'
+        Installing realrun.
+        Running with: /sample_buildout/rebootstrap.1.parts/installpython/bin/installpython
+        
+        
+        Support for additional eggs
+        ---------------------------
+        
+        >>> import sys
+        >>> mkdir(sample_buildout, 'addegg')
+        >>> write(sample_buildout, 'addegg', 'setup.py',
+        ... """
+        ... from setuptools import setup
+        ...
+        ... setup(
+        ...     name = "additionalegg",
+        ...     entry_points = {'zc.buildout.extension':[
+        ...         'extension = extension:extension',
+        ...     ]},
+        ...     )
+        ... """)
+        >>> write(sample_buildout, 'addegg', 'extension.py',
+        ... """
+        ... def extension(buildout):
+        ...   print 'Extension available in buildout.'
+        ... """)
+        >>> write(sample_buildout, 'addegg', 'README.txt', " ")
+        >>> mkdir(sample_buildout, 'recipes')
+        >>> write(sample_buildout, 'recipes', 'setup.py',
+        ... """
+        ... from setuptools import setup
+        ...
+        ... setup(
+        ...     name = "recipes",
+        ...     entry_points = {'zc.buildout':[
+        ...             'pyinstall = pyinstall:Pyinstall',
+        ...             'pyshow = pyshow:Pyshow',
+        ...     ]},
+        ...     )
+        ... """)
+        >>> write(sample_buildout, 'recipes', 'README.txt', " ")
+        >>> write(sample_buildout, 'recipes', 'pyinstall.py',
+        ... """
+        ... import os, zc.buildout, shutil, sys
+        ...
+        ... class Pyinstall:
+        ...
+        ...     def __init__(self, buildout, name, options):
+        ...         self.name, self.options = name, options
+        ...         self.destination = os.path.join(buildout['buildout'][
+        ...             'parts-directory'], self.options.get('python', name))
+        ...
+        ...     def install(self):
+        ...         for d in [self.destination, os.path.join(self.destination, 'bin')]:
+        ...           if not os.path.exists(d):
+        ...               os.mkdir(d)
+        ...         python = os.path.join(self.destination, 'bin', self.name)
+        ...         if not os.path.exists(python):
+        ...             shutil.copy(sys.executable, python)
+        ...         return []
+        ...
+        ...     update = install
+        ... """)
+        >>> write(sample_buildout, 'recipes', 'pyshow.py',
+        ... """
+        ... import os, zc.buildout, shutil, sys
+        ...
+        ... class Pyshow:
+        ...
+        ...     def __init__(self, buildout, name, options):
+        ...         self.name, self.options = name, options
+        ...
+        ...     def install(self):
+        ...         print 'Running with:', sys.executable
+        ...         return []
+        ...
+        ...     update = install
+        ... """)
+        >>> write(sample_buildout, 'buildout.cfg',
+        ... """
+        ... [buildout]
+        ... develop = recipes addegg
+        ... parts =
+        ... """)
+        >>> print system(buildout),
+        Develop: '/sample-buildout/recipes'
+        Develop: '/sample-buildout/addegg'
+        >>> write(sample_buildout, 'buildout.cfg',
+        ... """
+        ... [buildout]
+        ... develop = recipes addegg
+        ... extensions = slapos.rebootstrap
+        ...
+        ... parts =
+        ...   realrun
+        ...
+        ... [rebootstrap]
+        ... section =
+        ...   installpython
+        ... version =
+        ...   1
+        ... eggs =
+        ...   additionalegg
+        ...
+        ... [installpython]
+        ... recipe = recipes:pyinstall
+        ...
+        ... [realrun]
+        ... recipe = recipes:pyshow
+        ... """ % dict(syspython=sys.executable))
+        >>> print system(buildout),
+        slapos.rebootstrap: Installing section 'installpython' to provide '/sample-buildout/rebootstrap.1.parts/installpython/bin/installpython' in '/sample-buildout/rebootstrap.1.parts'
+        slapos.rebootstrap: Rerunning buildout to install section installpython with arguments ['/sample-buildout/bin/buildout', 'buildout:parts=installpython', 'buildout:extensions=', '/sample-buildout/rebootstrap.1.parts', 'buildout:installed=.rebootstrap.1.installed.cfg'].
+        Creating directory '/sample-buildout/rebootstrap.1.parts'.
+        Develop: '/sample-buildout/recipes'
+        Develop: '/sample-buildout/addegg'
+        Installing installpython.
+        slapos.rebootstrap: 
+        ************ REBOOTSTRAP: IMPORTANT NOTICE ************
+        bin/buildout is being reinstalled right now, as new python:
+          /sample_buildout/rebootstrap.1.parts/installpython/bin/installpython
+        is available, and buildout is using another python:
+          /system_python
+        Buildout will be restarted automatically to have this change applied.
+        ************ REBOOTSTRAP: IMPORTANT NOTICE ************
+        <BLANKLINE>
+        Generated script '/sample-buildout/bin/buildout'.
+        Extension available in buildout.
+        Develop: '/sample-buildout/recipes'
+        Develop: '/sample-buildout/addegg'
+        Installing realrun.
+        Running with: /sample_buildout/rebootstrap.1.parts/installpython/bin/installpython
+        
+        
+        
+        Support of own python path
+        --------------------------
+        
+        >>> import sys
+        >>> mkdir(sample_buildout, 'recipes')
+        >>> write(sample_buildout, 'recipes', 'setup.py',
+        ... """
+        ... from setuptools import setup
+        ...
+        ... setup(
+        ...     name = "recipes",
+        ...     entry_points = {'zc.buildout':[
+        ...             'pyinstall = pyinstall:Pyinstall',
+        ...             'pyshow = pyshow:Pyshow',
+        ...     ]},
+        ...     )
+        ... """)
+        >>> write(sample_buildout, 'recipes', 'README.txt', " ")
+        >>> write(sample_buildout, 'recipes', 'pyinstall.py',
+        ... """
+        ... import os, zc.buildout, shutil, sys
+        ...
+        ... class Pyinstall:
+        ...
+        ...     def __init__(self, buildout, name, options):
+        ...         self.name, self.options = name, options
+        ...         self.destination = os.path.join(buildout['buildout'][
+        ...             'parts-directory'], name)
+        ...
+        ...     def install(self):
+        ...         for d in [self.destination, os.path.join(self.destination, 'bin')]:
+        ...           if not os.path.exists(d):
+        ...               os.mkdir(d)
+        ...         python = self.options.get('python', os.path.join('bin', self.name))
+        ...         python = os.path.join(self.destination, python)
+        ...         if not os.path.exists(python):
+        ...             shutil.copy(sys.executable, python)
+        ...         return []
+        ...
+        ...     update = install
+        ... """)
+        >>> write(sample_buildout, 'recipes', 'pyshow.py',
+        ... """
+        ... import os, zc.buildout, shutil, sys
+        ...
+        ... class Pyshow:
+        ...
+        ...     def __init__(self, buildout, name, options):
+        ...         self.name, self.options = name, options
+        ...
+        ...     def install(self):
+        ...         print 'Running with:', sys.executable
+        ...         return []
+        ...
+        ...     update = install
+        ... """)
+        >>> write(sample_buildout, 'buildout.cfg',
+        ... """
+        ... [buildout]
+        ... develop = recipes
+        ... parts =
+        ... """)
+        >>> print system(buildout),
+        Develop: '/sample-buildout/recipes'
+        >>> write(sample_buildout, 'buildout.cfg',
+        ... """
+        ... [buildout]
+        ... develop = recipes
+        ... extensions = slapos.rebootstrap
+        ...
+        ... parts =
+        ...   realrun
+        ...
+        ... [rebootstrap]
+        ... section =
+        ...   installpython
+        ... version =
+        ...   1
+        ... python-path =
+        ...  anotherpython
+        ...
+        ... [installpython]
+        ... recipe = recipes:pyinstall
+        ... python = anotherpython
+        ...
+        ... [realrun]
+        ... recipe = recipes:pyshow
+        ... """ % dict(syspython=sys.executable))
+        >>> print system(buildout),
+        slapos.rebootstrap: Installing section 'installpython' to provide '/sample-buildout/rebootstrap.1.parts/installpython/anotherpython' in '/sample-buildout/rebootstrap.1.parts'
+        slapos.rebootstrap: Rerunning buildout to install section installpython with arguments ['/sample-buildout/bin/buildout', 'buildout:parts=installpython', 'buildout:extensions=', '/sample-buildout/rebootstrap.1.parts', 'buildout:installed=.rebootstrap.1.installed.cfg'].
+        Creating directory '/sample-buildout/rebootstrap.1.parts'.
+        Develop: '/sample-buildout/recipes'
+        Installing installpython.
+        slapos.rebootstrap: 
+        ************ REBOOTSTRAP: IMPORTANT NOTICE ************
+        bin/buildout is being reinstalled right now, as new python:
+          /sample_buildout/rebootstrap.1.parts/installpython/anotherpython
+        is available, and buildout is using another python:
+          /system_python
+        Buildout will be restarted automatically to have this change applied.
+        ************ REBOOTSTRAP: IMPORTANT NOTICE ************
+        <BLANKLINE>
+        Generated script '/sample-buildout/bin/buildout'.
+        Develop: '/sample-buildout/recipes'
+        Installing realrun.
+        Running with: /sample_buildout/rebootstrap.1.parts/installpython/anotherpython
+        
+        
+        Support of upgrade
+        ------------------
+        
+        >>> import sys
+        >>> mkdir(sample_buildout, 'recipes')
+        >>> write(sample_buildout, 'recipes', 'setup.py',
+        ... """
+        ... from setuptools import setup
+        ...
+        ... setup(
+        ...     name = "recipes",
+        ...     entry_points = {'zc.buildout':[
+        ...             'pyinstall = pyinstall:Pyinstall',
+        ...             'pyshow = pyshow:Pyshow',
+        ...     ]},
+        ...     )
+        ... """)
+        >>> write(sample_buildout, 'recipes', 'README.txt', " ")
+        >>> write(sample_buildout, 'recipes', 'pyinstall.py',
+        ... """
+        ... import os, zc.buildout, shutil, sys
+        ...
+        ... class Pyinstall:
+        ...
+        ...     def __init__(self, buildout, name, options):
+        ...         self.name, self.options = name, options
+        ...         self.destination = os.path.join(buildout['buildout'][
+        ...             'parts-directory'], self.options.get('python', name))
+        ...
+        ...     def install(self):
+        ...         for d in [self.destination, os.path.join(self.destination, 'bin')]:
+        ...           if not os.path.exists(d):
+        ...               os.mkdir(d)
+        ...         python = os.path.join(self.destination, 'bin', self.name)
+        ...         if not os.path.exists(python):
+        ...             shutil.copy(sys.executable, python)
+        ...         return []
+        ...
+        ...     update = install
+        ... """)
+        >>> write(sample_buildout, 'recipes', 'pyshow.py',
+        ... """
+        ... import os, zc.buildout, shutil, sys
+        ...
+        ... class Pyshow:
+        ...
+        ...     def __init__(self, buildout, name, options):
+        ...         self.name, self.options = name, options
+        ...
+        ...     def install(self):
+        ...         print 'Running with:', sys.executable
+        ...         return []
+        ...
+        ...     update = install
+        ... """)
+        >>> write(sample_buildout, 'buildout.cfg',
+        ... """
+        ... [buildout]
+        ... develop = recipes
+        ... parts =
+        ... """)
+        >>> print system(buildout),
+        Develop: '/sample-buildout/recipes'
+        >>> write(sample_buildout, 'buildout.cfg',
+        ... """
+        ... [buildout]
+        ... develop = recipes
+        ... extensions = slapos.rebootstrap
+        ...
+        ... parts =
+        ...   realrun
+        ...
+        ... [rebootstrap]
+        ... section =
+        ...   installpython
+        ... version =
+        ...   1
+        ...
+        ... [installpython]
+        ... recipe = recipes:pyinstall
+        ...
+        ... [realrun]
+        ... recipe = recipes:pyshow
+        ... """ % dict(syspython=sys.executable))
+        >>> print system(buildout),
+        slapos.rebootstrap: Installing section 'installpython' to provide '/sample-buildout/rebootstrap.1.parts/installpython/bin/installpython' in '/sample-buildout/rebootstrap.1.parts'
+        slapos.rebootstrap: Rerunning buildout to install section installpython with arguments ['/sample-buildout/bin/buildout', 'buildout:parts=installpython', 'buildout:extensions=', '/sample-buildout/rebootstrap.1.parts', 'buildout:installed=.rebootstrap.1.installed.cfg'].
+        Creating directory '/sample-buildout/rebootstrap.1.parts'.
+        Develop: '/sample-buildout/recipes'
+        Installing installpython.
+        slapos.rebootstrap: 
+        ************ REBOOTSTRAP: IMPORTANT NOTICE ************
+        bin/buildout is being reinstalled right now, as new python:
+          /sample_buildout/rebootstrap.1.parts/installpython/bin/installpython
+        is available, and buildout is using another python:
+          /system_python
+        Buildout will be restarted automatically to have this change applied.
+        ************ REBOOTSTRAP: IMPORTANT NOTICE ************
+        <BLANKLINE>
+        Generated script '/sample-buildout/bin/buildout'.
+        Develop: '/sample-buildout/recipes'
+        Installing realrun.
+        Running with: /sample_buildout/rebootstrap.1.parts/installpython/bin/installpython
+        >>> write(sample_buildout, 'buildout.cfg',
+        ... """
+        ... [buildout]
+        ... develop = recipes
+        ... extensions = slapos.rebootstrap
+        ...
+        ... parts =
+        ...   realrun
+        ...
+        ... [rebootstrap]
+        ... section =
+        ...   installpython
+        ... version =
+        ...   2
+        ...
+        ... [installpython]
+        ... recipe = recipes:pyinstall
+        ...
+        ... [realrun]
+        ... recipe = recipes:pyshow
+        ... """ % dict(syspython=sys.executable))
+        >>> print system(buildout),
+        slapos.rebootstrap: Installing section 'installpython' to provide '/sample-buildout/rebootstrap.2.parts/installpython/bin/installpython' in '/sample-buildout/rebootstrap.2.parts'
+        slapos.rebootstrap: Rerunning buildout to install section installpython with arguments ['/sample-buildout/bin/buildout', 'buildout:parts=installpython', 'buildout:extensions=', '/sample-buildout/rebootstrap.2.parts', 'buildout:installed=.rebootstrap.2.installed.cfg'].
+        Creating directory '/sample-buildout/rebootstrap.2.parts'.
+        Develop: '/sample-buildout/recipes'
+        Installing installpython.
+        slapos.rebootstrap: 
+        ************ REBOOTSTRAP: IMPORTANT NOTICE ************
+        bin/buildout is being reinstalled right now, as new python:
+          /sample_buildout/rebootstrap.2.parts/installpython/bin/installpython
+        is available, and buildout is using another python:
+          /sample_buildout/rebootstrap.1.parts/installpython/bin/installpython
+        Buildout will be restarted automatically to have this change applied.
+        ************ REBOOTSTRAP: IMPORTANT NOTICE ************
+        <BLANKLINE>
+        Generated script '/sample-buildout/bin/buildout'.
+        Develop: '/sample-buildout/recipes'
+        Updating realrun.
+        Running with: /sample_buildout/rebootstrap.2.parts/installpython/bin/installpython
+        >>> write(sample_buildout, 'buildout.cfg',
+        ... """
+        ... [buildout]
+        ... develop = recipes
+        ... extensions = slapos.rebootstrap
+        ...
+        ... parts =
+        ...   realrun
+        ...
+        ... [rebootstrap]
+        ... section =
+        ...   installpython
+        ... version =
+        ...   1
+        ...
+        ... [installpython]
+        ... recipe = recipes:pyinstall
+        ...
+        ... [realrun]
+        ... recipe = recipes:pyshow
+        ... """ % dict(syspython=sys.executable))
+        >>> print system(buildout),
+        slapos.rebootstrap: 
+        ************ REBOOTSTRAP: IMPORTANT NOTICE ************
+        bin/buildout is being reinstalled right now, as new python:
+          /sample_buildout/rebootstrap.1.parts/installpython/bin/installpython
+        is available, and buildout is using another python:
+          /sample_buildout/rebootstrap.2.parts/installpython/bin/installpython
+        Buildout will be restarted automatically to have this change applied.
+        ************ REBOOTSTRAP: IMPORTANT NOTICE ************
+        <BLANKLINE>
+        Generated script '/sample-buildout/bin/buildout'.
+        Develop: '/sample-buildout/recipes'
+        Updating realrun.
+        Running with: /sample_buildout/rebootstrap.1.parts/installpython/bin/installpython
+        
+        
+Platform: UNKNOWN
+Classifier: Development Status :: 4 - Beta
+Classifier: Framework :: Buildout :: Extension
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: Zope Public License
+Classifier: Programming Language :: Python
+Classifier: Topic :: Software Development :: Build Tools
+Classifier: Topic :: Software Development :: Libraries :: Python Modules

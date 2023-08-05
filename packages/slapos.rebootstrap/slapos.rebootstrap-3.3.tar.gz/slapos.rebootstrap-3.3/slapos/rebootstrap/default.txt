@@ -1,0 +1,103 @@
+Default invocation
+------------------
+
+>>> import sys
+>>> mkdir(sample_buildout, 'recipes')
+>>> write(sample_buildout, 'recipes', 'setup.py',
+... """
+... from setuptools import setup
+...
+... setup(
+...     name = "recipes",
+...     entry_points = {'zc.buildout':[
+...             'pyinstall = pyinstall:Pyinstall',
+...             'pyshow = pyshow:Pyshow',
+...     ]},
+...     )
+... """)
+>>> write(sample_buildout, 'recipes', 'README.txt', " ")
+>>> write(sample_buildout, 'recipes', 'pyinstall.py',
+... """
+... import os, zc.buildout, shutil, sys
+...
+... class Pyinstall:
+...
+...     def __init__(self, buildout, name, options):
+...         self.name, self.options = name, options
+...         self.destination = os.path.join(buildout['buildout'][
+...             'parts-directory'], self.options.get('python', name))
+...
+...     def install(self):
+...         for d in [self.destination, os.path.join(self.destination, 'bin')]:
+...           if not os.path.exists(d):
+...               os.mkdir(d)
+...         python = os.path.join(self.destination, 'bin', self.name)
+...         if not os.path.exists(python):
+...             shutil.copy(sys.executable, python)
+...         return []
+...
+...     update = install
+... """)
+>>> write(sample_buildout, 'recipes', 'pyshow.py',
+... """
+... import os, zc.buildout, shutil, sys
+...
+... class Pyshow:
+...
+...     def __init__(self, buildout, name, options):
+...         self.name, self.options = name, options
+...
+...     def install(self):
+...         print 'Running with:', sys.executable
+...         return []
+...
+...     update = install
+... """)
+>>> write(sample_buildout, 'buildout.cfg',
+... """
+... [buildout]
+... develop = recipes
+... parts =
+... """)
+>>> print system(buildout),
+Develop: '/sample-buildout/recipes'
+>>> write(sample_buildout, 'buildout.cfg',
+... """
+... [buildout]
+... develop = recipes
+... extensions = slapos.rebootstrap
+...
+... parts =
+...   realrun
+...
+... [rebootstrap]
+... section =
+...   installpython
+... version =
+...   1
+...
+... [installpython]
+... recipe = recipes:pyinstall
+...
+... [realrun]
+... recipe = recipes:pyshow
+... """ % dict(syspython=sys.executable))
+>>> print system(buildout),
+slapos.rebootstrap: Installing section 'installpython' to provide '/sample-buildout/rebootstrap.1.parts/installpython/bin/installpython' in '/sample-buildout/rebootstrap.1.parts'
+slapos.rebootstrap: Rerunning buildout to install section installpython with arguments ['/sample-buildout/bin/buildout', 'buildout:parts=installpython', 'buildout:extensions=', '/sample-buildout/rebootstrap.1.parts', 'buildout:installed=.rebootstrap.1.installed.cfg'].
+Creating directory '/sample-buildout/rebootstrap.1.parts'.
+Develop: '/sample-buildout/recipes'
+Installing installpython.
+slapos.rebootstrap: 
+************ REBOOTSTRAP: IMPORTANT NOTICE ************
+bin/buildout is being reinstalled right now, as new python:
+  /sample_buildout/rebootstrap.1.parts/installpython/bin/installpython
+is available, and buildout is using another python:
+  /system_python
+Buildout will be restarted automatically to have this change applied.
+************ REBOOTSTRAP: IMPORTANT NOTICE ************
+<BLANKLINE>
+Generated script '/sample-buildout/bin/buildout'.
+Develop: '/sample-buildout/recipes'
+Installing realrun.
+Running with: /sample_buildout/rebootstrap.1.parts/installpython/bin/installpython
