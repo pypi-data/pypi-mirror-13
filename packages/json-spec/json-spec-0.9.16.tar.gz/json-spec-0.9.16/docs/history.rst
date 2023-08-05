@@ -1,0 +1,5 @@
+=======
+History
+=======
+
+.. include:: ../ChangeLog
