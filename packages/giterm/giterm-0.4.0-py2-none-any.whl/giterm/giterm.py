@@ -1,0 +1,88 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+import curses
+import argparse
+import os
+
+import watch
+import rungit
+import cursutils
+
+from gui import GitermPanelManager
+from _version import __version_text__
+
+
+def keyloop(stdscr):
+    panels = GitermPanelManager(stdscr)
+    active = panels['log'].activate()
+    panels.display()
+
+    w = watch.Watcher()
+    for name, panel in panels.iteritems():
+        w.event_handler.subscribe(panel.handle_event)
+
+    # Initialize contents
+    w.event_handler.fire()
+    panels['changes'].request_diff_in_diff_view(even_not_active=True)
+
+    w.start()
+
+    while True:
+        c = stdscr.getch()
+        if 0 < c < 256:
+            c = chr(c)
+            if c in ' \n':  # 'SPACE BAR' or 'ENTER' hit
+                active.select()
+            elif c in 'Qq':
+                break
+            elif c == '\t':
+                active = panels.toggle()
+        elif c == curses.KEY_BTAB:
+            active = panels.toggle(reverse=True)
+        elif c == curses.KEY_UP:
+            active.move_up()
+        elif c == curses.KEY_LEFT:
+            active.move_left()
+        elif c == curses.KEY_DOWN:
+            active.move_down()
+        elif c == curses.KEY_RIGHT:
+            active.move_right()
+        elif c == curses.KEY_PPAGE:
+            active.move_prev_page()
+        elif c == curses.KEY_NPAGE:
+            active.move_next_page()
+        elif c == curses.KEY_RESIZE:
+            pass  # TODO: handle terminal resize properly (downsize and upsize)
+        else:
+            pass
+
+    w.stop()
+
+
+def main(stdscr):
+    cursutils.init(stdscr)
+    current_dir = os.getcwd()
+    try:
+        git_root_dir = rungit.git_root_path()
+        os.chdir(git_root_dir)
+        keyloop(stdscr)
+    except Exception as e:
+        cursutils.finalize(stdscr)
+        if type(e) == rungit.NotAGitRepositoryException:
+            print e
+        else:
+            raise
+    finally:
+        os.chdir(current_dir)
+
+
+def _main():
+    parser = argparse.ArgumentParser(description='''A terminal-based GUI client for Git.
+        Make sure to cd in a Git working copy root folder before launching giterm.''')
+    parser.add_argument('-v', '--version', action='version', version=__version_text__)
+    args = parser.parse_args()
+    curses.wrapper(main)
+
+
+if __name__ == '__main__':
+    _main()
