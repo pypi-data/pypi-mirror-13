@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>Thrive validation report</title>
+    <style>
+
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 12pt
+            background-color: #EEEEEE;
+            margin-left: 25px;
+        }
+
+        h3 {
+            color: white;
+            background-color: gray;
+            padding-left: 10px;
+        }
+
+        p {
+            color: gray;
+            margin-left: 40px;
+        }
+
+        .top {
+            width: 600px;
+            margin-left: 40px;
+        }
+
+        .success {
+            color: white;
+            font-weight: bold;
+            background-color: darkgreen;
+            width: 45px;
+            padding: 5px;
+        }
+
+        .fail {
+            color: white;
+            font-weight: bold;
+            background-color: darkred;
+            width: 45px;
+            padding: 5px;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="top">
+        {% for section in report.sections %}
+            <h3>{{ section["name"] }}</h3>
+
+            <h4>Result</h4>
+            {% if section["result"]|upper in ["FAIL"] %}
+                <p class="fail">{{ section["result"]}}</p>
+            {% else %}
+                <p class="success">{{ section["result"]}}</p>
+            {%endif%}
+
+            <h4>Action</h4>
+            <p>
+                {{ section["action"]}}
+            </p>
+
+            <h4>Details</h4>
+            {%set lines = section["details"].split("\n") %}
+            {% for line in lines %}
+                <p>
+                    {{ line }}
+                </p>
+            {% endfor %}
+        {% endfor %}
+
+    </div>
+</body>
+</html>
