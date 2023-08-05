@@ -1,0 +1,28 @@
+postgresql:
+  extends:
+    file: ./gitlab.yml
+    service: postgresql
+  ports:
+    - "5432"
+gitlab:
+  extends:
+    file: ./gitlab.yml
+    service: gitlab
+  links:
+    - redis:redisio
+    - postgresql:postgresql
+  ports:
+    - "80"
+    - "22"
+  environment:
+    - DB_HOST: $POSTGRESQL_PORT_5432_TCP_ADDR
+    - DB_PORT: $POSTGRESQL_PORT_5432_TCP_PORT
+    - REDIS_HOST: $REDISIO_PORT_6379_TCP_ADDR
+    - REDIS_PORT: $REDISIO_PORT_6379_TCP_PORT
+  size: M
+redis:
+  extends:
+    file: ./gitlab.yml
+    service: redis
+  ports:
+    - "6379"
