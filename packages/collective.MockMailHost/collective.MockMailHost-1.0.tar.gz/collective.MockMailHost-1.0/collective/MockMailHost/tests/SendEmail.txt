@@ -1,0 +1,56 @@
+Using a member-posting forum
+============================
+
+Test starting conversations, replying and modifying comments in a default
+member-posting forum.
+
+Let us log all exceptions, which is useful for debugging. Also, clear portlet
+slots, to make the test browser less confused by things like the recent portlet
+and the navtree.
+
+    >>> self.portal.error_log._ignored_exceptions = ()
+    >>> self.portal.left_slots = self.portal.right_slots = []
+    >>> workflow = self.portal.portal_workflow
+
+Validate mailhost replacement
+-----------------------------
+
+    >>> self.portal.MailHost
+    <MockMailHost at ...>
+
+    >>> from Products.CMFCore.utils import getToolByName
+    >>> getToolByName(self.portal, 'MailHost')
+    <MockMailHost at ...>
+
+    >>> from zope.component import getUtility
+    >>> from Products.MailHost.interfaces import IMailHost
+    >>> getUtility(IMailHost)
+    <MockMailHost at ...>
+
+
+Send email
+----------
+
+    >>> to = "member@example.com"
+    >>> from = "admin@example.com"
+    >>> msg = """
+    ...
+    ... Dear Sir:
+    ...
+    ... Thank you"""
+    >>> self.portal.MailHost.send(msg, to, from)
+    >>> len(self.portal.MailHost.messages)
+    1
+    >>> print self.portal.MailHost.messages[0].as_string()
+    ...
+    To: member@example.com
+    From: admin@example.com
+    ...
+    >>> print self.portal.MailHost.messages[0].as_string()
+    ...
+    Dear Sir:
+    ...
+    >>> self.portal.MailHost.reset()
+    >>> len(self.portal.MailHost.messages)
+    0
+
