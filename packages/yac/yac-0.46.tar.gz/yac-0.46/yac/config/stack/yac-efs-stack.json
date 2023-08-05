@@ -1,0 +1,65 @@
+{  
+  "Parameters" : {
+    "EFSName" : {
+      "Description" : "The name of the EFS",
+      "Type"        : "String"
+    }
+  },  
+  "Resources": {
+    "AppEFS": {
+      "Type" : "AWS::EFS::FileSystem",
+      "Properties" : {
+        "FileSystemTags" : [ 
+          { "Key": "Name", "Value" : { "Ref": "EFSName" }  },
+          { "Key": "Owner", "Value": { "Ref": "Owner" }  },
+          { "Key": "CostCenter", "Value": { "Ref": "CostCenter" }  }
+        ]
+      }
+    },
+    "EFSMT1": {
+      "Type": "AWS::EFS::MountTarget",
+      "Properties": {
+        "FileSystemId": { "Ref": "AppEFS" },
+        "SubnetId": { "Fn::Select" : [0, { "Ref": "PrivateSubnets" }]},
+        "SecurityGroups": [ { "Ref": "EFSSG" } ]        
+      }
+    },
+    "EFSMT2": {
+      "Type": "AWS::EFS::MountTarget",
+      "Properties": {
+        "FileSystemId": { "Ref": "AppEFS" },
+        "SubnetId": { "Fn::Select" : [1, { "Ref": "PrivateSubnets" }]},
+        "SecurityGroups": [ { "Ref": "EFSSG" } ]        
+      }
+    },
+    "EFSSG" : {
+      "Type" : "AWS::EC2::SecurityGroup",
+      "Properties" : {
+        "GroupDescription" : "Enable inbound access from the VPC where app lives",       
+        "VpcId": {"Ref" : "VpcId" },
+        "Tags" : [ {"Key": "Name", "Value" : {  "Fn::Join" : ["-", [ { "Ref": "EFSName" }, "SG" ]] } },
+                     { "Key": "Owner", "Value": { "Ref": "Owner" } },
+                     { "Key": "CostCenter", "Value": { "Ref": "CostCenter" } } ]
+      }
+    },    
+    "EFSEgress" : {
+      "Type" : "AWS::EC2::SecurityGroupEgress",
+      "Properties" : {
+        "GroupId" : { "Fn::GetAtt": ["EFSSG","GroupId"]},
+        "IpProtocol" : "tcp",
+        "FromPort" : "0",
+        "ToPort" : "65535",
+        "DestinationSecurityGroupId" : {"Fn::GetAtt": ["AppSG","GroupId"]}
+      }
+    },     
+    "EFSIngress" : {
+      "Type" : "AWS::EC2::SecurityGroupIngress",
+      "Properties" : {
+        "GroupId" : { "Fn::GetAtt": ["AppSG","GroupId"]},
+        "FromPort" : "0",
+        "ToPort" : "65535",
+        "SourceSecurityGroupId" : { "Fn::GetAtt": ["EFSSG","GroupId"] }
+      }
+    }  
+  }
+}
