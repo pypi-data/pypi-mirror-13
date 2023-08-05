@@ -1,0 +1,330 @@
+meta:
+    yaml_version: 2.1
+    kind: launcher
+cloudmesh:
+    launcher:
+        default:
+            template: https://raw.githubusercontent.com/cloudmesh/cloudmesh/master/heat-templates/centos6/launcher/launcher.yaml
+        recipes:
+            ansible:
+                name: Ansible Server
+                shortdescription: Ansible Server.
+                description:
+                    >
+                        Setup of an ansible server.
+                label: ansible
+                parameters:
+                    - username:
+                        type: string
+                        value:
+                        required: True
+                    - os:
+                        type: selector
+                        value:
+                        - ubuntu
+                        - centos
+                     - computer:
+                        type: selector
+                        value:
+                        - comet
+                        - india
+                        - juliet
+                        - bravo
+                        - delta
+                        - echo
+                        required: True
+                image: img/launcher/ansible.png
+                script: 
+                    type: sh
+                    value: |-
+                           echo "Login {username} on {computer}";
+                           ssh {username}@{computer} "ls -l";
+            shell_example:
+                name: Shell Example
+                shortdescription: Example to start a shell script.
+                description:
+                    >
+                        Execute a simple ls command on a remote machine.
+                label: mooc
+                parameters:
+                    - username:
+                        type: string
+                        value:
+                        required: True
+                    - computer:
+                        type: selector
+                        value:
+                        - comet
+                        - india
+                        required: True
+                image: img/launcher/terminal.png
+                script: 
+                    type: sh
+                    value: |-
+                           echo "Login {username} on {computer}";
+                           ssh {username}@{computer} "ls -l";
+            HPC_example:
+                name: HPC Example
+                shortdescription: Example to start a HPC script.
+                description:
+                    >
+                        Execute a simple HPC command on a remote machine.
+                label: mooc
+                parameters:
+                    - computer:
+                        type: selector
+                        value:
+                        - india
+                        - comet
+                        required: True
+                image: img/launcher/terminal.png
+                script:
+                    type: sh
+                    value: |-
+                           cm hpc run uname --cluster={computer};
+            slurm:
+                name: Slurm Cluster
+                shortdescription: Deploys a Slurm cluster.
+                description:
+                    >
+                        Deploys a Slurm cluster. One of the Vms is the Master,
+                        while the others register with the master as worker nodes.
+                        The master will be the first node in the list.
+                label: slurm
+                parameters:
+                    - nodes: 
+                        type: integer
+                        value: 1
+                        required: True
+                    - other: 
+                        type: float
+                        value: 5.0
+                        required: True
+                    - types: 
+                        type: string
+                        value: enter vm or bare metal
+                        required: True
+                    - selector:
+                        type: selector
+                        value:
+                        - vm
+                        - baremetal
+                        - xyz
+                        required: True
+                    - cloud:
+                        type: selector
+                        value:
+                        - india
+                        - sierra
+                        required: True
+                image: img/launcher/slurm.png
+                script: 
+                    type: sh
+                    value: ls -l
+            hadoop:
+                label: hadoop
+                name: Hadoop
+                shortdescription: Deploys a hadoop cluster on the VMs specified.
+                description:
+                    >
+                        Deploys a hadoop cluster on the VMs specified
+                parameters:
+                    - nodes: 
+                        type: integer
+                        value: 1
+                        required: True
+                    - other: 
+                        type: float
+                        value: 5.0
+                        required: True
+                    - types: 
+                        type: string
+                        value: enter vm or bare metal
+                        required: True
+                    - selector:
+                        type: selector
+                        value:
+                        - vm
+                        - baremetal
+                        - xyz
+                        required: True
+                    - cloud:
+                        type: selector
+                        value:
+                        - india
+                        required: True
+                template: https://raw.githubusercontent.com/cloudmesh/cloudmesh/master/heat-templates/ubuntu-14.04/hadoop-cluster/hadoop-cluster.yaml
+                image: img/launcher/hadoop.jpg
+                script: 
+                    type: sh
+                    value: echo "Hello"
+            hadoop2.7:
+                name: Hadoop 2.7.0
+                description:
+                    >
+                        Deploys a haddop cluster on the VMs specified
+                parameters:
+                    - nodes: 
+                        type: integer
+                        value: 1
+                        required: True
+                    - other: 
+                        type: float
+                        value: 5.0
+                        required: True
+                    - types: 
+                        type: string
+                        value: enter vm or bare metal
+                        required: True
+                    - selector:
+                        type: selector
+                        value:
+                        - vm
+                        - baremetal
+                        - xyz
+                        required: True
+                    - cloud:
+                        type: selector
+                        value:
+                        - india
+                        - sierra
+                        required: True
+                image: img/launcher/hadoop.jpg
+                script: 
+                    type: sh
+                    value: echo "Hello"
+                template: https://raw.githubusercontent.com/cloudmesh/cloudmesh/dev2.0/heat-templates/ubuntu-14.04/hadoop-cluster/hadoop2.7-cluster.yaml
+            hadoop2.7-image:
+                name: Hadoop 2.7.0 with VM image
+                description:
+                    >
+                        Deploys a haddop cluster on the VMs specified
+                parameters:
+                    - nodes: 
+                        type: integer
+                        value: 1
+                        required: True
+                    - other: 
+                        type: float
+                        value: 5.0
+                        required: True
+                    - types: 
+                        type: string
+                        value: enter vm or bare metal
+                        required: True
+                    - selector:
+                        type: selector
+                        value:
+                        - vm
+                        - baremetal
+                        - xyz
+                        required: True
+                    - cloud:
+                        type: selector
+                        value:
+                        - india
+                        - sierra
+                        required: True
+                image: img/launcher/hadoop.jpg
+                script: 
+                    type: sh
+                    value: echo "Hello"
+                template: https://raw.githubusercontent.com/cloudmesh/cloudmesh/dev2.0/heat-templates/hadoop-v2/hadoop-cluster/hadoop2.7-with-hadoop-v2-image.yaml
+            openmpi:
+                name: OpenMPI
+                shortdescription: Deploys a Open MPI cluster.
+                image: img/launcher/mooc.png
+                description:
+                        Deploys a Open MPI cluster.
+                parameters:
+                    - nodes:
+                        type: integer
+                        value: 1
+                        required: True
+                    - selector:
+                        type: selector
+                        value:
+                        - vm
+                    - cloud:
+                        type: selector
+                        value:
+                        - india
+                        required: True
+                template: https://raw.githubusercontent.com/cloudmesh/cloudmesh/master/heat-templates/ubuntu-14.04/openmpi-cluster/openmpi-cluster.yaml
+            ganglia:
+                name: Ganglia
+                shortdescription: Deploys a Ganglia service for the vms specified.    
+                description:
+                    >
+                        Deploys a Ganglia service for the vms specified.
+                        The ganglia server will be the first node in the list.
+                label: ganglia
+                parameters:
+                    - nodes: 
+                        type: integer
+                        value: 1
+                        required: True
+                    - other: 
+                        type: float
+                        value: 5.0
+                        required: True
+                    - types: 
+                        type: string
+                        value: enter vm or bare metal
+                        required: True
+                    - selector:
+                        type: selector
+                        value:
+                        - vm
+                        - baremetal
+                        - xyz
+                        required: True
+                    - cloud:
+                        type: selector
+                        value:
+                        - india
+                        - sierra
+                        required: True
+                image: img/launcher/ganglia.jpg
+                script: 
+                    type: sh
+                    value: echo "Hello"
+            nagios:
+                name: Nagios
+                shortdescription: Deploys a Nagios service for the vms specified.
+                description:
+                    >
+                        Deploys a Nagios service for the vms specified.
+                        The ganglia server will be the first node in the list.
+                label: nagios
+                parameters:
+                    - nodes: 
+                        type: integer
+                        value: 1
+                        required: True
+                    - other: 
+                        type: float
+                        value: 5.0
+                        required: True
+                    - types: 
+                        type: string
+                        value: enter vm or bare metal
+                        required: True
+                    - selector:
+                        type: selector
+                        value:
+                        - vm
+                        - baremetal
+                        - xyz
+                        required: True
+                    - cloud:
+                        type: selector
+                        value:
+                        - india
+                        - sierra
+                        required: True
+                image: img/launcher/nagios.png
+                script: 
+                    type: sh
+                    value: echo "Hello"
+
