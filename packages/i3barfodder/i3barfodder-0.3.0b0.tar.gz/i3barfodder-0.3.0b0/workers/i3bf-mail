@@ -1,0 +1,23 @@
+#!/usr/bin/env python3
+#
+# Released under GPL3 terms (see LICENSE)
+
+
+from i3bfutils.info import mail
+from i3bfutils.tool import (template, io)
+import os
+
+ACCOUNT = io.get_var('ACCOUNT')
+
+default_format = '({unseen} new mail(s?{_unseen}!=1)?{_unseen}>0)'
+LAYOUT = io.get_var('LAYOUT', default=default_format)
+
+tmplt = template.Template(LAYOUT)
+account = mail.get_account(ACCOUNT)
+info = template.PrettyDict(seen=account.seen_count,
+                           unseen=account.unseen_count)
+
+io.push(tmplt.make_blocks(info, init=True))
+while True:
+    account.wait()
+    io.push(tmplt.make_blocks(info))

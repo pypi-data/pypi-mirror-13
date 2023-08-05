@@ -1,0 +1,40 @@
+#!/usr/bin/env python3
+# Released under GPL3 terms (see LICENSE)
+
+
+from i3bfutils.info import pkgmgr
+from i3bfutils.tool import (template, io, delay)
+import asyncio
+
+dflt_layout = '({new} update(s?{_new}!=1) available?{_new}>0)'
+LAYOUT = io.get_var('LAYOUT', default=dflt_layout)
+
+unset_msg = 'Specify a package manager by setting PKGMGR to one of: ' + \
+            ', '.join(pkgmgr.NAMES)
+PKGMGR = io.get_var('PKGMGR', unset_msg=unset_msg)
+PKGMGR = PKGMGR.lower()
+
+try:
+    pm = getattr(pkgmgr, PKGMGR)()
+except AttributeError:
+    io.croak('Unknown package manager: {!r}\nAvailable options are: {}'
+             .format(PKGMGR, PKGMGRS))
+
+info = template.PrettyDict(new=pm.count_new_packages())
+tmplt = template.Template(LAYOUT)
+
+io.push(clicks_enabled=True)
+io.push(tmplt.make_blocks(info, init=True))
+
+def clear_display():
+    io.push(full_text='', short_text='')
+
+def display_new_packages():
+    info['new'] = pm.count_new_packages()
+    io.debug('Package cache was updated: {} new packages'.format(info['new']))
+    io.push(tmplt.make_blocks(info, init=False))
+
+loop = asyncio.get_event_loop()
+pm.wait_for_cache_update_async(callback=display_new_packages, loop=loop)
+delay.wait_for_click_async(callback=lambda click: clear_display(), loop=loop)
+loop.run_forever()
