@@ -1,0 +1,237 @@
+Metadata-Version: 1.1
+Name: buildout.gc
+Version: 1.0
+Summary: A buildout extension to move non-used eggs to a specified directory
+Home-page: https://bitbucket.org/atagunov/buildout.gc
+Author: Peter Uittenbroek
+Author-email: uittenbroek@goldmund-wyldebeast-wunderliebe.com
+License: ZPL
+Description: Buildout Garbage Collector
+        ==========================
+        
+        Introduction
+        ------------
+        The buildout.gc extensions can be used to ensure your egg directory only contains 'used' eggs.
+        The extension can report, move unused eggs to a specified directory or just remove egss.
+        
+        This package is fork of https://github.com/thepjot/buildout.eggscleaner
+        
+        
+        Installation
+        ------------
+        Garbase Collector is a buildout extensions, can add it like so ::
+        
+            [buildout]
+            extensions =
+                    buildout.gc
+        
+        
+        Options
+        -------
+        
+        old-eggs-directory
+                The directory you want buildout.gc to move your unused eggs to.
+                Should an excact egg already exist, we remove the one in the ''used'' eggs directory
+        
+        remove-eggs
+                Remove eggs
+        
+        
+        Example ::
+        
+                [buildout]
+                extensions =
+                        buildout.gc
+                old-eggs-directory = ${buildout:directory}/old-eggs/
+        
+        Tested with
+        -----------
+        
+        zc.buildout: 2.xx
+        python: 2.4.6, 2.6.8, 3.3
+        
+        Working with other extensions
+        -----------------------------
+        
+        I looked at how buildout.dumppickedversions works and made this extension work in a similar manner.
+        This extension will run alongside that one perfectly well.
+        
+        
+        Example outputs
+        ---------------
+        
+        Moving eggs ::
+        
+            *************** BUILDOUT GC ****************
+            Moved unused egg: webcouturier.dropdownmenu-2.3-py2.6.egg
+            Moved unused egg: collective.uploadify-1.0-py2.6.egg
+            Moved unused egg: collective.simplesocial-1.6-py2.6.egg
+            Moved unused egg: collective.autopermission-1.0b2-py2.6.egg
+            *************** /BUILDOUT GC ****************
+        
+        Reporting ::
+        
+            *************** BUILDOUT GC ****************
+            Don't have a 'old-eggs-directory' set, only reporting
+            Can add it by adding 'old-eggs-directory = ${buildout:directory}/old-eggs' to your [buildout]
+            Found unused egg: webcouturier.dropdownmenu-2.3-py2.6.egg
+            Found unused egg: plone.recipe.command-1.1-py2.6.egg
+            Found unused egg: collective.uploadify-1.0-py2.6.egg
+            Found unused egg: Products.DocFinderTab-1.0.5-py2.6.egg
+            Found unused egg: collective.simplesocial-1.6-py2.6.egg
+            Found unused egg: collective.autopermission-1.0b2-py2.6.egg
+            Found unused egg: Products.Clouseau-1.0-py2.6.egg
+            *************** /BUILDOUT GC ****************
+        
+        
+        Detailed Documentation
+        ======================
+        
+        
+        Let's create an egg to use it in our tests::
+        
+            >>> mkdir('myegg')
+            >>> write('myegg', 'setup.py',
+            ... '''
+            ... from setuptools import setup
+            ... setup(name='myegg', version='1.0',)
+            ... ''')
+            >>> write('myegg', 'README', '')
+            >>> print_(system(buildout+' setup myegg bdist_egg')), # doctest: +ELLIPSIS
+            Running setup script 'myegg
+            ...
+        
+            >>> mkdir('baregg')
+            >>> write('baregg', 'setup.py',
+            ... '''
+            ... from setuptools import setup
+            ... setup(name='baregg', version='1.0',)
+            ... ''')
+            >>> write('baregg', 'README', '')
+            >>> print_(system(buildout+' setup baregg bdist_egg')), # doctest: +ELLIPSIS
+        
+        Now let's create a buildout to install the egg and to use buildout.gc::
+        
+            >>> write('buildout.cfg',
+            ... '''
+            ... [buildout]
+            ... index = http://pypi.python.org/simple
+            ... extensions = buildout.gc
+            ... eggs-directory = ${buildout:directory}/eggs
+            ... parts = foo
+            ... find-links += %s
+            ... [foo]
+            ... recipe = zc.recipe.egg
+            ... eggs = myegg
+            ... ''' % join('myegg', 'dist'))
+        
+        Running the buildout will print information about unused eggs::
+        
+            >>> print_(system(buildout)), # doctest: +ELLIPSIS
+            Getting distribution for 'buildout.gc'.
+            ...
+        
+        
+        When we only want to report unused eggs we omit the '''old-eggs-directory''' option.
+        
+            >>> write('buildout.cfg',
+            ... '''
+            ... [buildout]
+            ... index = http://pypi.python.org/simple
+            ... extensions = buildout.gc
+            ... eggs-directory = ${buildout:directory}/eggs
+            ... parts = foo
+            ... find-links += %s
+            ... [foo]
+            ... recipe = zc.recipe.egg
+            ... eggs = baregg
+            ... ''' % join('baregg', 'dist'))
+        
+            >>> print_(system(buildout)) # doctest:+ELLIPSIS
+            Uninstalling foo.
+            Installing foo.
+            Getting distribution for 'baregg'.
+            Got baregg 1.0.
+            *************** BUILDOUT GC ****************
+            Don't have a 'old-eggs-directory' set, only reporting
+            Can add it by adding 'old-eggs-directory = ${buildout:directory}/old-eggs' to your [buildout]
+            ...
+            Found unused egg: myegg...
+            *************** /BUILDOUT GC ****************
+            <BLANKLINE>
+        
+        
+        
+        Check that indeed nothing has been moved nor deleted::
+        
+            >>> assert 'myegg' in  ''.join(os.listdir('eggs'))
+        
+        If we want to move unused eggs, we just add an ``old-eggs-directory`` option and give a directory target::
+        
+            >>> write('buildout.cfg',
+            ... '''
+            ... [buildout]
+            ... index = http://pypi.python.org/simple
+            ... extensions = buildout.gc
+            ... eggs-directory = ${buildout:directory}/eggs
+            ... old-eggs-directory = ${buildout:directory}/old-eggs
+            ... parts = foo
+            ... find-links += %s
+            ... [foo]
+            ... recipe = zc.recipe.egg
+            ... eggs = baregg
+            ... ''' % join('baregg', 'dist'))
+        
+            >>> print_(system(buildout)) # doctest:+ELLIPSIS
+            Updating foo.
+            *************** BUILDOUT GC ****************
+            ...
+            Moved unused egg: myegg...
+            *************** /BUILDOUT GC ****************
+            <BLANKLINE>
+        
+        Check that indeed 'myegg' has been moved::
+        
+            >>> assert 'myegg' not in  ''.join(os.listdir('eggs')), 'myegg has not been moved out of egg dir'
+            >>> assert 'myegg' in  ''.join(os.listdir('old-eggs')), 'myegg has not been moved to old-egg dir'
+        
+        And baregg is still present::
+        
+            >>> assert 'baregg' in  ''.join(os.listdir('eggs')), 'baregg is not present in egg dir'
+        
+        
+        Contributors
+        ============
+        
+        - Peter Uittenbroek, Author
+        - Anton Tagunov
+        
+        Change history
+        ==============
+        
+        1.0 (2016-01-21)
+        ----------------
+        
+        Created public fork
+        
+        0.1.5 (2012-08-17)
+        ------------------
+        
+        - Redid documentation
+          [thepjot]
+        
+        - Added doctest
+          [thepjot]
+        
+        0.1 (internal release)
+        -----------------------
+        - Creation
+          [thepjot]
+        
+        
+Keywords: buildout extensions eggs directory clean
+Platform: UNKNOWN
+Classifier: Framework :: Buildout
+Classifier: Intended Audience :: Developers
+Classifier: Topic :: Software Development :: Build Tools
+Classifier: License :: OSI Approved :: Zope Public License
