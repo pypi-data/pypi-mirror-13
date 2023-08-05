@@ -1,0 +1,41 @@
+{% extends "organice_theme:base.html" %}
+{% load staticfiles rsskmedia menu_tags %}
+
+{% block theme_css %}{% static 'css/styles.css' %}{% endblock theme_css %}
+{% block theme_js %}{% static 'js/scripts.js' %}{% endblock theme_js %}
+
+{% block body %}
+<div id="gradient">
+{{ block.super }}
+</div>
+{% endblock body %}
+
+{% block title_tag %}{{ block.super }} - Waldorfschule am Bodensee{% endblock %}
+
+{% block header %}
+			<img src="{% static 'img/header-signet.png' %}" class="signet"
+				 alt="{{ current_site.name }} | Die regionale Waldorfschule">
+			<img src="{% static 'img/header' as img_folder %}{{ img_folder|random_image }}" class="img-responsive"
+				 alt="Stimmungsvolles Foto">
+{% endblock %}
+
+{# complete nested navigation (folded by JavaScript later) #}
+{% block nav %}{% spaceless %}
+	{% show_menu 0 100 100 100 %}
+{% endspaceless %}{% endblock nav %}
+
+{% block calendar %}
+{{ block.super }}
+					<div>
+						<a href="/ferientermine/">Ferien</a> &middot;
+						<a href="/veranstaltungen/">Veranstaltungen</a>
+					</div>
+{% endblock %}
+
+{% block footer %}
+		<p>Rudolf Steiner Schule Kreuzlingen &middot; CH-8280 Kreuzlingen &middot; Bahnhofstrasse 15 &middot;
+			Tel: +41 71 672 17 10 &middot; <a href="mailto:mail&#x0040;rssk.ch">mail&#x0040;rssk.ch</a></p>
+
+		<p>&copy; RSSK 2008-{% now "Y" %} &middot; Design Schmidt Media Design AG, Programmierung GÖA &middot;
+			<a href="/impressum">Impressum</a></p>
+{% endblock %}
