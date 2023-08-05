@@ -1,0 +1,27 @@
+<!--StacksImageList Gallery-->
+
+<div class="stacks-module list-gallery stacks-image stacks-image-list-gallery grid">
+    {% if context.display_title %}<h2 class="module-title">{{ context.display_title }}</h2>{% endif %}
+    {% for image in context.images %}
+    {% if forloop.first or forloop.counter0|divisibleby:'4' %}
+    <div class="media-row grid-row">
+    {% endif %}
+        <div class="grid-4up grid-block image-gallery-thumbnail
+            {% if forloop.first or forloop.counter0|divisibleby:'4' %}first-in-row{% endif %} {% if forloop.counter|divisibleby:'4' %}last-in-row{% endif %}">
+            <div class="image-container">
+                <img class="thumbnail lazy" data-original="{{ image.image.gallery_thumb }}" alt="{{ image.display_title }}" data-large-image="{{ image.image.full_size }}"/>
+                {% if context.attribution %}
+                    <p class="attribution">{{ context.attribution }}</p>
+                {% endif %}
+            </div>
+            {% if image.optional_content.raw_text %}
+            <div class="text-container">
+                {{ image.optional_content.as_html }}
+            </div>
+            {% endif %}
+        </div>
+    {% if forloop.last or forloop.counter|divisibleby:'4' %}
+    </div>
+    {% endif %}
+    {% endfor %}
+</div>
