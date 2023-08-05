@@ -1,0 +1,230 @@
+# Copyright (C) 2014/15 - Iraklis Diakos (hdiakos@outlook.com)
+# Pilavidis Kriton (kriton_pilavidis@outlook.com)
+# All Rights Reserved.
+# You may use, distribute and modify this code under the
+# terms of the ASF 2.0 license.
+#
+
+"""{{class_docstring}}"""
+
+# NOTE: unicode_literals causes problems when using instantiation with 'type'
+# so use str which is a no-op in Python 3.x and converts arguments properly
+# in Python 2.x
+from __future__ import absolute_import
+from __future__ import print_function
+from __future__ import unicode_literals
+from __future__ import generators
+# Python native libraries.
+import sys
+
+import crapi.ipc.ServerPipe as ServerPipe
+
+# Python 3rd party libraries.
+if sys.platform.startswith('win'):
+    import servicemanager as scm
+    import win32service as w32svc
+    import win32serviceutil as w32scu
+    import win32event as w32ev
+
+{#-
+# TODO: Add linux service entry points here or in another file!
+# TODO: Consider a parse decorator! :]
+# FIXME: Use a thread to keep the dispatcher usage at a minimum
+#        and add a dictionary that maps a wait object to a dispatch
+#        table so to properly wrap functionality :)
+#        Example:         self.event = {
+#                            'stop': stop,
+#                            'timeout': timeout,
+#                            'unknown': unknown etc
+#                         } #}
+
+# NOTE: If the pythonservice.exe is not registered properly then a runtime
+#       error will occur. To fix this you must go to:
+#       HKLM\Software\Python\PythonService\<py_ver - such as 2.7> and modify
+#       the registry key!
+#       This is probably a bug triggered when re-registering the service with a
+#       new virtualenv or by improperly deleting the old one so maybe I should
+#       report it to the pywin32 list as bug?
+scm.LogInfoMsg(
+    'pythonservice.exe sys.path:\n' + '\n'.join('%s' % p for p in sys.path)
+)
+
+
+class Logger(object):
+
+    def info(self):
+        pass
+
+    def warning(self):
+        pass
+
+    def error(self):
+        pass
+
+
+Logger.info = scm.LogInfoMsg
+Logger.warning = scm.LogWarningMsg
+Logger.error = scm.LogErrorMsg
+
+
+class {{name}}(object, w32scu.ServiceFramework):
+
+    """A class that enables implementation of Windows services."""
+
+    _svc_name_ = '{{name}}'
+    _svc_display_name_ = '{{display_name}}'
+    _svc_description_ = '{{description}}'
+    _svc_timeout_ = {{timeout}}
+    _svc_package_ = str(sys.modules[__name__]) + '.' + __name__
+
+    def __init__(self, args):
+
+        self.name = self._svc_name_
+        self.display_name = self._svc_display_name_
+        self.description = self._svc_description_
+        self.logger = Logger()
+
+{% if action_init %}
+    {% if indent == 4 %}
+{{action_init|indent(4, true)}}
+    {% else %}
+{{action_init}}
+    {% endif %}
+{% endif %}
+
+        w32scu.ServiceFramework.__init__(self, args)
+        self.__hStop = w32ev.CreateEvent(None, False, False, None)
+        self.__hShutdown = w32ev.CreateEvent(None, False, False, None)
+        self.pipe = ServerPipe.ServerPipe(name=self.name, sa_profile='daemon')
+        if self._svc_timeout_ == 0:
+            self.__timeout = w32ev.INFINITE
+        else:
+            self.__timeout = self._svc_timeout_
+        self.__event = w32ev.QS_ALLEVENTS
+
+    def SvcDoRun(self):
+        self.start()
+
+    def SvcStop(self):
+        self.stop()
+
+    def SvcShutdown(self):
+        self.shutdown()
+
+    def _start(self):
+        scm.LogInfoMsg(
+            self.display_name + ": Starting service..."
+        )
+        self.ReportServiceStatus(w32svc.SERVICE_RUNNING)
+        self.run()
+
+    def _stop(self):
+        scm.LogInfoMsg(
+            self.display_name + ": Stopping service..."
+        )
+        self.ReportServiceStatus(w32svc.SERVICE_STOP_PENDING)
+        w32ev.SetEvent(self.__hStop)
+
+    def _shutdown(self):
+        scm.LogInfoMsg(
+            self.display_name + ": Shutting down service..."
+        )
+        self.ReportServiceStatus(w32svc.SERVICE_CONTROL_PRESHUTDOWN)
+        w32ev.SetEvent(self.__hShutdown)
+
+{% if action_run %}
+{{action_run|indent(4, false)}}
+{% endif %}
+
+    {% if not action_run %}
+    def run(self):
+
+        self.bootstrap()
+
+        #TODO: Add pre-initialization code (like change pipe type etc)
+
+        while True:
+
+            self.preprocess()
+
+            scm.LogInfoMsg(self.display_name + ": Waiting for connection...")
+
+            stream = self.pipe.connect(insync=False)
+
+            self.__hEvents = self.__hStop, self.__hShutdown, stream.hEvent
+            rc = w32ev.MsgWaitForMultipleObjects(
+                self.__hEvents,
+                False,
+                self.__timeout,
+                self.__event
+            )
+
+            if rc == w32ev.WAIT_OBJECT_0:
+                scm.LogInfoMsg(self.display_name + ": Received stop event...")
+                self.pipe.close()
+                self.pipe.shutdown()
+                break
+            elif rc == w32ev.WAIT_OBJECT_0+1:
+                scm.LogInfoMsg(
+                    self.display_name + ": Received shutdown event..."
+                )
+                self.pipe.close()
+                self.pipe.shutdown()
+                break
+            elif rc == w32ev.WAIT_OBJECT_0+2:
+
+                scm.LogInfoMsg(self.display_name + ": Pipe client connected!")
+
+                self.advance()
+
+                scm.LogInfoMsg(
+                    self.display_name + ": Finished processing pipe event..."
+                )
+            elif rc == w32ev.WAIT_OBJECT_0+len(self.__hEvents):
+                scm.LogInfoMsg(self.display_name + ": All events...")
+            elif rc == w32ev.WAIT_TIMEOUT:
+                scm.LogInfoMsg(
+                    self.display_name + ": Event timeout expired..."
+                )
+            else:  # w32ev.WAIT_FAILED
+                raise RuntimeError("What is this? Quack quack!")
+
+            self.postprocess()
+
+        self.cleanup()
+
+        scm.LogInfoMsg(self.display_name + ": Exiting service...")
+    {% endif %}
+
+    def start(self):
+        self._start()
+
+    def stop(self):
+        self._stop()
+
+    def shutdown(self):
+        self._shutdown()
+
+{% if not action_run %}
+    {% if indent == 4 %}
+{{ action_bootstrap|indent(4, true) }}
+
+{{ action_preprocess|indent(4, true) }}
+
+{{ action_advance|indent(4, true) }}
+
+{{ action_postprocess|indent(4, true) }}
+
+{{ action_cleanup|indent(4, true) }}
+    {% else %}
+{{ action_bootstrap|py_indent(4, [1], false, false) }}
+
+{{ action_preprocess|py_indent(4, [1], false, false) }}
+
+{{ action_advance|py_indent(4, [1], false, false) }}
+
+{{ action_postprocess|py_indent(4, [1], false, false) }}
+
+{{ action_cleanup|py_indent(4, [1], false, false) }}
+    {% endif %}
+{%- endif %}

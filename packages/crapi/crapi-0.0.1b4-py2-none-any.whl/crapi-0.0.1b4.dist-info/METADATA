@@ -1,0 +1,137 @@
+Metadata-Version: 2.0
+Name: crapi
+Version: 0.0.1b4
+Summary: CRAPI: Common Range API
+Home-page: https://github.com/kounavi/crapi
+Author: Iraklis D., Kritonas P.
+Author-email: hdiakos@outlook.com, kriton_pilavidis@outlook.com
+License: ASF 2.0
+Keywords: backend systems development wrapper pipes services daemons
+Platform: windows
+Platform: linux
+Platform: server
+Platform: workstation
+Classifier: Development Status :: 4 - Beta
+Classifier: Intended Audience :: Developers
+Classifier: Intended Audience :: Information Technology
+Classifier: Intended Audience :: Science/Research
+Classifier: Topic :: Software Development :: Libraries :: Application Frameworks
+Classifier: License :: OSI Approved :: Apache Software License
+Classifier: Programming Language :: Python :: 2
+Classifier: Programming Language :: Python :: 2.6
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Operating System :: Microsoft
+Classifier: Operating System :: POSIX :: Linux
+Requires-Dist: MarkupSafe (==0.23)
+Requires-Dist: enum34 (==1.1.1)
+Requires-Dist: future (==0.15.2)
+Requires-Dist: jinja2 (==2.8)
+Provides-Extra: linux2
+Provides-Extra: win32
+Requires-Dist: pywin32 (==219); extra == 'win32'
+
+**Welcome to CRAPI!**
+=====================
+
+ **CRAPI** (spelled "crap-i" - and hoping not to be such one despite its
+name) or **Common Range API** is a library meant to ease the development
+in various areas of Linux and Windows using one common API. The library
+aims to be a highly stable version of common programming practices,
+constructs and OS native functions & tools with a dedicated mindset in:
+
+-  Portability in Windows since Windows API is huge and complicated
+-  Portability in both OSes (Windows & Linux alike)
+-  Performance
+
+We aim to cover most common scenarios beyond the basic API mechanisms
+(i.e. building a multithreaded pipe server, Windows services/Linux
+daemon etc) that will be provided to you however not every scenario will
+be covered. Minimally, priority will be given to the foundation
+mechanisms so you may be able to build whatever you want (hopefully).
+
+**Security issues** and **implementation correctness** are always a
+priority and will be taken into account however do note that until we
+reach a production/stable status we do not accept input but
+suggestions/comments and/or feedback are always welcome :)
+
+**Operating system support**
+----------------------------
+
+Windows 7/8/8.1/10, Windows Server 2008 R2/2012 R2/2016 & major Linux
+variants:       Debian 7.x and 8.x (untested) & CentOS/RHEL 6.6 and 6.7
+(tested). Mac OS X is **NOT** supported (unless you buy me one maybe?).
+
+**Prerequisites**
+-----------------
+
+-  Python 2.6 or 2.7 with latest version of pip, wheel and setuptools.
+   **Windows distributions**: Guess what? You need Mark Hammond's
+   pywin32 module. Please use the one provided here: pywin32-Build 219
+   by Christoph Gohlke and make sure to follow the installation
+   instructions correctly.
+
+**Why another library?**
+------------------------
+
+How many times have you been forced to see this (non-parameterized
+example code for illustration purposes)?
+
+.. code:: python
+
+    self.sa = win32security.SECURITY_ATTRIBUTES()
+    self.sa.bInheritHandle = True
+    self.__hPipe = win32pipe.CreateNamedPipe(
+        '\\\\.\\pipe\\mypipe'
+        win32pipe.PIPE_ACCESS_DUPLEX | win32file.FILE_FLAG_OVERLAPPED,
+        win32pipe.PIPE_TYPE_MESSAGE | win32pipe.PIPE_READMODE_MESSAGE,
+        win32pipe.PIPE_UNLIMITED_INSTANCES,
+        65535,
+        65535,
+        60000,
+        sa
+    )
+
+or maybe this (from the MessageBroker library which uses MSMQ):
+
+.. code:: python
+
+    pywintypes.com_error: (-2147352567, 'Exception occurred.', (0, u'MSMQQueueInfo',
+    u'The queue does not exist or you do not have sufficient permissions to perform'
+    'the operation.', None, 0, -1072824317), None)
+
+A Python developer shouldn't have to figure this out especially when
+it's crafted in a non-Pythonic, untypical way.
+
+Noone should have to do this. That's why we have attempted to do it FOR
+you WITHOUT you :P.
+
+P.S.: The above are not meant to criticize Mark Hammond's **pywin32**
+excellent library. Merely, they indicate the difficulties a developer
+has to deal with by being forced to use heterogeneous components and
+source code due to different OSes with incompatible APIs and native
+implementation.
+
+**LICENSE**
+===========
+
+It's based on Apache Software License 2.0 (ASF 2.0) so without
+suggesting that this constitutes a legal advice in any way, shape or
+form: Do whatever the f\*\*\* you want with it as long as you give us
+proper credit! :}
+
+**DISCLAIMER**
+==============
+
+The authors strive for a stable and coherent source code base however it
+should be considered experimental and pre-alpha and, as such, not
+production-ready so use at your own risk! In addition, the authors makes
+no guarantees that the code is of top-notch quality (any Win folks
+here?). Patches are welcome (of course). You have been (fore)warned!!!
+:]
+
+**NOTE**
+========
+
+Currently, only MS Windows is supported. Linux support coming soon :]
+
+
