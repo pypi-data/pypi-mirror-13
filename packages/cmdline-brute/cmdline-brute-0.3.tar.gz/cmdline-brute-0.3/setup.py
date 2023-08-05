@@ -1,0 +1,28 @@
+# -*- coding: utf-8 -*-
+
+"""setup.py: brute control."""
+
+import re
+from setuptools import setup
+
+exec(open('brute/version.py').read())
+with open("README.md", "rb") as f:
+    long_descr = f.read().decode("utf-8")
+
+    setup(
+        name = "cmdline-brute",
+        license = "MIT",
+        packages = ["brute"],
+        py_modules = ["util"],
+        install_requires = ["clusterlib", "doit", "blessings"],
+        entry_points = {
+            "console_scripts": ['brute  = brute.brute:main',
+                                'scrape = brute.scrape:main']
+        },
+        version = __version__,
+        description = "Brute force grid search",
+        long_description = long_descr,
+        author = "Nicholas Andrews",
+        author_email = "noandrews@gmail.com",
+        url = "https://bitbucket.org/noandrews/brute",
+    )
