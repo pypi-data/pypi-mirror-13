@@ -1,0 +1,66 @@
+Your Atlassian Cloud (YAC) - VPC
+
+Available comands include:
+
+  yac vpc (-h | primer)
+
+-h provides api help
+primer will display this page
+
+A typical VPC has subnets that are organized with decreasing privacy.
+
+   decreasing 
+     privacy
+        ^
+        |   subnet1: public
+        |   subnet2: dmz
+        |   subnet3: private
+
+Each subnet has an unique identifier (e.g. subnet1), and a user-friendly name (e.g. dmz, friendly-ness arguable).
+
+In this scheme, the private subnet would typically have a DirectConnect route or VPN connection to the corporate domain. Resources in the public subnet are accessible directly from the public internet. 
+
+Thus, the full set of subnet layers and external connections might look like:
+
+external users <---->  subnet1: public
+                   --> subnet2: dmz
+                   |    		
+                   |
+corp domain <--------> subnet3: private
+
+Privacy is created via "one-hop" routing rules between the subnets. Resources in a given subnet can only address other resources one subnet (or one subnet "hop") away.
+
+Thus, an ELB in the public subnet can address an EC2 instance in the dmz, but not an EC2 instance in the private subnet.
+
+By default, YAC resources are sited as privately as possibly, while obeying one-hop rules.
+
+Need external access? Then resources should be sited as follows:
+
+[external-elb]  -> subnet1: public
+[asg/ec2]       -> subnet2: dmz
+[internal-elb]  -> subnet3: private
+[rds]           -> subnet3: private
+[efs]           -> subnet3: private
+
+Don't need external access? Then resources should be moved lower to more private subnets as follows:
+[external-elb]  -> n/a
+[asg/ec2]       -> subnet3: private
+[internal-elb]  -> subnet3: private
+[rds]           -> subnet3: private
+[efs]           -> subnet3: private
+
+If you don't have a DirectConnect route or VPN, your VPC may only have/need two subnet layers.
+
+   decreasing 
+     privacy
+        ^
+        |   subnet1: public
+        |   subnet2: private
+
+Here, the full network stack might look like:
+
+external users <-----> subnet1: public
+                       ^		
+                       |
+corp domain <------------> subnet2: private
+

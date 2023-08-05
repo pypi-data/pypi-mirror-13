@@ -1,0 +1,134 @@
+{
+  "containerDefinitions": [
+    {
+      "name": "{{app}}", 
+      "image": "nordstromsets/{{app}}:{{app_version}}",
+      "command": [],
+      "cpu": 0,
+      "essential": true,
+      "volumesFrom": [],
+      "memory": 8192,
+      "disableNetworking": false,                
+      "portMappings": [
+        {
+          "hostPort": 80,
+          "containerPort": "{{app_port}}",
+          "protocol": "tcp"
+        },
+        {
+          "hostPort": 81,
+          "containerPort": "{{debug_port}}",
+          "protocol": "tcp"
+        }
+
+      ],
+      "mountPoints": [
+        {
+          "containerPath": "/var/local/atlassian/{{app}}",
+          "sourceVolume": "home",
+          "readOnly": false
+        },
+        {
+          "containerPath": "/etc/localtime",
+          "sourceVolume": "localtime",
+          "readOnly": true
+        }
+      ],
+      "environment": [
+        {
+          "name": "CNAME",
+          "value": "{{cname}}"
+        }
+      ]
+    },
+    {
+      "name": "backups",
+      "image": "nordstromsets/backups:latest",
+      "cpu": 0,
+      "volumesFrom": [],
+      "memory": 1024,
+      "portMappings": [],
+      "essential": false,
+      "mountPoints": [
+        {
+          "containerPath": "/var/local/atlassian/{{app}}",
+          "sourceVolume": "home",
+          "readOnly": false
+        },
+        {
+          "containerPath": "/var/local/backups",
+          "sourceVolume": "backups-logs",
+          "readOnly": false
+        }
+      ],
+      "environment": [
+        {
+          "name": "HOSTNAME",
+          "value": "{{app}}{{env}}"
+        },
+        {
+          "name": "CONFIGS_PATH",
+          "value": "s3://{{s3_bucket}}/{{app}}/{{env}}/{{app}}-backup.json"
+        }
+      ]
+    },
+    {
+      "name": "logs",
+      "image": "nordstromsets/cwlogs:coreos",
+      "cpu": 0,
+      "volumesFrom": [],
+      "memory": 256,
+      "portMappings": [],
+      "essential": false,    
+      "mountPoints": [
+        {
+          "containerPath": "/var/local/atlassian/{{app}}",
+          "sourceVolume": "home",
+          "readOnly": true
+        }
+      ],
+      "environment": [
+        {
+          "name": "CONFIGS_S3_URL",
+          "value": "s3://{{s3_bucket}}/{{app}}/{{env}}/{{app}}-cwlogs.conf"
+        },
+        {
+          "name": "REGION",
+          "value": "us-west-2"
+        },
+        {
+          "name": "http_proxy",
+          "value": "{{http_proxy}}"
+        },
+        {
+          "name": "https_proxy",
+          "value": "{{https_proxy}}"
+        },
+        {
+          "name": "no_proxy",
+          "value": "{{no_proxy}}"
+        }     
+      ]
+    }
+  ],
+  "volumes": [
+    {
+      "host": {
+        "sourcePath": "/var/local/atlassian/{{app}}"
+      },
+      "name": "home"
+    },
+    {
+      "host": {
+        "sourcePath": "/etc/localtime"
+      },
+      "name": "localtime"
+    },
+    {
+      "host": {
+        "sourcePath": "/var/local/atlassian/{{app}}/backup-logs"
+      },
+      "name": "backups-logs"
+    }
+  ]
+}

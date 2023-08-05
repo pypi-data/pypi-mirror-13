@@ -1,0 +1,106 @@
+{ 
+  "ports": {
+
+    "comment1": "the default ports that each app listens on. debug ports are set one higher on each app",
+    "comment2": "hipchat is n/a because it can't (yet) be containerized",
+    "jira":       8080,
+    "conlfuence": 8090,
+    "crowd":      8095,
+    "bamboo":     8085,
+    "stash":      8070,
+    "hipchat":   "n/a"
+  },
+  "healthcheck": {
+    "comment": "elb health check path",
+    "jira":       "/secure/Dashboard.jspa",
+    "conlfuence": "/dashboard.action",
+    "crowd":      "/",
+    "bamboo":     "/rss/createAllBuildsRssFeed.action",
+    "stash":      "/projects",
+    "hipchat":    "/chat"
+  },  
+  "logs": {
+
+    "comment": "forward these logs to cwlogs. each reflects the main log stream for these apps",
+
+    "jira": {
+      "file": "/var/local/atlassian/jira/logs/atlassian-jira.log"
+    },
+    "confluence": {
+      "file": "/var/local/atlassian/confluence/logs/atlassian-confluence.log"
+    },
+    "crowd": {
+      "file": "/var/local/atlassian/crowd/logs/atlassian-crowd.log"
+    },
+    "bamboo": {
+      "file": "/var/local/atlassian/bamboo/logs/atlassian-bamboo.log"
+    },    
+    "hipchat": {
+      "file": "/var/log/hipchat/web.log"
+    }
+  },
+  "backups": {
+
+    "comment": "backup these directories and/or files to the configured s3 buckets",
+
+    "jira": {
+      "directories": {
+        "index": {
+            "src":  "/var/local/atlassian/jira/caches/indexes",  
+            "dest": "s3://tts-sets-team/jira/{{env}}/indexes",
+            "delete": "true",
+            "comment": "delete flag is true because src and dest should be kept in perfect sync"
+          }
+        },
+        "files": {
+          "dbconfig.xml": {
+              "src":  "/var/local/atlassian/jira/dbconfig.xml",  
+              "dest": "s3://tts-sets-team/jira/{{env}}/dbconfig.xml",
+              "comment": "file that defines DB connection parameters. Need this to fully restore from backup when we loose the app server and have to do complete restore"
+          }
+        }
+      },
+      "confluence": {
+        "directories": {
+            "index": {
+                "src":  "/var/local/atlassian/confluence/index",
+                "dest": "s3://tts-sets-team/confluence/{{env}}/index",
+                "delete": "true",
+                "comment": "delete flag is true because src and dest should be kept in perfect sync"
+            }
+        },
+        "files": {
+            "dbconfig.xml": {
+                "src":  "/var/local/atlassian/confluence/confluence.cfg.xml",  
+                "dest": "s3://tts-sets-team/confluence/{{env}}/confluence.cfg.xml",
+                "comment": "file that defines DB connection parameters. Need this to fully restore from backup when we loose the app server and have to do complete restore"
+            }
+        }        
+      },
+      "crowd": {
+        "files": {
+          "crowd.properties": {
+              "src":  "/var/local/atlassian/crowd/crowd.properties",  
+              "dest": "s3://tts-sets-team/crowd/{{env}}/crowd.properties",
+              "comment": "defines the server URL"
+          },
+          "crowd.cfg.xml": {
+              "src":  "/var/local/atlassian/crowd/crowd.cfg.xml",  
+              "dest": "s3://tts-sets-team/crowd/{{env}}/crowd.cfg.xml",
+              "comment": "defines DB connection parameters"
+          }
+        }        
+      },
+      "hipchat": {
+        "directories": {
+          "archives": {
+              "src":  "/file_store/cumulus/posixdata/f",  
+              "dest": "s3://tts-sets-team/hipchat/{{env}}",
+              "options": "--delete --exclude \"*\" --include \"*.aes\"",
+              "comment1": "The ../f directory has a bunch of stuff. Exclude all files EXCEPT the backups, which have a .aes extentions",
+              "comment2": "The delete flag is true because src and dest should be kept in perfect sync"
+          }
+        }        
+      }
+    }
+}
