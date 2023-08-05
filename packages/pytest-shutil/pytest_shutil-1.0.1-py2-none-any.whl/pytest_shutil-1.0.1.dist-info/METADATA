@@ -1,0 +1,135 @@
+Metadata-Version: 2.0
+Name: pytest-shutil
+Version: 1.0.1
+Summary: A goodie-bag of unix shell and environment tools for py.test
+Home-page: https://github.com/manahl/pytest-plugins
+Author: Edward Easton
+Author-email: eeaston@gmail.com
+License: MIT license
+Platform: unix
+Platform: linux
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: Topic :: Software Development :: Libraries
+Classifier: Topic :: Software Development :: Testing
+Classifier: Topic :: Utilities
+Classifier: Intended Audience :: Developers
+Classifier: Operating System :: POSIX
+Classifier: Programming Language :: Python :: 2
+Classifier: Programming Language :: Python :: 2.6
+Classifier: Programming Language :: Python :: 2.7
+Requires-Dist: six
+Requires-Dist: execnet
+Requires-Dist: contextlib2
+Requires-Dist: path.py
+Requires-Dist: mock
+
+pytest-shutil
+=============
+
+This library is a goodie-bag of Unix shell and environment management
+tools for automated tests. A summary of the available functions is
+below, look at the source for the full listing.
+
+Installation
+------------
+
+Install using your favourite package manager::
+
+.. code:: bash
+
+        pip install pytest-shutil
+        #  or..
+        easy_install pytest-shutil
+
+Workspace Fixture
+-----------------
+
+The workspace fixture is simply a temporary directory at function-scope
+with a few bells and whistles::
+
+.. code:: python
+
+        # Enable the fixture explicitly in your tests or conftest.py (not required when using setuptools entry points)
+        pytest_plugins = ['pytest_shutil']
+
+        def test_something(workspace):
+            # Workspaces contain a handle to the path.py path object (see https://pythonhosted.org/path.py)
+            path = workspace.workspace         
+            script = path / 'hello.sh'
+            script.write_text('#!/bin/sh\n echo hello world!')
+
+            # There is a 'run' method to execute things relative to the workspace root
+            workspace.run('hello.sh')
+
+``pytest_shutil.env``: Shell helpers
+------------------------------------
+
++--------------+------------------------------------------------------+
+| function     | description                                          |
++==============+======================================================+
+| set\_env     | contextmanager to set env vars                       |
++--------------+------------------------------------------------------+
+| unset\_env   | contextmanager to unset env vars                     |
++--------------+------------------------------------------------------+
+| no\_env      | contextmanager to unset a single env var             |
++--------------+------------------------------------------------------+
+| no\_cov      | contextmanager to disable coverage in subprocesses   |
++--------------+------------------------------------------------------+
+
+``pytest_shutil.cmdline``: Command-line helpers
+-----------------------------------------------
+
++---------------------------------+----------------------------------------------------------------+
+| function                        | description                                                    |
++=================================+================================================================+
+| umask                           | contextmanager to set the umask                                |
++---------------------------------+----------------------------------------------------------------+
+| chdir                           | contextmanager to change to a directory                        |
++---------------------------------+----------------------------------------------------------------+
+| TempDir                         | contextmanager for a temporary directory                       |
++---------------------------------+----------------------------------------------------------------+
+| PrettyFormatter                 | simple text formatter for drawing title, paragrahs, hrs.       |
++---------------------------------+----------------------------------------------------------------+
+| copy\_files                     | copy all files from one directory to another                   |
++---------------------------------+----------------------------------------------------------------+
+| getch                           | cross-platform read of a single character from the screen      |
++---------------------------------+----------------------------------------------------------------+
+| which                           | analoge of unix ``which``                                      |
++---------------------------------+----------------------------------------------------------------+
+| get\_real\_python\_executable   | find our system Python, useful when running under virtualenv   |
++---------------------------------+----------------------------------------------------------------+
+
+``pytest_shutil.run``: Running things in subprocesses
+-----------------------------------------------------
+
++-------------------------+----------------------------------------------------------------------------+
+| function                | description                                                                |
++=========================+============================================================================+
+| run                     | run a command, with options for capturing output, checking return codes.   |
++-------------------------+----------------------------------------------------------------------------+
+| run\_as\_main           | run a function as if it was the system entry point                         |
++-------------------------+----------------------------------------------------------------------------+
+| run\_module\_as\_main   | run a module as if it was the system entry point                           |
++-------------------------+----------------------------------------------------------------------------+
+| run\_in\_subprocess     | run a function in a subprocess                                             |
++-------------------------+----------------------------------------------------------------------------+
+| run\_with\_coverage     | run a command with coverage enabled                                        |
++-------------------------+----------------------------------------------------------------------------+
+
+
+Changelog
+---------
+
+1.0.1 (2015-12-23)
+~~~~~~~~~~~~~~~~~~
+
+-  Packaging bugfix
+
+1.0.0 (2015-12-21)
+~~~~~~~~~~~~~~~~~~
+
+-  Initial public release
+
+
+
