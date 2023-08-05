@@ -1,0 +1,137 @@
+#!/usr/bin/env python
+"""Messier.
+
+Usage:
+  messier <command> [options] [<vms> ...]
+
+Examples:
+  messier create server
+  messier converge
+  messier verify
+  messier test
+  messier list
+  messier (-h | --help)
+  messier --version
+
+Options:
+  -h --help                Show this screen.
+  --provider PROVIDER      Backend provider [default: virtualbox].
+  --wait <seconds>         Time to sleep after destroying [default: 10].
+  --pristine               Destroy VMs prior to run.
+  --reboot                 Reboot hosts prior to running Serverspec tests.
+  --destroy <strategy>     Destroy hosts <passing|always|never> after running test suite [default: passing].
+  --playbook <playbook>    Path to Ansible playbook for testing [default: test/default.yml].
+  --config <path>          Path to Messier YAML config file [default: .messier].
+  --keep                   Preserve existing VMs for test run.
+
+"""
+import sys
+import time
+from docopt import docopt
+from blessings import Terminal
+
+
+import messier
+
+
+t = Terminal()
+
+
+def info(msg, color="bold"):
+    """
+    Print human-readable output during Messier test run.
+    Defaults to "bold" terminal formatting, override with `color="red"` or similar.
+    """
+    terminal_format = getattr(t, color)
+    print(terminal_format("==> Messier: {}".format(msg)))
+
+
+def test_run(m, args):
+    """
+    Run full test suite, including create, provision, verify, and destroy.
+    """
+    def _test_run(m, args):
+        """
+        Wrapper function for encapsulating test run logic,
+        so tests can run multiple times against different boxes.
+        Called by `test_run()`; use that.
+        """
+        if not args['--keep']:
+            info("Destroying VMs...")
+            if args['--provider'] == "digital_ocean":
+                # Wait a bit for the droplets to be destroyed.
+                time.sleep(10)
+
+        info("Creating VMs...")
+        m.create_vms()
+
+        m.provision_vms()
+
+        if args['--reboot'] or "reboot_vms" in m.config:
+            info("Rebooting VMs...")
+            m.reload_vms()
+
+        info("Running Serverspec tests...")
+        try:
+            m.verify_vms()
+        except:
+            info("Could not find valid Serverspec config, skipping...")
+            pass
+
+        if args['--destroy'] == "passing" \
+                and not args['--keep']:
+            info("Destroying VMs...")
+            m.destroy_vms()
+
+    # Check for multiple boxes to rerun tests
+    if 'vagrant_boxes' in m.config:
+        for index, box in enumerate(m.config['vagrant_boxes']):
+            info("Test suite {} of {}, using base box {}...".format(index + 1,
+                len(m.config['vagrant_boxes']), box)
+                )
+            with m.env_var("VAGRANT_BOX", box):
+                _test_run(m, args)
+    else:
+        _test_run(m, args)
+
+
+if __name__ == "__main__":
+    args = docopt(__doc__, version='0.1')
+    m = messier.Messier(
+            config_file=args['--config'],
+            vms=args['<vms>'],
+            provider=args['--provider'],
+            playbook=args['--playbook'],
+            )
+    args['vms'] = m.available_vms()
+
+    if args['<command>'] == 'list':
+        for vm in m.vms:
+            print(vm)
+
+    elif args['<command>'] == 'create':
+        m.create_vms()
+
+    elif args['<command>'] == 'destroy':
+        m.destroy_vms()
+
+    elif args['<command>'] == 'verify':
+        try:
+            m.verify_vms()
+        except:
+            info("Could not find valid Serverspec config.", color="red")
+            sys.exit(1)
+
+    elif args['<command>'] == 'test':
+        test_run(m, args)
+
+    elif args['<command>'] == 'ci':
+        if not args['--keep']:
+            args['--destroy'] == "always"
+        test_run(m, args)
+
+    else:
+        info("Command '{}' not supported. Run messier -h for usage info.".format(args['<command>']),
+                color="red")
+        sys.exit(1)
+
