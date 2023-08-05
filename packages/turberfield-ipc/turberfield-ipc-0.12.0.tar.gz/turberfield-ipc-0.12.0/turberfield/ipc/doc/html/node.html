@@ -1,0 +1,123 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>3. Nodes &mdash; Turberfield-IPC 0.012.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/haiku.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.012.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="Turberfield-IPC 0.012.0 documentation" href="index.html" />
+    <link rel="next" title="4. Example" href="example.html" />
+    <link rel="prev" title="2. Messages" href="message.html" /> 
+  </head>
+  <body role="document">
+      <div class="header" role="banner"><h1 class="heading"><a href="index.html">
+          <span>Turberfield-IPC 0.012.0 documentation</span></a></h1>
+        <h2 class="heading"><span>3. Nodes</span></h2>
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        «&#160;&#160;<a href="message.html">2. Messages</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="example.html">4. Example</a>&#160;&#160;»
+        </p>
+
+      </div>
+      <div class="content">
+        
+        
+  <div class="section" id="nodes">
+<h1>3. Nodes<a class="headerlink" href="#nodes" title="Permalink to this headline">¶</a></h1>
+<p>Turberfield IPC can build for you a network node object, which takes your parcelled
+messages and delivers them to others listening via the distributed IPC framework
+(DIF).</p>
+<div class="section" id="tokens">
+<h2>3.1. Tokens<a class="headerlink" href="#tokens" title="Permalink to this headline">¶</a></h2>
+<p>You&#8217;ll need a DIF token to use the framework. For now, the function
+<a class="reference internal" href="message.html#turberfield.ipc.fsdb.token" title="turberfield.ipc.fsdb.token"><code class="xref py py-func docutils literal"><span class="pre">turberfield.ipc.fsdb.token()</span></code></a> is the source of these.</p>
+</div>
+<div class="section" id="down-and-up">
+<h2>3.2. Down and up<a class="headerlink" href="#down-and-up" title="Permalink to this headline">¶</a></h2>
+<p>Turberfield&#8217;s interface with the network point of attachment (POA) is via a pair of <a class="reference external" href="https://docs.python.org/3/library/asyncio.html#module-asyncio">asyncio</a>
+queues. The <cite>down</cite> queue takes your messages into the network, and the <cite>up</cite> queue is where
+messages arrive from the network.</p>
+</div>
+<div class="section" id="mechanisms-and-policies">
+<h2>3.3. Mechanisms and policies<a class="headerlink" href="#mechanisms-and-policies" title="Permalink to this headline">¶</a></h2>
+<p>Inspired by John Day&#8217;s <a class="reference external" href="http://lccn.loc.gov/2007040174">Patterns in Network Architecture</a>, the design of
+Turberfield IPC decouples network mechanisms and the policies which control
+them. A node can adopt the policies it wishes. However, there is only a minimal
+implementation (over UDP) at the moment, and so only one way of configuring a
+node.</p>
+</div>
+<div class="section" id="creating-a-network-node">
+<h2>3.4. Creating a network node<a class="headerlink" href="#creating-a-network-node" title="Permalink to this headline">¶</a></h2>
+<p>The module provides a convenience function to build a network node with the
+currently available routing functionality.</p>
+<span class="target" id="module-turberfield.ipc.node"></span><dl class="function">
+<dt id="turberfield.ipc.node.create_udp_node">
+<code class="descclassname">turberfield.ipc.node.</code><code class="descname">create_udp_node</code><span class="sig-paren">(</span><em>loop</em>, <em>token</em>, <em>down</em>, <em>up</em>, <em>types</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/turberfield/ipc/node.html#create_udp_node"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#turberfield.ipc.node.create_udp_node" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>loop</strong> &#8211; An <a class="reference external" href="https://docs.python.org/3/library/asyncio.html#module-asyncio">asyncio</a> event loop.</li>
+<li><strong>token</strong> &#8211; A DIF token.</li>
+<li><strong>down</strong> &#8211; An <a class="reference external" href="https://docs.python.org/3/library/asyncio.html#module-asyncio">asyncio</a> queue which takes messages down to the network POA.</li>
+<li><strong>up</strong> &#8211; An <a class="reference external" href="https://docs.python.org/3/library/asyncio.html#module-asyncio">asyncio</a> queue which bring up messages from the network POA.</li>
+<li><strong>types</strong> &#8211; An optional dictionary of types mapped by their fully qualified names.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">An <a class="reference external" href="https://docs.python.org/3/library/asyncio.html#module-asyncio">asyncio</a> Protocol instance.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+</div>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        «&#160;&#160;<a href="message.html">2. Messages</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="example.html">4. Example</a>&#160;&#160;»
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2015, D Haynes.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.4.
+    </div>
+  </body>
+</html>

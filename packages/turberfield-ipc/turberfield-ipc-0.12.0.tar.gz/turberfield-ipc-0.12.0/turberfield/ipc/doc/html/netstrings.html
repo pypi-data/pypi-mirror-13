@@ -1,0 +1,105 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>1. Netstrings &mdash; Turberfield-IPC 0.012.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/haiku.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.012.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="Turberfield-IPC 0.012.0 documentation" href="index.html" />
+    <link rel="next" title="2. Messages" href="message.html" />
+    <link rel="prev" title="Turberfield Inter-Process Communication library" href="index.html" /> 
+  </head>
+  <body role="document">
+      <div class="header" role="banner"><h1 class="heading"><a href="index.html">
+          <span>Turberfield-IPC 0.012.0 documentation</span></a></h1>
+        <h2 class="heading"><span>1. Netstrings</span></h2>
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        «&#160;&#160;<a href="index.html">Turberfield Inter-Process Communication library</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="message.html">2. Messages</a>&#160;&#160;»
+        </p>
+
+      </div>
+      <div class="content">
+        
+        
+  <div class="section" id="netstrings">
+<h1>1. Netstrings<a class="headerlink" href="#netstrings" title="Permalink to this headline">¶</a></h1>
+<p>The <a class="reference internal" href="#module-turberfield.ipc.netstrings" title="turberfield.ipc.netstrings"><code class="xref py py-mod docutils literal"><span class="pre">netstrings</span></code></a> module
+provides a way of sending strings across a network.</p>
+<span class="target" id="module-turberfield.ipc.netstrings"></span><p>Netstrings are a way of framing arbitrarily long strings so they can be
+sent over a socket. The <a class="reference external" href="http://cr.yp.to/proto/netstrings.txt">netstring  specification</a> is very simple.</p>
+<dl class="function">
+<dt id="turberfield.ipc.netstrings.dumpb">
+<code class="descclassname">turberfield.ipc.netstrings.</code><code class="descname">dumpb</code><span class="sig-paren">(</span><em>data: str</em>, <em>encoding='utf-8'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/turberfield/ipc/netstrings.html#dumpb"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#turberfield.ipc.netstrings.dumpb" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert a string to its netstring representation. Returns a <cite>bytes</cite>
+object.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="turberfield.ipc.netstrings.loadb">
+<code class="descclassname">turberfield.ipc.netstrings.</code><code class="descname">loadb</code><span class="sig-paren">(</span><em>encoding='utf-8'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/turberfield/ipc/netstrings.html#loadb"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#turberfield.ipc.netstrings.loadb" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function is a generator. It accepts <cite>bytes</cite> data via its <a class="reference external" href="https://docs.python.org/3/reference/expressions.html#generator.send">send
+method</a>. Like all generators, it must be primed before use by sending
+<cite>None</cite>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">decoder</span> <span class="o">=</span> <span class="n">loadb</span><span class="p">()</span>
+<span class="n">decoder</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="bp">None</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The generator will yield an object whenever it has collected a complete
+netstring message:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">msg</span> <span class="ow">is</span> <span class="bp">None</span>
+<span class="k">while</span> <span class="n">msg</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+    <span class="n">msg</span> <span class="o">=</span> <span class="n">decoder</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">packet</span><span class="p">)</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        «&#160;&#160;<a href="index.html">Turberfield Inter-Process Communication library</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="message.html">2. Messages</a>&#160;&#160;»
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2015, D Haynes.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.4.
+    </div>
+  </body>
+</html>

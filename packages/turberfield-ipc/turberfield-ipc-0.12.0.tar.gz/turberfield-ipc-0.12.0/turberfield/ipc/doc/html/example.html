@@ -1,0 +1,158 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>4. Example &mdash; Turberfield-IPC 0.012.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/haiku.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.012.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="Turberfield-IPC 0.012.0 documentation" href="index.html" />
+    <link rel="prev" title="3. Nodes" href="node.html" /> 
+  </head>
+  <body role="document">
+      <div class="header" role="banner"><h1 class="heading"><a href="index.html">
+          <span>Turberfield-IPC 0.012.0 documentation</span></a></h1>
+        <h2 class="heading"><span>4. Example</span></h2>
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        «&#160;&#160;<a href="node.html">3. Nodes</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        </p>
+
+      </div>
+      <div class="content">
+        
+        
+  <div class="section" id="example">
+<h1>4. Example<a class="headerlink" href="#example" title="Permalink to this headline">¶</a></h1>
+<p>A common demonstration of a networked application is <cite>echo server/ echo
+client</cite>. The action of looping back the message is usually hardcoded in the
+server.</p>
+<p>In a distributed network, loopback is a routing function, not an
+application behaviour. All Turberfield IPC network nodes perform routing.</p>
+<div class="section" id="a-message-routing-demo">
+<h2>4.1. A message routing demo<a class="headerlink" href="#a-message-routing-demo" title="Permalink to this headline">¶</a></h2>
+<p>The package <cite>turberfield.ipc.demo</cite> contains two modules, <cite>router</cite> and <cite>sender</cite>.
+These are defined separately for convenience. If you look at the code you&#8217;ll
+see they do the same thing; they call
+<code class="xref py py-func docutils literal"><span class="pre">turberfield.ipc.node.create_udp_node()</span></code>. The <cite>sender</cite> module in
+addition creates a message and places it into its <cite>down</cite> queue.</p>
+<p>The entire demo is achieved in only a few lines of code:</p>
+<div class="highlight-python"><div class="highlight"><pre>def main(args):
+    .
+    .
+    .
+
+    loop = asyncio.SelectorEventLoop()
+    asyncio.set_event_loop(loop)
+
+    down = asyncio.Queue(loop=loop)
+    up = asyncio.Queue(loop=loop)
+
+    tok = token(args.connect, APP_NAME)
+    node = create_udp_node(loop, tok, down, up)
+    loop.create_task(node(token=tok))
+
+    msg = parcel(
+        tok,
+        Alert(datetime.datetime.now(), &quot;Hello World!&quot;),
+        via=Address(tok.namespace, tok.user, tok.service, turberfield.ipc.demo.router.APP_NAME)
+    )
+    loop.call_soon_threadsafe(functools.partial(down.put_nowait, msg))
+    loop.run_forever()
+</pre></div>
+</div>
+</div>
+<div class="section" id="run-on-windows">
+<h2>4.2. Run on Windows<a class="headerlink" href="#run-on-windows" title="Permalink to this headline">¶</a></h2>
+<p>Install <cite>turberfield-ipc</cite> into a Python virtual environment at <cite>%HOME%\py3.5</cite>.</p>
+<p>Open up a console and start the <cite>router</cite> process:</p>
+<div class="highlight-python"><div class="highlight"><pre>start %HOME%\py3.5\scripts\python -m turberfield.ipc.demo.router
+</pre></div>
+</div>
+<p>Then after that has launched, do the same with the <cite>sender</cite> process:</p>
+<div class="highlight-python"><div class="highlight"><pre>start %HOME%\py3.5\scripts\python -m turberfield.ipc.demo.sender
+</pre></div>
+</div>
+</div>
+<div class="section" id="run-on-linux">
+<h2>4.3. Run on Linux<a class="headerlink" href="#run-on-linux" title="Permalink to this headline">¶</a></h2>
+<p>Install <cite>turberfield-ipc</cite> into a Python virtual environment at <cite>~/py3.5</cite>.</p>
+<p>Open up a console and start the <cite>router</cite> process:</p>
+<div class="highlight-python"><div class="highlight"><pre>~/py3.5/bin/python -m turberfield.ipc.demo.router &amp;
+</pre></div>
+</div>
+<p>Then after that has launched, do the same with the <cite>sender</cite> process:</p>
+<div class="highlight-python"><div class="highlight"><pre>~/py3.5/bin/python -m turberfield.ipc.demo.sender &amp;
+</pre></div>
+</div>
+</div>
+<div class="section" id="output">
+<h2>4.4. Output<a class="headerlink" href="#output" title="Permalink to this headline">¶</a></h2>
+<p>The captured log is shown below, with some re-tabulation for clarity.
+Here is the initial message from <cite>sender</cite>. Note how the hop number is initially 0.:</p>
+<div class="highlight-python"><div class="highlight"><pre>2015-10-06 15:43:42,243 INFO    turberfield.ipc.demo.sender|Sending message:
+    Message(header=Header(id=&#39;57389f95fbf142c4869059306c3c0b3d&#39;,
+    src=Address(namespace=&#39;turberfield&#39;, user=&#39;alice&#39;, service=&#39;demo&#39;, application=&#39;turberfield.ipc.demo.sender&#39;),
+    dst=Address(namespace=&#39;turberfield&#39;, user=&#39;alice&#39;, service=&#39;demo&#39;, application=&#39;turberfield.ipc.demo.sender&#39;),
+    hMax=3,
+    via=Address(namespace=&#39;turberfield&#39;, user=&#39;alice&#39;, service=&#39;demo&#39;, application=&#39;turberfield.ipc.demo.router&#39;),
+    hop=0),
+    payload=(Alert(ts=datetime.datetime(2015, 10, 6, 15, 43, 42, 242283), text=&#39;Hello World!&#39;),))
+</pre></div>
+</div>
+<p>Here is the message after it has reached the router, gone back to the sender and emerged
+from the node. The hop number is now 3 (one hop from the sender node onto the network POA,
+one hop back from the router, and another to come out of the node again):</p>
+<div class="highlight-python"><div class="highlight"><pre>2015-10-06 15:43:42,272 INFO    turberfield.ipc.demo.sender|Received:
+    Message(header=Header(id=&#39;57389f95fbf142c4869059306c3c0b3d&#39;,
+    src=Address(namespace=&#39;turberfield&#39;, user=&#39;alice&#39;, service=&#39;demo&#39;, application=&#39;turberfield.ipc.demo.sender&#39;),
+    dst=Address(namespace=&#39;turberfield&#39;, user=&#39;alice&#39;, service=&#39;demo&#39;, application=&#39;turberfield.ipc.demo.sender&#39;),
+    hMax=3,
+    via=Address(namespace=&#39;turberfield&#39;, user=&#39;alice&#39;, service=&#39;demo&#39;, application=&#39;turberfield.ipc.demo.sender&#39;),
+    hop=3),
+    payload=[Alert(ts=datetime.datetime(2015, 10, 6, 15, 43, 42), text=&#39;Hello World!&#39;)])
+</pre></div>
+</div>
+</div>
+</div>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        «&#160;&#160;<a href="node.html">3. Nodes</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2015, D Haynes.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.4.
+    </div>
+  </body>
+</html>
