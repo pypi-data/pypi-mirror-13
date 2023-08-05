@@ -1,0 +1,44 @@
+#!/usr/bin/python
+# -*- Mode: Python -*-
+# Copyright (C) 2015 Mathieu Duponchelle
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+# 02110-1301, USA.
+#
+
+import sys, os, traceback
+import cPickle as pickle
+
+from hotdoc.core.doc_tool import DocTool, ConfigError
+
+if __name__=="__main__":
+    doc_tool = DocTool()
+
+    try:
+        doc_tool.setup(sys.argv[1:])
+        doc_tool.format()
+        doc_tool.persist()
+        doc_tool.finalize()
+    except ConfigError as e:
+        print "Configuration error:", e
+        sys.exit(1)
+    except Exception as e:
+        print ("An unknown error happened while building the documentation"
+               " and hotdoc cannot recover from it. Please report "
+               "a bug with this error message and the steps to "
+               "reproduce it")
+        traceback.print_exc ()
+        sys.exit (1)
+    sys.exit(0)
