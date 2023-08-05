@@ -1,0 +1,103 @@
+Metadata-Version: 2.0
+Name: marina
+Version: 0.0.6
+Summary: marina manages docker instances
+Home-page: https://github.com/mmerickel/marina
+Author: Michael Merickel
+Author-email: michael@merickel.org
+License: UNKNOWN
+Keywords: docker devops deploy build orchestration
+Platform: UNKNOWN
+Classifier: Development Status :: 3 - Alpha
+Classifier: Intended Audience :: Developers
+Classifier: Intended Audience :: System Administrators
+Classifier: Programming Language :: Python
+Classifier: Topic :: System :: Installation/Setup
+Classifier: Topic :: System :: Software Distribution
+Classifier: Topic :: System :: Systems Administration
+Requires-Dist: docker-py (>=0.3.2)
+Requires-Dist: PyYAML
+Requires-Dist: setuptools
+Requires-Dist: subparse
+Provides-Extra: testing
+Requires-Dist: pytest; extra == 'testing'
+
+marina
+======
+
+Marina is a tool for building docker images with a focus on separating
+compile-time dependencies from run-time dependencies in order to keep
+the shipped images small and secure.
+
+Usage
+-----
+
+::
+
+  marina -vvv build examples/shootout
+
+App Config
+----------
+
+::
+
+  name: dummy
+
+  compile:
+    base_image: ubuntu:14.04
+    commands:
+      - dd if=/dev/urandom of=/srv/dummy bs=50kB count=1
+    files:
+      - /srv/dummy
+
+  run:
+    base_image: ubuntu:14.04
+
+
+0.0.6 (2016-01-08)
+==================
+
+- [build] Delete any volumes associated with a container.
+- [build] Fix usage of ExposedPorts from runner base image.
+
+0.0.5 (2015-08-25)
+==================
+
+- [build] Exit with an error code upon failure instead of 0.
+
+0.0.4 (2015-08-24)
+==================
+
+- Turn off docker hostname verification to enable connections with
+  docker-machine instances over SSL until
+  https://github.com/docker/docker-py/issues/731 is resolved.
+
+- [build] Avoid detaching from the archive container before the tarfile
+  has been fully written to disk.
+
+- [build] Add ``--skip-cleanup`` option for keeping images/containers/files
+  around after the build.
+
+0.0.3 (2014-11-19)
+==================
+
+- Support docker 1.3.x and its TLS requirements.
+
+0.0.2 (2014-07-12)
+==================
+
+- Support ``--quiet`` for suppressing output.
+
+- [build] Add ``--env`` option for specifying credentials and other
+  configurable build-time settings.
+
+- [build] Ensure the ``busybox`` image is around.
+
+0.0.1 (2014-07-03)
+==================
+
+- Initial release.
+
+- First cut at "marina build" to generate a working docker container.
+
+
