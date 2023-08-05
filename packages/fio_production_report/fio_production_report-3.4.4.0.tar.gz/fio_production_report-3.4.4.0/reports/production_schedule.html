@@ -1,0 +1,61 @@
+{% extends 'production_report/reports/base.html' %}
+
+{% block title %}
+  Production Schedule
+{% endblock %}
+
+{% block report_header scoped %}
+  <span class="h3 pull-right">Production Schedule</span>
+{% endblock report_header %}
+
+{% block report_body %}
+{% for date, productions in productions_by_date %}
+<table class="table table-bordered">
+  <tbody>
+    <tr>
+      <th colspan="5">{{ date|dateformat('full') }}</th>
+    </tr>
+    <tr>
+      <th class="text-center">Code</th>
+      <th class="text-center">Zone</th>
+      <th class="text-center">Product</th>
+      <th class="text-center">Quantity</th>
+      <th class="text-center">Operator</th>
+    </tr>
+    {% for production in productions %}
+    <tr>
+      <td class="text-center">
+        {% if production.code %}
+          <a href="{{ production.__url__ }}">{{ production.code }}<a>
+        {% else %}
+          N/A
+        {% endif %}
+      </td>
+      <td>
+        {{ production.location.rec_name }}
+      </td>
+      <td class="text-center">
+        {% if production.product %}
+          {{production.product.rec_name }}
+          {% if production.product.rec_name and production.product.code %}-{% endif %}
+          {{production.product.code}}
+        {% else %}
+           N/A
+        {% endif %}
+      </td>
+      <td class="text-center">
+        {% if production.quantity %}
+          {{ formatLang(production.quantity, production.company.party.lang, digits=production.unit_digits) }} {% if production.uom.symbol != 'u' %}{{ production.uom.symbol }}{% endif %}
+        {% else %}
+          N/A
+        {% endif %}
+      </td>
+      <td class="text-center">
+        {{ production.operator and production.operator.rec_name or 'N/A' }}
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endfor %}
+{% endblock report_body %}
