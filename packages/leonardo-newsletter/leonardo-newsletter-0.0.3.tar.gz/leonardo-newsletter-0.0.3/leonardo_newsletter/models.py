@@ -1,0 +1,2 @@
+
+from leonardo_newsletter.widget.subscriptionform.models import SubscriptionFormWidget
