@@ -1,0 +1,17 @@
+[console_scripts]
+watcher-api = watcher.cmd.api:main
+watcher-applier = watcher.cmd.applier:main
+watcher-db-manage = watcher.cmd.dbmanage:main
+watcher-decision-engine = watcher.cmd.decisionengine:main
+
+[oslo.config.opts]
+watcher = watcher.opts:list_opts
+
+[watcher.database.migration_backend]
+sqlalchemy = watcher.db.sqlalchemy.migration
+
+[watcher_strategies]
+basic = watcher.decision_engine.strategy.strategies.basic_consolidation:BasicConsolidation
+dummy = watcher.decision_engine.strategy.strategies.dummy_strategy:DummyStrategy
+outlet_temp_control = watcher.decision_engine.strategy.strategies.outlet_temp_control:OutletTempControl
+
