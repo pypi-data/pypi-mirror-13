@@ -1,0 +1,112 @@
+Metadata-Version: 1.1
+Name: sublime-info
+Version: 0.1.3
+Summary: Gather information about Sublime Text
+Home-page: https://github.com/twolfson/sublime-info
+Author: Todd Wolfson
+Author-email: todd@twolfson.com
+License: UNLICENSE
+Download-URL: https://github.com/twolfson/sublime-info/archive/master.zip
+Description: sublime-info
+        ============
+        
+        .. image:: https://travis-ci.org/twolfson/sublime-info.png?branch=master
+           :target: https://travis-ci.org/twolfson/sublime-info
+           :alt: Build Status
+        
+        Gather information about `Sublime Text`_
+        
+        This was built for the `Sublime plugin tests`_ framework. It provides a cross-platform way to collect data about `Sublime Text`_ without running `Sublime Text`_ (necessary for creating a plugin harness to `Sublime Text`_).
+        
+        .. _`Sublime Text`: http://sublimetext.com/
+        .. _`Sublime plugin tests`: https://github.com/twolfson/sublime-plugin-tests
+        
+            Currently, only Linux is supported but OSX and Windows support are planned.
+        
+        Getting Started
+        ---------------
+        Install the module with: ``pip install sublime_info``
+        
+        .. code:: python
+        
+            import sublime_info
+            sublime_info.get_sublime_path()  # /usr/bin/subl
+            sublime_info.get_sublime_version()  # 3083
+            sublime_info.get_package_directory()  # /home/todd/.config/sublime-text-2/Packages
+        
+        Documentation
+        -------------
+        ``sublime_info`` provides 3 top level functions for your consumption.
+        
+        get_sublime_path
+        ^^^^^^^^^^^^^^^^
+        .. code:: python
+        
+            sublime_info.get_sublime_path()
+            """Resolve Sublime Text path (e.g. /usr/bin/subl)
+        
+            If ``SUBLIME_TEXT_PATH`` is provided via environment variables, it will be used.
+            Otherwise, a ``which``-like resolution will be returned.
+        
+            :raises STNotFoundError: If Sublime Text cannot be found, an error will be raised.
+            :returns: ``SUBLIME_TEXT_PATH`` or ``which``-like resolution
+            :rtype: str
+            """
+        
+        get_sublime_version
+        ^^^^^^^^^^^^^^^^^^^
+        .. code:: python
+        
+            sublime_info.get_sublime_version()
+            """Resolve Sublime Text version (e.g. 2221, 3083)
+        
+            Sublime Text is resolved via ``get_sublime_path``
+        
+            :raises Exception: If the Sublime Text version cannot be parsed, an error will be raised.
+            :returns: Version of Sublime Text returned by ``sublime_text --version``.
+            :rtype: int
+            """
+        
+        get_package_directory
+        ^^^^^^^^^^^^^^^^^^^^^
+        .. code:: python
+        
+            sublime_info.get_package_directory()
+            """Resolve Sublime Text package directory (e.g. /home/todd/.config/sublime-text-2/Packages)
+        
+            :raises Exception: If the Sublime Text version is not recognized, an error will be raised.
+            :returns: Path to Sublime Text's package directory
+            :rtype: str
+            """
+        
+        Contributing
+        ------------
+        In lieu of a formal styleguide, take care to maintain the existing coding style. Add unit tests for any new or changed functionality. Test via ``./test_linux.sh``.
+        
+        Donating
+        --------
+        Support this project and `others by twolfson`_ via `gittip`_.
+        
+        .. image:: https://rawgithub.com/twolfson/gittip-badge/master/dist/gittip.png
+           :target: `gittip`_
+           :alt: Support via Gittip
+        
+        .. _`others by twolfson`:
+        .. _gittip: https://www.gittip.com/twolfson/
+        
+        Unlicense
+        ---------
+        As of Oct 14 2013, Todd Wolfson has released this repository and its contents to the public domain.
+        
+        It has been released under the `UNLICENSE`_.
+        
+        .. _UNLICENSE: https://github.com/twolfson/sublime-info/blob/master/UNLICENSE
+        
+Keywords: sublime,sublime text,info,plugin
+Platform: UNKNOWN
+Classifier: Development Status :: 3 - Alpha
+Classifier: Intended Audience :: Developers
+Classifier: License :: Public Domain
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python
+Classifier: Topic :: Text Editors
