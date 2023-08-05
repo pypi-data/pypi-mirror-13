@@ -1,0 +1,477 @@
+#!/bin/bash
+# Starts and stops ovs with dpdk
+#
+
+echo "sourceing config"
+source /etc/default/ovs-dpdk
+
+is_ubuntu(){
+    vendor=`lsb_release -i -s`
+    if [ "$vendor" == "Ubuntu" ]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+# Prints line number and "message" in error format
+# err $LINENO "message"
+err() {
+    local exitcode=$?
+    errXTRACE=$(set +o | grep xtrace)
+    set +o xtrace
+    local msg="[ERROR] ${BASH_SOURCE[2]}:$1 $2"
+    echo $msg 1>&2;
+    if [[ -n ${SCREEN_LOGDIR} ]]; then
+        echo $msg >> "${SCREEN_LOGDIR}/error.log"
+    fi
+    $errXTRACE
+    return $exitcode
+}
+
+# Prints line number and "message" then exits
+# die $LINENO "message"
+die() {
+    local exitcode=$?
+    set +o xtrace
+    local line=$1; shift
+     err $line "$*"
+    # Give buffers a second to flush
+    sleep 1
+    exit $exitcode
+}
+
+init_db(){
+    if [ ! -d $OVS_DB_CONF_DIR ]; then
+        sudo mkdir -m 777 -p $OVS_DB_CONF_DIR
+    elif [  -e $OVS_DB_CONF ]; then
+        sudo rm -f $OVS_DB_CONF
+    fi
+
+    if [ ! -d $OVS_DB_SOCKET_DIR ]; then
+        sudo mkdir -m 777 -p $OVS_DB_SOCKET_DIR
+    fi
+
+    if [ ! -d $OVS_LOG_DIR ]; then
+        sudo mkdir -m 777 -p $OVS_LOG_DIR
+    fi
+
+    sudo $OVS_INSTALL_DIR/bin/ovsdb-tool create ${OVS_DB_CONF}   ${OVS_INSTALL_DIR}/share/openvswitch/vswitch.ovsschema
+    sudo ${OVS_INSTALL_DIR}/sbin/ovsdb-server ${OVS_DB_CONF} --detach --pidfile=$OVS_LOG_DIR/ovsdb-server.pid  --remote=punix:$OVS_DB_SOCKET --remote=db:Open_vSwitch,Open_vSwitch,manager_options
+    sudo ovs-vsctl --db=unix:$OVS_DB_SOCKET --no-wait init
+    sudo ovs-vsctl --no-wait set Open_vSwitch . other_config:pmd-cpu-mask=$OVS_PMD_CORE_MASK
+}
+
+
+
+restart_service(){
+    sudo service $1 restart
+}
+
+remove_igb_uio_module(){
+    echo "Unloading any existing DPDK UIO module"
+    lsmod | grep -ws igb_uio > /dev/null
+    if [ $? -eq 0 ] ; then
+        sudo rmmod igb_uio
+    fi
+}
+
+#
+# Loads new igb_uio.ko (and uio module if needed).
+#
+load_igb_uio_module(){
+    if [ ! -f $RTE_SDK/$RTE_TARGET/kmod/igb_uio.ko ];then
+        echo "## ERROR: Target does not have the DPDK UIO Kernel Module."
+        echo "       To fix, please try to rebuild target."
+        return
+    fi
+
+    remove_igb_uio_module
+
+    lsmod | grep -ws uio > /dev/null
+    if [ $? -ne 0 ] ; then
+        if  ls /lib/modules/$(uname -r)/kernel/drivers/uio/uio.* 1> /dev/null 2>&1 ; then
+            echo "Loading uio module"
+            sudo modprobe uio
+        fi
+    fi
+
+    # UIO may be compiled into kernel, so it may not be an error if it can't
+    # be loaded.
+
+    echo "Loading DPDK UIO module"
+    sudo insmod $RTE_SDK/$RTE_TARGET/kmod/igb_uio.ko
+    if [ $? -ne 0 ] ; then
+        echo "## ERROR: Could not load kmod/igb_uio.ko."
+        exit 1
+    fi
+}
+
+
+remove_vfio_pci_module(){
+    echo "Unloading vfio_pci module"
+    lsmod | grep -ws vfio_pci > /dev/null
+    if [ $? -eq 0 ] ; then
+        sudo rmmod vfio_pci
+    fi
+}
+
+#
+# Loads new igb_uio.ko (and uio module if needed).
+#
+load_vfio_pci_module(){
+    lsmod | grep -ws vfio_pci > /dev/null
+    if [ ! $? -eq 0 ] ; then
+        sudo modprobe vfio_pci
+    fi
+}
+
+unbind_nics(){
+    MAPPINGS=${OVS_BRIDGE_MAPPINGS//,/ }
+    ARRAY=( $MAPPINGS )
+
+    # unbind nics from OVS_INTERFACE_DRIVER driver
+
+    for pair in "${ARRAY[@]}"; do
+        addr=`echo $pair | cut -f 1 -d "#"`
+        sudo RTE_SDK=${OVS_DPDK_DIR} RTE_TARGET=build ${OVS_DPDK_DIR}/tools/dpdk_nic_bind.py -u $addr
+    done
+
+    #bind nics to their standard linux kernel driver
+    STATUS=$(RTE_SDK=${OVS_DPDK_DIR} RTE_TARGET=build ${OVS_DPDK_DIR}/tools/dpdk_nic_bind.py --status)
+    while read line; do
+        if [[ $line =~ ",$OVS_INTERFACE_DRIVER" || $line =~ "unused=$OVS_INTERFACE_DRIVER" ]] && [[ ! $line =~ "drv=" ]]; then
+            addr=${line%% *}
+            for pair in "${ARRAY[@]}"; do
+                if [[ "$addr" == `echo $pair | cut -f 1 -d "#"` ]]; then
+                    drv=${line/*unused=/}
+                    drv=${drv/,$OVS_INTERFACE_DRIVER/}
+                    if [[ $drv =~ "," ]]; then
+                        IFS_OLD=$IFS
+                        IFS=","
+                        echo "Multiple drivers detected: $drv"
+                        drivers=($drv);
+                        for driver in "${drivers[@]}"; do
+                            if [[ ! $driver =~ "igb_uio" ]] &&  [[ ! $driver =~ "vfio-pci" ]]; then
+                                drv=$driver
+                                echo "selecting $driver"
+                                break
+                            fi
+                        done
+                        IFS=$IFS_OLD
+                    fi
+                    #workaround for Fedora pciutils bug
+                    if [[ $drv == "" ]]; then
+                        drv="ixgbe"
+                    fi
+                    sudo RTE_SDK=${OVS_DPDK_DIR} RTE_TARGET=build ${OVS_DPDK_DIR}/tools/dpdk_nic_bind.py -b $drv $addr
+                    continue
+                fi
+            done
+        fi
+   done <<< "$STATUS"
+}
+
+
+bind_nics(){
+    MAPPINGS=${OVS_BRIDGE_MAPPINGS//,/ }
+    ARRAY=( $MAPPINGS )
+    phys_ofport=0
+    #loop over network definitions, create bridges
+    #extract nic name, bind it with OVS_INTERFACE_DRIVER driver, and add it to a bridge
+    #dpdk sorts physical ports on pci addresses,
+    #need to keep that order when adding phys ports to ovs
+    STATUS=$(RTE_SDK=${OVS_DPDK_DIR} RTE_TARGET=build ${OVS_DPDK_DIR}/tools/dpdk_nic_bind.py --status)
+    while read  line; do
+        for pair in "${ARRAY[@]}"; do
+            addr=`echo $pair | cut -f 1 -d "#"`
+            nic=`echo $pair | cut -f 2 -d "#"`
+            if [[ $line =~ "$nic " ]] || [[ $line =~ "$nic," ]]; then
+                if [[ $line =~ "Active" ]]; then
+                   sudo ip link $nic 0 down
+                fi
+                echo sudo RTE_SDK=${OVS_DPDK_DIR} RTE_TARGET=build ${OVS_DPDK_DIR}/tools/dpdk_nic_bind.py -b $OVS_INTERFACE_DRIVER $addr
+                sudo RTE_SDK=${OVS_DPDK_DIR} RTE_TARGET=build ${OVS_DPDK_DIR}/tools/dpdk_nic_bind.py -b $OVS_INTERFACE_DRIVER $addr
+                sudo ovs-vsctl --no-wait --may-exist add-br br-$nic -- set Bridge br-$nic datapath_type=netdev
+                sudo ovs-vsctl --no-wait --may-exist add-port br-$nic dpdk$phys_ofport -- set Interface dpdk$phys_ofport type=dpdk
+                phys_ofport=$((phys_ofport+1))
+             fi
+        done
+    done <<< "$STATUS"
+
+}
+
+free_hugepages() {
+    HUGEPAGE_SIZE=$(grep Hugepagesize /proc/meminfo | awk '{ print $2 }')
+    grep -ws $OVS_HUGEPAGE_MOUNT /proc/mounts > /dev/null
+    if [ $? -ne 0 ]; then
+       echo "Hugepages not mounted, nothing to clean"
+       return 0
+    fi
+    #remove ovs reserved hugepages
+    if [ -d $OVS_HUGEPAGE_MOUNT ]; then
+       sudo rm -rf ${OVS_HUGEPAGE_MOUNT}/rtemap*
+    fi
+
+    #unmount ovs mountpoint
+    sudo umount ${OVS_HUGEPAGE_MOUNT}
+
+    # de-allocate hugepages
+    if [ $OVS_ALLOCATE_HUGEPAGES == 'True' ]; then
+       for d in /sys/devices/system/node/node? ; do
+          echo 0 | sudo tee $d/hugepages/hugepages-${HUGEPAGE_SIZE}kB/nr_hugepages
+       done
+    fi
+
+    if is_ubuntu; then
+        restart_service libvirt-bin
+    else
+        restart_service libvirtd
+    fi
+
+
+}
+
+alloc_hugepages() {
+    HUGEPAGE_SIZE=$(grep Hugepagesize /proc/meminfo | awk '{ print $2 }')
+    sudo mkdir -p $OVS_HUGEPAGE_MOUNT
+
+    if [ $OVS_NUM_HUGEPAGES -eq 0 ]; then
+        die $LINENO "OVS_NUM_HUGEPAGES not set"
+    fi
+    grep -ws $OVS_HUGEPAGE_MOUNT /proc/mounts > /dev/null
+
+    if [ $? -eq 0 ]; then
+        free_hugepages
+    fi
+    #allocate hugepages
+    if [ $OVS_ALLOCATE_HUGEPAGES == 'True' ]; then
+        for d in /sys/devices/system/node/node? ; do
+            echo $OVS_NUM_HUGEPAGES | sudo tee $d/hugepages/hugepages-${HUGEPAGE_SIZE}kB/nr_hugepages
+        done
+    fi
+
+    if is_ubuntu; then
+        qemu_user_id=$(id -u libvirt-qemu)
+        qemu_group_id=$(id -g libvirt-qemu)
+    else
+        qemu_user_id=$(id -u qemu)
+        qemu_group_id=$(id -g qemu)
+    fi
+
+    grep -ws $OVS_HUGEPAGE_MOUNT /proc/mounts > /dev/null
+    if [ $? -ne 0 ] ; then
+        if [ -n "$OVS_HUGEPAGE_MOUNT_PAGESIZE" ]; then
+            sudo mount -t hugetlbfs -o uid=$qemu_user_id,gid=$qemu_group_id,pagesize=$OVS_HUGEPAGE_MOUNT_PAGESIZE  nodev $OVS_HUGEPAGE_MOUNT
+        else
+            sudo mount -t hugetlbfs -o uid=$qemu_user_id,gid=$qemu_group_id  nodev $OVS_HUGEPAGE_MOUNT
+        fi
+    fi
+    if is_ubuntu; then
+        restart_service libvirt-bin
+    else
+        restart_service libvirtd
+    fi
+}
+
+get_ovs_status(){
+    result=0
+    pids_files=( "$OVS_LOG_DIR/ovs-vswitchd.pid"  "$OVS_LOG_DIR/ovsdb-server.pid" )
+    for file in ${pids_files[@]}
+    do
+        if [ ! -e $file ] || [ ! -e "/proc/`cat $file`" ] ;then
+            echo "$file is not running"
+            result=$((result+1))
+        fi
+    done
+    if [[ "$result" == "0" ]]; then
+        echo "ovs alive"
+        tail --lines 20 $OVS_LOG_DIR/ovs-vswitchd.log
+    elif [[ "$result" == "1" ]]; then
+        echo "Not all processes are running restart!!!"
+    fi
+    echo $result
+    return $result
+
+}
+stop_ovs(){
+    pids_files=( "$OVS_LOG_DIR/ovs-vswitchd.pid"  "$OVS_LOG_DIR/ovsdb-server.pid" )
+    for file in ${pids_files[@]}; do
+        sudo kill -9 `cat $file`
+        sudo rm -f $file
+    done
+
+}
+
+
+start_ovs(){
+    sudo modprobe veth
+
+    if [ ! -d $OVS_DB_SOCKET_DIR ]; then
+        sudo mkdir -m 777 -p $OVS_DB_SOCKET_DIR
+    fi
+
+
+    if [ ! -e $OVS_LOG_DIR/ovsdb-server.pid ]; then
+        sudo ${OVS_INSTALL_DIR}/sbin/ovsdb-server  --detach --pidfile=$OVS_LOG_DIR/ovsdb-server.pid  --remote=punix:$OVS_DB_SOCKET --remote=db:Open_vSwitch,Open_vSwitch,manager_options
+    fi
+
+    bind_nics
+
+    if [[ "$OVS_BRIDGE_MAPPINGS" == "" ]]; then
+        PHYS_PORTS=1
+    else
+        MAPPINGS=${OVS_BRIDGE_MAPPINGS//,/ }
+        ARRAY=( $MAPPINGS )
+        PHYS_PORTS=${#ARRAY[@]}
+    fi
+
+    sudo rm -f $OVS_LOG_DIR/ovs-vswitchd.log
+    MAPPINGS=${OVS_BRIDGE_MAPPINGS//,/ }
+    ARRAY=( $MAPPINGS )
+    pciAdressWhitelist=''
+    for pair in ${ARRAY[@]} ; do
+        addr=`echo $pair | cut -f 1 -d "#"`
+        if [ "$pciAdressWhitelist" == '' ]; then
+            pciAdressWhitelist="-w $addr"
+        else
+            pciAdressWhitelist="$pciAdressWhitelist -w $addr"
+        fi
+    done
+
+    qemu_group="qemu"
+    if is_ubuntu; then
+        qemu_group="kvm"
+    fi
+
+    if [ -n "$OVS_LOCK_DIR" ]; then
+        retry_count=1
+        max_retry_count=60
+        while [ "$retry_count" -le "$max_retry_count" ]; do
+            if [[ ! -d $OVS_LOCK_DIR ]]; then
+                sudo mkdir $OVS_LOCK_DIR
+                if [ $? == 0 ]; then
+                    echo "start ovs-vswitchd $retry_count/$max_retry_count"
+                    screen -dms ovs-vswitchd sudo sg $qemu_group -c "umask 002; ${OVS_INSTALL_DIR}/sbin/ovs-vswitchd --dpdk -vhost_sock_dir $OVS_DB_SOCKET_DIR -c $OVS_CORE_MASK -n $OVS_MEM_CHANNELS  --proc-type primary  --huge-dir $OVS_HUGEPAGE_MOUNT --socket-mem $OVS_SOCKET_MEM $pciAddressWhitelist  -- unix:$OVS_DB_SOCKET 2>&1 | tee ${OVS_LOG_DIR}/ovs-vswitchd.log"
+                    break
+                fi
+            fi
+            let retry_count="$retry_count+1"
+            sleep 10
+        done
+    else
+        screen -dms ovs-vswitchd sudo sg $qemu_group -c "umask 002; ${OVS_INSTALL_DIR}/sbin/ovs-vswitchd --dpdk -vhost_sock_dir $OVS_DB_SOCKET_DIR -c $OVS_CORE_MASK -n $OVS_MEM_CHANNELS  --proc-type primary  --huge-dir $OVS_HUGEPAGE_MOUNT --socket-mem $OVS_SOCKET_MEM $pciAddressWhitelist -- unix:$OVS_DB_SOCKET 2>&1 | tee ${OVS_LOG_DIR}/ovs-vswitchd.log"
+    fi
+    sleep 1
+    PID=$(pidof ovs-vswitchd)
+    if [ $? -eq 0 ]; then
+        echo $PID > $OVS_LOG_DIR/ovs-vswitchd.pid
+    else
+        free_hugepages
+        if [ -n "$OVS_LOCK_DIR" ]; then
+            sudo rm -rf $OVS_LOCK_DIR
+        fi
+        die $LINENO "ovs-vswitchd application failed to start $PID"
+    fi
+    while [ ! $(grep "unix.*connected" ${OVS_LOG_DIR}/ovs-vswitchd.log) ]; do
+        PID=$(pidof ovs-vswitchd)
+        if [ $? -eq 0 ]; then
+            echo "Waiting for ovs-vswitchd to start..."
+            sleep 1
+        else
+            free_hugepages
+            if [ -n "$OVS_LOCK_DIR" ]; then
+                sudo rm -rf $OVS_LOCK_DIR
+            fi
+            die $LINENO "ovs-vswitchd application failed to start $PID"
+        fi
+    done
+    sudo rm -rf $OVS_LOCK_DIR
+
+}
+
+cmd_start(){
+    get_ovs_status
+    ret=$?
+    if [[ $ret -eq 0 ]]; then
+        echo Accelerated ovs already started
+        return 0
+    fi
+    #if huge pages are not mounted allocate hugepages
+    echo "mounting hugepages"
+    alloc_hugepages
+    #if uio diver is not loaded load
+    echo "loading OVS_INTERFACE_DRIVER diver"
+    if [[ "$OVS_INTERFACE_DRIVER" == "igb_uio" ]]; then
+        load_igb_uio_module
+    elif [[ "$OVS_INTERFACE_DRIVER" == "vfio-pci" ]]; then
+        load_vfio_pci_module
+    fi
+
+    # store pid of each process in $OVS_LOG_DIR/*
+    echo "starting ovs db"
+    echo "binding nics"
+    echo "starting vswitchd"
+    start_ovs
+}
+
+cmd_stop(){
+    #if switch is stopped no op/error message
+    #else
+    # retrive pid of each process in $OVS_LOG_DIR/*
+    echo "stopping vswitchd"
+    echo "stopping ovs db"
+    stop_ovs
+
+    #if physical nics bindings are defined, bind nics with linux driver
+    echo "rebinding nics to linux_dirver"
+    unbind_nics
+
+    echo "unloading OVS_INTERFACE_DRIVER"
+    if [[ "$OVS_INTERFACE_DRIVER" == "igb_uio" ]]; then
+        remove_igb_uio_module
+    elif [[ "$OVS_INTERFACE_DRIVER" =~ "vfio-pci" ]]; then
+        remove_vfio_pci_module
+    fi
+
+    echo "unmounting hugepages"
+    free_hugepages
+
+}
+
+cmd_status(){
+    get_ovs_status
+}
+
+
+cmd_init(){
+    init_db
+}
+
+case "$1" in
+    start)
+        cmd_start
+    ;;
+
+    stop)
+        cmd_stop
+    ;;
+
+    restart)
+        cmd_stop
+        cmd_start
+    ;;
+
+    status)
+        cmd_status
+    ;;
+
+    init)
+        cmd_init
+    ;;
+
+    *)
+        echo "Usage: $0 {start|stop|restart|status|init}"
+        exit 1
+esac
+
