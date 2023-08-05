@@ -1,0 +1,84 @@
+PyDvdRead -- A wrapper library around libdvdread4.
+
+This python module wraps libdvdread4 to provide Python access to DVD structural information. This does not fully wrap libdvdread4 as my needs are not that extensive.
+
+Please note that this module uses libdvdread4 to directly access a DVD disc if the device path is provided. This means that execution speed will depend on disc access, which can be slow. Just be aware of this.
+
+---------
+:Install:
+---------
+
+	python3 setup.py build
+	python3 setup.py install
+
+---------------
+:Documentation:
+---------------
+
+Use Python's online help to get the documentation from the classes.
+
+	$ python3
+	>>> import dvdread
+
+	>>> help(dvdread.DVD)
+	Help on class DVD in module dvdread.objects:
+
+	class DVD(_dvdread.DVD)
+	 |  Entry class into parsing the DVD structure.
+	 |  Pass the device path to the init function, and then call Open() to initiate reading.
+	 |  Best to use the `with` keyword to ensure Python calls the Close() function when done.
+	 |  
+	 |  A DVD has titles.
+	 |  A title has chapters, audio tracks, and subpictures ("subtitles").
+	 |  
+	 |  Method resolution order:
+	 |      DVD
+	 |      _dvdread.DVD
+	 |      builtins.object
+	 |  
+	 |  Methods defined here:
+	 |  
+	 |  GetAllTitles(self)
+	 |      Gets a tuple of all the title objects starting with title one.
+
+	..............
+
+-------
+:Usage:
+-------
+
+A simple script is needed to parse the IFO structure in a DVD:
+
+	import dvdread
+
+	with dvdread.DVD("/dev/sr0") as d:
+		d.Open()
+
+		print("Number of titles on disc: %d" % d.NumberOfTitles)
+
+		for t in d.GetAllTitles():
+			print("Title %d has %d angles, %d audio tracks, %d chapters, %d subpictures, and runs for %s" % (t.TitleNum, t.NumberOfAngles, t.NumberOfAudios, t.NumberOfChapters, t.NumberOfSubpictures, t.PlaybackTimeFancy))
+
+Output:
+	$ python3 foo.py
+	Number of titles on disc: 7
+	Title 1 has 1 angles, 4 audio tracks, 33 chapters, 3 subpictures, and runs for 02:23:11.00
+	Title 2 has 1 angles, 4 audio tracks, 1 chapters, 3 subpictures, and runs for 00:00:12.00
+	Title 3 has 1 angles, 4 audio tracks, 1 chapters, 3 subpictures, and runs for 00:00:12.00
+	Title 4 has 1 angles, 4 audio tracks, 1 chapters, 3 subpictures, and runs for 00:00:21.19
+	Title 5 has 1 angles, 1 audio tracks, 1 chapters, 3 subpictures, and runs for 00:02:04.00
+	Title 6 has 1 angles, 4 audio tracks, 1 chapters, 3 subpictures, and runs for 00:00:07.00
+	Title 7 has 1 angles, 1 audio tracks, 4 chapters, 0 subpictures, and runs for 00:04:50.21
+
+You must provide the device path to the DVD constructor, and then call Open() to parse the device structure. Doing this within the `with` keyword in Python ensures that DVD.Close() is called and cleanup is performed. The above script shows how to iterate through titles.
+
+--------------
+:Organization:
+--------------
+
+This module contains two parts:
+1) C implementation to wrap libdvdread4 and provide basic PyObject types for use within Python
+2) Python implementation to wrap PyObject types created in C
+
+The C objects are defined within the /src/ directory and the Python objects in the /dvdread/ directory. The C objects are defined in the _dvdread module and the Python objects in the dvdread module.
+
