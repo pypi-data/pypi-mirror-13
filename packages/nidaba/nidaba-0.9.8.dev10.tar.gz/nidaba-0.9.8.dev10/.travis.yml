@@ -1,0 +1,57 @@
+language: python
+python:
+# This is not actually used. Because it would take an overly long time
+# to build scipy we cannot use the virtual env of travis. Instead, we
+# use miniconda.
+  - 2.7
+
+notifications:
+  email: false
+
+sudo: false
+
+install:
+  # Install miniconda
+  # -----------------
+  - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh;
+  - bash miniconda.sh -b -p $HOME/miniconda
+  - export PATH="$HOME/miniconda/bin:$PATH"
+
+  # Create the basic testing environment
+  # ------------------------------------
+  - conda config --set always_yes yes --set changeps1 no --set show_channel_urls yes
+  - conda update conda
+  - conda create -n test-environment python=$TRAVIS_PYTHON_VERSION
+  - source activate test-environment
+
+  # Customise the testing environment
+  # ---------------------------------
+  - conda install pbr nose pip
+  - sed
+    '/gunicorn\|Flask\|Flask-RESTful\|requests-toolbelt\|stevedore\|pluginbase\|click\|dominate\|regex\|celery\|redis\|pyxDamerauLevenshtein\|beautifulsoup4/d'
+    requirements.txt | xargs conda install
+  # we have to install some kraken dependencies using conda, too
+  - conda install numpy Pillow scipy Cython h5py
+  # Conda does not package everything, so we install a couple others via pip.
+  - pip install -r requirements.txt
+  - pip install kraken
+  
+  # install ocropus
+  - git clone https://github.com/tmbdev/ocropy.git
+  - sed '/numexpr\|beautifulsoup4/d' ocropy/requirements_1.txt | xargs conda install
+  - touch ocropy/models/en-default.pyrnn.gz
+  - pip install ./ocropy
+
+  # Package debug
+  # -------------
+  - conda list
+  - pip freeze
+
+  # Install nidaba
+  # --------------
+  - python setup.py install
+  # Download test data
+  - python setup.py download
+
+script:
+  - python setup.py nosetests
