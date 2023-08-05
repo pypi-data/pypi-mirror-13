@@ -1,0 +1,920 @@
+
+<!DOCTYPE html>
+
+<html lang="en-us" >
+<head>
+<title>Add place | Django site admin</title>
+<link rel="stylesheet" type="text/css" href="/static/admin/css/base.css" />
+<link rel="stylesheet" type="text/css" href="/static/admin/css/forms.css" />
+
+
+<script type="text/javascript" src="/admin/jsi18n/"></script>
+<link href="/static/adminsortable2/css/sortable.css" type="text/css" media="all" rel="stylesheet" />
+<link href="/static/leaflet/leaflet.css" type="text/css" media="screen" rel="stylesheet" />
+<link href="/static/leaflet/draw/leaflet.draw.css" type="text/css" media="screen" rel="stylesheet" />
+<script type="text/javascript" src="/static/admin/js/core.js"></script>
+<script type="text/javascript" src="/static/admin/js/vendor/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="/static/admin/js/jquery.init.js"></script>
+<script type="text/javascript" src="/static/admin/js/admin/RelatedObjectLookups.js"></script>
+<script type="text/javascript" src="/static/admin/js/actions.min.js"></script>
+<script type="text/javascript" src="/static/admin/js/urlify.js"></script>
+<script type="text/javascript" src="/static/admin/js/prepopulate.min.js"></script>
+<script type="text/javascript" src="/static/admin/js/vendor/xregexp/xregexp.min.js"></script>
+<script type="text/javascript" src="/static/admin/js/SelectBox.js"></script>
+<script type="text/javascript" src="/static/admin/js/SelectFilter2.js"></script>
+<script type="text/javascript" src="/static/leaflet/leaflet.js"></script>
+<script type="text/javascript" src="/static/leaflet/draw/leaflet.draw.js"></script>
+<script type="text/javascript" src="/static/leaflet/leaflet.extras.js"></script>
+<script type="text/javascript" src="/static/leaflet/leaflet.forms.js"></script>
+<script type="text/javascript" src="/static/admin/js/inlines.min.js"></script>
+<script type="text/javascript" src="/static/adminsortable2/js/plugins/admincompat.js"></script>
+<script type="text/javascript" src="/static/adminsortable2/js/libs/jquery.ui.core-1.11.4.js"></script>
+<script type="text/javascript" src="/static/adminsortable2/js/libs/jquery.ui.widget-1.11.4.js"></script>
+<script type="text/javascript" src="/static/adminsortable2/js/libs/jquery.ui.mouse-1.11.4.js"></script>
+<script type="text/javascript" src="/static/adminsortable2/js/libs/jquery.ui.sortable-1.11.4.js"></script>
+<script type="text/javascript" src="/static/adminsortable2/js/inline-sortable.js"></script>
+
+<meta name="robots" content="NONE,NOARCHIVE" />
+</head>
+
+
+<body class=" app-webmap model-poi change-form"
+  data-admin-utc-offset="3600">
+
+<!-- Container -->
+<div id="container">
+
+    
+    <!-- Header -->
+    <div id="header">
+        <div id="branding">
+        
+<h1 id="site-name"><a href="/admin/">Django administration</a></h1>
+
+        </div>
+        
+        
+        <div id="user-tools">
+            
+                Welcome,
+                <strong>test_user</strong>.
+            
+            
+                
+                    <a href="/">View site</a> /
+                
+                
+                    
+                    
+                
+                
+                <a href="/admin/password_change/">Change password</a> /
+                
+                <a href="/admin/logout/">Log out</a>
+            
+        </div>
+        
+        
+        
+    </div>
+    <!-- END Header -->
+    
+<div class="breadcrumbs">
+<a href="/admin/">Home</a>
+&rsaquo; <a href="/admin/webmap/">Webmap</a>
+&rsaquo; <a href="/admin/webmap/poi/">Places</a>
+&rsaquo; Add place
+</div>
+
+    
+
+    
+        
+    
+
+    <!-- Content -->
+    <div id="content" class="colM">
+        
+        <h1>Add place</h1>
+        <div id="content-main">
+
+
+
+<form enctype="multipart/form-data" action="" method="post" id="poi_form" novalidate><input type='hidden' name='csrfmiddlewaretoken' value='dexGvB3yD6H27t8hS35KhQpY6QnL6wVA' />
+<div>
+
+
+
+
+    <p class="errornote">
+    Please correct the error below.
+    </p>
+    
+
+
+
+
+  <fieldset class="module aligned ">
+    
+    
+    
+        <div class="form-row field-name">
+            
+            
+                <div>
+                    
+                    
+                        <label class="required" for="id_name">Name:</label>
+                        
+                            <input class="vTextField" id="id_name" maxlength="255" name="name" type="text" value="Testing POI" />
+                        
+                    
+                    
+                        <p class="help">Exact place name</p>
+                    
+                </div>
+            
+        </div>
+    
+        <div class="form-row field-marker">
+            
+            
+                <div>
+                    
+                    
+                        <label class="required" for="id_marker">Marker:</label>
+                        
+                            <input class="vForeignKeyRawIdAdminField" id="id_marker" name="marker" type="text" value="1" /><a href="/admin/webmap/marker/?_to_field=id&amp;layer__status__show_to_mapper=True&amp;status__show_to_mapper=True" class="related-lookup" id="lookup_id_marker" title="Lookup"></a>&nbsp;<strong>Test marker</strong>
+                        
+                    
+                    
+                        <p class="help">Select icon, that will be shown in map</p>
+                    
+                </div>
+            
+        </div>
+    
+        <div class="form-row field-status">
+            
+            
+                <div>
+                    
+                    
+                        <label class="required" for="id_status">Status:</label>
+                        
+                            
+<div class="related-widget-wrapper">
+    <select id="id_status" name="status">
+<option value="2" selected="selected">Normal status</option>
+</select>
+    
+        
+        <a class="related-widget-wrapper-link change-related" id="change_id_status"
+            data-href-template="/admin/webmap/status/__fk__/change/?_to_field=id&amp;_popup=1"
+            title="Change selected status">
+            <img src="/static/admin/img/icon-changelink.svg" alt="Change"/>
+        </a>
+        
+        
+        <a class="related-widget-wrapper-link add-related" id="add_id_status"
+            href="/admin/webmap/status/add/?_to_field=id&amp;_popup=1"
+            title="Add another status">
+            <img src="/static/admin/img/icon-addlink.svg" alt="Add"/>
+        </a>
+        
+        
+        <a class="related-widget-wrapper-link delete-related" id="delete_id_status"
+            data-href-template="/admin/webmap/status/__fk__/delete/?_to_field=id&amp;_popup=1"
+            title="Delete selected status">
+            <img src="/static/admin/img/icon-deletelink.svg" alt="Delete"/>
+        </a>
+        
+    
+</div>
+
+                        
+                    
+                    
+                        <p class="help">POI status, determinse if it will be shown in map</p>
+                    
+                </div>
+            
+        </div>
+    
+        <div class="form-row field-properties">
+            
+            
+                <div>
+                    
+                    
+                        <label for="id_properties">Properties:</label>
+                        
+                            
+<div class="related-widget-wrapper">
+    <select multiple="multiple" class="selectfilter" id="id_properties" name="properties">
+<option value="1">Test property</option>
+</select><script type="text/javascript">addEvent(window, "load", function(e) {SelectFilter.init("id_properties", "properties", 0); });</script>
+
+    
+        
+        
+        <a class="related-widget-wrapper-link add-related" id="add_id_properties"
+            href="/admin/webmap/property/add/?_to_field=id&amp;_popup=1"
+            title="Add another property">
+            <img src="/static/admin/img/icon-addlink.svg" alt="Add"/>
+        </a>
+        
+        
+    
+</div>
+
+                        
+                    
+                    
+                        <p class="help">POI properties Hold down "Control", or "Command" on a Mac, to select more than one.</p>
+                    
+                </div>
+            
+        </div>
+    
+        <div class="form-row field-importance">
+            
+            
+                <div>
+                    
+                    
+                        <label class="required" for="id_importance">Importance:</label>
+                        
+                            <input class="vIntegerField" id="id_importance" name="importance" type="text" value="0" />
+                        
+                    
+                    
+                        <p class="help">Minimal zoom modificator (use 20+ to show always).<br/></p>
+                    
+                </div>
+            
+        </div>
+    
+        <div class="form-row errors field-geom">
+            <ul class="errorlist"><li>Invalid geometry type.</li></ul>
+            
+                <div>
+                    
+                    
+                        <label class="required" for="id_geom">Place geometry:</label>
+                        
+                            
+
+
+<style type="text/css">
+    
+    #id_geom_map { width: 100%; height: 400px; }
+    #id_geom { display: none; }
+    
+
+    /* Fixes for Django base.css */
+    .module .leaflet-draw ul {
+        margin-left: 0px;
+        padding-left: 0px;
+    }
+    .module .leaflet-draw ul li {
+        list-style-type: none;
+    }
+
+</style>
+
+<script type="text/javascript">
+    
+    var geodjango_id_geom = {};
+    geodjango_id_geom.fieldid = 'id_geom';
+    geodjango_id_geom.modifiable = true;
+    geodjango_id_geom.geom_type = 'GeometryCollection';
+    geodjango_id_geom.srid = 4326;
+    
+
+    
+L.drawLocal = {
+    draw: {
+        toolbar: {
+            actions: {
+                title: "Cancel drawing",
+                text: "Cancel"
+            },
+            undo: {
+                title: "Delete last point drawn",
+                text: "Delete last point"
+            },
+            buttons: {
+                polyline: "Draw a polyline",
+                polygon: "Draw a polygon",
+                rectangle: "Draw a rectangle",
+                circle: "Draw a circle",
+                marker: "Draw a marker"
+            }
+        },
+        handlers: {
+            circle: {
+                tooltip: {
+                    start: "Click and drag to draw circle."
+                }
+            },
+            marker: {
+                tooltip: {
+                    start: "Click map to place marker."
+                }
+            },
+            polygon: {
+                tooltip: {
+                    start: "Click to start drawing shape.",
+                    cont: "Click to continue drawing shape.",
+                    end: "Click first point to close this shape."
+                }
+            },
+            polyline: {
+                error: "<strong>Error:</strong> shape edges cannot cross!",
+                tooltip: {
+                    start: "Click to start drawing line.",
+                    cont: "Click to continue drawing line.",
+                    end: "Click last point to finish line."
+                }
+            },
+            rectangle: {
+                tooltip: {
+                    start: "Click and drag to draw rectangle."
+                }
+            },
+            simpleshape: {
+                tooltip: {
+                    end: "Release mouse to finish drawing."
+                }
+            }
+        }
+    },
+    edit: {
+        toolbar: {
+            actions: {
+                save: {
+                    title: "Save changes.",
+                    text: "Save"
+                },
+                cancel: {
+                    title: "Cancel editing, discards all changes.",
+                    text: "Cancel"
+                }
+            },
+            buttons: {
+                edit: "Edit layers",
+                editDisabled: "No layers to edit.",
+                remove: "Delete layers",
+                removeDisabled: "No layers to delete."
+            }
+        },
+        handlers: {
+            edit: {
+                tooltip: {
+                    text: "Drag handles, or marker to edit feature.",
+                    subtext: "Click cancel to undo changes."
+                }
+            },
+            remove: {
+                tooltip: {
+                    text: "Click on a feature to remove"
+                }
+            }
+        }
+    }
+};
+    L.Control.ResetView.TITLE = "Reset view";
+    L.Control.ResetView.ICON = "url(/static/leaflet/images/reset-view.png)";
+
+
+    function id_geom_map_callback(map, options) {
+        geodjango_id_geom.store_class = L.FieldStore;
+        (new L.GeometryField(geodjango_id_geom)).addTo(map);
+        
+    };
+
+    
+</script>
+
+
+
+<div id="id_geom_div_map">
+    
+    
+
+<div id="id_geom_map" class="leaflet-container-default"></div>
+<script type="text/javascript">
+(function () {
+
+    function loadmap() {
+        var djoptions = {"maxzoom": 18, "fitextent": true, "overlays": [], "attributionprefix": null, "resetview": true, "tilesextent": [], "minimap": false, "layers": [["cyklomapa", "http://tiles.prahounakole.cz/{z}/{x}/{y}.png", {"attribution": "&copy; p\u0159isp\u011bvatel\u00e9 <a href=\"http://www.openstreetmap.org/copyright\">OpenStreetMap</a>"}], ["V\u0161eobecn\u00e1 mapa", "http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {"attribution": "&copy; p\u0159isp\u011bvatel\u00e9 <a href=\"http://www.openstreetmap.org/copyright\">OpenStreetMap</a>"}]], "minzoom": 8, "scale": "metric", "srid": null, "center": [50.08741, 14.4211], "zoom": 12, "extent": [[48.517, 11.953], [51.097, 19.028]]},
+            options = {djoptions: djoptions, initfunc: loadmap,
+                       globals: false, callback: id_geom_map_callback};
+        L.Map.djangoMap('id_geom_map', options);
+    }
+    var loadevents = ["load"];
+    if (loadevents.length === 0) loadmap();
+    else if (window.addEventListener) for (var i=0; i<loadevents.length; i++) window.addEventListener(loadevents[i], loadmap, false);
+    else if (window.jQuery) jQuery(window).on(loadevents.join(' '), loadmap);
+    
+})();
+</script>
+
+
+</div>
+
+
+
+
+<textarea id="id_geom" class="required" cols="150" rows="10" name="geom">{&quot;type&quot;: &quot;Point&quot;, &quot;coordinates&quot;: [0.0, 0.0]}</textarea>
+
+                        
+                    
+                    
+                        <p class="help">Add point: Select pencil with plus sign icon and place your point to the map.<br/>
+            Add line: Select line icon and by clicking to map draw the line. Finish drawing with double click.<br/>
+            Add area: Select area icon and by clicking to mapy draw the area. Finish drawing with double click.<br/>
+            Object edition: Select the first icon and then select object in map. Draw points in map to move them, use points in the middle of sections to add new edges.</p>
+                    
+                </div>
+            
+        </div>
+    
+        <div class="form-row field-desc">
+            
+            
+                <div>
+                    
+                    
+                        <label for="id_desc">Description:</label>
+                        
+                            <textarea class="vLargeTextField" cols="40" id="id_desc" name="desc" rows="10">
+</textarea>
+                        
+                    
+                    
+                        <p class="help">Text that will be shown after selecting POI.</p>
+                    
+                </div>
+            
+        </div>
+    
+        <div class="form-row field-desc_extra">
+            
+            
+                <div>
+                    
+                    
+                        <label for="id_desc_extra">Detailed description:</label>
+                        
+                            <textarea class="vLargeTextField" cols="40" id="id_desc_extra" name="desc_extra" rows="10">
+</textarea>
+                        
+                    
+                    
+                        <p class="help">Text that extends the description.</p>
+                    
+                </div>
+            
+        </div>
+    
+        <div class="form-row field-url">
+            
+            
+                <div>
+                    
+                    
+                        <label for="id_url">URL:</label>
+                        
+                            <input class="vURLField" id="id_url" maxlength="200" name="url" type="url" />
+                        
+                    
+                    
+                        <p class="help">Link to the web page of the place.</p>
+                    
+                </div>
+            
+        </div>
+    
+        <div class="form-row field-address">
+            
+            
+                <div>
+                    
+                    
+                        <label for="id_address">Adress:</label>
+                        
+                            <input class="vTextField" id="id_address" maxlength="255" name="address" type="text" />
+                        
+                    
+                    
+                        <p class="help">Poi address (street, house number)</p>
+                    
+                </div>
+            
+        </div>
+    
+        <div class="form-row field-remark">
+            
+            
+                <div>
+                    
+                    
+                        <label for="id_remark">Internal remark:</label>
+                        
+                            <textarea class="vLargeTextField" cols="40" id="id_remark" name="remark" rows="10">
+</textarea>
+                        
+                    
+                    
+                        <p class="help">Internal information about POI.</p>
+                    
+                </div>
+            
+        </div>
+    
+        <div class="form-row field-gpx_file">
+            
+            
+                <div>
+                    
+                    
+                        <label for="id_gpx_file">Gpx file:</label>
+                        
+                            <input id="id_gpx_file" name="gpx_file" type="file" />
+                        
+                    
+                    
+                        <p class="help">Upload geometry by GPX file</p>
+                    
+                </div>
+            
+        </div>
+    
+        <div class="form-row field-last_modification">
+            
+            
+                <div>
+                    
+                    
+                        <label>Last modification at:</label>
+                        
+                            <p>-</p>
+                        
+                    
+                    
+                </div>
+            
+        </div>
+    
+        <div class="form-row field-created_at">
+            
+            
+                <div>
+                    
+                    
+                        <label>Created at:</label>
+                        
+                            <p>-</p>
+                        
+                    
+                    
+                </div>
+            
+        </div>
+    
+        <div class="form-row field-updated_by">
+            
+            
+                <div>
+                    
+                    
+                        <label>Last updated by:</label>
+                        
+                            <p>-</p>
+                        
+                    
+                    
+                </div>
+            
+        </div>
+    
+        <div class="form-row field-author">
+            
+            
+                <div>
+                    
+                    
+                        <label>Author:</label>
+                        
+                            <p>-</p>
+                        
+                    
+                    
+                </div>
+            
+        </div>
+    
+</fieldset>
+
+
+
+
+
+
+
+
+    
+<div class="inline-group sortable" id="photos-group">
+  <div class="tabular inline-related last-related">
+<input id="id_photos-TOTAL_FORMS" name="photos-TOTAL_FORMS" type="hidden" value="0" /><input id="id_photos-INITIAL_FORMS" name="photos-INITIAL_FORMS" type="hidden" value="0" /><input id="id_photos-MIN_NUM_FORMS" name="photos-MIN_NUM_FORMS" type="hidden" /><input id="id_photos-MAX_NUM_FORMS" name="photos-MAX_NUM_FORMS" type="hidden" />
+<fieldset class="module">
+   <h2>Photographies</h2>
+   
+   <table>
+     <thead><tr><th>Sort</th>
+     
+       
+         <th colspan="2">Name
+         &nbsp;<img src="/static/admin/img/icon-unknown.gif" class="help help-tooltip" width="10" height="10" alt="(Photo name)" title="Photo name" />
+         </th>
+       
+     
+       
+         <th>Description
+         &nbsp;<img src="/static/admin/img/icon-unknown.gif" class="help help-tooltip" width="10" height="10" alt="(Photo description.)" title="Photo description." />
+         </th>
+       
+     
+       
+         <th class="required">License
+         
+         </th>
+       
+     
+       
+     
+       
+         <th>Photography author
+         &nbsp;<img src="/static/admin/img/icon-unknown.gif" class="help help-tooltip" width="10" height="10" alt="(Full name of the author of the photography)" title="Full name of the author of the photography" />
+         </th>
+       
+     
+       
+         <th class="required">Photo
+         &nbsp;<img src="/static/admin/img/icon-unknown.gif" class="help help-tooltip" width="10" height="10" alt="(Upload photo in full resolution.)" title="Upload photo in full resolution." />
+         </th>
+       
+     
+       
+         <th>Author
+         
+         </th>
+       
+     
+       
+         <th>Last updated by
+         
+         </th>
+       
+     
+       
+         <th>Created at
+         
+         </th>
+       
+     
+       
+         <th>Last modification at
+         
+         </th>
+       
+     
+     <th>Delete?</th>
+     </tr></thead>
+
+     <tbody>
+     
+        
+        <tr class="form-row row1  empty-form"
+             id="photos-empty">
+        <td class="drag">&nbsp;</td>
+        <td class="original">
+          
+          <input id="id_photos-__prefix__-id" name="photos-__prefix__-id" type="hidden" />
+          <input id="id_photos-__prefix__-poi" name="photos-__prefix__-poi" type="hidden" />
+          
+        </td>
+        
+          
+            
+              <td class="field-name">
+              
+                  
+                  <input class="vTextField" id="id_photos-__prefix__-name" maxlength="255" name="photos-__prefix__-name" type="text" />
+              
+              </td>
+            
+          
+            
+              <td class="field-desc">
+              
+                  
+                  <textarea class="vLargeTextField" cols="40" id="id_photos-__prefix__-desc" name="photos-__prefix__-desc" rows="10">
+</textarea>
+              
+              </td>
+            
+          
+            
+              <td class="field-license">
+              
+                  
+                  
+<div class="related-widget-wrapper">
+    <select id="id_photos-__prefix__-license" name="photos-__prefix__-license">
+<option value="" selected="selected">---------</option>
+</select>
+    
+        
+        <a class="related-widget-wrapper-link change-related" id="change_id_photos-__prefix__-license"
+            data-href-template="/admin/webmap/license/__fk__/change/?_to_field=id&amp;_popup=1"
+            title="Change selected license">
+            <img src="/static/admin/img/icon-changelink.svg" alt="Change"/>
+        </a>
+        
+        
+        <a class="related-widget-wrapper-link add-related" id="add_id_photos-__prefix__-license"
+            href="/admin/webmap/license/add/?_to_field=id&amp;_popup=1"
+            title="Add another license">
+            <img src="/static/admin/img/icon-addlink.svg" alt="Add"/>
+        </a>
+        
+        
+        <a class="related-widget-wrapper-link delete-related" id="delete_id_photos-__prefix__-license"
+            data-href-template="/admin/webmap/license/__fk__/delete/?_to_field=id&amp;_popup=1"
+            title="Delete selected license">
+            <img src="/static/admin/img/icon-deletelink.svg" alt="Delete"/>
+        </a>
+        
+    
+</div>
+
+              
+              </td>
+            
+          
+            
+              <td class="field-order is_hidden">
+              
+                  
+                  <input id="id_photos-__prefix__-order" name="photos-__prefix__-order" type="hidden" value="0" />
+              
+              </td>
+            
+          
+            
+              <td class="field-photographer">
+              
+                  
+                  <input class="vTextField" id="id_photos-__prefix__-photographer" maxlength="255" name="photos-__prefix__-photographer" type="text" />
+              
+              </td>
+            
+          
+            
+              <td class="field-photo">
+              
+                  
+                  Currently: <a target="_blank" href="/media/None">None</a> <br />Change: <input id="id_photos-__prefix__-photo" name="photos-__prefix__-photo" type="file" />
+              
+              </td>
+            
+          
+            
+              <td class="field-author">
+              
+                  <p>-</p>
+              
+              </td>
+            
+          
+            
+              <td class="field-updated_by">
+              
+                  <p>-</p>
+              
+              </td>
+            
+          
+            
+              <td class="field-created_at">
+              
+                  <p>-</p>
+              
+              </td>
+            
+          
+            
+              <td class="field-last_modification">
+              
+                  <p>-</p>
+              
+              </td>
+            
+          
+        
+        
+          <td class="delete"></td>
+        
+        </tr>
+     
+     </tbody>
+   </table>
+</fieldset>
+  </div>
+</div>
+
+<script type="text/javascript">
+
+(function($) {
+  $("#photos-group .tabular.inline-related tbody tr").tabularFormset({
+    prefix: "photos",
+    adminStaticPrefix: '/static/admin/',
+    addText: "Add another Photo",
+    deleteText: "Remove"
+  });
+})(django.jQuery);
+</script>
+<div class="default_order_field" default_order_field="order"></div>
+
+
+
+
+
+
+<div class="submit-row">
+<input type="submit" value="Save" class="default" name="_save" />
+
+
+<input type="submit" value="Save and add another" name="_addanother" />
+<input type="submit" value="Save and continue editing" name="_continue" />
+</div>
+
+
+
+    <script type="text/javascript">
+        (function($) {
+            $(document).ready(function() {
+                $('.add-another').click(function(e) {
+                    e.preventDefault();
+                    var event = $.Event('django:add-another-related');
+                    $(this).trigger(event);
+                    if (!event.isDefaultPrevented()) {
+                        showAddAnotherPopup(this);
+                    }
+                });
+                $('.related-lookup').click(function(e) {
+                    e.preventDefault();
+                    var event = $.Event('django:lookup-related');
+                    $(this).trigger(event);
+                    if (!event.isDefaultPrevented()) {
+                        showRelatedObjectLookupPopup(this);
+                    }
+                });
+
+            
+                $('form#poi_form :input:visible:enabled:first').focus()
+            
+            });
+        })(django.jQuery);
+    </script>
+
+
+
+
+<script type="text/javascript">
+(function($) {
+    var field;
+
+
+})(django.jQuery);
+</script>
+
+
+</div>
+</form></div>
+
+        
+        <br class="clear" />
+    </div>
+    <!-- END Content -->
+
+    <div id="footer"></div>
+</div>
+<!-- END Container -->
+
+</body>
+</html>
+
