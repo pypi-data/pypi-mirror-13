@@ -1,0 +1,83 @@
+
+Your Atlassian Cloud (YAC) - Stack
+
+Available comands include:
+
+  yac stack (-h | primer)
+
+-h provides api help
+primer will display this page
+
+The stack command is used to create or update a stack for your Atlassian application via AWS cloud formation. The stack includes all the AWS resources you application needs, including:
+* Internal and External ELBs, 
+* EC2 instances in an auto-scaling group, 
+* an RDS instance, 
+* an EFS for shared home directories, and 
+* all the associated security groups.
+
+A standard YAC stack is shown in http://imgh.us/yac_vpc_3subnets.svg
+
+A typical Atlassian app fits nicely onto the standard stack, and you may be able to use it as is.
+
+Maybe the standard stack is close, but ...
+* you have fewer subnets, or
+* you don't need all the standard elements, or
+* you want to include custom cf parameters, or
+* ingress or egress SG rules need "tweaking" to work for you, or
+# you want to add your own aws resources, or
+* your subnetting doens't fit either of the 2 or 3 layer schemes
+
+Let's explore each of these use cases.
+
+# I Am Standard!
+
+If the standard stack fits your eye, and you've run the the *yac vpc* command to confirmed your VPC mapping is good to go, you can pull the trigger and start printing stacks.
+
+# I Have Fewer Subnets
+
+A VPC with 2 subnet layers is shown in http://imgh.us/yac_vpc_2subnets.svg
+
+The *vpc naming vpc primer* command explains how to setup your naming standards file this subnetting scheme.
+
+# I Don't Need all of the Standard Elements
+
+If you have 2 subnet layers, you obviously don't need an internal ELB. YAC will handle that automatically. But what if ...
+* you don't want to use (and pay for!) EFS volume, or
+* want to use the embedded H2 or HSQL DB instead of RDS?
+
+The *vpc stack* command takes a -x argument that be used to exclude stack elements.
+
+# I want to override or or more Stack Parameters
+
+YAC uses cloud formation to spec each stack element (asg, rds, etc). Each elements template includes a number of template parameters. 
+
+The *vpc stack* command takes a -v argument that be used to override default parameter values. 
+
+The overrides are formatted as json objects, e.g.
+
+>> vpc stack <app> <env> -v '{"InstanceType":"m3.2xlarge", "KeyName":"my_keypair_name"}'
+
+Altertively you can add these overrides into a file containing an cloud formation template, and pass the file yac.
+
+>> vpc stack <app> <env> --appstack=/path/myapp.json
+
+How do I know what parameters are available? Use the --dryrun argument dump the operable template to std out
+
+>> vpc stack <app> <env> -d
+
+# Ingress or egress SG rules need tweaking
+
+Add a "ResourceTweaks" element to your file and add SG changes. (See yac docs for more details).
+
+>> vpc stack <app> <env> --appstack=/path/myapp.json
+
+* I want to add my own resource
+
+dd a "Resources" element to your file and add whatever resources you please. (See yac docs for more details).
+
+>> vpc stack <app> <env> --appstack=/path/myapp.json
+
+* Your subnetting scheme is a special snowflake
+
+Let's talk. Maybe together we can refactor yac to accomodate your subnetting approach.
+
