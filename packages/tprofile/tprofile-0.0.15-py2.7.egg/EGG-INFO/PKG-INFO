@@ -1,0 +1,35 @@
+Metadata-Version: 1.0
+Name: tprofile
+Version: 0.0.15
+Summary: a profile tool for tornado web requesthandler
+Home-page: http://timd.cn/
+Author: timchow
+Author-email: jordan23nbastar@yeah.net
+License: LGPL
+Description: Usage:
+        
+        ======
+        
+        use `tprofile.ProfileMeta' as the metaclass of handler subclass or base handler class.
+        
+        Example::
+        
+        ..code::python
+        
+        import tornado.web
+        from tprofile import ProfileMeta
+        
+        def condition(self):
+            return True if self.get_argument('profile', None) == "1" else False
+        ProfileMeta.set_condition(condition)
+        
+        class BaseHandler(tornado.web.RequestHandler):
+            __metaclass__ = ProfileMeta
+        
+        class MainHandler(BaseHandler):
+            def get(self):
+                pass
+        
+        
+Keywords: tornado profile
+Platform: UNKNOWN
