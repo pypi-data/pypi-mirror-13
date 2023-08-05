@@ -1,0 +1,104 @@
+Metadata-Version: 1.1
+Name: djangohitcounter
+Version: 0.1.6
+Summary: Pretty simple hit counter for Django ORM objects
+Home-page: https://github.com/DirectlineDev/django-hitcounter
+Author: Anton Kuzmichev
+Author-email: assargin@gmail.com
+License: Apache 2.0
+Download-URL: https://github.com/DirectlineDev/django-hitcounter/archive/master.zip
+Description: =================
+        Django Hitcounter
+        =================
+        
+        .. image:: https://badge.fury.io/gh/DirectlineDev%2Fdjango-hitcounter.svg
+            :target: http://badge.fury.io/gh/DirectlineDev%2Fdjango-hitcounter
+        
+        .. image:: https://travis-ci.org/DirectlineDev/django-hitcounter.svg?branch=master
+            :target: https://travis-ci.org/DirectlineDev/django-hitcounter
+        
+        .. image:: https://badge.fury.io/py/djangohitcounter.svg
+            :target: http://badge.fury.io/py/djangohitcounter
+        
+        
+        
+        About
+        -----
+        
+        Pretty simple hit counter for Django ORM objects. It collects hits for any django model objects per date.
+        
+        Requirements
+        ------------
+        
+        * Python 2 & 3
+        * Django 1.7+
+        
+        Installation
+        ------------
+        
+        1. Install it using pip (coming soon):
+        
+        .. code:: sh
+        
+         pip install djangohitcounter
+        
+        
+        or add ``django_hitcounter`` to your Python path
+        
+        2. Add the ``django_hitcounter`` app to your ``INSTALLED_APPS``:
+        
+        .. code:: python
+        
+          # settings.py
+          INSTALLED_APPS = (
+            ...,
+            'django_hitcounter',
+            ...
+          )
+        
+        
+        Usage
+        -----
+        
+        Usage is pretty simple too.
+        
+        .. code:: python
+        
+          from django_hitcounter.models import Counter
+          from datetime import datetime, timedelta
+        
+        
+          obj = SomeModel.objects.get(pk=1)  # get some django object
+        
+          Counter.hit(obj)  # register hit
+          Counter.hit(obj, amount=2)  # register 2 hits
+          Counter.hit(obj, date=datetime.today().date() - timedelta(days=1))  # register hit on yesterday date
+        
+          Counter.objects.for_model(obj)  # get all counter records for our object
+          Counter.objects.for_model(obj, total=True)  # get total hits count for object
+        
+        TODO
+        ----
+        
+        * tests and autotests on CI
+        * badges: pypi (ready), build (ready), coverage (after tests)
+        
+        License
+        -------
+        
+        This software is distributed under the Apache License Version 2.0
+        
+Keywords: django,hits,counter,hits counter,hitcounter
+Platform: UNKNOWN
+Classifier: Development Status :: 4 - Beta
+Classifier: Framework :: Django
+Classifier: Framework :: Django :: 1.7
+Classifier: Framework :: Django :: 1.8
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: Apache Software License
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 2
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.4
