@@ -1,0 +1,92 @@
+Metadata-Version: 2.0
+Name: totoro
+Version: 0.1.0
+Summary: Celery integration with Tornado
+Home-page: https://github.com/Strawhatfy/totoro
+Author: Alex Lee
+Author-email: lyd.alexlee.public@gmail.com
+License: http://www.apache.org/licenses/LICENSE-2.0
+Platform: UNKNOWN
+Classifier: License :: OSI Approved :: Apache Software License
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Programming Language :: Python :: Implementation :: CPython
+Requires-Dist: celery
+Requires-Dist: pika
+Requires-Dist: tornado
+Provides-Extra: redis
+Requires-Dist: redis; extra == 'redis'
+Requires-Dist: tornado-redis; extra == 'redis'
+
+Totoro
+======
+
+Celery integration with Tornado.
+
+Installation
+------------
+
+You can install Totoro either via the Python Package Index (PyPI) or from source.
+
+To install using pip, simply:
+
+.. code-block:: bash
+
+    $ sudo pip install totoro
+
+or alternatively (you really should be using pip though):
+
+.. code-block:: bash
+
+    $ sudo easy_install totoro
+
+or from source:
+
+.. code-block:: bash
+
+    $ sudo python setup.py install
+
+Totoro can only support AMQP by default. To use the redis, you can specify the requirements on the pip comand-line by using brackets.
+
+.. code-block:: bash
+
+    $ sudo pip install totoro[redis]
+
+Hello, world
+------------
+
+Here is a simple "Hello, world!" example for calling celery tasks from Tornado RequestHandler:
+
+.. code-block:: python
+
+    #!/usr/bin/env python
+
+    import tornado.httpserver
+    import tornado.ioloop
+    import tornado.web
+
+    from tornado import gen
+    import totoro
+    from totoro.test.celery_tasks import tasks
+
+
+    class MainHandler(tornado.web.RequestHandler):
+        @gen.coroutine
+        def get(self):
+            response = yield gen.Task(tasks.echo.apply_async, args=['Hello world!'])
+            self.write(response.result)
+
+
+    def main():
+        totoro.setup_producer()
+        application = tornado.web.Application([
+            (r"/", MainHandler),
+        ])
+        http_server = tornado.httpserver.HTTPServer(application)
+        http_server.listen(8888)
+        tornado.ioloop.IOLoop.instance().start()
+
+
+    if __name__ == "__main__":
+        main()
+
+
