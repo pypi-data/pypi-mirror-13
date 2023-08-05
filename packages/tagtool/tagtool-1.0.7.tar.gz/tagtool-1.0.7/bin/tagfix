@@ -1,0 +1,88 @@
+#!/usr/bin/env python
+
+"""ID3 Tag Fixer.
+
+Usage: tagfix <file>...
+"""
+
+import re
+
+from docopt import docopt
+from mutagen.mp3 import MP3
+
+import tagtool
+
+FRAMES_SKIP = [
+    "APIC:",
+]
+
+FRAMES_REMOVE = [
+    "TCOM", "TCON", "TCOP", "TCMP", "TENC", "TMED", "TPOS", "TPUB", "TRCK",
+    "TSOT", "TSSE", "WFED", "WOAF", "WOAS", "WORS",
+]
+
+FRAMES_REMOVE_PREFIX = [
+    "COMM", "POPM", "USLT", "WCOM", "WOAR", "WXXX", "XXX",
+]
+
+# A regular expression that matches websites I download music from:
+RE_WEBSITE = re.compile(r"""
+    (?ix)                                    # IgnoreCase & Verbose
+    \s*
+    (?:\-|\|)?                               # Separators
+    \s*
+    (?:\[|\(|::)?                            # Block Starts
+    (?:www.)?
+    [\w]+                                    # Sitename
+    \.
+    (?:cc|com|in|info|se|site|me|mobi|pk)
+    (?:\]|\)|::)?                            # Block Ends
+""")
+
+
+if __name__ == '__main__':
+
+    args = docopt(__doc__, version='ID3 Tag Fixer 0.5')
+
+    for file in args['<file>']:
+
+        try:
+            tags = MP3(file)
+        except:
+            print("Couldn't read: %s" % file)
+            continue
+
+        if tagtool.is_tagged(tags):
+            new_name = tagtool.rename(file, tags)
+            print("Already tagged: %s " % new_name)
+            continue
+
+        # Remove certain kinds of frames
+        tagtool.commands.remove(
+            tags=tags,
+            frames=FRAMES_REMOVE
+        )
+
+        # Remove frames that have some prefix
+        tagtool.commands.remove(
+            tags=tags,
+            frames=FRAMES_REMOVE_PREFIX,
+            prefix=True
+        )
+
+        # Remove all instances of a website regex in all frames
+        tagtool.commands.replace(
+            tags=tags,
+            pattern=RE_WEBSITE,
+            repl="",
+            prune=True,
+            frames_skip=FRAMES_SKIP
+        )
+
+        # Fingers crossed!
+        tags.save()
+
+        # Rename the file
+        new_name = tagtool.commands.rename(file, tags)
+
+        print("Processed:\t%s" % new_name)
