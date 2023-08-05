@@ -1,0 +1,54 @@
+language: python
+
+sudo: false
+
+addons:
+    postgresql: "9.4"
+
+python:
+    - 3.5
+
+env:
+    global:
+        secure: ksEkBn8IqgTkE5CDSlvV6PxQ5Cvvls9MjU4fYwBtZw32uSarIK9qkR6dtgbSxN37vS/lRgDM2yIDedhMTUUnYtL+qfC3866DnwHgN9tHdvFqB7+bZGFTg1lnuJN9IW/CdCaDgNSkZjNqNY6t4lzdrAsEYR4KDsqYwjsbJEqZRkw=
+        secure: ip77J4FX2xc984JaYfA7g7topgCKndI+bGiAdAQD361YEufJEumNJyMaM+K+u8XMfb7AvQe7gsBUaKVZummlEGhAK3lWkPEJTXqktd9lTLoRF86mEOXaf5gL9R7W2T98FWt549n3kOtyOD6LlmBDL9u2YNckjzi76a7+mts3O2M=
+
+cache:
+    directories:
+    - $HOME/.cache/pip
+
+before_install:
+    - sed -i "s#/etc/cslbot#$TRAVIS_BUILD_DIR#g" cslbot/helpers/*.py scripts/*.py
+    - git config user.email "test@test.com"
+    - git config user.name "test"
+    - git commit -m 'update path' cslbot/helpers/*.py scripts/*.py
+
+install:
+    - pip install flake8 sphinx psycopg2 coveralls .
+      # We need to install this separately since it will pull in CslBot from pypi otherwise
+    - pip install git+git://github.com/tjcsl/cslbot-tjhsst
+
+before_script:
+    - psql -U postgres -c 'create database ircbot'
+    - echo -e 'test\n#test\n#test\ntest' | cslbot
+    - sed -i 's#engine.=.#\0 postgresql://postgres@/ircbot#' $TRAVIS_BUILD_DIR/config.cfg
+    - sed -i 's#extramodules.=.#\0 cslbot-tjhsst#' $TRAVIS_BUILD_DIR/config.cfg
+
+script:
+    - flake8 --max-line-length=1000 .
+    - coverage run ./setup.py test
+    - cslbot-migrate
+    - cslbot-genbabble
+    - cslbot-parselogs /tmp/ircbot
+    - cslbot-parsedata /tmp/ircbot
+    - ./scripts/gendocs.sh
+
+after_success:
+    - coveralls
+    - ./scripts/deploy_docs.sh
+
+notifications:
+  irc:
+      channels: "chat.freenode.net#tjcsl-cslbot"
+      skip_join: true
+      use_notice: true
