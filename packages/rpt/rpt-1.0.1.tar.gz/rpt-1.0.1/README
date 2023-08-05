@@ -1,0 +1,29 @@
+Repetitive command line creation with your editor of choice
+===========================================================
+
+Web: http://thp.io/2016/rpt/
+
+Given a list of file names, this will put the list of files into a text
+file, open that with $EDITOR (or $VISUAL if $EDITOR is not set). After
+the editor returns, any changed names in the text file will cause a
+command (default: mv) to be executed with the original and new filename.
+
+This is very useful in carrying out rename operations that are easy to
+specify with your text editor, but hard to specify with wildcards.
+
+If you ever wrote something like this, then this tool is for you:
+
+    for f in *.mp3; do; mv "$f" "$(basename $f .mp3)_foo.mp3"; done
+
+Also, you can use different commands instead of "mv", and add options
+for the input and output parameters ("oggenc <infile> -o <outfile>"):
+
+    rpt --command=oggenc --output=-o *.wav
+
+If the command requires you to put the output filename before the input,
+you can use --swap to achieve this ("mpg123 -w <outfile> <infile>"):
+
+    rpt --command=mpg123 --output=-w --swap *.mp3
+
+Then for all files that you want to convert to ogg, just change their
+extension (you can possibly also change their name inline).
