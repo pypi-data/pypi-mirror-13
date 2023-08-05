@@ -1,0 +1,89 @@
+Simple TR64 UPnP: A simple way to talk to your UPnP and/or TR64 protocol devices
+================================================================================
+
+
+This library supports the discovery of UPnP devices in the local network and let you execute actions on them if
+the device supports any. Also it contains a convenient way to execute TR64 protocol actions on routers or other network
+devices which supports TR64.
+
+.. code-block:: python
+
+    >>> results = simpletr64.discover()
+    >>> print(results[0])
+    LOC: http://192.168.178.1:49000/tr64desc.xml SRV: urn:dslforum-org:device:InternetGatewayDevice:1
+    ...
+    >>> device = simpletr64.DeviceTR64(hostname=192.168.178.1, port=49000)
+    ...
+    >>> device.execute("/upnp/control/hosts", "urn:dslforum-org:service:Hosts:1", "GetGenericHostEntry", NewIndex=1)
+    {'NewActive': '0', 'NewIPAddress': '192.168.0.23', 'NewMACAddress': '9C:20:7B:E7:FF:5F', 'NewInterfaceType':
+        'Ethernet', 'NewHostName': 'Apple-TV', 'NewAddressSource': 'DHCP', 'NewLeaseTimeRemaining': '0'}
+
+or even easier, execute:
+
+.. code-block:: python
+
+    >>> device = DeviceTR64("fritz.box")
+    >>> device.setupTR64Device("fritz.box")
+    >>> system = System(device)
+    >>> print(system.getSystemInfo().manufactureName)
+    "AVM"
+
+Also please see the `tools <https://github.com/bpannier/simpletr64/tree/master/simpletr64/tools>`_ which have been
+provided with this library, these demonstrates the full functionality.
+
+Features
+--------
+
+- Discovery of UPnP devices in the local network
+- Gathering of UPnP device information's
+- Executing of UPnP actions
+- Authentication for username/password or password only
+- HTTP(S) proxy support
+- Unicode
+
+Installation
+------------
+
+To install Simple TR64, simply:
+
+.. code-block:: bash
+
+    $ pip install simpletr64
+
+Documentation
+-------------
+
+Please, see the `documentation here <http://bpannier.github.io/simpletr64/>`_
+
+
+.. :changelog:
+
+Release History
+---------------
+
+1.0.2 (2016-01-06)
+++++++++++++++++++
+* Added the ability to request the namespace for a TR64 action
+* Added interface ID's to all actions in Lan, Wan and Wifi
+* Added a factory method to DeviceTR64 which takes an URL to the device definitions
+* Improved error handling on XML parsing problems of any content
+* Changed the declaration of getGenericAssociatedDeviceInfo for consistency reasons
+* Changed for all Wifi actions that the interface id is now optional
+* Changed all TR64 action classes to a sub class of DeviceTR64
+* Fix an issue with relative URL's in the device definition
+
+1.0.1 (2016-01-04)
+++++++++++++++++++
+
+* Added better error reporting
+* Added timeout to any network interaction
+* added the possibility to discover more than one service at the same time
+* fixed getHostDetailsByMACAddress()
+
+1.0.0 (2016-01-02)
+++++++++++++++++++
+
+* Birth!
+
+
+
