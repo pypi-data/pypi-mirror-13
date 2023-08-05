@@ -1,0 +1,378 @@
+AI.CDAS: python interface to `CDAS <http://cdaweb.gsfc.nasa.gov/>`__ data
+=========================================================================
+
+This library provides access to CDAS database from python in a simple
+and fluid way through `CDAS REST
+api <http://cdaweb.gsfc.nasa.gov/WebServices/REST/>`__. It fetches the
+data either in `CDF (Common Data Format) <http://cdf.gsfc.nasa.gov/>`__
+or ASCII format and returns it in the form of dictionaries and numpy
+arrays.
+
+Dependencies
+------------
+
+-  Python >= 2.7 (tested in 2.7 and 3.4)
+-  `numpy <http://www.numpy.org/>`__
+-  `requests <http://docs.python-requests.org/en/latest/>`__
+-  `wget <https://pypi.python.org/pypi/wget>`__
+
+Extra dependencies (at least one of the following)
+--------------------------------------------------
+
+-  `astropy <http://www.astropy.org/>`__
+-  `CDF <http://cdf.gsfc.nasa.gov/>`__ +
+   `spacepy <http://spacepy.lanl.gov/doc/index.html>`__
+
+Changelog
+---------
+
+1.1.0
+~~~~~
+
+-  Python 3 support added
+-  Date and time inputs changed from strings to python datetime objects
+-  Possibility of caching downloaded data added
+-  Possibility of switching off the download progress bar added
+
+Examples
+--------
+
+**Example 1**: Retrieving observatory groups and associated instruments
+which measure plasma and solar wind:
+
+::
+
+    #!python
+
+    from ai import cdas
+    import json # for pretty output
+
+    obsGroupsAndInstruments = cdas.get_observatory_groups_and_instruments('istp_public', instrumentType='Plasma and Solar Wind')
+    print json.dumps(obsGroupsAndInstruments, indent=4)
+
+**Example 2**: Getting STEREO-A datasets using regular expressions for
+dataset id and label:
+
+::
+
+    #!python
+
+    from ai import cdas
+    import json # for pretty output
+
+    datasets = cdas.get_datasets('istp_public', idPattern='STA.*', labelPattern='.*STEREO.*')
+    print json.dumps(datasets, indent=4)
+
+**Example 3**: Fetching a list of variables in one of STEREO datasets:
+
+::
+
+    #!python
+
+    from ai import cdas
+    import json # for pretty output
+
+    variables = cdas.get_variables('istp_public', 'STA_L1_MAGB_RTN')
+    print json.dumps(variables, indent=4)
+
+**Example 4**: This snippet of code gets magnetic field data from
+STEREO-A spacecraft for 01.01.2010 and plots it (requires pylab, which
+is part of scipy):
+
+::
+
+    #!python
+
+    from ai import cdas
+    from datetime import datetime
+    import pylab
+
+    data = cdas.get_data('sp_phys', 'STA_L1_MAG_RTN', datetime(2010,1,1), datetime(2010,1,1,23,59,59), ['BFIELD'])
+    pylab.plot(data['EPOCH'], data['BTOTAL'])
+    pylab.show()
+
+**Example 5**: This snippet of code gets magnetic field data from
+STEREO-A spacecraft for 01.01.2010 and saves it to cache directory. The
+next time the same data is requested it is taken from cache without
+downloading:
+
+::
+
+    #!python
+
+    from ai import cdas
+    from datetime import datetime
+
+    cdas.set_cache(True, 'path_to_cache_dir')
+    # this data is downloaded from CDAS
+    data = cdas.get_data('sp_phys', 'STA_L1_MAG_RTN', datetime(2010,1,1), datetime(2010,1,1,23,59,59), ['BFIELD'])
+    # this data is taken from cache
+    data = cdas.get_data('sp_phys', 'STA_L1_MAG_RTN', datetime(2010,1,1), datetime(2010,1,1,23,59,59), ['BFIELD'])
+
+Documentation
+-------------
+
+The functions implemented in AI.CDAS library follow strictly the
+description of CDAS REST web-service documented
+`here <http://cdaweb.gsfc.nasa.gov/WebServices/REST/>`__.
+
+First, AI.CDAS library has to be imported:
+
+::
+
+    #!python
+
+    from ai import cdas
+
+Dataviews
+~~~~~~~~~
+
+Provides descriptions of dataviews that are available from CDAS.
+
+::
+
+    #!python
+
+    dataviews = cdas.get_dataviews()
+
+Observatory groups
+~~~~~~~~~~~~~~~~~~
+
+Provides descriptions of observatory groups that are available from
+CDAS.
+
+::
+
+    #!python
+
+    observatoryGroups = cdas.get_observatory_groups(dataview, instrumentType=None)
+
+**instrumentType** is an instrument type value
+(/InstrumentTypes/InstrumentTypeDescription/Name) from those returned by
+a *cdas.get\_instrument\_types* request. Omitting this parameter
+indicates that no **observatoryGroups** are eliminated based upon their
+**instrumentType** value.
+
+For example, the following snippet of code gets the observatory groups
+with instrument type 'Plasma and Solar Wind' from the dataview 'Public
+data from current space physics missions' (*istp\_public*):
+
+::
+
+    #!python
+
+    observatoryGroups = cdas.get_observatory_groups('istp_public', instrumentType='Plasma and Solar Wind')
+
+Instrument types
+~~~~~~~~~~~~~~~~
+
+Provides descriptions of the instrument types that are available from
+CDAS.
+
+::
+
+    #!python
+
+    instrumentTypes = cdas.get_instrument_types(dataview, observatory=None, observatoryGroup=None)
+
+**observatory** is an observatory group value
+(/Observatories/ObservatoryDescription/Name) from those returned by a
+*cdas.get\_observatories* request. Omitting this parameter indicates
+that no **instrumentTypes** are eliminated based upon their
+**observatory** value.
+
+**observatoryGroup** is an observatory group value
+(/ObservatoryGroups/ObservatoryGroupDescription/Name) from those
+returned by a *cdas.get\_observatory\_groups* request. Omitting this
+parameter indicates that no **instrumentTypes** are eliminated based
+upon their **observatoryGroup** value.
+
+Instruments
+~~~~~~~~~~~
+
+Provides descriptions of the instrument that are available from CDAS.
+
+::
+
+    #!python
+
+    instruments = cdas.get_instruments(dataview, observatory=None)
+
+**observatory** is an observatory value
+(/Observatories/ObservatoryDescription/Name) from those returned by a
+*cdas.get\_observatories* request. Omitting this parameter indicates
+that no **instruments** are eliminated based upon their **observatory**
+value.
+
+Observatories
+~~~~~~~~~~~~~
+
+Provides descriptions of the observatories that are available from CDAS.
+
+::
+
+    #!python
+
+    observatories = cdas.get_observatories(dataview, instrument=None, instrumentType=None)
+
+**instrument** is an instrument value
+(/Instruments/InstrumentDescription/Name) from those returned by a
+*cdas.get\_instruments* request. Omitting this parameter indicates that
+no **observatories** are eliminated based upon their **instrument**
+value.
+
+**instrumentType** is an instrument type value
+(/InstrumentTypes/InstrumentTypeDescription/Name) from those returned by
+a *cdas.get\_instrument\_types* request. Omitting this parameter
+indicates that no **observatories** are eliminated based upon their
+**instrumentType** value.
+
+Observatory groups and instruments
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Provides descriptions of the observatory groups (and associated
+instruments) that are available from CDAS. This is a
+convenience/performance alternative to making multiple calls to
+*cdas.get\_observatory\_groups*, *cdas.get\_observatories*, and
+*cdas.get\_instruments*.
+
+::
+
+    #!python
+
+    observatoryGroupsAndInstruments = cdas.get_observatory_groups_and_instruments(dataview, instrumentType=None)
+
+**instrumentType** is an instrument type value
+(/InstrumentTypes/InstrumentTypeDescription/Name) from those returned by
+a *cdas.get\_instrument\_types* request. Omitting this parameter
+indicates that no **observatoryGroupsAndInstruments** are eliminated
+based upon their **instrumentType** value.
+
+Datasets
+~~~~~~~~
+
+Provides descriptions of the datasets that are available from CDAS.
+
+::
+
+    #!python
+
+    datasets = cdas.get_datasets(dataview, observatoryGroup=None, instrumentType=None, observatory=None, instrument=None, startDate=None, stopDate=None, idPattern=None, labelPattern=None, notesPattern=None)
+
+**observatoryGroup** is an observatory group value
+(/ObservatoryGroups/ObservatoryGroupDescription/Name) from those
+returned by a *cdas.get\_observatory\_groups* request. Omitting this
+parameter indicates that no **datasets** are eliminated based upon their
+**observatoryGroup** value.
+
+**instrumentType** is an instrument type value
+(/InstrumentTypes/InstrumentTypeDescription/Name) from those returned by
+a *cdas.get\_instrument\_types* request. Omitting this parameter
+indicates that no **datasets** are eliminated based upon their
+**instrumentType** value.
+
+**observatory** is an observatory group value
+(/Observatories/ObservatoryDescription/Name) from those returned by a
+*cdas.get\_observatories* request. Omitting this parameter indicates
+that no **datasets** are eliminated based upon their **observatory**
+value.
+
+**instrument** is an instrument value
+(/Instruments/InstrumentDescription/Name) from those returned by a
+*cdas.get\_instruments* request. Omitting this parameter indicates that
+no **datasets** are eliminated based upon their **instrument** value.
+
+**startDate** is a python datetime object specifying the start of a time
+interval. If this parameter is ommited, the time interval will begin
+infinitely in the past.
+
+**stopDate** is a python datetime object specifying the end of a time
+interval. If this parameter is omitted, the time interval will end
+infinitely in the future.
+
+**idPattern** is a java.util.regex compatible regular expression that
+must match the dataset's identifier value. Omitting this parameter is
+equivalent to ".\*".
+
+**labelPattern** is a java.util.regex compatible regular expression that
+must match the dataset's label text. Omitting this parameter is
+equivalent to ".\*". Embedded matching flag expressions (e.g., (?i) for
+case insensitive match mode) are supported and likely to be useful in
+this case.
+
+**notesPattern** is a java.util.regex compatible regular expression that
+must match the dataset's notes text. Omitting this parameter is
+equivalent to ".\*". Embedded matching flag expressions (e.g., (?s) for
+dotall match mode) are supported and likely to be useful in this case.
+
+Inventory
+~~~~~~~~~
+
+Provides descriptions of the data inventory that is available within a
+dataset.
+
+::
+
+    #!python
+
+    inventory = cdas.get_inventory(dataview, dataset)
+
+Variables
+~~~~~~~~~
+
+Provides descriptions of the variables that is available from a dataset.
+
+::
+
+    #!python
+
+    variables = cdas.get_variables(dataview, dataset)
+
+Cache
+~~~~~
+
+Sets the data cache.
+
+::
+
+    #!python
+
+    cdas.set_cache(cache=False, directory=None):
+
+**cache** is a flag for choosing whether a cache should be used or not.
+
+**directory** is path to cache directory. The user is responsible for
+creating a valid directory.
+
+Data
+~~~~
+
+Provides data from a dataset.
+
+::
+
+    #!python
+
+    data = cdas.get_data(dataview, dataset, startTime, stopTime, variables, cdf=True, bar=True)
+
+**startTime** is a python datetime object specifying the beginning time
+of an interval.
+
+**stopTime** is python datetime object specifying the ending time of an
+interval
+
+**variables** is the comma separated list of variable names identifying
+the data to get. The names should be from those returned by the
+*cdas.get\_variables* operation. At least one variable name must be
+specified.
+
+**cdf** is the flag for choosing either CDF of ASCII format for data
+download. If you have CDF library and SpacePy installed it is highly
+recommended to use cdf=True always. CDF files are smaller and are faster
+to download. If you do not have CDF+SpacePy but you have AstroPy library
+installed you can download data in ASCII format using cdf=False.
+
+**bar** is the flag for choosing whether the download progress bar is
+displayed or not.
+
+
