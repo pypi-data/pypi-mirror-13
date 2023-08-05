@@ -1,0 +1,99 @@
+<html>
+<head>
+	<title>PyTailLog</title>
+
+	<meta http-equiv="X-UA-Compatible" content="IE=10;IE=9;IE=8;IE=7;IE=EDGE">
+	<meta charset="utf-8">
+	<script src="http://libs.baidu.com/jquery/1.9.0/jquery.js"></script>
+	<link rel="stylesheet" type="text/css" href="/static/css/style.css" />
+</head>
+<body>
+<div class="wrap">
+	<h1 id="title">PyTailLog:</h1>
+	<ul id="incomingChatMessages"></ul>
+	<div class="ulwrap">
+		<label><input type="checkbox" id="screanScroll" checked>&nbsp; auto scroll</label>
+	</div>
+	<div class="pic_wrap">
+		<span class="pic"><a href="https://github.com/lovedboy/PyTailLog" target="_blank"><img src="/static/images/GitHub-Mark-Light-64px.png"></a></span>
+	</div>
+	<div class="search_wrap">
+		<input type="text" class="txt J_search" placeholder="filter by regexp" id="filter" />
+	</div>
+
+
+	<script type="text/javascript">
+
+
+		var showData = function(data) {
+			var rxp = $("#filter").val()
+			if (rxp){
+				var re = new RegExp(rxp, "gi");
+				if (!re.test(data)){
+					return false;
+				}
+			}
+			console.log(data);
+			$('#incomingChatMessages').append($('<li></li>').html(data));
+			startScreenScroll();
+		}
+		function scrollwindow() {
+			while(1){
+				var currentpos = $(document).scrollTop();
+				if ( currentpos + $(window).height() >= $(document).height()){
+					return false;
+				}
+				window.scroll(0, currentpos + 1);
+			}
+		}
+		function startScreenScroll() {
+			if( $("#screanScroll").prop("checked") ) {
+				scrollwindow();
+			}
+		}
+	</script>
+	<script>
+
+        function startWebSocket() {
+
+            if ("MozWebSocket" in window) {
+                WebSocket = MozWebSocket;
+            }
+
+            if (WebSocket) {
+                var ws = new WebSocket("ws://{{host}}/tail/");
+                ws.onopen = function () {
+                };
+                ws.onmessage = function (evt) {
+                    showData(evt.data)
+                };
+                ws.onclose = function () {
+                    alert("WebSocket lost")
+                };
+            } else {
+                alert("WebSocket not supported");
+            }
+        }
+
+        function needAuth(){
+            var password = prompt("请输入密码", "");
+            if (password){
+                document.cookie= "auth=" + password + ";";
+                location.reload();
+            }
+
+        }
+        {% if auth %}
+            startWebSocket();
+
+         {% else %}
+
+            needAuth()
+         {% end %}
+	</script>
+	<div class="site-footer">
+	</div>
+</div>
+</body>
+
+</html>
