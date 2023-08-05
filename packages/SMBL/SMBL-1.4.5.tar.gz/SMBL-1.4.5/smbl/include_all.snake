@@ -1,0 +1,17 @@
+import smbl
+from snakemake.utils import min_version
+
+shell.executable("/bin/bash")
+
+include: "fasta/fasta.snake"
+
+for i, rule in enumerate(smbl.utils.get_registered_rules()):
+	rule:
+		input:
+			rule.get_input()
+		output:
+			rule.get_output()
+		params:
+			i=str(i),
+		run:
+			smbl.utils.get_registered_rules()[int(params.i)].run()

@@ -1,0 +1,46 @@
+import smbl
+
+rule index_fasta:
+	output:
+		"{filename}.{suffix}.fai"
+	input:
+		smbl.prog.SAMTOOLS,
+		"{filename}.{suffix}"
+	message:
+		"Creating index for a FASTA file ({input[1]})."
+	shell:
+		"""
+			(
+				"{input[0]}" faidx "{input[1]}"
+			) > /dev/null
+		"""
+
+rule index_bam_bai:
+	output:
+		"{filename}.{suffix}.bai"
+	input:
+		smbl.prog.SAMTOOLS,
+		"{filename}.{suffix}"
+	message:
+		"Creating index for a BAM file ({input[1]})."
+	shell:
+		"""
+			(
+				"{input[0]}" index -b "{input[1]}"
+			) > /dev/null
+		"""
+
+rule index_bam_csi:
+	output:
+		"{filename}.{suffix}.csi"
+	input:
+		smbl.prog.SAMTOOLS,
+		"{filename}.{suffix}"
+	message:
+		"Creating index for a BAM file ({input[1]})."
+	shell:
+		"""
+			(
+				"{input[0]}" index -c "{input[1]}"
+			) > /dev/null
+		"""
