@@ -1,0 +1,65 @@
+crudexml -- Crude XML DOM module
+
+Simple and crude write-only XML DOM implementation.
+It does not read XML data, only produces XML text from the node objects provided here.
+Attributes are supported; namespaces are not.
+Finally, it is possible to get a "pretty" output using the OuterXMLPretty getter property.
+
+_node is a base class with most of the functionality, with node being the "general" node type and tnode for text nodes.
+The intent is that these nodes have either node children or one tnode child.
+This keeps things simpler.
+Also, unlike Real DOM Implementations, the text node is a named node with text underneath it.
+
+Example use:
+
+	from crudexml import node, tnode
+
+	root = node('dvd', numtitles=7, parser="pydvdread %s"%1.0)
+	root.AddChild( tnode('device', "/dev/sr0") )
+	root.AddChild( tnode('name', "BLOOD_DIAMOND", fancy="Blood Diamond") )
+	root.AddChild( tnode('vmg_id', "DVDVIDEO-VMG") )
+	root.AddChild( tnode('provider_id', "WARNER_HOME_VIDEO") )
+	titles = root.AddChild( node('titles') )
+
+Attributes are passed as named keywords to node() and tnode(), and can be accessed by using [...] on node nbjects.
+node.AddChild() returns the supplied node as with @titles above.
+The OuterXMLPretty for the above produces:
+
+	<?xml version="1.0" ?>
+	<dvd numtitles="7" parser="pydvdread 1.0">
+		<device>/dev/sr0</device>
+		<name fancy="Blood Diamond">BLOOD_DIAMOND</name>
+		<vmg_id>DVDVIDEO-VMG</vmg_id>
+		<provider_id>WARNER_HOME_VIDEO</provider_id>
+		<titles/>
+	</dvd>
+
+Additionally, the DOCTYPE is supported.
+
+	from crudexml import node, tnode, dnode, docroot
+
+	d = docroot()
+	d.AddChild( dnode('foo', 'bar.dtd') )
+
+	root = d.AddChild( node('dvd', numtitles=7, parser="pydvdread %s"%1.0) )
+	root.AddChild( tnode('device', "/dev/sr0") )
+	root.AddChild( tnode('name', "BLOOD_DIAMOND", fancy="Blood Diamond") )
+	root.AddChild( tnode('vmg_id', "DVDVIDEO-VMG") )
+	root.AddChild( tnode('provider_id', "WARNER_HOME_VIDEO") )
+	titles = root.AddChild( node('titles') )
+
+And the XML:
+
+	<?xml version="1.0" ?>
+	<!DOCTYPE foo
+	  SYSTEM 'bar.dtd'>
+	<dvd numtitles="7" parser="pydvdread 1.0">
+		<device>/dev/sr0</device>
+		<name fancy="Blood Diamond">BLOOD_DIAMOND</name>
+		<vmg_id>DVDVIDEO-VMG</vmg_id>
+		<provider_id>WARNER_HOME_VIDEO</provider_id>
+		<titles/>
+	</dvd>
+
+The docroot() produces no XML for itself (i.e., OuterXML == InnerXML) and why the DOCTYPE and <dvd>...</dvd> are shown at the "root" level.
+
