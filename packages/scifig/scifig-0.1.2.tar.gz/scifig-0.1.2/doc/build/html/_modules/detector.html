@@ -1,0 +1,177 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>detector &mdash; scifig 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="scifig 0.1 documentation" href="../index.html" />
+    <link rel="up" title="Module code" href="index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">scifig 0.1 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for detector</h1><div class="highlight"><pre>
+<span class="c">#!/usr/bin/env python</span>
+<span class="c"># -*- coding: utf-8 -*-</span>
+
+<span class="kn">import</span> <span class="nn">glob</span>
+<span class="kn">import</span> <span class="nn">os.path</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">libscifig.task</span> <span class="kn">import</span> <span class="n">GnuplotTask</span><span class="p">,</span> <span class="n">TikzTask</span>
+
+
+<span class="c">#TODO : recursive glob: https://docs.python.org/3.5/library/glob.html</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">fnmatch</span>
+<span class="k">def</span> <span class="nf">_recursive_glob</span><span class="p">(</span><span class="n">base</span><span class="p">,</span> <span class="n">ext</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Helper function to find files with extention ext</span>
+<span class="sd">    in the path base.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">dirpath</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">dirpath</span><span class="p">,</span> <span class="n">dirnames</span><span class="p">,</span> <span class="n">files</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">walk</span><span class="p">(</span><span class="n">base</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">fnmatch</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">files</span><span class="p">,</span> <span class="s">&#39;*&#39;</span> <span class="o">+</span> <span class="n">ext</span><span class="p">)]</span>
+
+
+<div class="viewcode-block" id="detect_datafile"><a class="viewcode-back" href="../api.html#detector.detect_datafile">[docs]</a><span class="k">def</span> <span class="nf">detect_datafile</span><span class="p">(</span><span class="n">plt</span><span class="p">,</span> <span class="n">root</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Detect datafiles associated with a plt file.</span>
+
+<span class="sd">    :param plt: plt filepath</span>
+<span class="sd">    :param root: root filepath</span>
+<span class="sd">    :returns: list of filepath starting at root</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">base</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">plt</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">datafiles</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">ext</span> <span class="ow">in</span> <span class="p">(</span><span class="s">&#39;csv&#39;</span><span class="p">,</span> <span class="s">&#39;.res&#39;</span><span class="p">,</span> <span class="s">&#39;.dat&#39;</span><span class="p">,</span> <span class="s">&#39;.txt&#39;</span><span class="p">,</span> <span class="s">&#39;.png&#39;</span><span class="p">,</span> <span class="s">&#39;.jpg&#39;</span><span class="p">):</span>
+        <span class="n">files</span> <span class="o">=</span> <span class="n">_recursive_glob</span><span class="p">(</span><span class="n">base</span><span class="p">,</span> <span class="n">ext</span><span class="p">)</span>
+        <span class="n">files</span> <span class="o">=</span> <span class="p">[</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">relpath</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">root</span><span class="p">)</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">files</span><span class="p">]</span>
+        <span class="n">datafiles</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">files</span><span class="p">)</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;In </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">base</span><span class="p">)</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;Detected datafiles: </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">datafiles</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">datafiles</span></div>
+
+
+<div class="viewcode-block" id="detect_tikzsnippets"><a class="viewcode-back" href="../api.html#detector.detect_tikzsnippets">[docs]</a><span class="k">def</span> <span class="nf">detect_tikzsnippets</span><span class="p">(</span><span class="n">plt</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Detect tikzsnippets associated with a plt file.</span>
+
+<span class="sd">    :param plt: plt filepath</span>
+<span class="sd">    :returns: tuple of 2 booleans</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">base</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">plt</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="s">&#39;.tikzsnippet&#39;</span>
+    <span class="n">snippets</span> <span class="o">=</span> <span class="p">[</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">base</span><span class="p">),</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">base</span> <span class="o">+</span> <span class="s">&#39;1&#39;</span><span class="p">),</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">base</span> <span class="o">+</span> <span class="s">&#39;2&#39;</span><span class="p">),]</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;In </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">base</span><span class="p">)</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;Detected tikzsnippets: </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">snippets</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">snippets</span></div>
+
+
+<div class="viewcode-block" id="detect_task"><a class="viewcode-back" href="../api.html#detector.detect_task">[docs]</a><span class="k">def</span> <span class="nf">detect_task</span><span class="p">(</span><span class="n">directory</span><span class="p">,</span> <span class="n">root_path</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Detect the task to do depending on file extensions.</span>
+
+<span class="sd">    :param directory: directory to look at</span>
+<span class="sd">    :returns: list of tasks</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">plt_files</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">directory</span><span class="p">,</span> <span class="s">&#39;*.plt&#39;</span><span class="p">))</span>
+    <span class="n">tikz_files</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">directory</span><span class="p">,</span> <span class="s">&#39;*.tikz&#39;</span><span class="p">))</span>
+    <span class="n">db_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root_path</span><span class="p">,</span> <span class="s">&#39;db.db&#39;</span><span class="p">)</span>
+    <span class="n">tasks</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">plt_file</span> <span class="ow">in</span> <span class="n">plt_files</span><span class="p">:</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">detect_datafile</span><span class="p">(</span><span class="n">plt_file</span><span class="p">,</span> <span class="n">root_path</span><span class="p">)</span>
+        <span class="n">snippet</span><span class="p">,</span> <span class="n">snippet1</span><span class="p">,</span> <span class="n">snippet2</span> <span class="o">=</span> <span class="n">detect_tikzsnippets</span><span class="p">(</span><span class="n">plt_file</span><span class="p">)</span>
+        <span class="n">tasks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">GnuplotTask</span><span class="p">(</span><span class="n">plt_file</span><span class="p">,</span>
+                                 <span class="n">datafiles</span><span class="o">=</span><span class="n">data</span><span class="p">,</span>
+                                 <span class="n">tikzsnippet</span><span class="o">=</span><span class="n">snippet</span><span class="p">,</span>
+                                 <span class="n">tikzsnippet1</span><span class="o">=</span><span class="n">snippet1</span><span class="p">,</span>
+                                 <span class="n">tikzsnippet2</span><span class="o">=</span><span class="n">snippet2</span><span class="p">,</span>
+                                 <span class="n">db</span><span class="o">=</span><span class="n">db_path</span><span class="p">,</span>
+                                 <span class="p">))</span>
+    <span class="k">for</span> <span class="n">tikz_file</span> <span class="ow">in</span> <span class="n">tikz_files</span><span class="p">:</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">detect_datafile</span><span class="p">(</span><span class="n">tikz_file</span><span class="p">,</span> <span class="n">root_path</span><span class="p">)</span>
+        <span class="n">tasks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">TikzTask</span><span class="p">(</span><span class="n">tikz_file</span><span class="p">,</span>
+                              <span class="n">datafiles</span><span class="o">=</span><span class="n">data</span><span class="p">,</span>
+                              <span class="n">db</span><span class="o">=</span><span class="n">db_path</span><span class="p">,</span>
+                              <span class="p">))</span>
+    <span class="k">return</span> <span class="n">tasks</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">scifig 0.1 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2014, F. Boulogne.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.3.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,595 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>libscifig API &mdash; scifig 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="scifig 0.1 documentation" href="index.html" />
+    <link rel="prev" title="How to install?" href="install.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="install.html" title="How to install?"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">scifig 0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="libscifig-api">
+<h1>libscifig API<a class="headerlink" href="#libscifig-api" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-task">
+<span id="tasks"></span><h2>Tasks<a class="headerlink" href="#module-task" title="Permalink to this headline">¶</a></h2>
+<p>A <a class="reference internal" href="#task.Task" title="task.Task"><code class="xref py py-class docutils literal"><span class="pre">Task</span></code></a> is composed of the following steps:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li>Transform the source files to a tex file</li>
+<li>convert tex to pdf with <code class="xref py py-func docutils literal"><span class="pre">_tex_to_pdf()</span></code></li>
+<li>convert pdf to svg with <code class="xref py py-func docutils literal"><span class="pre">_pdf_to_svg()</span></code></li>
+<li>convert pdf to eps with <code class="xref py py-func docutils literal"><span class="pre">_pdf_to_eps()</span></code></li>
+<li>convert pdf to png with <code class="xref py py-func docutils literal"><span class="pre">_pdf_to_png()</span></code></li>
+</ol>
+</div></blockquote>
+<p>Step 1 can be complex and could require several sub-steps.
+Thus, the role of <code class="xref py py-func docutils literal"><span class="pre">_pre_make()</span></code> is to do all these sub-steps.</p>
+<p>Steps 2 to 5 usually do not depend on the initial type of the task.
+The function <code class="xref py py-func docutils literal"><span class="pre">make()</span></code> do all of them.</p>
+<p>Each format has its own export function. The function <code class="xref py py-func docutils literal"><span class="pre">export()</span></code>
+exports all of them.</p>
+<dl class="class">
+<dt id="task.GnuplotTask">
+<em class="property">class </em><code class="descclassname">task.</code><code class="descname">GnuplotTask</code><span class="sig-paren">(</span><em>filepath</em>, <em>datafiles=[]</em>, <em>tikzsnippet=False</em>, <em>tikzsnippet1=False</em>, <em>tikzsnippet2=False</em>, <em>build='build'</em>, <em>db='db.db'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/task.html#GnuplotTask"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#task.GnuplotTask" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#task.Task" title="task.Task"><code class="xref py py-class docutils literal"><span class="pre">task.Task</span></code></a></p>
+<p>Gnuplot Task manager.</p>
+<dl class="method">
+<dt id="task.GnuplotTask.check">
+<code class="descname">check</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#task.GnuplotTask.check" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if the task needs to be done.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="task.GnuplotTask.export">
+<code class="descname">export</code><span class="sig-paren">(</span><em>dst='/tmp'</em><span class="sig-paren">)</span><a class="headerlink" href="#task.GnuplotTask.export" title="Permalink to this definition">¶</a></dt>
+<dd><p>Export built files.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>dst</strong> &#8211; filepath of the destination directory</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="task.GnuplotTask.export_eps">
+<code class="descname">export_eps</code><span class="sig-paren">(</span><em>dst='/tmp'</em><span class="sig-paren">)</span><a class="headerlink" href="#task.GnuplotTask.export_eps" title="Permalink to this definition">¶</a></dt>
+<dd><p>Export built EPS files.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>dst</strong> &#8211; filepath of the destination directory</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="task.GnuplotTask.export_pdf">
+<code class="descname">export_pdf</code><span class="sig-paren">(</span><em>dst='/tmp'</em><span class="sig-paren">)</span><a class="headerlink" href="#task.GnuplotTask.export_pdf" title="Permalink to this definition">¶</a></dt>
+<dd><p>Export built PDF files.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>dst</strong> &#8211; filepath of the destination directory</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="task.GnuplotTask.export_png">
+<code class="descname">export_png</code><span class="sig-paren">(</span><em>dst='/tmp'</em><span class="sig-paren">)</span><a class="headerlink" href="#task.GnuplotTask.export_png" title="Permalink to this definition">¶</a></dt>
+<dd><p>Export built png files.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>dst</strong> &#8211; filepath of the destination directory</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="task.GnuplotTask.export_svg">
+<code class="descname">export_svg</code><span class="sig-paren">(</span><em>dst='/tmp'</em><span class="sig-paren">)</span><a class="headerlink" href="#task.GnuplotTask.export_svg" title="Permalink to this definition">¶</a></dt>
+<dd><p>Export built SVG files.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>dst</strong> &#8211; filepath of the destination directory</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="task.GnuplotTask.export_tex">
+<code class="descname">export_tex</code><span class="sig-paren">(</span><em>dst='/tmp'</em><span class="sig-paren">)</span><a class="headerlink" href="#task.GnuplotTask.export_tex" title="Permalink to this definition">¶</a></dt>
+<dd><p>Export TEX files.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>dst</strong> &#8211; filepath of the destination directory</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="task.GnuplotTask.get_name">
+<code class="descname">get_name</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#task.GnuplotTask.get_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the name of the task.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="task.GnuplotTask.make">
+<code class="descname">make</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#task.GnuplotTask.make" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compile the figure in all formats.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="task.Task">
+<em class="property">class </em><code class="descclassname">task.</code><code class="descname">Task</code><span class="sig-paren">(</span><em>filepath</em>, <em>build='build'</em>, <em>db='db.db'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/task.html#Task"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#task.Task" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Parent Task manager.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>filepath</strong> &#8211; filepath of the main file</li>
+<li><strong>build</strong> &#8211; relative filepath of the build dir</li>
+<li><strong>db</strong> &#8211; relative filepath of the db file</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="task.Task.check">
+<code class="descname">check</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/task.html#Task.check"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#task.Task.check" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if the task needs to be done.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="task.Task.export">
+<code class="descname">export</code><span class="sig-paren">(</span><em>dst='/tmp'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/task.html#Task.export"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#task.Task.export" title="Permalink to this definition">¶</a></dt>
+<dd><p>Export built files.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>dst</strong> &#8211; filepath of the destination directory</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="task.Task.export_eps">
+<code class="descname">export_eps</code><span class="sig-paren">(</span><em>dst='/tmp'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/task.html#Task.export_eps"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#task.Task.export_eps" title="Permalink to this definition">¶</a></dt>
+<dd><p>Export built EPS files.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>dst</strong> &#8211; filepath of the destination directory</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="task.Task.export_pdf">
+<code class="descname">export_pdf</code><span class="sig-paren">(</span><em>dst='/tmp'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/task.html#Task.export_pdf"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#task.Task.export_pdf" title="Permalink to this definition">¶</a></dt>
+<dd><p>Export built PDF files.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>dst</strong> &#8211; filepath of the destination directory</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="task.Task.export_png">
+<code class="descname">export_png</code><span class="sig-paren">(</span><em>dst='/tmp'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/task.html#Task.export_png"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#task.Task.export_png" title="Permalink to this definition">¶</a></dt>
+<dd><p>Export built png files.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>dst</strong> &#8211; filepath of the destination directory</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="task.Task.export_svg">
+<code class="descname">export_svg</code><span class="sig-paren">(</span><em>dst='/tmp'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/task.html#Task.export_svg"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#task.Task.export_svg" title="Permalink to this definition">¶</a></dt>
+<dd><p>Export built SVG files.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>dst</strong> &#8211; filepath of the destination directory</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="task.Task.export_tex">
+<code class="descname">export_tex</code><span class="sig-paren">(</span><em>dst='/tmp'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/task.html#Task.export_tex"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#task.Task.export_tex" title="Permalink to this definition">¶</a></dt>
+<dd><p>Export TEX files.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>dst</strong> &#8211; filepath of the destination directory</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="task.Task.get_name">
+<code class="descname">get_name</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/task.html#Task.get_name"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#task.Task.get_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the name of the task.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="task.Task.make">
+<code class="descname">make</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/task.html#Task.make"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#task.Task.make" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compile the figure in all formats.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="task.TikzTask">
+<em class="property">class </em><code class="descclassname">task.</code><code class="descname">TikzTask</code><span class="sig-paren">(</span><em>filepath</em>, <em>datafiles=[]</em>, <em>build='build'</em>, <em>db='db.db'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/task.html#TikzTask"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#task.TikzTask" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#task.Task" title="task.Task"><code class="xref py py-class docutils literal"><span class="pre">task.Task</span></code></a></p>
+<p>Tikz Task manager.</p>
+<dl class="method">
+<dt id="task.TikzTask.check">
+<code class="descname">check</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#task.TikzTask.check" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if the task needs to be done.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="task.TikzTask.export">
+<code class="descname">export</code><span class="sig-paren">(</span><em>dst='/tmp'</em><span class="sig-paren">)</span><a class="headerlink" href="#task.TikzTask.export" title="Permalink to this definition">¶</a></dt>
+<dd><p>Export built files.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>dst</strong> &#8211; filepath of the destination directory</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="task.TikzTask.export_eps">
+<code class="descname">export_eps</code><span class="sig-paren">(</span><em>dst='/tmp'</em><span class="sig-paren">)</span><a class="headerlink" href="#task.TikzTask.export_eps" title="Permalink to this definition">¶</a></dt>
+<dd><p>Export built EPS files.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>dst</strong> &#8211; filepath of the destination directory</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="task.TikzTask.export_pdf">
+<code class="descname">export_pdf</code><span class="sig-paren">(</span><em>dst='/tmp'</em><span class="sig-paren">)</span><a class="headerlink" href="#task.TikzTask.export_pdf" title="Permalink to this definition">¶</a></dt>
+<dd><p>Export built PDF files.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>dst</strong> &#8211; filepath of the destination directory</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="task.TikzTask.export_png">
+<code class="descname">export_png</code><span class="sig-paren">(</span><em>dst='/tmp'</em><span class="sig-paren">)</span><a class="headerlink" href="#task.TikzTask.export_png" title="Permalink to this definition">¶</a></dt>
+<dd><p>Export built png files.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>dst</strong> &#8211; filepath of the destination directory</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="task.TikzTask.export_svg">
+<code class="descname">export_svg</code><span class="sig-paren">(</span><em>dst='/tmp'</em><span class="sig-paren">)</span><a class="headerlink" href="#task.TikzTask.export_svg" title="Permalink to this definition">¶</a></dt>
+<dd><p>Export built SVG files.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>dst</strong> &#8211; filepath of the destination directory</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="task.TikzTask.export_tex">
+<code class="descname">export_tex</code><span class="sig-paren">(</span><em>dst='/tmp'</em><span class="sig-paren">)</span><a class="headerlink" href="#task.TikzTask.export_tex" title="Permalink to this definition">¶</a></dt>
+<dd><p>Export TEX files.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>dst</strong> &#8211; filepath of the destination directory</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="task.TikzTask.get_name">
+<code class="descname">get_name</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#task.TikzTask.get_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the name of the task.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="task.TikzTask.make">
+<code class="descname">make</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#task.TikzTask.make" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compile the figure in all formats.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-database">
+<span id="database"></span><h2>database<a class="headerlink" href="#module-database" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="database.check_modification">
+<code class="descclassname">database.</code><code class="descname">check_modification</code><span class="sig-paren">(</span><em>name</em>, <em>dependencies</em>, <em>db_path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/database.html#check_modification"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#database.check_modification" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if at least one dependency changed.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>name</strong> &#8211; name of the figure</li>
+<li><strong>dependencies</strong> &#8211; list of dependencies</li>
+<li><strong>db_path</strong> &#8211; path of the database</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">boolean</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="database.erase_db">
+<code class="descclassname">database.</code><code class="descname">erase_db</code><span class="sig-paren">(</span><em>db_path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/database.html#erase_db"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#database.erase_db" title="Permalink to this definition">¶</a></dt>
+<dd><p>Erase a database.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>db_path</strong> &#8211; path of the database</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="database.store_checksum">
+<code class="descclassname">database.</code><code class="descname">store_checksum</code><span class="sig-paren">(</span><em>name</em>, <em>dependencies</em>, <em>db_path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/database.html#store_checksum"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#database.store_checksum" title="Permalink to this definition">¶</a></dt>
+<dd><p>Store the checksum in the db.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>name</strong> &#8211; name of the figure</li>
+<li><strong>dependencies</strong> &#8211; list of dependencies</li>
+<li><strong>db_path</strong> &#8211; path of the database</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-detector">
+<span id="detector"></span><h2>detector<a class="headerlink" href="#module-detector" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="detector.detect_datafile">
+<code class="descclassname">detector.</code><code class="descname">detect_datafile</code><span class="sig-paren">(</span><em>plt</em>, <em>root</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/detector.html#detect_datafile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detector.detect_datafile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Detect datafiles associated with a plt file.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>plt</strong> &#8211; plt filepath</li>
+<li><strong>root</strong> &#8211; root filepath</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">list of filepath starting at root</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="detector.detect_task">
+<code class="descclassname">detector.</code><code class="descname">detect_task</code><span class="sig-paren">(</span><em>directory</em>, <em>root_path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/detector.html#detect_task"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detector.detect_task" title="Permalink to this definition">¶</a></dt>
+<dd><p>Detect the task to do depending on file extensions.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>directory</strong> &#8211; directory to look at</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">list of tasks</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="detector.detect_tikzsnippets">
+<code class="descclassname">detector.</code><code class="descname">detect_tikzsnippets</code><span class="sig-paren">(</span><em>plt</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/detector.html#detect_tikzsnippets"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detector.detect_tikzsnippets" title="Permalink to this definition">¶</a></dt>
+<dd><p>Detect tikzsnippets associated with a plt file.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>plt</strong> &#8211; plt filepath</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">tuple of 2 booleans</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-collogging">
+<span id="collogging"></span><h2>collogging<a class="headerlink" href="#module-collogging" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">libscifig API</a><ul>
+<li><a class="reference internal" href="#module-task">Tasks</a></li>
+<li><a class="reference internal" href="#module-database">database</a></li>
+<li><a class="reference internal" href="#module-detector">detector</a></li>
+<li><a class="reference internal" href="#module-collogging">collogging</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="install.html"
+                        title="previous chapter">How to install?</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/api.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="install.html" title="How to install?"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">scifig 0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2014, F. Boulogne.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.3.
+    </div>
+  </body>
+</html>

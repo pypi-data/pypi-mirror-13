@@ -1,0 +1,222 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>What is it? &mdash; scifig 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="scifig 0.1 documentation" href="index.html" />
+    <link rel="next" title="How to install?" href="install.html" />
+    <link rel="prev" title="Welcome to scifig’s documentation!" href="index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="install.html" title="How to install?"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Welcome to scifig’s documentation!"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">scifig 0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="what-is-it">
+<h1>What is it?<a class="headerlink" href="#what-is-it" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<p>Making figures for presentations, websites or publications usually take
+a lot of time. However, the process is usually the same (compile,
+convert and export). Thus, automation must be used to focus on the
+content and not on managing files. Based on this observation, I
+conceived a workflow and I wrote a software that automate this task.</p>
+<p>The source code is available here: <a class="reference external" href="https://github.com/sciunto-org/scifig">https://github.com/sciunto-org/scifig</a></p>
+</div>
+<div class="section" id="choices">
+<h2>Choices<a class="headerlink" href="#choices" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="languages-and-softwares-for-figures">
+<h3>Languages and softwares for figures<a class="headerlink" href="#languages-and-softwares-for-figures" title="Permalink to this headline">¶</a></h3>
+<p>We need to choose a technology to make figures. I like to write code,
+I&#8217;m efficient that way, so I choose LaTeX because I already use it for
+my documents and my presentations. To draw figures, pstricks or Tikz can
+be used. I tried both and Tikz looked to me more efficient (for loops
+for instance). To make plots, I&#8217;m familiar with
+<a class="reference external" href="http://www.gnuplot.info/">gnuplot</a> for almost a decade now. Gnuplot
+has a tikz terminal and this is lucky. It will be very easy to combine
+drawings and plots. For rare other needs (chemical formulae), LaTeX
+usually have what we need.</p>
+<p><a class="reference external" href="http://kde-apps.org/content/show.php/ktikz?content=63188">Ktikz</a> and
+<a class="reference external" href="https://github.com/alexandervdm/gummi">gummi</a> are really helpful to
+prepare drawings. They refresh the output while you edit the code. It&#8217;s
+almost a live mode.</p>
+</div>
+<div class="section" id="output-formats">
+<h3>Output formats<a class="headerlink" href="#output-formats" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>tex (standalone file)</li>
+<li>eps</li>
+<li>pdf</li>
+<li>svg</li>
+</ul>
+</div>
+<div class="section" id="workflow">
+<h3>Workflow<a class="headerlink" href="#workflow" title="Permalink to this headline">¶</a></h3>
+<p>Now, we need to find a strategy to make our figures.</p>
+<p>Drawings</p>
+<ul class="simple">
+<li>tikz file: the code you write with Ktiz for instance, between \begin
+and \end{tikzpicture}</li>
+<li>tex file: we decorate the tikz file with some packages and a document
+class (standalone) to have a croped image</li>
+<li>pdf file: the tex file compiled with pdflatex</li>
+<li>eps file: pdf to eps</li>
+<li>svg file: pdf to svg</li>
+</ul>
+<p>Plots with gnuplot</p>
+<ul class="simple">
+<li>plt file: this is the standard gnuplot script to make a figure, with
+tikz terminal</li>
+<li>tikz file: code generated by gnuplot</li>
+<li>plttikz files: optional, inject tikz code before or after the code
+generated by gnuplot. It allows to draw in plots!</li>
+<li>tex file: we decorate the plttikz file with some packages and a
+document class (standalone) to have a cropped image</li>
+<li>pdf file: the tex file compiled with pdflatex</li>
+<li>eps file: pdf to eps</li>
+<li>svg file: pdf to svg</li>
+</ul>
+<p>&nbsp;Others</p>
+<p>Any other chain for another tool can be implemented, such as matplotlib
+in python, which has a tikz terminal too.</p>
+</div>
+</div>
+<div class="section" id="implementation">
+<h2>Implementation<a class="headerlink" href="#implementation" title="Permalink to this headline">¶</a></h2>
+<p>My first implementation (around 2007) was based on shell scripts and
+makefile. Quickly coded, but not easy to maintain and the code tend to
+become hard to read very rapidly.</p>
+<p>The second implementation (around 2011) used
+<a class="reference external" href="https://github.com/waf-project/waf">waf</a>, a build to in python. The
+idea was to reuse something existing rather than writing from scratch a
+workflow. However, in practice, waf is not full adapted for the workflow
+I need. I made a working version I used for almost 4-5 years, I found
+interesting features (colored output, src and build separated, export
+function) but the addition of new workflow would require a lot of
+energy.</p>
+<p>Then, I arrived to write a third version, from scratch since I know
+perfectly what I need:</p>
+<ul class="simple">
+<li>a database to record what must be recompiled based on modifications</li>
+<li>a detector to guess the right rule to apply (based on file formats)</li>
+<li>a set of rules to build the figure</li>
+<li>a nice output</li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">What is it?</a><ul>
+<li><a class="reference internal" href="#introduction">Introduction</a></li>
+<li><a class="reference internal" href="#choices">Choices</a><ul>
+<li><a class="reference internal" href="#languages-and-softwares-for-figures">Languages and softwares for figures</a></li>
+<li><a class="reference internal" href="#output-formats">Output formats</a></li>
+<li><a class="reference internal" href="#workflow">Workflow</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#implementation">Implementation</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">Welcome to scifig&#8217;s documentation!</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="install.html"
+                        title="next chapter">How to install?</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/what.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="install.html" title="How to install?"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Welcome to scifig’s documentation!"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">scifig 0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2014, F. Boulogne.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.3.
+    </div>
+  </body>
+</html>
