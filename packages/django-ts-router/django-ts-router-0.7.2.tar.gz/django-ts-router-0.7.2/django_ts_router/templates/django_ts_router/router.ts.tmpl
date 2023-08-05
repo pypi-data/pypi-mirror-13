@@ -1,0 +1,36 @@
+module {{ module }} {
+
+    {{ names|safe }}
+
+    interface RoutePattern {
+        pattern: string;
+        arguments: string[];
+    }
+
+    var urlPatterns:{[name: string]: RoutePattern} = {{ url_patterns|safe }};
+
+    export function reverse(name:string, args:{[arg: string]: string | number}={}):string {
+        var routePattern:RoutePattern = urlPatterns[name];
+        var pattern:string = routePattern.pattern;
+        var argumentNames:string[] = routePattern.arguments;
+
+        if (argumentNames.length < 1) {
+            return pattern;
+        }
+
+        argumentNames.forEach((definedArgName) => {
+            var argVal:string | number;
+            if (definedArgName in args) {
+                argVal = args[definedArgName];
+            } else {
+                throw new Error('An argument "' + definedArgName + '" must be given.')
+            }
+
+            pattern = pattern.replace(new RegExp("<" + definedArgName + ">"), encodeURIComponent(String(argVal)));
+        });
+
+        return pattern
+    }
+
+{{ functions|safe }}
+}
