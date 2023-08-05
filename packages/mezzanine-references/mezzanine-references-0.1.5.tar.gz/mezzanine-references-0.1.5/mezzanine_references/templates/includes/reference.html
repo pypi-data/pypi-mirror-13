@@ -1,0 +1,31 @@
+{% load mezzanine_tags staticfiles %}
+
+<div class="reference">
+	<div class="clearfix">
+	{% if reference.image %}<img src="{{ MEDIA_URL }}{% thumbnail reference.image page.references.image_size 0 %}" alt="" class="img img-responsive img-{{page.references.image_style}}">{% endif %}
+	<div class="reference-content">
+
+    <div class="reference-header">
+		<h3 class="reference-name">{{ reference.name }}</h3>
+        {% if reference.subtitle %}<div class="reference-subtitle text-muted">{{ reference.subtitle }}</div>{% endif %}
+		{% if reference.date %}<div class="reference-date text-muted">{{ reference.date }}</div>{% endif %}
+	</div>
+	<div class="reference-body">
+		{{ reference.content|safe }}
+	</div>
+
+	{% if reference.link %}
+	<div class="reference-footer">
+		<a
+		{% if page.references.link_style == 'button' %}
+		class="btn btn-{{page.references.button_style}}"
+		{% endif %}
+		{% if reference.link_new_window %}
+		target="_blank"
+		{% endif %}
+		href="{{reference.link}}">{{reference.link_title}}</a>
+	</div>
+	{% endif %}
+    </div>
+	</div>
+</div>
