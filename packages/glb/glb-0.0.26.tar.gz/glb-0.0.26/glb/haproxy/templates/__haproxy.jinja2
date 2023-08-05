@@ -1,0 +1,32 @@
+{# frontend block #}
+{% macro frontend(backend_name, port, mode, pems) -%}
+frontend {{ port }}_in  
+    bind *:{{port}} {% if pems %}ssl {% endif %}{% for pem in pems %} crt {{ pem }}.pem{% endfor %}
+    mode   {% if mode != 'tcp' %}http{% else %}tcp{% endif %} 
+    log    global
+    default_backend {{ backend_name }}_backend
+    {{ caller()|indent }}
+{%- endmacro %}
+
+{# usebackend bolock #}
+{% macro usebackend() -%}
+{% for domain in varargs -%}
+use_backend {{ domain.backend_name }} if { ssl_fc_sni {{ domain.domain }} }
+{%- endfor %}
+{%- endmacro %}
+
+{# backend block #}
+{% macro backend(name, mode) -%}
+backend {{ name }}_backend 
+    mode {% if mode != 'tcp' %}http{% else %}tcp{% endif %}
+    balance roundrobin
+    cookie SERVERID
+    {{ caller()|indent }}
+{%- endmacro %}
+
+{# server block #}
+{% macro servers(name) -%}
+{% for server in varargs -%}
+server {{ name }}_backend_{{ loop.index }} {{ server.address }}:{{ server.port }} cookie check inter 2000 rise 2 fall 3
+{% endfor %}
+{%- endmacro %}
