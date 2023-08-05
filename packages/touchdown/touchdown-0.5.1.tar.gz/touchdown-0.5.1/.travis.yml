@@ -1,0 +1,37 @@
+language: python
+python:
+  - "2.7"
+  - "3.3"
+  - "3.4"
+  - "3.5"
+
+# The version of pypy on Travis is too old for cryptography
+#  - "pypy"
+
+sudo: false
+
+cache:
+  directories:
+    - $HOME/wheelhouse
+
+install:
+  - pip wheel --find-links=$HOME/wheelhouse -r requirements.txt --wheel-dir=$HOME/wheelhouse
+  - pip install --no-index --find-links=$HOME/wheelhouse -r requirements.txt
+
+script:
+  - coverage run $(which py.test) touchdown
+  - flake8 touchdown
+
+after_success:
+  - coveralls
+
+notifications:
+    irc:
+        channels:
+          - "irc.oftc.net#yaybu"
+        use_notice: true
+        skip_join: true
+        on_success: change
+        on_failure: always
+    slack:
+        secure: ai967jp0T2CVBPGetQMqrk2YjlunFb/6+wGty9+vZhb5M2YTzCqdMfcB7NfGaj14fYTi0ZlGNhc1sWG4VAmeXbMoSrJPTimgW4spSCLBm5YPO9QPVfuj7SxWC6Wl8BRqfR1C5G0ZwPs2m/p99B9Sc4VhW5
