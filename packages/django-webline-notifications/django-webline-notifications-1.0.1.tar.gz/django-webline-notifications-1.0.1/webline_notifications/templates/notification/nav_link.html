@@ -1,0 +1,48 @@
+{% load Notifications_tag  %}
+<div class="ns-container">
+<button id="ns-btn-dropdown" class="ns-nav-btn dropdown-toggle">
+    <i class="fa fa-bell-o"></i>
+    {% if not_seen_count != 0 %}<span class="ns-badge">{{ not_seen_count }}</span>{% endif %}
+</button>
+<div class="ns-box-dropdown">
+    <ul class="ns-list-dropdown">
+        {% if not_seen_count != 0 %}<li class="ns-li-header">You have {{ all_count }} notification{{ all_count|pluralize }}</li>{% else %}<li class="ns-li-header ns-no-notification">you don't have new Notification</li>{% endif %}
+        {% if notifications %}
+            {% for n in notifications %}
+                <li class="ns-li-menu">
+                    <a {% if not n.seen_date %}class="ns-not-seen"{% endif %} style="color: {{ n.color }} !important;" href="{% if n.url %}{{ n.url }}{% else %}#{% endif %}">
+                        <i class="{{ n.icon|icon_type }} {{ n.icon }}" style="color: {{ n.color }};"></i> {{ n.content|truncatechars:30 }}
+                        {% if n.send_date %}<span class="ns-seen-date">{{ n.send_date|timesince }}</span>{% endif %}
+                    </a>
+                </li>
+            {% endfor %}
+        {% endif %}
+        <li class="ns-li-footer"><a href="{% url 'admin:webline_notifications_notification_changelist' %}">View all</a></li>
+    </ul>
+</div>
+
+<script type="text/javascript">
+    $(document).ready(function(){
+        $('.ns-list-dropdown').hide();
+        var not_first_click_on_nsbtndropdown = false;
+        $('#ns-btn-dropdown').click(
+                function(){
+                    $('.ns-list-dropdown').slideToggle();
+                    if(not_first_click_on_nsbtndropdown){
+                        $.get("{% url 'webline_notifications:see_all_notification' %}", function (data, status) {
+                            console.log(status);
+                            if (status == 'success') {
+                                $('#ns-btn-dropdown span.ns-badge').remove();
+                                $('.ns-li-menu a').removeClass();
+                            }
+                        });
+                    } else {
+                        not_first_click_on_nsbtndropdown = true;
+                    }
+                }
+        );
+    });
+</script>
+
+</div>
+
