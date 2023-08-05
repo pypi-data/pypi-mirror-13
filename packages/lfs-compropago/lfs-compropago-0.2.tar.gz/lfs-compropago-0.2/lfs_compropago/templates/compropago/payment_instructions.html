@@ -1,0 +1,170 @@
+{% extends "lfs/base.html" %}
+{% load i18n lfs_tags lfs_portlets_tags %}
+{% load url from future %}
+{% block title %}
+    {{ SHOP.get_meta_title }} - Pago en OXXO.
+{% endblock %}
+
+{% block section %}comments{% endblock %}
+
+{% block content %}
+{# Note: when you upgrade to Django > 1.4 please replace the multiple ifs with elif #}
+{% if transaction.payment_status == 'PENDING' %}
+{% if transaction.payment_type == 'OXXO' %}
+    <h3>Instrucciones de pago en OXXO</h3>
+    <p class="oxxo_logo"><img src="{{ STATIC_URL }}/compropago/logos/oxxo.png" alt="OXXO"></p>
+    <ul>
+        <li>Acude a tu tienda OXXO más cercana en un horario de 8 a.m. a 8 p.m.</li>
+        <li>Solicita un depósito bancario a nombre de
+            <strong>{{ instructions.details.bank_name}}</strong>,
+            número de cuenta: <strong>{{ instructions.details.bank_account_number }}</strong>
+            por la cantidad exacta de $<strong>{{ instructions.details.payment_amount }}</strong> pesos.</li>
+            <li>Una vez que OXXO haya procesado el pago enviará una notificación a nuestro sitio donde nosotros continuaremos con el proceso de tu orden de compra.
+        </li>
+        <li> <em>Nota:</em> {{ instructions.note_extra_comition }} </li>
+        <li> <em>Nota:</em> {{ instructions.note_expiration_date }} </li>
+    </ul>
+    <p>{{ SHOP.get_meta_title }}</p>
+    <p><a href="javascript:window.print();" title="Click aquí para imprimir esta página">Imprimir</a></p>
+{% endif %}
+{% if transaction.payment_type == 'SEVEN_ELEVEN' %}
+    <h3>Instrucciones de pago en 7 Eleven</h3>
+    <p class="seven_eleven_logo"><img src="{{ STATIC_URL }}/compropago/logos/seven_eleven.png" alt="OXXO"></p>
+    <ul>
+        <li>Acude a tu tienda 7 Eleven más cercana en un horario de 8 a.m. a 8 p.m.</li>
+        <li>Solicita un depósito bancario a nombre de
+            <strong>{{ instructions.details.bank_name}}</strong>,
+            número de cuenta: <strong>{{ instructions.details.bank_account_number }}</strong>
+            por la cantidad exacta de $<strong>{{ instructions.details.payment_amount }}</strong> pesos.</li>
+            <li>Una vez que 7 Eleven haya procesado el pago enviará una notificación a nuestro sitio donde nosotros continuaremos con el proceso de tu orden de compra.
+        </li>
+        <li> <em>Nota:</em> {{ instructions.note_extra_comition }} </li>
+        <li> <em>Nota:</em> {{ instructions.note_expiration_date }} </li>
+    </ul>
+    <p>{{ SHOP.get_meta_title }}</p>
+    <p><a href="javascript:window.print();" title="Click aquí para imprimir esta página">Imprimir</a></p>
+{% endif %}
+{% if transaction.payment_type == 'EXTRA' %}
+    <h3>Instrucciones de pago en Extra</h3>
+    <p class="extra_logo"><img src="{{ STATIC_URL }}/compropago/logos/extra.png" alt="Extra"></p>
+    <ul>
+        <li>Acude a tu tienda Extra más cercana en un horario de 1:00 am a 10:00 pm</li>
+        <li>Solicita un depósito a la tarjeta (débito)
+            <strong>{{ instructions.details.bank_name}}</strong>,
+            número de cuenta: <strong>{{ instructions.details.bank_account_number }}</strong>
+            por la cantidad exacta de $<strong>{{ instructions.details.payment_amount }}</strong> pesos.</li>
+            <li>Una vez que Extra haya procesado el pago enviará una notificación a nuestro sitio donde nosotros continuaremos con el proceso de tu orden de compra.
+        </li>
+        <li> <em>Nota:</em> {{ instructions.note_extra_comition }} </li>
+        <li> <em>Nota:</em> {{ instructions.note_expiration_date }} </li>
+    </ul>
+    <p>{{ SHOP.get_meta_title }}</p>
+    <p><a href="javascript:window.print();" title="Click aquí para imprimir esta página">Imprimir</a></p>
+{% endif %}
+{% if transaction.payment_type == 'CHEDRAUI' %}
+    <h3>Instrucciones de pago en Chedrahui y Súper Che</h3>
+    <p class="chedraui_logo"><img src="{{ STATIC_URL }}/compropago/logos/chedraui.png" alt="Chedrahui y Súper Che"></p>
+    <ul>
+        <li>Acude a la caja de tu tienda Chedrahui o Súper Che más cercana en un horario de 7:00 am a 8:00 pm.</li>
+        <li>Solicita un depósito a la tarjeta:
+            <strong>{{ instructions.details.bank_name}}</strong>,
+            número de cuenta: <strong>{{ instructions.details.bank_account_number }}</strong>
+            por la cantidad exacta de $<strong>{{ instructions.details.payment_amount }}</strong> pesos.</li>
+            <li>Una vez que Chedrahui o Súper Che haya procesado el pago enviará una notificación a nuestro sitio donde nosotros continuaremos con el proceso de tu orden de compra.
+        </li>
+        <li> <em>Nota:</em> {{ instructions.note_expiration_date }} </li>
+    </ul>
+    <p>{{ SHOP.get_meta_title }}</p>
+    <p><a href="javascript:window.print();" title="Click aquí para imprimir esta página">Imprimir</a></p>
+{% endif %}
+{% if transaction.payment_type == 'ELEKTRA' %}
+    <h3>Instrucciones de pago en Elektra</h3>
+    <p class="elektra_logo"><img src="{{ STATIC_URL }}/compropago/logos/elektra.png" alt="Elektra"></p>
+    <ul>
+        <li>Acude a la sucursal de Banco Azteca más cercana.</li>
+        <li>Solicita un depósito a la cuenta
+            <strong>{{ instructions.details.bank_name}}</strong>,
+            por la cantidad exacta de $<strong>{{ instructions.details.payment_amount }}</strong> pesos.</li>
+            <li>Una vez que Chedrahui o Súper Che haya procesado el pago enviará una notificación a nuestro sitio donde nosotros continuaremos con el proceso de tu orden de compra.
+        </li>
+        <li> <em>Nota:</em> {{ instructions.note_expiration_date }} </li>
+    </ul>
+    <p>{{ SHOP.get_meta_title }}</p>
+    <p><a href="javascript:window.print();" title="Click aquí para imprimir esta página">Imprimir</a></p>
+{% endif %}
+{% if transaction.payment_type == 'COPPEL' %}
+    <h3>Instrucciones de pago en COPPEL</h3>
+    <p class="coppel_logo"><img src="{{ STATIC_URL }}/compropago/logos/coppel.png" alt="Coppel"></p>
+    <ul>
+        <li>Acude a la caja de la sucursal COPPEL más cercana.</li>
+        <li>Solicita un depósito a la tarjeta:
+            <strong>{{ instructions.details.bank_name}}</strong>,
+            número de cuenta: <strong>{{ instructions.details.bank_account_number }}</strong>
+            por la cantidad exacta de $<strong>{{ instructions.details.payment_amount }}</strong> pesos.</li>
+            <li>Una vez que Coppel haya procesado el pago enviará una notificación a nuestro sitio donde nosotros continuaremos con el proceso de tu orden de compra.
+        </li>
+        <li> <em>Nota:</em> {{ instructions.note_expiration_date }} </li>
+    </ul>
+    <p>{{ SHOP.get_meta_title }}</p>
+    <p><a href="javascript:window.print();" title="Click aquí para imprimir esta página">Imprimir</a></p>
+{% endif %}
+{% if transaction.payment_type == 'FARMACIA_BENAVIDES' %}
+    <h3>Instrucciones de pago en Farmacia Benavides</h3>
+    <p class="benavides_logo"><img src="{{ STATIC_URL }}/compropago/logos/farmacia_benavides.png" alt="FARMACIA_BENAVIDES"></p>
+    <ul>
+        <li>Acude a la caja de Farmacia Benavides más cercana en un horario de 8 a.m. a 8 p.m.</li>
+        <li>Solicita un depósito a la tarjeta
+            <strong>{{ instructions.details.bank_name}}</strong>,
+            número de cuenta: <strong>{{ instructions.details.bank_account_number }}</strong>
+            por la cantidad exacta de $<strong>{{ instructions.details.payment_amount }}</strong> pesos.</li>
+            <li>Una vez que Farmacia Benavides haya procesado el pago enviará una notificación a nuestro sitio donde nosotros continuaremos con el proceso de tu orden de compra.
+        </li>
+        <li> <em>Nota:</em> {{ instructions.note_expiration_date }} </li>
+    </ul>
+    <p>{{ SHOP.get_meta_title }}</p>
+    <p><a href="javascript:window.print();" title="Click aquí para imprimir esta página">Imprimir</a></p>
+{% endif %}
+{% if transaction.payment_type == 'FARMACIA_ESQUIVAR' %}
+    <h3>Instrucciones de pago en Farmacia Esquivar</h3>
+    <p class="esquivar_logo"><img src="{{ STATIC_URL }}/compropago/logos/farmacia_esquivar.png" alt="Farmacia Esquivar"></p>
+    <ul>
+        <li>Acude a la caja de Farmacia Esquivar más cercana en un horario de 8 a.m. a 8 p.m.</li>
+        <li>Solicita un depósito a la tarjeta
+            <strong>{{ instructions.details.bank_name}}</strong>,
+            número de cuenta: <strong>{{ instructions.details.bank_account_number }}</strong>
+            por la cantidad exacta de $<strong>{{ instructions.details.payment_amount }}</strong> pesos.</li>
+            <li>Una vez que Farmacia Esquivar haya procesado el pago enviará una notificación a nuestro sitio donde nosotros continuaremos con el proceso de tu orden de compra.
+        </li>
+        <li> <em>Nota:</em> {{ instructions.note_expiration_date }} </li>
+    </ul>
+    <p>{{ SHOP.get_meta_title }}</p>
+    <p><a href="javascript:window.print();" title="Click aquí para imprimir esta página">Imprimir</a></p>
+{% endif %}
+
+{% endif %}
+{% if transaction.payment_status == 'SUCCESS' %}
+    <h3>Tu pago en OXXO ha sido aplicado</h3>
+    <p class="oxxo_logo"><img src="{{ STATIC_URL }}/compropago/logos/oxxo.png" alt="OXXO"></p>
+    <p>Tu pago en OXXO ya ha sido aplicado. Muchas gracias por su compra.</p>
+    <p>{{ SHOP.get_meta_title }}</p>
+{% endif %}
+{% if transaction.payment_status == 'DECLINED' %}
+    <h3>Tu pago en OXXO ha sido declinado</h3>
+    <p class="oxxo_logo"><img src="{{ STATIC_URL }}/compropago/logos/oxxo.png" alt="OXXO"></p>
+    <p>Lo sentimos mucho pero tu pago en OXXO ha sido declinado.</p>
+    <p>Ponte en <a href="{% url 'lfs_contact_form' %}">contacto con nosotros</a> para ver otras alternativas de pago.</p>
+    <p>{{ SHOP.get_meta_title }}</p>
+{% endif %}
+{% if transaction.payment_status == 'DELETED' %}
+    <h3>El pago ha sido borrado.</h3>
+    <p class="oxxo_logo"><img src="{{ STATIC_URL }}/compropago/logos/oxxo.png" alt="OXXO"></p>
+    <p>Ponte en <a href="{% url 'lfs_contact_form' %}">contacto con nosotros</a> para ver otras alternativas de pago.</p>
+    <p>{{ SHOP.get_meta_title }}</p>
+{% endif %}
+{% if transaction.payment_status == 'EXPIRED' %}
+    <h3>La orden de pago en OXXO ha expirado.</h3>
+    <p class="oxxo_logo"><img src="{{ STATIC_URL }}/compropago/logos/oxxo.png" alt="OXXO"></p>
+    <p>Ponte en <a href="{% url 'lfs_contact_form' %}">contacto con nosotros</a> para ver otras alternativas de pago.</p>
+    <p>{{ SHOP.get_meta_title }}</p>
+{% endif %}
+{% endblock %}

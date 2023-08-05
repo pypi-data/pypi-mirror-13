@@ -1,0 +1,44 @@
+{% extends "lfs/base.html" %}
+{% load i18n lfs_tags lfs_portlets_tags %}
+
+{% block title %}
+    {{ SHOP.get_meta_title }} - Pago en efectivo
+{% endblock %}
+
+{% block section %}comments{% endblock %}
+
+{% block content %}
+<h1>Pago en efectivo</h1>
+<p>
+    Puedes pagar en efectivo en alguno de los siguientes establecimientos. Elige
+    el que más te convenga de la lista y presiona el botón <b>Generar ticket de pago</b>
+    para generar un ticket de pago que puedes imprimir.
+</p>
+
+{# Note: LFS 0.7.x runs by default on django 1.3.x. The choice field is not iterable until Django 1.4. #}
+
+<form action="{{ request.path }}" method="POST">
+    {% csrf_token %}
+    {% for key, value in locations %}
+    <div class="span-24">
+        {{ form.non_field_errors }}
+    </div>
+    <div class="span-24">
+        <div class="span-1">
+            <input type="radio" name="payment_location" id="payment_location_{{ key }}" value="{{ key }}" {% if key == 'OXXO' %}checked{% endif %}>
+        </div>
+        <label for="payment_location_{{ key }}">
+            <div class="span-5">
+                {{ value }}
+            </div>
+            <dv class="span-4">
+                <img src="{{ STATIC_URL }}/compropago/logos/{{ key|lower }}.png" height="24">
+            </dv>
+        </label>
+    </div>
+    {% endfor %}
+    <div class="right">
+        <button type="submit" class="button emphasized">Generar ticket de pago</button>
+    </div>
+</form>
+{% endblock %}
