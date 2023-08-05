@@ -1,0 +1,109 @@
+Metadata-Version: 2.0
+Name: django-bench-runner
+Version: 0.1.1
+Summary: Locate slow tests in your django project.
+Home-page: http://github.com/scuml/django_bench_runner
+Author: Stephen Mitchell
+Author-email: stephen@echodot.com
+License: Copyright 2016 Stephen Mitchell
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+   http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+Description: django\_bench\_runner - Locate slow tests
+        -----------------------------------------
+        
+        |Build Status| |Downloads|
+        
+        Django Bench Runner is a drop-in enhancement of the default django test
+        runner that times how long it takes to run individual tests. It helps
+        detect tests that might need optimization.
+        
+        Installation
+        ~~~~~~~~~~~~
+        
+        ::
+        
+            pip install django-bench-runner
+        
+        In settings.py, add:
+        
+        ::
+        
+            TEST_RUNNER = 'django_bench_runner.runner.BenchRunner'
+        
+        Usage
+        ~~~~~
+        
+        Add the ``-b`` (or ``--benchmark``) flag when running your tests.
+        
+        Colorization
+        ~~~~~~~~~~~~
+        
+        Tests that run under .5 seconds are colored green. The resulting tests
+        are divvied into 3 groups. The fastest third (yellow), the middle third
+        (magenta), and the slowest third (red). `Red tests do not mean the tests
+        are necessarily bad or in critical need of a
+        speedup <http://www.obeythetestinggoat.com/fast-tests-useless-hot-lava-be-damned.html>`__.
+        It is just a graphical way to identify the various times of the tests.
+        
+        Example Output
+        ~~~~~~~~~~~~~~
+        
+        ::
+        
+            $ ./manage.py test core.tests.test_transfer_money -b --keepdb
+            Using existing test database for alias 'default'...
+            ..
+        
+            Test                                                              Runtime    Percent
+            --------------------------------------------------------------  ---------  ---------
+        
+            core.tests.test_transfer_money.TestReleaseAmounts
+            : test_wells_fargo                                                8.25052     47.81%
+            : test_wells_fargo_exempt_from_prefunding                         9.00663     52.19%
+            ---------------------------                                       -------    -------
+            TestReleaseAmounts                                               17.25715    100.00%
+        
+            ----------------------------------------------------------------------
+            Ran 2 tests in 17.262s
+        
+            OK
+        
+        Django compatibility
+        ~~~~~~~~~~~~~~~~~~~~
+        
+        Tested and working in Django 1.8 and 1.9.
+        
+        Credits
+               
+        
+        *Special thanks Sergey Astanin for
+        `tabulate <https://pypi.python.org/pypi/tabulate>`__*
+        
+        .. |Build Status| image:: https://secure.travis-ci.org/scuml/django-bench-runner.png?branch=master
+           :target: http://travis-ci.org/scuml/django-bench-runner
+        .. |Downloads| image:: https://img.shields.io/pypi/dw/django-bench-runner.svg
+           :target: https://pypi.python.org/pypi/django-bench-runner
+        
+Platform: UNKNOWN
+Classifier: Development Status :: 4 - Beta
+Classifier: Intended Audience :: Developers
+Classifier: Natural Language :: English
+Classifier: Topic :: Internet :: WWW/HTTP
+Classifier: License :: OSI Approved :: Apache Software License
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 2
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.3
+Classifier: Programming Language :: Python :: 3.4
+Classifier: Programming Language :: Python :: 3.5
