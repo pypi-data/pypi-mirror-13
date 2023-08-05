@@ -1,0 +1,93 @@
+Metadata-Version: 1.1
+Name: django-extra-migrations
+Version: 0.0.3
+Summary: Extra migration classes for django
+Home-page: https://github.com/xacce/django_extra_migrations
+Author: Xacce
+Author-email: thiscie@gmail.com
+License: MIT
+Description:     pip install django_extra_migrations
+        
+        # Resave
+        
+        *Resave all records with calling save and signals events*
+        
+        Create empty migration - ```./manage.py makemigrations %APP_NAME% --empty```
+        
+        Open migration file ./%APP_NAME%/migrations/%MIGRATION_NAME%.py
+        
+        ###Import
+        
+            from django_extra_migrations.migrations import Resave
+            
+        ###Operation
+        
+            Resave("%APP_NAME%.%MODEL_NAME%"),
+            
+        ###Example:
+          
+            from __future__ import unicode_literals
+            from django.db import models, migrations
+            from django_extra_migrations.migrations import Resave, GrantPermissions
+        
+        
+            class Migration(migrations.Migration):
+                dependencies = [
+                    ('tree', '0078_auto_20151014_1500'),
+                ]
+        
+            operations = [
+                Resave("tree.Resource"),
+            ]
+        
+        ---
+        
+        #GrantPermissions
+        
+        *Grant permissions to groups*
+        
+        Create empty migration - ```./manage.py makemigrations %APP_NAME% --empty```
+        
+        Open migration file ./%APP_NAME%/migrations/%MIGRATION_NAME%.py
+        
+        ###Import
+        
+            from django_extra_migrations.migrations import GrantPermissions
+            
+        ###Operation
+            
+            GrantPermissions(["%GROUP_NAME%"], (
+                ("%APP_NAME%.%MODEL_NAME%", True), # IF true - grant ALL perms for this content type
+                ("%APP_NAME%.%MODEL_NAME%", ["add_%LOWER_MODEL_NAME%"]),
+                ("%APP_NAME%.%MODEL_NAME%", ["change_%LOWER_MODEL_NAME%"]),
+                ("%APP_NAME%.%MODEL_NAME%", ["delete_%LOWER_MODEL_NAME%"]),
+            )),
+            
+            
+        ###Example:
+          
+            from __future__ import unicode_literals
+            
+            from django.db import models, migrations
+            from django_extra_migrations.migrations import GrantPermissions
+            
+            
+            class Migration(migrations.Migration):
+                dependencies = [
+                    ('tree', '0078_auto_20151014_1500'),
+                ]
+            
+                operations = [
+                    GrantPermissions(["Admins"], (
+                        ("tree.Resource", True),
+                        ("tree.ResourceFile", ["add_resourcefile"]),
+                    )),
+                ]
+        
+Keywords: d,j,a,n,g,o, ,m,i,g,r,a,t,i,o,n,s, ,p,e,r,m,i,s,s,i,o,n,s, ,m,o,d,e,l,s
+Platform: UNKNOWN
+Classifier: Development Status :: 4 - Beta
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python :: 2.6
+Classifier: Programming Language :: Python :: 2.7
