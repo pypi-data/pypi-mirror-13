@@ -1,0 +1,139 @@
+Metadata-Version: 1.0
+Name: phen.mail
+Version: 0.1.0
+Summary: mail services plugin
+Home-page: phen://mlUDK5IPJYwAD0D6aINCAIbcc20QFqw4CHqwaUSJSIk/plugins/
+Author: Daniel Monteiro Basso
+Author-email: daniel@basso.inf.br
+License: AGPLv3+
+Description: Mail Services Plugin
+        ====================
+        
+        Note: this is alpha software, use it only if willing to help debug it.
+        
+        This plugin provides the following services:
+        * relay: signs mail messages (DKIM) and transports them to their destinataries
+        * delivery: receives and filters messages, delivering them to Phen mailboxes or
+          external Maildir folders
+        * fetching: retrieves messages from other servers
+        * access: serves messages through IMAP or direct shell management
+        
+        The module dkimpy (python-dkim in Debian) is required for DKIM signatures.
+        
+        
+        Server Configuration
+        --------------------
+        
+        JSON config format - JSON with hash comments.
+        
+        Edit the file `/[device-identity]/system/mail/mail.jcfg` using the
+        reference below:
+        ```
+        {
+            "sender-domain": "example.com",
+            "receivers": [                      # DNS MX records (requires dns plugin)
+                [0, "mail1.example.com"],       # priority, server name
+                [5, "mail2.example.com"],
+            ],
+            "domains": {
+                "example.com": {
+                    "postmaster": ":alice",
+                    "abuse": ":alice",
+                    "alice": "/[user-identity]/mail-root-folder-path",
+                    "bob": "-disabled account",
+                    "carol": ">external-MDA-command parameters [hashed-passphrase]"
+                    "dan": ">forward@domain.org [hashed-passphrase]"
+                    "robot": ".plugin-name parameters"
+                }
+            },
+            "relay": {
+                "dkim-key": "/[device-identity]/system/mail/dkim.key",
+                "queue-folder": "/[device-identity]/system/mail/queue"
+            },
+            "imap": true,
+            "pop": {"port": 111, "disable-ssl": true}
+        }
+        ```
+        
+        Remember that mail servers are required by RFC822 6.3, RFC1123 5.2.7,
+        and RFC2821 4.5.1 to have a valid postmaster address, and by RFC2142
+        Section 2 to have a valid abuse address.
+        
+        Note: the IMAP server only works with Evolution so far. Thunderbird and
+        Geary still can't retrieve messages correctly.
+        
+        
+        User Configuration
+        ------------------
+        
+        `/[user-identity]/mail/mail.jcfg`
+        ```
+        {
+            "passphrase": "sha256-passphrase",
+            "pop3pwd": "obscured-passphrase",
+            "external-MDA": "command parameters",
+            "authorization": "admin sign allowing the external-MDA command",
+            "delivery": "path-to-custom-folder",
+            "filters": "path-to-custom-file"
+        }
+        ```
+        
+        You can use Phen's shell command `obscure` to avoid using clear-text
+        
+        Filters:
+        ```
+        {
+          "filters": [
+            {"type": "py", "code": "file:test.py"},
+            {"type": "match", "content": "[3ug-l]", "action": "accept:ttt"}
+          ]
+        }
+        ```
+        
+        Example code filter:
+        ```python
+        cnt = int(msg["Subject"].split()[-1])
+        
+        if cnt % 2:
+           accept("odd")
+        
+        accept("even")
+        ```
+        
+        
+        `/[user-identity]/system/config/mail-fetcher.jcfg`
+        ```
+        {
+            "mail-folders": {
+                "mail": "/[user-identity]/mail"
+            },
+            "accounts": [
+                {
+                    "server": "imap.example.com",
+                    "protocol": "imap",             # imap / imaps
+                    "username": "alice",
+                    "passphrase": "cGBqJGszbCV8NHFaclt1WnZb",
+                    "period": "5 min",
+                    "first-time": "download-all",   # default is "ignore-all"
+                    "boxes": [
+                        {"Inbox": "filter"},
+                        "SomeList",                 # same as {"SomeList": "filter"}
+                        {"SomeOtherList": "accept:mail:Lists/SomeOther"},
+                        {"Spam": "delete"}
+                    ]
+                }
+            ]
+        }
+        ```
+        
+        Note: protocols pop / pops not available yet.
+        
+        
+        Future Plans
+        ------------
+        
+        * Long term storage in a `phen.db` database.
+        * Keyword search using Woosh.
+        * Interaction with Notmuch.
+        
+Platform: UNKNOWN
