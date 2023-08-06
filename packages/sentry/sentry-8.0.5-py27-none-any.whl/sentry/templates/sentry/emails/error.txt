@@ -1,0 +1,30 @@
+{% spaceless %}
+{% autoescape off %}
+A new event has been recorded in Sentry:
+
+    {{ event.message }}
+
+Details
+-------
+
+{{ link }}
+{% if enhanced_privacy %}
+Details about this issue are not shown in this notification since enhanced
+privacy controls are enabled. For more details about this issue, view this
+issue on Sentry.
+{% else %}
+Tags
+----
+{% for tag_key, tag_value in tags %}
+* {{ tag_key }} = {{ tag_value }}{% endfor %}
+
+{% if interfaces %}{% for label, _, text in interfaces %}
+{{ label }}
+-----------
+
+{{ text }}
+
+{% endfor %}
+{% endif %}{% endif %}
+{% endautoescape %}
+{% endspaceless %}
