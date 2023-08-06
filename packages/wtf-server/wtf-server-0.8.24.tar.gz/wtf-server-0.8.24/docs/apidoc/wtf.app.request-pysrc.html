@@ -1,0 +1,1002 @@
+<?xml version="1.0" encoding="ascii"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>wtf.app.request</title>
+  <link rel="stylesheet" href="epydoc.css" type="text/css" />
+  <script type="text/javascript" src="epydoc.js"></script>
+</head>
+
+<body bgcolor="white" text="black" link="blue" vlink="#204080"
+      alink="#204080">
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+  <!-- Home link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="wtf-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            ><a href="http://opensource.perlig.de/wtf/">Visit WTF Online</a></th>
+          </tr></table></th>
+  </tr>
+</table>
+<table width="100%" cellpadding="0" cellspacing="0">
+  <tr valign="top">
+    <td width="100%">
+      <span class="breadcrumbs">
+        <a href="wtf-module.html">Package&nbsp;wtf</a> ::
+        <a href="wtf.app-module.html">Package&nbsp;app</a> ::
+        Module&nbsp;request
+      </span>
+    </td>
+    <td>
+      <table cellpadding="0" cellspacing="0">
+        <!-- hide/show private -->
+        <tr><td align="right"><span class="options">[<a href="javascript:void(0);" class="privatelink"
+    onclick="toggle_private();">hide&nbsp;private</a>]</span></td></tr>
+        <tr><td align="right"><span class="options"
+            >[<a href="frames.html" target="_top">frames</a
+            >]&nbsp;|&nbsp;<a href="wtf.app.request-pysrc.html"
+            target="_top">no&nbsp;frames</a>]</span></td></tr>
+      </table>
+    </td>
+  </tr>
+</table>
+<h1 class="epydoc">Source Code for <a href="wtf.app.request-module.html">Module wtf.app.request</a></h1>
+<pre class="py-src">
+<a name="L1"></a><tt class="py-lineno">  1</tt>  <tt class="py-line"><tt class="py-comment"># -*- coding: ascii -*-</tt> </tt>
+<a name="L2"></a><tt class="py-lineno">  2</tt>  <tt class="py-line"><tt class="py-comment">#</tt> </tt>
+<a name="L3"></a><tt class="py-lineno">  3</tt>  <tt class="py-line"><tt class="py-comment"># Copyright 2006-2012</tt> </tt>
+<a name="L4"></a><tt class="py-lineno">  4</tt>  <tt class="py-line"><tt class="py-comment"># Andr\xe9 Malo or his licensors, as applicable</tt> </tt>
+<a name="L5"></a><tt class="py-lineno">  5</tt>  <tt class="py-line"><tt class="py-comment">#</tt> </tt>
+<a name="L6"></a><tt class="py-lineno">  6</tt>  <tt class="py-line"><tt class="py-comment"># Licensed under the Apache License, Version 2.0 (the "License");</tt> </tt>
+<a name="L7"></a><tt class="py-lineno">  7</tt>  <tt class="py-line"><tt class="py-comment"># you may not use this file except in compliance with the License.</tt> </tt>
+<a name="L8"></a><tt class="py-lineno">  8</tt>  <tt class="py-line"><tt class="py-comment"># You may obtain a copy of the License at</tt> </tt>
+<a name="L9"></a><tt class="py-lineno">  9</tt>  <tt class="py-line"><tt class="py-comment">#</tt> </tt>
+<a name="L10"></a><tt class="py-lineno"> 10</tt>  <tt class="py-line"><tt class="py-comment">#     http://www.apache.org/licenses/LICENSE-2.0</tt> </tt>
+<a name="L11"></a><tt class="py-lineno"> 11</tt>  <tt class="py-line"><tt class="py-comment">#</tt> </tt>
+<a name="L12"></a><tt class="py-lineno"> 12</tt>  <tt class="py-line"><tt class="py-comment"># Unless required by applicable law or agreed to in writing, software</tt> </tt>
+<a name="L13"></a><tt class="py-lineno"> 13</tt>  <tt class="py-line"><tt class="py-comment"># distributed under the License is distributed on an "AS IS" BASIS,</tt> </tt>
+<a name="L14"></a><tt class="py-lineno"> 14</tt>  <tt class="py-line"><tt class="py-comment"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</tt> </tt>
+<a name="L15"></a><tt class="py-lineno"> 15</tt>  <tt class="py-line"><tt class="py-comment"># See the License for the specific language governing permissions and</tt> </tt>
+<a name="L16"></a><tt class="py-lineno"> 16</tt>  <tt class="py-line"><tt class="py-comment"># limitations under the License.</tt> </tt>
+<a name="L17"></a><tt class="py-lineno"> 17</tt>  <tt class="py-line"><tt class="py-docstring">"""</tt> </tt>
+<a name="L18"></a><tt class="py-lineno"> 18</tt>  <tt class="py-line"><tt class="py-docstring">Request object</tt> </tt>
+<a name="L19"></a><tt class="py-lineno"> 19</tt>  <tt class="py-line"><tt class="py-docstring">==============</tt> </tt>
+<a name="L20"></a><tt class="py-lineno"> 20</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L21"></a><tt class="py-lineno"> 21</tt>  <tt class="py-line"><tt class="py-docstring">This module implements a request object.</tt> </tt>
+<a name="L22"></a><tt class="py-lineno"> 22</tt>  <tt class="py-line"><tt class="py-docstring">"""</tt> </tt>
+<a name="L23"></a><tt class="py-lineno"> 23</tt>  <tt class="py-line"><tt class="py-name">__author__</tt> <tt class="py-op">=</tt> <tt class="py-string">u"Andr\xe9 Malo"</tt> </tt>
+<a name="L24"></a><tt class="py-lineno"> 24</tt>  <tt class="py-line"><tt class="py-name">__docformat__</tt> <tt class="py-op">=</tt> <tt class="py-string">"restructuredtext en"</tt> </tt>
+<a name="L25"></a><tt class="py-lineno"> 25</tt>  <tt class="py-line"> </tt>
+<a name="L26"></a><tt class="py-lineno"> 26</tt>  <tt class="py-line"><tt class="py-keyword">import</tt> <tt class="py-name">binascii</tt> <tt class="py-keyword">as</tt> <tt class="py-name">_binascii</tt> </tt>
+<a name="L27"></a><tt class="py-lineno"> 27</tt>  <tt class="py-line"><tt class="py-keyword">import</tt> <tt class="py-name">codecs</tt> <tt class="py-keyword">as</tt> <tt class="py-name">_codecs</tt> </tt>
+<a name="L28"></a><tt class="py-lineno"> 28</tt>  <tt class="py-line"><tt class="py-keyword">import</tt> <tt class="py-name">cgi</tt> <tt class="py-keyword">as</tt> <tt class="py-name">_cgi</tt> </tt>
+<a name="L29"></a><tt class="py-lineno"> 29</tt>  <tt class="py-line"><tt class="py-keyword">import</tt> <tt class="py-name">encodings</tt> <tt class="py-keyword">as</tt> <tt class="py-name">_encodings</tt> </tt>
+<a name="L30"></a><tt class="py-lineno"> 30</tt>  <tt class="py-line"><tt class="py-keyword">import</tt> <tt class="py-name">re</tt> <tt class="py-keyword">as</tt> <tt class="py-name">_re</tt> </tt>
+<a name="L31"></a><tt class="py-lineno"> 31</tt>  <tt class="py-line"><tt class="py-keyword">import</tt> <tt class="py-name">urlparse</tt> <tt class="py-keyword">as</tt> <tt class="py-name">_urlparse</tt> </tt>
+<a name="L32"></a><tt class="py-lineno"> 32</tt>  <tt class="py-line"><tt class="py-keyword">import</tt> <tt class="py-name">weakref</tt> <tt class="py-keyword">as</tt> <tt class="py-name">_weakref</tt> </tt>
+<a name="L33"></a><tt class="py-lineno"> 33</tt>  <tt class="py-line"> </tt>
+<a name="L34"></a><tt class="py-lineno"> 34</tt>  <tt class="py-line"><tt class="py-keyword">from</tt> <tt id="link-0" class="py-name" targets="Package wtf=wtf-module.html"><a title="wtf" class="py-name" href="#" onclick="return doclink('link-0', 'wtf', 'link-0');">wtf</a></tt> <tt class="py-keyword">import</tt> <tt id="link-1" class="py-name" targets="Module wtf.webutil=wtf.webutil-module.html"><a title="wtf.webutil" class="py-name" href="#" onclick="return doclink('link-1', 'webutil', 'link-1');">webutil</a></tt> <tt class="py-keyword">as</tt> <tt class="py-name">_webutil</tt> </tt>
+<a name="L35"></a><tt class="py-lineno"> 35</tt>  <tt class="py-line"><tt class="py-keyword">from</tt> <tt id="link-2" class="py-name"><a title="wtf" class="py-name" href="#" onclick="return doclink('link-2', 'wtf', 'link-0');">wtf</a></tt><tt class="py-op">.</tt><tt id="link-3" class="py-name" targets="Module wtf.util=wtf.util-module.html"><a title="wtf.util" class="py-name" href="#" onclick="return doclink('link-3', 'util', 'link-3');">util</a></tt> <tt class="py-keyword">import</tt> <tt id="link-4" class="py-name" targets="Function wtf.util.Property()=wtf.util-module.html#Property"><a title="wtf.util.Property" class="py-name" href="#" onclick="return doclink('link-4', 'Property', 'link-4');">Property</a></tt> </tt>
+<a name="Uploads"></a><div id="Uploads-def"><a name="L36"></a><tt class="py-lineno"> 36</tt>  <tt class="py-line"> </tt>
+<a name="L37"></a><tt class="py-lineno"> 37</tt>  <tt class="py-line"> </tt>
+<a name="L38"></a><tt class="py-lineno"> 38</tt> <a class="py-toggle" href="#" id="Uploads-toggle" onclick="return toggle('Uploads');">-</a><tt class="py-line"><tt class="py-keyword">class</tt> <a class="py-def-name" href="wtf.app.request.Uploads-class.html">Uploads</a><tt class="py-op">(</tt><tt class="py-base-class">object</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="Uploads-collapsed" style="display:none;" pad="+++" indent="++++"></div><div id="Uploads-expanded"><a name="L39"></a><tt class="py-lineno"> 39</tt>  <tt class="py-line">    <tt class="py-docstring">"""</tt> </tt>
+<a name="L40"></a><tt class="py-lineno"> 40</tt>  <tt class="py-line"><tt class="py-docstring">    Container for uploaded files</tt> </tt>
+<a name="L41"></a><tt class="py-lineno"> 41</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L42"></a><tt class="py-lineno"> 42</tt>  <tt class="py-line"><tt class="py-docstring">    :IVariables:</tt> </tt>
+<a name="L43"></a><tt class="py-lineno"> 43</tt>  <tt class="py-line"><tt class="py-docstring">     - `_pairs`: Dict of form names and file objects</tt> </tt>
+<a name="L44"></a><tt class="py-lineno"> 44</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L45"></a><tt class="py-lineno"> 45</tt>  <tt class="py-line"><tt class="py-docstring">    :Types:</tt> </tt>
+<a name="L46"></a><tt class="py-lineno"> 46</tt>  <tt class="py-line"><tt class="py-docstring">     - `_pairs`: ``dict``</tt> </tt>
+<a name="L47"></a><tt class="py-lineno"> 47</tt>  <tt class="py-line"><tt class="py-docstring">    """</tt> </tt>
+<a name="L48"></a><tt class="py-lineno"> 48</tt>  <tt class="py-line"> </tt>
+<a name="Uploads.__init__"></a><div id="Uploads.__init__-def"><a name="L49"></a><tt class="py-lineno"> 49</tt> <a class="py-toggle" href="#" id="Uploads.__init__-toggle" onclick="return toggle('Uploads.__init__');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="wtf.app.request.Uploads-class.html#__init__">__init__</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">uploads</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="Uploads.__init__-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="Uploads.__init__-expanded"><a name="L50"></a><tt class="py-lineno"> 50</tt>  <tt class="py-line">        <tt class="py-docstring">"""</tt> </tt>
+<a name="L51"></a><tt class="py-lineno"> 51</tt>  <tt class="py-line"><tt class="py-docstring">        Initialization</tt> </tt>
+<a name="L52"></a><tt class="py-lineno"> 52</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L53"></a><tt class="py-lineno"> 53</tt>  <tt class="py-line"><tt class="py-docstring">        :Parameters:</tt> </tt>
+<a name="L54"></a><tt class="py-lineno"> 54</tt>  <tt class="py-line"><tt class="py-docstring">         - `uploads`: Dict of form names and file objects</tt> </tt>
+<a name="L55"></a><tt class="py-lineno"> 55</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L56"></a><tt class="py-lineno"> 56</tt>  <tt class="py-line"><tt class="py-docstring">        :Types:</tt> </tt>
+<a name="L57"></a><tt class="py-lineno"> 57</tt>  <tt class="py-line"><tt class="py-docstring">         - `uploads`: ``dict``</tt> </tt>
+<a name="L58"></a><tt class="py-lineno"> 58</tt>  <tt class="py-line"><tt class="py-docstring">        """</tt> </tt>
+<a name="L59"></a><tt class="py-lineno"> 59</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">_pairs</tt> <tt class="py-op">=</tt> <tt id="link-5" class="py-name" targets="Variable wtf.app.request.ParameterWrapper.uploads=wtf.app.request.ParameterWrapper-class.html#uploads"><a title="wtf.app.request.ParameterWrapper.uploads" class="py-name" href="#" onclick="return doclink('link-5', 'uploads', 'link-5');">uploads</a></tt> </tt>
+</div><a name="L60"></a><tt class="py-lineno"> 60</tt>  <tt class="py-line"> </tt>
+<a name="Uploads.__getitem__"></a><div id="Uploads.__getitem__-def"><a name="L61"></a><tt class="py-lineno"> 61</tt> <a class="py-toggle" href="#" id="Uploads.__getitem__-toggle" onclick="return toggle('Uploads.__getitem__');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="wtf.app.request.Uploads-class.html#__getitem__">__getitem__</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">name</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="Uploads.__getitem__-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="Uploads.__getitem__-expanded"><a name="L62"></a><tt class="py-lineno"> 62</tt>  <tt class="py-line">        <tt class="py-docstring">"""</tt> </tt>
+<a name="L63"></a><tt class="py-lineno"> 63</tt>  <tt class="py-line"><tt class="py-docstring">        Return a single value for that name</tt> </tt>
+<a name="L64"></a><tt class="py-lineno"> 64</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L65"></a><tt class="py-lineno"> 65</tt>  <tt class="py-line"><tt class="py-docstring">        :Parameters:</tt> </tt>
+<a name="L66"></a><tt class="py-lineno"> 66</tt>  <tt class="py-line"><tt class="py-docstring">         - `name`: The form name</tt> </tt>
+<a name="L67"></a><tt class="py-lineno"> 67</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L68"></a><tt class="py-lineno"> 68</tt>  <tt class="py-line"><tt class="py-docstring">        :Types:</tt> </tt>
+<a name="L69"></a><tt class="py-lineno"> 69</tt>  <tt class="py-line"><tt class="py-docstring">         - `name`: ``str``</tt> </tt>
+<a name="L70"></a><tt class="py-lineno"> 70</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L71"></a><tt class="py-lineno"> 71</tt>  <tt class="py-line"><tt class="py-docstring">        :return: File object</tt> </tt>
+<a name="L72"></a><tt class="py-lineno"> 72</tt>  <tt class="py-line"><tt class="py-docstring">        :rtype: ``file``</tt> </tt>
+<a name="L73"></a><tt class="py-lineno"> 73</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L74"></a><tt class="py-lineno"> 74</tt>  <tt class="py-line"><tt class="py-docstring">        :Exceptions:</tt> </tt>
+<a name="L75"></a><tt class="py-lineno"> 75</tt>  <tt class="py-line"><tt class="py-docstring">         - `KeyError`: The name does not exist</tt> </tt>
+<a name="L76"></a><tt class="py-lineno"> 76</tt>  <tt class="py-line"><tt class="py-docstring">        """</tt> </tt>
+<a name="L77"></a><tt class="py-lineno"> 77</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">_pairs</tt><tt class="py-op">[</tt><tt id="link-6" class="py-name" targets="Variable wtf._wtf_cstream.GenericStream.name=wtf._wtf_cstream.GenericStream-class.html#name,Variable wtf._wtf_cstream.MinimalSocketStream.name=wtf._wtf_cstream.MinimalSocketStream-class.html#name,Variable wtf.opi.daemon.Pidfile.name=wtf.opi.daemon.Pidfile-class.html#name,Variable wtf.stream.GenericStream.name=wtf.stream.GenericStream-class.html#name,Variable wtf.stream.MinimalSocketStream.name=wtf.stream.MinimalSocketStream-class.html#name"><a title="wtf._wtf_cstream.GenericStream.name
+wtf._wtf_cstream.MinimalSocketStream.name
+wtf.opi.daemon.Pidfile.name
+wtf.stream.GenericStream.name
+wtf.stream.MinimalSocketStream.name" class="py-name" href="#" onclick="return doclink('link-6', 'name', 'link-6');">name</a></tt><tt class="py-op">]</tt><tt class="py-op">[</tt><tt class="py-number">0</tt><tt class="py-op">]</tt> </tt>
+</div><a name="L78"></a><tt class="py-lineno"> 78</tt>  <tt class="py-line"> </tt>
+<a name="Uploads.__iter__"></a><div id="Uploads.__iter__-def"><a name="L79"></a><tt class="py-lineno"> 79</tt> <a class="py-toggle" href="#" id="Uploads.__iter__-toggle" onclick="return toggle('Uploads.__iter__');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="wtf.app.request.Uploads-class.html#__iter__">__iter__</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="Uploads.__iter__-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="Uploads.__iter__-expanded"><a name="L80"></a><tt class="py-lineno"> 80</tt>  <tt class="py-line">        <tt class="py-docstring">"""</tt> </tt>
+<a name="L81"></a><tt class="py-lineno"> 81</tt>  <tt class="py-line"><tt class="py-docstring">        Return an iterator over the regular keys</tt> </tt>
+<a name="L82"></a><tt class="py-lineno"> 82</tt>  <tt class="py-line"><tt class="py-docstring">        """</tt> </tt>
+<a name="L83"></a><tt class="py-lineno"> 83</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">_pairs</tt><tt class="py-op">.</tt><tt class="py-name">iterkeys</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L84"></a><tt class="py-lineno"> 84</tt>  <tt class="py-line"> </tt>
+<a name="Uploads.__contains__"></a><div id="Uploads.__contains__-def"><a name="L85"></a><tt class="py-lineno"> 85</tt> <a class="py-toggle" href="#" id="Uploads.__contains__-toggle" onclick="return toggle('Uploads.__contains__');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="wtf.app.request.Uploads-class.html#__contains__">__contains__</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">name</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="Uploads.__contains__-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="Uploads.__contains__-expanded"><a name="L86"></a><tt class="py-lineno"> 86</tt>  <tt class="py-line">        <tt class="py-docstring">"""</tt> </tt>
+<a name="L87"></a><tt class="py-lineno"> 87</tt>  <tt class="py-line"><tt class="py-docstring">        Determines whether a certain key exists</tt> </tt>
+<a name="L88"></a><tt class="py-lineno"> 88</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L89"></a><tt class="py-lineno"> 89</tt>  <tt class="py-line"><tt class="py-docstring">        :Parameters:</tt> </tt>
+<a name="L90"></a><tt class="py-lineno"> 90</tt>  <tt class="py-line"><tt class="py-docstring">         - `name`: The key to check</tt> </tt>
+<a name="L91"></a><tt class="py-lineno"> 91</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L92"></a><tt class="py-lineno"> 92</tt>  <tt class="py-line"><tt class="py-docstring">        :Types:</tt> </tt>
+<a name="L93"></a><tt class="py-lineno"> 93</tt>  <tt class="py-line"><tt class="py-docstring">         - `name`: ``str``</tt> </tt>
+<a name="L94"></a><tt class="py-lineno"> 94</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L95"></a><tt class="py-lineno"> 95</tt>  <tt class="py-line"><tt class="py-docstring">        :return: Does the key exist?</tt> </tt>
+<a name="L96"></a><tt class="py-lineno"> 96</tt>  <tt class="py-line"><tt class="py-docstring">        :rtype: ``bool``</tt> </tt>
+<a name="L97"></a><tt class="py-lineno"> 97</tt>  <tt class="py-line"><tt class="py-docstring">        """</tt> </tt>
+<a name="L98"></a><tt class="py-lineno"> 98</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt id="link-7" class="py-name"><a title="wtf._wtf_cstream.GenericStream.name
+wtf._wtf_cstream.MinimalSocketStream.name
+wtf.opi.daemon.Pidfile.name
+wtf.stream.GenericStream.name
+wtf.stream.MinimalSocketStream.name" class="py-name" href="#" onclick="return doclink('link-7', 'name', 'link-6');">name</a></tt> <tt class="py-keyword">in</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">_pairs</tt> </tt>
+</div><a name="L99"></a><tt class="py-lineno"> 99</tt>  <tt class="py-line"> </tt>
+<a name="Uploads.keys"></a><div id="Uploads.keys-def"><a name="L100"></a><tt class="py-lineno">100</tt> <a class="py-toggle" href="#" id="Uploads.keys-toggle" onclick="return toggle('Uploads.keys');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="wtf.app.request.Uploads-class.html#keys">keys</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="Uploads.keys-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="Uploads.keys-expanded"><a name="L101"></a><tt class="py-lineno">101</tt>  <tt class="py-line">        <tt class="py-docstring">"""</tt> </tt>
+<a name="L102"></a><tt class="py-lineno">102</tt>  <tt class="py-line"><tt class="py-docstring">        Determine the list of available keys</tt> </tt>
+<a name="L103"></a><tt class="py-lineno">103</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L104"></a><tt class="py-lineno">104</tt>  <tt class="py-line"><tt class="py-docstring">        :return: The key list</tt> </tt>
+<a name="L105"></a><tt class="py-lineno">105</tt>  <tt class="py-line"><tt class="py-docstring">        :rtype: ``list``</tt> </tt>
+<a name="L106"></a><tt class="py-lineno">106</tt>  <tt class="py-line"><tt class="py-docstring">        """</tt> </tt>
+<a name="L107"></a><tt class="py-lineno">107</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">_pairs</tt><tt class="py-op">.</tt><tt id="link-8" class="py-name" targets="Method wtf.app.request.CookieCollection.keys()=wtf.app.request.CookieCollection-class.html#keys,Method wtf.app.request.ParameterWrapper.keys()=wtf.app.request.ParameterWrapper-class.html#keys,Method wtf.app.request.Uploads.keys()=wtf.app.request.Uploads-class.html#keys"><a title="wtf.app.request.CookieCollection.keys
+wtf.app.request.ParameterWrapper.keys
+wtf.app.request.Uploads.keys" class="py-name" href="#" onclick="return doclink('link-8', 'keys', 'link-8');">keys</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L108"></a><tt class="py-lineno">108</tt>  <tt class="py-line"> </tt>
+<a name="Uploads.multi"></a><div id="Uploads.multi-def"><a name="L109"></a><tt class="py-lineno">109</tt> <a class="py-toggle" href="#" id="Uploads.multi-toggle" onclick="return toggle('Uploads.multi');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="wtf.app.request.Uploads-class.html#multi">multi</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">name</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="Uploads.multi-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="Uploads.multi-expanded"><a name="L110"></a><tt class="py-lineno">110</tt>  <tt class="py-line">        <tt class="py-docstring">"""</tt> </tt>
+<a name="L111"></a><tt class="py-lineno">111</tt>  <tt class="py-line"><tt class="py-docstring">        Return a list of all values under that name</tt> </tt>
+<a name="L112"></a><tt class="py-lineno">112</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L113"></a><tt class="py-lineno">113</tt>  <tt class="py-line"><tt class="py-docstring">        :Parameters:</tt> </tt>
+<a name="L114"></a><tt class="py-lineno">114</tt>  <tt class="py-line"><tt class="py-docstring">         - `name`: The name to look up</tt> </tt>
+<a name="L115"></a><tt class="py-lineno">115</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L116"></a><tt class="py-lineno">116</tt>  <tt class="py-line"><tt class="py-docstring">        :Types:</tt> </tt>
+<a name="L117"></a><tt class="py-lineno">117</tt>  <tt class="py-line"><tt class="py-docstring">         - `name`: ``str``</tt> </tt>
+<a name="L118"></a><tt class="py-lineno">118</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L119"></a><tt class="py-lineno">119</tt>  <tt class="py-line"><tt class="py-docstring">        :return: List of files belonging to this key</tt> </tt>
+<a name="L120"></a><tt class="py-lineno">120</tt>  <tt class="py-line"><tt class="py-docstring">        :rtype: ``tuple``</tt> </tt>
+<a name="L121"></a><tt class="py-lineno">121</tt>  <tt class="py-line"><tt class="py-docstring">        """</tt> </tt>
+<a name="L122"></a><tt class="py-lineno">122</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-name">tuple</tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">_pairs</tt><tt class="py-op">.</tt><tt id="link-9" class="py-name" targets="Method wtf.app.response.HeaderCollection.get()=wtf.app.response.HeaderCollection-class.html#get,Method wtf.app.services.memcache.ExceptionWrapper.get()=wtf.app.services.memcache.ExceptionWrapper-class.html#get,Method wtf.app.services.memcache.NoMemcacheWrapper.get()=wtf.app.services.memcache.NoMemcacheWrapper-class.html#get,Method wtf.app.services.session.Session.get()=wtf.app.services.session.Session-class.html#get,Method wtf.app.services.session.StorageAdapter.get()=wtf.app.services.session.StorageAdapter-class.html#get,Method wtf.app.services.session.StorageInterface.get()=wtf.app.services.session.StorageInterface-class.html#get,Method wtf.app.services.session_storage.sharedance.BoundSharedanceStorage.get()=wtf.app.services.session_storage.sharedance.BoundSharedanceStorage-class.html#get,Method wtf.ext.memcache.Memcache.get()=wtf.ext.memcache.Memcache-class.html#get"><a title="wtf.app.response.HeaderCollection.get
+wtf.app.services.memcache.ExceptionWrapper.get
+wtf.app.services.memcache.NoMemcacheWrapper.get
+wtf.app.services.session.Session.get
+wtf.app.services.session.StorageAdapter.get
+wtf.app.services.session.StorageInterface.get
+wtf.app.services.session_storage.sharedance.BoundSharedanceStorage.get
+wtf.ext.memcache.Memcache.get" class="py-name" href="#" onclick="return doclink('link-9', 'get', 'link-9');">get</a></tt><tt class="py-op">(</tt><tt id="link-10" class="py-name"><a title="wtf._wtf_cstream.GenericStream.name
+wtf._wtf_cstream.MinimalSocketStream.name
+wtf.opi.daemon.Pidfile.name
+wtf.stream.GenericStream.name
+wtf.stream.MinimalSocketStream.name" class="py-name" href="#" onclick="return doclink('link-10', 'name', 'link-6');">name</a></tt><tt class="py-op">,</tt> <tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+</div></div><a name="L123"></a><tt class="py-lineno">123</tt>  <tt class="py-line"> </tt>
+<a name="ParameterWrapper"></a><div id="ParameterWrapper-def"><a name="L124"></a><tt class="py-lineno">124</tt>  <tt class="py-line"> </tt>
+<a name="L125"></a><tt class="py-lineno">125</tt> <a class="py-toggle" href="#" id="ParameterWrapper-toggle" onclick="return toggle('ParameterWrapper');">-</a><tt class="py-line"><tt class="py-keyword">class</tt> <a class="py-def-name" href="wtf.app.request.ParameterWrapper-class.html">ParameterWrapper</a><tt class="py-op">(</tt><tt class="py-base-class">object</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="ParameterWrapper-collapsed" style="display:none;" pad="+++" indent="++++"></div><div id="ParameterWrapper-expanded"><a name="L126"></a><tt class="py-lineno">126</tt>  <tt class="py-line">    <tt class="py-docstring">"""</tt> </tt>
+<a name="L127"></a><tt class="py-lineno">127</tt>  <tt class="py-line"><tt class="py-docstring">    Wrapper around cgi.FieldStorage</tt> </tt>
+<a name="L128"></a><tt class="py-lineno">128</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L129"></a><tt class="py-lineno">129</tt>  <tt class="py-line"><tt class="py-docstring">    This wrapper provides a better interface and unicode awareness</tt> </tt>
+<a name="L130"></a><tt class="py-lineno">130</tt>  <tt class="py-line"><tt class="py-docstring">    """</tt> </tt>
+<a name="L131"></a><tt class="py-lineno">131</tt>  <tt class="py-line"> </tt>
+<a name="ParameterWrapper.__init__"></a><div id="ParameterWrapper.__init__-def"><a name="L132"></a><tt class="py-lineno">132</tt> <a class="py-toggle" href="#" id="ParameterWrapper.__init__-toggle" onclick="return toggle('ParameterWrapper.__init__');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="wtf.app.request.ParameterWrapper-class.html#__init__">__init__</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">request</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="ParameterWrapper.__init__-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="ParameterWrapper.__init__-expanded"><a name="L133"></a><tt class="py-lineno">133</tt>  <tt class="py-line">        <tt class="py-docstring">"""</tt> </tt>
+<a name="L134"></a><tt class="py-lineno">134</tt>  <tt class="py-line"><tt class="py-docstring">        Initialization</tt> </tt>
+<a name="L135"></a><tt class="py-lineno">135</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L136"></a><tt class="py-lineno">136</tt>  <tt class="py-line"><tt class="py-docstring">        :Parameters:</tt> </tt>
+<a name="L137"></a><tt class="py-lineno">137</tt>  <tt class="py-line"><tt class="py-docstring">         - `request`: request object</tt> </tt>
+<a name="L138"></a><tt class="py-lineno">138</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L139"></a><tt class="py-lineno">139</tt>  <tt class="py-line"><tt class="py-docstring">        :Types:</tt> </tt>
+<a name="L140"></a><tt class="py-lineno">140</tt>  <tt class="py-line"><tt class="py-docstring">         - `request`: `Request`</tt> </tt>
+<a name="L141"></a><tt class="py-lineno">141</tt>  <tt class="py-line"><tt class="py-docstring">        """</tt> </tt>
+<a name="L142"></a><tt class="py-lineno">142</tt>  <tt class="py-line">        <tt class="py-name">env</tt> <tt class="py-op">=</tt> <tt id="link-11" class="py-name" targets="Module wtf.app.request=wtf.app.request-module.html"><a title="wtf.app.request" class="py-name" href="#" onclick="return doclink('link-11', 'request', 'link-11');">request</a></tt><tt class="py-op">.</tt><tt class="py-name">env</tt> </tt>
+<a name="L143"></a><tt class="py-lineno">143</tt>  <tt class="py-line">        <tt class="py-keyword">try</tt><tt class="py-op">:</tt> </tt>
+<a name="L144"></a><tt class="py-lineno">144</tt>  <tt class="py-line">            <tt id="link-12" class="py-name" targets="Method wtf.ext.memcache.Memcache.store()=wtf.ext.memcache.Memcache-class.html#store,Method wtf.ext.sharedance.Sharedance.store()=wtf.ext.sharedance.Sharedance-class.html#store,Method wtf.ext.sharedance.SharedanceConnector.store()=wtf.ext.sharedance.SharedanceConnector-class.html#store"><a title="wtf.ext.memcache.Memcache.store
+wtf.ext.sharedance.Sharedance.store
+wtf.ext.sharedance.SharedanceConnector.store" class="py-name" href="#" onclick="return doclink('link-12', 'store', 'link-12');">store</a></tt> <tt class="py-op">=</tt> <tt class="py-name">_cgi</tt><tt class="py-op">.</tt><tt class="py-name">FieldStorage</tt><tt class="py-op">(</tt> </tt>
+<a name="L145"></a><tt class="py-lineno">145</tt>  <tt class="py-line">                <tt class="py-name">fp</tt><tt class="py-op">=</tt><tt class="py-name">env</tt><tt class="py-op">[</tt><tt class="py-string">'wsgi.input'</tt><tt class="py-op">]</tt><tt class="py-op">,</tt> <tt class="py-name">environ</tt><tt class="py-op">=</tt><tt class="py-name">env</tt><tt class="py-op">,</tt> <tt class="py-name">keep_blank_values</tt><tt class="py-op">=</tt><tt class="py-name">True</tt> </tt>
+<a name="L146"></a><tt class="py-lineno">146</tt>  <tt class="py-line">            <tt class="py-op">)</tt> </tt>
+<a name="L147"></a><tt class="py-lineno">147</tt>  <tt class="py-line">            <tt class="py-keyword">if</tt> <tt id="link-13" class="py-name"><a title="wtf.ext.memcache.Memcache.store
+wtf.ext.sharedance.Sharedance.store
+wtf.ext.sharedance.SharedanceConnector.store" class="py-name" href="#" onclick="return doclink('link-13', 'store', 'link-12');">store</a></tt><tt class="py-op">.</tt><tt id="link-14" class="py-name" targets="Method wtf.app.services.resources.Resource.list()=wtf.app.services.resources.Resource-class.html#list"><a title="wtf.app.services.resources.Resource.list" class="py-name" href="#" onclick="return doclink('link-14', 'list', 'link-14');">list</a></tt> <tt class="py-keyword">is</tt> <tt class="py-name">None</tt><tt class="py-op">:</tt> </tt>
+<a name="L148"></a><tt class="py-lineno">148</tt>  <tt class="py-line">                <tt class="py-keyword">raise</tt> <tt class="py-name">ValueError</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L149"></a><tt class="py-lineno">149</tt>  <tt class="py-line">        <tt class="py-keyword">except</tt> <tt class="py-name">ValueError</tt><tt class="py-op">:</tt> </tt>
+<a name="L150"></a><tt class="py-lineno">150</tt>  <tt class="py-line">            <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-15" class="py-name" targets="Variable wtf.app.services.resources.Resource._encoding=wtf.app.services.resources.Resource-class.html#_encoding"><a title="wtf.app.services.resources.Resource._encoding" class="py-name" href="#" onclick="return doclink('link-15', '_encoding', 'link-15');">_encoding</a></tt> <tt class="py-op">=</tt> <tt class="py-string">'utf-8'</tt> </tt>
+<a name="L151"></a><tt class="py-lineno">151</tt>  <tt class="py-line">            <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">_uploads</tt> <tt class="py-op">=</tt> <tt id="link-16" class="py-name" targets="Class wtf.app.request.Uploads=wtf.app.request.Uploads-class.html"><a title="wtf.app.request.Uploads" class="py-name" href="#" onclick="return doclink('link-16', 'Uploads', 'link-16');">Uploads</a></tt><tt class="py-op">(</tt><tt class="py-op">{</tt><tt class="py-op">}</tt><tt class="py-op">)</tt> </tt>
+<a name="L152"></a><tt class="py-lineno">152</tt>  <tt class="py-line">            <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">_pairs</tt> <tt class="py-op">=</tt> <tt class="py-op">{</tt><tt class="py-op">}</tt> </tt>
+<a name="L153"></a><tt class="py-lineno">153</tt>  <tt class="py-line">        <tt class="py-keyword">else</tt><tt class="py-op">:</tt> </tt>
+<a name="L154"></a><tt class="py-lineno">154</tt>  <tt class="py-line">            <tt id="link-17" class="py-name" targets="Variable wtf.app.request.ParameterWrapper.encoding=wtf.app.request.ParameterWrapper-class.html#encoding"><a title="wtf.app.request.ParameterWrapper.encoding" class="py-name" href="#" onclick="return doclink('link-17', 'encoding', 'link-17');">encoding</a></tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-18" class="py-name" targets="Static Method wtf.app.request.ParameterWrapper._determine_encoding()=wtf.app.request.ParameterWrapper-class.html#_determine_encoding"><a title="wtf.app.request.ParameterWrapper._determine_encoding" class="py-name" href="#" onclick="return doclink('link-18', '_determine_encoding', 'link-18');">_determine_encoding</a></tt><tt class="py-op">(</tt><tt id="link-19" class="py-name"><a title="wtf.ext.memcache.Memcache.store
+wtf.ext.sharedance.Sharedance.store
+wtf.ext.sharedance.SharedanceConnector.store" class="py-name" href="#" onclick="return doclink('link-19', 'store', 'link-12');">store</a></tt><tt class="py-op">)</tt> </tt>
+<a name="L155"></a><tt class="py-lineno">155</tt>  <tt class="py-line"> </tt>
+<a name="L156"></a><tt class="py-lineno">156</tt>  <tt class="py-line">            <tt id="link-20" class="py-name"><a title="wtf.app.request.ParameterWrapper.uploads" class="py-name" href="#" onclick="return doclink('link-20', 'uploads', 'link-5');">uploads</a></tt> <tt class="py-op">=</tt> <tt class="py-op">{</tt><tt class="py-op">}</tt> </tt>
+<a name="L157"></a><tt class="py-lineno">157</tt>  <tt class="py-line">            <tt class="py-name">regular</tt> <tt class="py-op">=</tt> <tt class="py-op">{</tt><tt class="py-op">}</tt> </tt>
+<a name="L158"></a><tt class="py-lineno">158</tt>  <tt class="py-line">            <tt class="py-keyword">for</tt> <tt id="link-21" class="py-name" targets="Method wtf.opi.listener.InetSocket.key()=wtf.opi.listener.InetSocket-class.html#key,Method wtf.opi.listener.SocketDecorator.key()=wtf.opi.listener.SocketDecorator-class.html#key,Method wtf.opi.listener.UnixSocket.key()=wtf.opi.listener.UnixSocket-class.html#key"><a title="wtf.opi.listener.InetSocket.key
+wtf.opi.listener.SocketDecorator.key
+wtf.opi.listener.UnixSocket.key" class="py-name" href="#" onclick="return doclink('link-21', 'key', 'link-21');">key</a></tt> <tt class="py-keyword">in</tt> <tt id="link-22" class="py-name"><a title="wtf.ext.memcache.Memcache.store
+wtf.ext.sharedance.Sharedance.store
+wtf.ext.sharedance.SharedanceConnector.store" class="py-name" href="#" onclick="return doclink('link-22', 'store', 'link-12');">store</a></tt><tt class="py-op">:</tt> </tt>
+<a name="L159"></a><tt class="py-lineno">159</tt>  <tt class="py-line">                <tt class="py-name">values</tt> <tt class="py-op">=</tt> <tt id="link-23" class="py-name"><a title="wtf.ext.memcache.Memcache.store
+wtf.ext.sharedance.Sharedance.store
+wtf.ext.sharedance.SharedanceConnector.store" class="py-name" href="#" onclick="return doclink('link-23', 'store', 'link-12');">store</a></tt><tt class="py-op">[</tt><tt id="link-24" class="py-name"><a title="wtf.opi.listener.InetSocket.key
+wtf.opi.listener.SocketDecorator.key
+wtf.opi.listener.UnixSocket.key" class="py-name" href="#" onclick="return doclink('link-24', 'key', 'link-21');">key</a></tt><tt class="py-op">]</tt> </tt>
+<a name="L160"></a><tt class="py-lineno">160</tt>  <tt class="py-line">                <tt class="py-keyword">if</tt> <tt class="py-name">type</tt><tt class="py-op">(</tt><tt class="py-name">values</tt><tt class="py-op">)</tt> <tt class="py-keyword">is</tt> <tt class="py-keyword">not</tt> <tt id="link-25" class="py-name"><a title="wtf.app.services.resources.Resource.list" class="py-name" href="#" onclick="return doclink('link-25', 'list', 'link-14');">list</a></tt><tt class="py-op">:</tt> </tt>
+<a name="L161"></a><tt class="py-lineno">161</tt>  <tt class="py-line">                    <tt class="py-name">values</tt> <tt class="py-op">=</tt> <tt class="py-op">[</tt><tt class="py-name">values</tt><tt class="py-op">]</tt> </tt>
+<a name="L162"></a><tt class="py-lineno">162</tt>  <tt class="py-line">                <tt class="py-keyword">for</tt> <tt class="py-name">value</tt> <tt class="py-keyword">in</tt> <tt class="py-name">values</tt><tt class="py-op">:</tt> </tt>
+<a name="L163"></a><tt class="py-lineno">163</tt>  <tt class="py-line">                    <tt class="py-keyword">if</tt> <tt class="py-name">value</tt><tt class="py-op">.</tt><tt class="py-name">filename</tt><tt class="py-op">:</tt> </tt>
+<a name="L164"></a><tt class="py-lineno">164</tt>  <tt class="py-line">                        <tt id="link-26" class="py-name"><a title="wtf.app.request.ParameterWrapper.uploads" class="py-name" href="#" onclick="return doclink('link-26', 'uploads', 'link-5');">uploads</a></tt><tt class="py-op">.</tt><tt class="py-name">setdefault</tt><tt class="py-op">(</tt><tt id="link-27" class="py-name"><a title="wtf.opi.listener.InetSocket.key
+wtf.opi.listener.SocketDecorator.key
+wtf.opi.listener.UnixSocket.key" class="py-name" href="#" onclick="return doclink('link-27', 'key', 'link-21');">key</a></tt><tt class="py-op">,</tt> <tt class="py-op">[</tt><tt class="py-op">]</tt><tt class="py-op">)</tt><tt class="py-op">.</tt><tt class="py-name">append</tt><tt class="py-op">(</tt><tt class="py-name">value</tt><tt class="py-op">)</tt> </tt>
+<a name="L165"></a><tt class="py-lineno">165</tt>  <tt class="py-line">                    <tt class="py-keyword">else</tt><tt class="py-op">:</tt> </tt>
+<a name="L166"></a><tt class="py-lineno">166</tt>  <tt class="py-line">                        <tt class="py-keyword">try</tt><tt class="py-op">:</tt> </tt>
+<a name="L167"></a><tt class="py-lineno">167</tt>  <tt class="py-line">                            <tt class="py-name">value</tt> <tt class="py-op">=</tt> <tt class="py-name">value</tt><tt class="py-op">.</tt><tt class="py-name">value</tt><tt class="py-op">.</tt><tt id="link-28" class="py-name" targets="Method wtf.app.cookie.BaseCookieCodec.decode()=wtf.app.cookie.BaseCookieCodec-class.html#decode,Method wtf.app.cookie.DefaultCookie.decode()=wtf.app.cookie.DefaultCookie-class.html#decode,Method wtf.app.cookie.UnicodeCookie.decode()=wtf.app.cookie.UnicodeCookie-class.html#decode,Method wtf.app.services.session_storage.sharedance.SessionCookieCodec.decode()=wtf.app.services.session_storage.sharedance.SessionCookieCodec-class.html#decode,Method wtf.httputil.CookieCodecInterface.decode()=wtf.httputil.CookieCodecInterface-class.html#decode"><a title="wtf.app.cookie.BaseCookieCodec.decode
+wtf.app.cookie.DefaultCookie.decode
+wtf.app.cookie.UnicodeCookie.decode
+wtf.app.services.session_storage.sharedance.SessionCookieCodec.decode
+wtf.httputil.CookieCodecInterface.decode" class="py-name" href="#" onclick="return doclink('link-28', 'decode', 'link-28');">decode</a></tt><tt class="py-op">(</tt><tt id="link-29" class="py-name"><a title="wtf.app.request.ParameterWrapper.encoding" class="py-name" href="#" onclick="return doclink('link-29', 'encoding', 'link-17');">encoding</a></tt><tt class="py-op">)</tt> </tt>
+<a name="L168"></a><tt class="py-lineno">168</tt>  <tt class="py-line">                        <tt class="py-keyword">except</tt> <tt class="py-name">UnicodeError</tt><tt class="py-op">:</tt> </tt>
+<a name="L169"></a><tt class="py-lineno">169</tt>  <tt class="py-line">                            <tt class="py-name">value</tt> <tt class="py-op">=</tt> <tt class="py-name">value</tt><tt class="py-op">.</tt><tt class="py-name">value</tt><tt class="py-op">.</tt><tt id="link-30" class="py-name"><a title="wtf.app.cookie.BaseCookieCodec.decode
+wtf.app.cookie.DefaultCookie.decode
+wtf.app.cookie.UnicodeCookie.decode
+wtf.app.services.session_storage.sharedance.SessionCookieCodec.decode
+wtf.httputil.CookieCodecInterface.decode" class="py-name" href="#" onclick="return doclink('link-30', 'decode', 'link-28');">decode</a></tt><tt class="py-op">(</tt><tt class="py-string">'cp1252'</tt><tt class="py-op">)</tt> </tt>
+<a name="L170"></a><tt class="py-lineno">170</tt>  <tt class="py-line">                        <tt class="py-name">regular</tt><tt class="py-op">.</tt><tt class="py-name">setdefault</tt><tt class="py-op">(</tt><tt id="link-31" class="py-name"><a title="wtf.opi.listener.InetSocket.key
+wtf.opi.listener.SocketDecorator.key
+wtf.opi.listener.UnixSocket.key" class="py-name" href="#" onclick="return doclink('link-31', 'key', 'link-21');">key</a></tt><tt class="py-op">,</tt> <tt class="py-op">[</tt><tt class="py-op">]</tt><tt class="py-op">)</tt><tt class="py-op">.</tt><tt class="py-name">append</tt><tt class="py-op">(</tt><tt class="py-name">value</tt><tt class="py-op">)</tt> </tt>
+<a name="L171"></a><tt class="py-lineno">171</tt>  <tt class="py-line"> </tt>
+<a name="L172"></a><tt class="py-lineno">172</tt>  <tt class="py-line">            <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-32" class="py-name"><a title="wtf.app.services.resources.Resource._encoding" class="py-name" href="#" onclick="return doclink('link-32', '_encoding', 'link-15');">_encoding</a></tt> <tt class="py-op">=</tt> <tt id="link-33" class="py-name"><a title="wtf.app.request.ParameterWrapper.encoding" class="py-name" href="#" onclick="return doclink('link-33', 'encoding', 'link-17');">encoding</a></tt> </tt>
+<a name="L173"></a><tt class="py-lineno">173</tt>  <tt class="py-line">            <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">_uploads</tt> <tt class="py-op">=</tt> <tt id="link-34" class="py-name"><a title="wtf.app.request.Uploads" class="py-name" href="#" onclick="return doclink('link-34', 'Uploads', 'link-16');">Uploads</a></tt><tt class="py-op">(</tt><tt id="link-35" class="py-name"><a title="wtf.app.request.ParameterWrapper.uploads" class="py-name" href="#" onclick="return doclink('link-35', 'uploads', 'link-5');">uploads</a></tt><tt class="py-op">)</tt> </tt>
+<a name="L174"></a><tt class="py-lineno">174</tt>  <tt class="py-line">            <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">_pairs</tt> <tt class="py-op">=</tt> <tt class="py-name">regular</tt> </tt>
+</div><a name="L175"></a><tt class="py-lineno">175</tt>  <tt class="py-line"> </tt>
+<a name="L176"></a><tt class="py-lineno">176</tt>  <tt class="py-line">    <tt class="py-decorator">@</tt><tt class="py-decorator">Property</tt> </tt>
+<a name="ParameterWrapper.encoding"></a><div id="ParameterWrapper.encoding-def"><a name="L177"></a><tt class="py-lineno">177</tt> <a class="py-toggle" href="#" id="ParameterWrapper.encoding-toggle" onclick="return toggle('ParameterWrapper.encoding');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="wtf.app.request.ParameterWrapper-class.html#encoding">encoding</a><tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="ParameterWrapper.encoding-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="ParameterWrapper.encoding-expanded"><a name="L178"></a><tt class="py-lineno">178</tt>  <tt class="py-line">        <tt class="py-docstring">"""</tt> </tt>
+<a name="L179"></a><tt class="py-lineno">179</tt>  <tt class="py-line"><tt class="py-docstring">        Assumed encoding of the request</tt> </tt>
+<a name="L180"></a><tt class="py-lineno">180</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L181"></a><tt class="py-lineno">181</tt>  <tt class="py-line"><tt class="py-docstring">        :Type: ``str``</tt> </tt>
+<a name="L182"></a><tt class="py-lineno">182</tt>  <tt class="py-line"><tt class="py-docstring">        """</tt> </tt>
+<a name="L183"></a><tt class="py-lineno">183</tt>  <tt class="py-line">        <tt class="py-comment"># pylint: disable = E0211, C0111, W0212, W0612</tt> </tt>
+<a name="L184"></a><tt class="py-lineno">184</tt>  <tt class="py-line"> </tt>
+<a name="L185"></a><tt class="py-lineno">185</tt>  <tt class="py-line">        <tt class="py-keyword">def</tt> <tt class="py-def-name">fget</tt><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L186"></a><tt class="py-lineno">186</tt>  <tt class="py-line">            <tt class="py-keyword">return</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-36" class="py-name"><a title="wtf.app.services.resources.Resource._encoding" class="py-name" href="#" onclick="return doclink('link-36', '_encoding', 'link-15');">_encoding</a></tt> </tt>
+</div><a name="L187"></a><tt class="py-lineno">187</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-name">locals</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L188"></a><tt class="py-lineno">188</tt>  <tt class="py-line"> </tt>
+<a name="L189"></a><tt class="py-lineno">189</tt>  <tt class="py-line">    <tt class="py-decorator">@</tt><tt class="py-decorator">Property</tt> </tt>
+<a name="ParameterWrapper.uploads"></a><div id="ParameterWrapper.uploads-def"><a name="L190"></a><tt class="py-lineno">190</tt> <a class="py-toggle" href="#" id="ParameterWrapper.uploads-toggle" onclick="return toggle('ParameterWrapper.uploads');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="wtf.app.request.ParameterWrapper-class.html#uploads">uploads</a><tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="ParameterWrapper.uploads-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="ParameterWrapper.uploads-expanded"><a name="L191"></a><tt class="py-lineno">191</tt>  <tt class="py-line">        <tt class="py-docstring">"""</tt> </tt>
+<a name="L192"></a><tt class="py-lineno">192</tt>  <tt class="py-line"><tt class="py-docstring">        Upload container</tt> </tt>
+<a name="L193"></a><tt class="py-lineno">193</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L194"></a><tt class="py-lineno">194</tt>  <tt class="py-line"><tt class="py-docstring">        :Type: `Uploads`</tt> </tt>
+<a name="L195"></a><tt class="py-lineno">195</tt>  <tt class="py-line"><tt class="py-docstring">        """</tt> </tt>
+<a name="L196"></a><tt class="py-lineno">196</tt>  <tt class="py-line">        <tt class="py-comment"># pylint: disable = E0211, C0111, W0212, W0612</tt> </tt>
+<a name="L197"></a><tt class="py-lineno">197</tt>  <tt class="py-line"> </tt>
+<a name="L198"></a><tt class="py-lineno">198</tt>  <tt class="py-line">        <tt class="py-keyword">def</tt> <tt class="py-def-name">fget</tt><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L199"></a><tt class="py-lineno">199</tt>  <tt class="py-line">            <tt class="py-keyword">return</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">_uploads</tt> </tt>
+</div><a name="L200"></a><tt class="py-lineno">200</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-name">locals</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L201"></a><tt class="py-lineno">201</tt>  <tt class="py-line"> </tt>
+<a name="ParameterWrapper.__setitem__"></a><div id="ParameterWrapper.__setitem__-def"><a name="L202"></a><tt class="py-lineno">202</tt> <a class="py-toggle" href="#" id="ParameterWrapper.__setitem__-toggle" onclick="return toggle('ParameterWrapper.__setitem__');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="wtf.app.request.ParameterWrapper-class.html#__setitem__">__setitem__</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">name</tt><tt class="py-op">,</tt> <tt class="py-param">value</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="ParameterWrapper.__setitem__-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="ParameterWrapper.__setitem__-expanded"><a name="L203"></a><tt class="py-lineno">203</tt>  <tt class="py-line">        <tt class="py-docstring">"""</tt> </tt>
+<a name="L204"></a><tt class="py-lineno">204</tt>  <tt class="py-line"><tt class="py-docstring">        Set a single item value</tt> </tt>
+<a name="L205"></a><tt class="py-lineno">205</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L206"></a><tt class="py-lineno">206</tt>  <tt class="py-line"><tt class="py-docstring">        :Parameters:</tt> </tt>
+<a name="L207"></a><tt class="py-lineno">207</tt>  <tt class="py-line"><tt class="py-docstring">         - `name`: The name to set</tt> </tt>
+<a name="L208"></a><tt class="py-lineno">208</tt>  <tt class="py-line"><tt class="py-docstring">         - `value`: The value to assign</tt> </tt>
+<a name="L209"></a><tt class="py-lineno">209</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L210"></a><tt class="py-lineno">210</tt>  <tt class="py-line"><tt class="py-docstring">        :Types:</tt> </tt>
+<a name="L211"></a><tt class="py-lineno">211</tt>  <tt class="py-line"><tt class="py-docstring">         - `name`: ``str``</tt> </tt>
+<a name="L212"></a><tt class="py-lineno">212</tt>  <tt class="py-line"><tt class="py-docstring">         - `value`: ``unicode``</tt> </tt>
+<a name="L213"></a><tt class="py-lineno">213</tt>  <tt class="py-line"><tt class="py-docstring">        """</tt> </tt>
+<a name="L214"></a><tt class="py-lineno">214</tt>  <tt class="py-line">        <tt class="py-keyword">try</tt><tt class="py-op">:</tt> </tt>
+<a name="L215"></a><tt class="py-lineno">215</tt>  <tt class="py-line">            <tt class="py-name">iter</tt><tt class="py-op">(</tt><tt class="py-name">value</tt><tt class="py-op">)</tt> </tt>
+<a name="L216"></a><tt class="py-lineno">216</tt>  <tt class="py-line">        <tt class="py-keyword">except</tt> <tt class="py-name">TypeError</tt><tt class="py-op">:</tt> </tt>
+<a name="L217"></a><tt class="py-lineno">217</tt>  <tt class="py-line">            <tt class="py-name">value</tt> <tt class="py-op">=</tt> <tt class="py-op">[</tt><tt class="py-name">unicode</tt><tt class="py-op">(</tt><tt class="py-name">value</tt><tt class="py-op">)</tt><tt class="py-op">]</tt> </tt>
+<a name="L218"></a><tt class="py-lineno">218</tt>  <tt class="py-line">        <tt class="py-keyword">else</tt><tt class="py-op">:</tt> </tt>
+<a name="L219"></a><tt class="py-lineno">219</tt>  <tt class="py-line">            <tt class="py-keyword">if</tt> <tt class="py-name">isinstance</tt><tt class="py-op">(</tt><tt class="py-name">value</tt><tt class="py-op">,</tt> <tt class="py-name">basestring</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L220"></a><tt class="py-lineno">220</tt>  <tt class="py-line">                <tt class="py-name">value</tt> <tt class="py-op">=</tt> <tt class="py-op">[</tt><tt class="py-name">unicode</tt><tt class="py-op">(</tt><tt class="py-name">value</tt><tt class="py-op">)</tt><tt class="py-op">]</tt> </tt>
+<a name="L221"></a><tt class="py-lineno">221</tt>  <tt class="py-line">            <tt class="py-keyword">else</tt><tt class="py-op">:</tt> </tt>
+<a name="L222"></a><tt class="py-lineno">222</tt>  <tt class="py-line">                <tt class="py-name">value</tt> <tt class="py-op">=</tt> <tt class="py-name">map</tt><tt class="py-op">(</tt><tt class="py-name">unicode</tt><tt class="py-op">,</tt> <tt class="py-name">value</tt><tt class="py-op">)</tt> </tt>
+<a name="L223"></a><tt class="py-lineno">223</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">_pairs</tt><tt class="py-op">[</tt><tt id="link-37" class="py-name"><a title="wtf._wtf_cstream.GenericStream.name
+wtf._wtf_cstream.MinimalSocketStream.name
+wtf.opi.daemon.Pidfile.name
+wtf.stream.GenericStream.name
+wtf.stream.MinimalSocketStream.name" class="py-name" href="#" onclick="return doclink('link-37', 'name', 'link-6');">name</a></tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-name">value</tt> </tt>
+</div><a name="L224"></a><tt class="py-lineno">224</tt>  <tt class="py-line"> </tt>
+<a name="ParameterWrapper.__getitem__"></a><div id="ParameterWrapper.__getitem__-def"><a name="L225"></a><tt class="py-lineno">225</tt> <a class="py-toggle" href="#" id="ParameterWrapper.__getitem__-toggle" onclick="return toggle('ParameterWrapper.__getitem__');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="wtf.app.request.ParameterWrapper-class.html#__getitem__">__getitem__</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">name</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="ParameterWrapper.__getitem__-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="ParameterWrapper.__getitem__-expanded"><a name="L226"></a><tt class="py-lineno">226</tt>  <tt class="py-line">        <tt class="py-docstring">""" Return a single value for that name """</tt> </tt>
+<a name="L227"></a><tt class="py-lineno">227</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">_pairs</tt><tt class="py-op">.</tt><tt id="link-38" class="py-name"><a title="wtf.app.response.HeaderCollection.get
+wtf.app.services.memcache.ExceptionWrapper.get
+wtf.app.services.memcache.NoMemcacheWrapper.get
+wtf.app.services.session.Session.get
+wtf.app.services.session.StorageAdapter.get
+wtf.app.services.session.StorageInterface.get
+wtf.app.services.session_storage.sharedance.BoundSharedanceStorage.get
+wtf.ext.memcache.Memcache.get" class="py-name" href="#" onclick="return doclink('link-38', 'get', 'link-9');">get</a></tt><tt class="py-op">(</tt><tt id="link-39" class="py-name"><a title="wtf._wtf_cstream.GenericStream.name
+wtf._wtf_cstream.MinimalSocketStream.name
+wtf.opi.daemon.Pidfile.name
+wtf.stream.GenericStream.name
+wtf.stream.MinimalSocketStream.name" class="py-name" href="#" onclick="return doclink('link-39', 'name', 'link-6');">name</a></tt><tt class="py-op">)</tt> <tt class="py-keyword">or</tt> <tt class="py-op">[</tt><tt class="py-string">u''</tt><tt class="py-op">]</tt><tt class="py-op">)</tt><tt class="py-op">[</tt><tt class="py-number">0</tt><tt class="py-op">]</tt> </tt>
+</div><a name="L228"></a><tt class="py-lineno">228</tt>  <tt class="py-line"> </tt>
+<a name="ParameterWrapper.__iter__"></a><div id="ParameterWrapper.__iter__-def"><a name="L229"></a><tt class="py-lineno">229</tt> <a class="py-toggle" href="#" id="ParameterWrapper.__iter__-toggle" onclick="return toggle('ParameterWrapper.__iter__');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="wtf.app.request.ParameterWrapper-class.html#__iter__">__iter__</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="ParameterWrapper.__iter__-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="ParameterWrapper.__iter__-expanded"><a name="L230"></a><tt class="py-lineno">230</tt>  <tt class="py-line">        <tt class="py-docstring">""" Return an iterator over the regular keys """</tt> </tt>
+<a name="L231"></a><tt class="py-lineno">231</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">_pairs</tt><tt class="py-op">.</tt><tt class="py-name">iterkeys</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L232"></a><tt class="py-lineno">232</tt>  <tt class="py-line"> </tt>
+<a name="ParameterWrapper.__contains__"></a><div id="ParameterWrapper.__contains__-def"><a name="L233"></a><tt class="py-lineno">233</tt> <a class="py-toggle" href="#" id="ParameterWrapper.__contains__-toggle" onclick="return toggle('ParameterWrapper.__contains__');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="wtf.app.request.ParameterWrapper-class.html#__contains__">__contains__</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">name</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="ParameterWrapper.__contains__-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="ParameterWrapper.__contains__-expanded"><a name="L234"></a><tt class="py-lineno">234</tt>  <tt class="py-line">        <tt class="py-docstring">"""</tt> </tt>
+<a name="L235"></a><tt class="py-lineno">235</tt>  <tt class="py-line"><tt class="py-docstring">        Determines whether a certain key exists</tt> </tt>
+<a name="L236"></a><tt class="py-lineno">236</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L237"></a><tt class="py-lineno">237</tt>  <tt class="py-line"><tt class="py-docstring">        :Parameters:</tt> </tt>
+<a name="L238"></a><tt class="py-lineno">238</tt>  <tt class="py-line"><tt class="py-docstring">         - `name`: The key to check</tt> </tt>
+<a name="L239"></a><tt class="py-lineno">239</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L240"></a><tt class="py-lineno">240</tt>  <tt class="py-line"><tt class="py-docstring">        :Types:</tt> </tt>
+<a name="L241"></a><tt class="py-lineno">241</tt>  <tt class="py-line"><tt class="py-docstring">         - `name`: ``str``</tt> </tt>
+<a name="L242"></a><tt class="py-lineno">242</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L243"></a><tt class="py-lineno">243</tt>  <tt class="py-line"><tt class="py-docstring">        :return: Does the key exist?</tt> </tt>
+<a name="L244"></a><tt class="py-lineno">244</tt>  <tt class="py-line"><tt class="py-docstring">        :rtype: ``bool``</tt> </tt>
+<a name="L245"></a><tt class="py-lineno">245</tt>  <tt class="py-line"><tt class="py-docstring">        """</tt> </tt>
+<a name="L246"></a><tt class="py-lineno">246</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt id="link-40" class="py-name"><a title="wtf._wtf_cstream.GenericStream.name
+wtf._wtf_cstream.MinimalSocketStream.name
+wtf.opi.daemon.Pidfile.name
+wtf.stream.GenericStream.name
+wtf.stream.MinimalSocketStream.name" class="py-name" href="#" onclick="return doclink('link-40', 'name', 'link-6');">name</a></tt> <tt class="py-keyword">in</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">_pairs</tt> </tt>
+</div><a name="L247"></a><tt class="py-lineno">247</tt>  <tt class="py-line">    <tt class="py-name">has_key</tt> <tt class="py-op">=</tt> <tt id="link-41" class="py-name" targets="Method wtf.app.request.CookieCollection.__contains__()=wtf.app.request.CookieCollection-class.html#__contains__,Method wtf.app.request.ParameterWrapper.__contains__()=wtf.app.request.ParameterWrapper-class.html#__contains__,Method wtf.app.request.Uploads.__contains__()=wtf.app.request.Uploads-class.html#__contains__,Method wtf.app.response.HeaderCollection.__contains__()=wtf.app.response.HeaderCollection-class.html#__contains__,Method wtf.app.services.resources.GlobalResources.__contains__()=wtf.app.services.resources.GlobalResources-class.html#__contains__,Method wtf.app.services.session.Session.__contains__()=wtf.app.services.session.Session-class.html#__contains__,Method wtf.config.Config.__contains__()=wtf.config.Config-class.html#__contains__,Method wtf.config.Section.__contains__()=wtf.config.Section-class.html#__contains__,Method wtf.webutil.Query.__contains__()=wtf.webutil.Query-class.html#__contains__"><a title="wtf.app.request.CookieCollection.__contains__
+wtf.app.request.ParameterWrapper.__contains__
+wtf.app.request.Uploads.__contains__
+wtf.app.response.HeaderCollection.__contains__
+wtf.app.services.resources.GlobalResources.__contains__
+wtf.app.services.session.Session.__contains__
+wtf.config.Config.__contains__
+wtf.config.Section.__contains__
+wtf.webutil.Query.__contains__" class="py-name" href="#" onclick="return doclink('link-41', '__contains__', 'link-41');">__contains__</a></tt> </tt>
+<a name="L248"></a><tt class="py-lineno">248</tt>  <tt class="py-line"> </tt>
+<a name="ParameterWrapper.keys"></a><div id="ParameterWrapper.keys-def"><a name="L249"></a><tt class="py-lineno">249</tt> <a class="py-toggle" href="#" id="ParameterWrapper.keys-toggle" onclick="return toggle('ParameterWrapper.keys');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="wtf.app.request.ParameterWrapper-class.html#keys">keys</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="ParameterWrapper.keys-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="ParameterWrapper.keys-expanded"><a name="L250"></a><tt class="py-lineno">250</tt>  <tt class="py-line">        <tt class="py-docstring">"""</tt> </tt>
+<a name="L251"></a><tt class="py-lineno">251</tt>  <tt class="py-line"><tt class="py-docstring">        Determine the list of available keys</tt> </tt>
+<a name="L252"></a><tt class="py-lineno">252</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L253"></a><tt class="py-lineno">253</tt>  <tt class="py-line"><tt class="py-docstring">        :return: The key list</tt> </tt>
+<a name="L254"></a><tt class="py-lineno">254</tt>  <tt class="py-line"><tt class="py-docstring">        :rtype: ``list``</tt> </tt>
+<a name="L255"></a><tt class="py-lineno">255</tt>  <tt class="py-line"><tt class="py-docstring">        """</tt> </tt>
+<a name="L256"></a><tt class="py-lineno">256</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">_pairs</tt><tt class="py-op">.</tt><tt id="link-42" class="py-name"><a title="wtf.app.request.CookieCollection.keys
+wtf.app.request.ParameterWrapper.keys
+wtf.app.request.Uploads.keys" class="py-name" href="#" onclick="return doclink('link-42', 'keys', 'link-8');">keys</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L257"></a><tt class="py-lineno">257</tt>  <tt class="py-line"> </tt>
+<a name="ParameterWrapper.multi"></a><div id="ParameterWrapper.multi-def"><a name="L258"></a><tt class="py-lineno">258</tt> <a class="py-toggle" href="#" id="ParameterWrapper.multi-toggle" onclick="return toggle('ParameterWrapper.multi');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="wtf.app.request.ParameterWrapper-class.html#multi">multi</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">name</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="ParameterWrapper.multi-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="ParameterWrapper.multi-expanded"><a name="L259"></a><tt class="py-lineno">259</tt>  <tt class="py-line">        <tt class="py-docstring">""" Return a list of all values under that name """</tt> </tt>
+<a name="L260"></a><tt class="py-lineno">260</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-name">tuple</tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">_pairs</tt><tt class="py-op">.</tt><tt id="link-43" class="py-name"><a title="wtf.app.response.HeaderCollection.get
+wtf.app.services.memcache.ExceptionWrapper.get
+wtf.app.services.memcache.NoMemcacheWrapper.get
+wtf.app.services.session.Session.get
+wtf.app.services.session.StorageAdapter.get
+wtf.app.services.session.StorageInterface.get
+wtf.app.services.session_storage.sharedance.BoundSharedanceStorage.get
+wtf.ext.memcache.Memcache.get" class="py-name" href="#" onclick="return doclink('link-43', 'get', 'link-9');">get</a></tt><tt class="py-op">(</tt><tt id="link-44" class="py-name"><a title="wtf._wtf_cstream.GenericStream.name
+wtf._wtf_cstream.MinimalSocketStream.name
+wtf.opi.daemon.Pidfile.name
+wtf.stream.GenericStream.name
+wtf.stream.MinimalSocketStream.name" class="py-name" href="#" onclick="return doclink('link-44', 'name', 'link-6');">name</a></tt><tt class="py-op">,</tt> <tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L261"></a><tt class="py-lineno">261</tt>  <tt class="py-line"> </tt>
+<a name="L262"></a><tt class="py-lineno">262</tt>  <tt class="py-line">    <tt class="py-decorator">@</tt><tt class="py-decorator">staticmethod</tt> </tt>
+<a name="ParameterWrapper._determine_encoding"></a><div id="ParameterWrapper._determine_encoding-def"><a name="L263"></a><tt class="py-lineno">263</tt> <a class="py-toggle" href="#" id="ParameterWrapper._determine_encoding-toggle" onclick="return toggle('ParameterWrapper._determine_encoding');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="wtf.app.request.ParameterWrapper-class.html#_determine_encoding">_determine_encoding</a><tt class="py-op">(</tt><tt class="py-param">store</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="ParameterWrapper._determine_encoding-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="ParameterWrapper._determine_encoding-expanded"><a name="L264"></a><tt class="py-lineno">264</tt>  <tt class="py-line">        <tt class="py-docstring">""" Guess encoding of the request parameters """</tt> </tt>
+<a name="L265"></a><tt class="py-lineno">265</tt>  <tt class="py-line">        <tt class="py-comment"># try simple method first...</tt> </tt>
+<a name="L266"></a><tt class="py-lineno">266</tt>  <tt class="py-line">        <tt id="link-45" class="py-name"><a title="wtf.app.request.ParameterWrapper.encoding" class="py-name" href="#" onclick="return doclink('link-45', 'encoding', 'link-17');">encoding</a></tt> <tt class="py-op">=</tt> <tt id="link-46" class="py-name"><a title="wtf.ext.memcache.Memcache.store
+wtf.ext.sharedance.Sharedance.store
+wtf.ext.sharedance.SharedanceConnector.store" class="py-name" href="#" onclick="return doclink('link-46', 'store', 'link-12');">store</a></tt><tt class="py-op">.</tt><tt class="py-name">getfirst</tt><tt class="py-op">(</tt><tt class="py-string">'_charset_'</tt><tt class="py-op">)</tt> </tt>
+<a name="L267"></a><tt class="py-lineno">267</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt class="py-keyword">not</tt> <tt id="link-47" class="py-name"><a title="wtf.app.request.ParameterWrapper.encoding" class="py-name" href="#" onclick="return doclink('link-47', 'encoding', 'link-17');">encoding</a></tt><tt class="py-op">:</tt> </tt>
+<a name="L268"></a><tt class="py-lineno">268</tt>  <tt class="py-line">            <tt class="py-comment"># peek is assumed to be '\xe4', i.e. &amp;#228;</tt> </tt>
+<a name="L269"></a><tt class="py-lineno">269</tt>  <tt class="py-line">            <tt id="link-48" class="py-name"><a title="wtf.app.request.ParameterWrapper.encoding" class="py-name" href="#" onclick="return doclink('link-48', 'encoding', 'link-17');">encoding</a></tt> <tt class="py-op">=</tt> <tt class="py-op">{</tt> </tt>
+<a name="L270"></a><tt class="py-lineno">270</tt>  <tt class="py-line">                <tt class="py-string">'\xc3\xa4'</tt><tt class="py-op">:</tt> <tt class="py-string">'utf-8'</tt><tt class="py-op">,</tt> </tt>
+<a name="L271"></a><tt class="py-lineno">271</tt>  <tt class="py-line">                <tt class="py-name">None</tt>      <tt class="py-op">:</tt> <tt class="py-string">'utf-8'</tt><tt class="py-op">,</tt> </tt>
+<a name="L272"></a><tt class="py-lineno">272</tt>  <tt class="py-line">                <tt class="py-string">''</tt>        <tt class="py-op">:</tt> <tt class="py-string">'utf-8'</tt><tt class="py-op">,</tt> </tt>
+<a name="L273"></a><tt class="py-lineno">273</tt>  <tt class="py-line">                <tt class="py-string">'\x84'</tt>    <tt class="py-op">:</tt> <tt class="py-string">'cp437'</tt><tt class="py-op">,</tt> <tt class="py-comment"># default lynx on dos</tt> </tt>
+<a name="L274"></a><tt class="py-lineno">274</tt>  <tt class="py-line">            <tt class="py-op">}</tt><tt class="py-op">.</tt><tt id="link-49" class="py-name"><a title="wtf.app.response.HeaderCollection.get
+wtf.app.services.memcache.ExceptionWrapper.get
+wtf.app.services.memcache.NoMemcacheWrapper.get
+wtf.app.services.session.Session.get
+wtf.app.services.session.StorageAdapter.get
+wtf.app.services.session.StorageInterface.get
+wtf.app.services.session_storage.sharedance.BoundSharedanceStorage.get
+wtf.ext.memcache.Memcache.get" class="py-name" href="#" onclick="return doclink('link-49', 'get', 'link-9');">get</a></tt><tt class="py-op">(</tt><tt id="link-50" class="py-name"><a title="wtf.ext.memcache.Memcache.store
+wtf.ext.sharedance.Sharedance.store
+wtf.ext.sharedance.SharedanceConnector.store" class="py-name" href="#" onclick="return doclink('link-50', 'store', 'link-12');">store</a></tt><tt class="py-op">.</tt><tt class="py-name">getfirst</tt><tt class="py-op">(</tt><tt class="py-string">'_peek_'</tt><tt class="py-op">)</tt><tt class="py-op">,</tt> <tt class="py-string">'cp1252'</tt><tt class="py-op">)</tt> </tt>
+<a name="L275"></a><tt class="py-lineno">275</tt>  <tt class="py-line">        <tt id="link-51" class="py-name"><a title="wtf.app.request.ParameterWrapper.encoding" class="py-name" href="#" onclick="return doclink('link-51', 'encoding', 'link-17');">encoding</a></tt> <tt class="py-op">=</tt> <tt class="py-name">_encodings</tt><tt class="py-op">.</tt><tt class="py-name">normalize_encoding</tt><tt class="py-op">(</tt><tt id="link-52" class="py-name"><a title="wtf.app.request.ParameterWrapper.encoding" class="py-name" href="#" onclick="return doclink('link-52', 'encoding', 'link-17');">encoding</a></tt><tt class="py-op">)</tt> </tt>
+<a name="L276"></a><tt class="py-lineno">276</tt>  <tt class="py-line"> </tt>
+<a name="L277"></a><tt class="py-lineno">277</tt>  <tt class="py-line">        <tt class="py-comment"># fix known browser bug, but it doesn't exactly hurt:</tt> </tt>
+<a name="L278"></a><tt class="py-lineno">278</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt id="link-53" class="py-name"><a title="wtf.app.request.ParameterWrapper.encoding" class="py-name" href="#" onclick="return doclink('link-53', 'encoding', 'link-17');">encoding</a></tt><tt class="py-op">.</tt><tt id="link-54" class="py-name" targets="Method wtf.app.services.memcache.MemcacheWrapper.replace()=wtf.app.services.memcache.MemcacheWrapper-class.html#replace,Method wtf.app.services.memcache.NoMemcacheWrapper.replace()=wtf.app.services.memcache.NoMemcacheWrapper-class.html#replace,Method wtf.ext.memcache.Memcache.replace()=wtf.ext.memcache.Memcache-class.html#replace,Method wtf.webutil.Query.replace()=wtf.webutil.Query-class.html#replace"><a title="wtf.app.services.memcache.MemcacheWrapper.replace
+wtf.app.services.memcache.NoMemcacheWrapper.replace
+wtf.ext.memcache.Memcache.replace
+wtf.webutil.Query.replace" class="py-name" href="#" onclick="return doclink('link-54', 'replace', 'link-54');">replace</a></tt><tt class="py-op">(</tt><tt class="py-string">'_'</tt><tt class="py-op">,</tt> <tt class="py-string">''</tt><tt class="py-op">)</tt><tt class="py-op">.</tt><tt id="link-55" class="py-name"><a title="wtf.app.cookie.BaseCookieCodec.decode
+wtf.app.cookie.DefaultCookie.decode
+wtf.app.cookie.UnicodeCookie.decode
+wtf.app.services.session_storage.sharedance.SessionCookieCodec.decode
+wtf.httputil.CookieCodecInterface.decode" class="py-name" href="#" onclick="return doclink('link-55', 'decode', 'link-28');">decode</a></tt><tt class="py-op">(</tt><tt class="py-string">'latin-1'</tt><tt class="py-op">)</tt><tt class="py-op">.</tt><tt class="py-name">lower</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> <tt class="py-op">==</tt> <tt class="py-string">u'iso88591'</tt><tt class="py-op">:</tt> </tt>
+<a name="L279"></a><tt class="py-lineno">279</tt>  <tt class="py-line">            <tt id="link-56" class="py-name"><a title="wtf.app.request.ParameterWrapper.encoding" class="py-name" href="#" onclick="return doclink('link-56', 'encoding', 'link-17');">encoding</a></tt> <tt class="py-op">=</tt> <tt class="py-string">'cp1252'</tt> </tt>
+<a name="L280"></a><tt class="py-lineno">280</tt>  <tt class="py-line">        <tt class="py-keyword">else</tt><tt class="py-op">:</tt> </tt>
+<a name="L281"></a><tt class="py-lineno">281</tt>  <tt class="py-line">            <tt class="py-keyword">try</tt><tt class="py-op">:</tt> </tt>
+<a name="L282"></a><tt class="py-lineno">282</tt>  <tt class="py-line">                <tt class="py-name">_codecs</tt><tt class="py-op">.</tt><tt class="py-name">lookup</tt><tt class="py-op">(</tt><tt id="link-57" class="py-name"><a title="wtf.app.request.ParameterWrapper.encoding" class="py-name" href="#" onclick="return doclink('link-57', 'encoding', 'link-17');">encoding</a></tt><tt class="py-op">)</tt> </tt>
+<a name="L283"></a><tt class="py-lineno">283</tt>  <tt class="py-line">            <tt class="py-keyword">except</tt> <tt class="py-name">LookupError</tt><tt class="py-op">:</tt> </tt>
+<a name="L284"></a><tt class="py-lineno">284</tt>  <tt class="py-line">                <tt class="py-comment"># doh!</tt> </tt>
+<a name="L285"></a><tt class="py-lineno">285</tt>  <tt class="py-line">                <tt id="link-58" class="py-name"><a title="wtf.app.request.ParameterWrapper.encoding" class="py-name" href="#" onclick="return doclink('link-58', 'encoding', 'link-17');">encoding</a></tt> <tt class="py-op">=</tt> <tt class="py-string">'cp1252'</tt> </tt>
+<a name="L286"></a><tt class="py-lineno">286</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt id="link-59" class="py-name"><a title="wtf.app.request.ParameterWrapper.encoding" class="py-name" href="#" onclick="return doclink('link-59', 'encoding', 'link-17');">encoding</a></tt> </tt>
+</div></div><a name="L287"></a><tt class="py-lineno">287</tt>  <tt class="py-line"> </tt>
+<a name="CookieCollection"></a><div id="CookieCollection-def"><a name="L288"></a><tt class="py-lineno">288</tt>  <tt class="py-line"> </tt>
+<a name="L289"></a><tt class="py-lineno">289</tt> <a class="py-toggle" href="#" id="CookieCollection-toggle" onclick="return toggle('CookieCollection');">-</a><tt class="py-line"><tt class="py-keyword">class</tt> <a class="py-def-name" href="wtf.app.request.CookieCollection-class.html">CookieCollection</a><tt class="py-op">(</tt><tt class="py-base-class">object</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="CookieCollection-collapsed" style="display:none;" pad="+++" indent="++++"></div><div id="CookieCollection-expanded"><a name="L290"></a><tt class="py-lineno">290</tt>  <tt class="py-line">    <tt class="py-docstring">"""</tt> </tt>
+<a name="L291"></a><tt class="py-lineno">291</tt>  <tt class="py-line"><tt class="py-docstring">    Cookies parsed out of the request</tt> </tt>
+<a name="L292"></a><tt class="py-lineno">292</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L293"></a><tt class="py-lineno">293</tt>  <tt class="py-line"><tt class="py-docstring">    :IVariables:</tt> </tt>
+<a name="L294"></a><tt class="py-lineno">294</tt>  <tt class="py-line"><tt class="py-docstring">      `_cookies` : ``dict``</tt> </tt>
+<a name="L295"></a><tt class="py-lineno">295</tt>  <tt class="py-line"><tt class="py-docstring">        Cookie mapping (``{'name': ['value', ...], ...}``)</tt> </tt>
+<a name="L296"></a><tt class="py-lineno">296</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L297"></a><tt class="py-lineno">297</tt>  <tt class="py-line"><tt class="py-docstring">      `_cookiestring` : ``str``</tt> </tt>
+<a name="L298"></a><tt class="py-lineno">298</tt>  <tt class="py-line"><tt class="py-docstring">        Initial cookie string</tt> </tt>
+<a name="L299"></a><tt class="py-lineno">299</tt>  <tt class="py-line"><tt class="py-docstring">    """</tt> </tt>
+<a name="L300"></a><tt class="py-lineno">300</tt>  <tt class="py-line">    <tt class="py-comment">#: Split iterator</tt> </tt>
+<a name="L301"></a><tt class="py-lineno">301</tt>  <tt class="py-line">    <tt class="py-comment">#:</tt> </tt>
+<a name="L302"></a><tt class="py-lineno">302</tt>  <tt class="py-line">    <tt class="py-comment">#: :Type: ``callable``</tt> </tt>
+<a name="L303"></a><tt class="py-lineno">303</tt>  <tt class="py-line">    <tt id="link-60" class="py-name" targets="Method wtf.app.request.CookieCollection._SPLIT_ITER()=wtf.app.request.CookieCollection-class.html#_SPLIT_ITER"><a title="wtf.app.request.CookieCollection._SPLIT_ITER" class="py-name" href="#" onclick="return doclink('link-60', '_SPLIT_ITER', 'link-60');">_SPLIT_ITER</a></tt> <tt class="py-op">=</tt> <tt class="py-name">_re</tt><tt class="py-op">.</tt><tt class="py-name">compile</tt><tt class="py-op">(</tt><tt class="py-string">r"""(</tt> </tt>
+<a name="L304"></a><tt class="py-lineno">304</tt>  <tt class="py-line"><tt class="py-string">        (?:</tt> </tt>
+<a name="L305"></a><tt class="py-lineno">305</tt>  <tt class="py-line"><tt class="py-string">            \s*</tt> </tt>
+<a name="L306"></a><tt class="py-lineno">306</tt>  <tt class="py-line"><tt class="py-string">            (?P&lt;key&gt; [^"=\s;,]+ )</tt> </tt>
+<a name="L307"></a><tt class="py-lineno">307</tt>  <tt class="py-line"><tt class="py-string">            (?:</tt> </tt>
+<a name="L308"></a><tt class="py-lineno">308</tt>  <tt class="py-line"><tt class="py-string">                \s* = \s*</tt> </tt>
+<a name="L309"></a><tt class="py-lineno">309</tt>  <tt class="py-line"><tt class="py-string">                (?P&lt;val&gt; " [^\\"]* (?:\\. [^\\"]* )* " | [^",;\s]+ )</tt> </tt>
+<a name="L310"></a><tt class="py-lineno">310</tt>  <tt class="py-line"><tt class="py-string">            )?</tt> </tt>
+<a name="L311"></a><tt class="py-lineno">311</tt>  <tt class="py-line"><tt class="py-string">        )+</tt> </tt>
+<a name="L312"></a><tt class="py-lineno">312</tt>  <tt class="py-line"><tt class="py-string">    )"""</tt><tt class="py-op">,</tt> <tt class="py-name">_re</tt><tt class="py-op">.</tt><tt class="py-name">X</tt><tt class="py-op">)</tt><tt class="py-op">.</tt><tt class="py-name">finditer</tt> </tt>
+<a name="L313"></a><tt class="py-lineno">313</tt>  <tt class="py-line"> </tt>
+<a name="CookieCollection.__init__"></a><div id="CookieCollection.__init__-def"><a name="L314"></a><tt class="py-lineno">314</tt> <a class="py-toggle" href="#" id="CookieCollection.__init__-toggle" onclick="return toggle('CookieCollection.__init__');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="wtf.app.request.CookieCollection-class.html#__init__">__init__</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">cookiestring</tt><tt class="py-op">,</tt> <tt class="py-param">codec</tt><tt class="py-op">=</tt><tt class="py-name">None</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="CookieCollection.__init__-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="CookieCollection.__init__-expanded"><a name="L315"></a><tt class="py-lineno">315</tt>  <tt class="py-line">        <tt class="py-docstring">"""</tt> </tt>
+<a name="L316"></a><tt class="py-lineno">316</tt>  <tt class="py-line"><tt class="py-docstring">        Initialization</tt> </tt>
+<a name="L317"></a><tt class="py-lineno">317</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L318"></a><tt class="py-lineno">318</tt>  <tt class="py-line"><tt class="py-docstring">        :Parameters:</tt> </tt>
+<a name="L319"></a><tt class="py-lineno">319</tt>  <tt class="py-line"><tt class="py-docstring">         - `cookiestring`: Cookie string out of the request</tt> </tt>
+<a name="L320"></a><tt class="py-lineno">320</tt>  <tt class="py-line"><tt class="py-docstring">         - `codec`: Cookie en-/decoder; if ``None``, an identity decoder</tt> </tt>
+<a name="L321"></a><tt class="py-lineno">321</tt>  <tt class="py-line"><tt class="py-docstring">           is used.</tt> </tt>
+<a name="L322"></a><tt class="py-lineno">322</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L323"></a><tt class="py-lineno">323</tt>  <tt class="py-line"><tt class="py-docstring">        :Types:</tt> </tt>
+<a name="L324"></a><tt class="py-lineno">324</tt>  <tt class="py-line"><tt class="py-docstring">         - `cookiestring`: ``str``</tt> </tt>
+<a name="L325"></a><tt class="py-lineno">325</tt>  <tt class="py-line"><tt class="py-docstring">         - `codec`: `CookieCodecInterface`</tt> </tt>
+<a name="L326"></a><tt class="py-lineno">326</tt>  <tt class="py-line"><tt class="py-docstring">        """</tt> </tt>
+<a name="L327"></a><tt class="py-lineno">327</tt>  <tt class="py-line">        <tt class="py-name">pairs</tt><tt class="py-op">,</tt> <tt class="py-name">cookies</tt> <tt class="py-op">=</tt> <tt class="py-op">[</tt><tt class="py-name">item</tt><tt class="py-op">.</tt><tt class="py-name">group</tt><tt class="py-op">(</tt><tt class="py-string">'key'</tt><tt class="py-op">,</tt> <tt class="py-string">'val'</tt><tt class="py-op">)</tt> <tt class="py-keyword">for</tt> <tt class="py-name">item</tt> <tt class="py-keyword">in</tt> </tt>
+<a name="L328"></a><tt class="py-lineno">328</tt>  <tt class="py-line">            <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-61" class="py-name"><a title="wtf.app.request.CookieCollection._SPLIT_ITER" class="py-name" href="#" onclick="return doclink('link-61', '_SPLIT_ITER', 'link-60');">_SPLIT_ITER</a></tt><tt class="py-op">(</tt><tt class="py-name">cookiestring</tt><tt class="py-op">)</tt><tt class="py-op">]</tt><tt class="py-op">,</tt> <tt class="py-op">{</tt><tt class="py-op">}</tt> </tt>
+<a name="L329"></a><tt class="py-lineno">329</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt class="py-name">codec</tt> <tt class="py-keyword">is</tt> <tt class="py-name">None</tt><tt class="py-op">:</tt> </tt>
+<a name="L330"></a><tt class="py-lineno">330</tt>  <tt class="py-line">            <tt id="link-62" class="py-name"><a title="wtf.app.cookie.BaseCookieCodec.decode
+wtf.app.cookie.DefaultCookie.decode
+wtf.app.cookie.UnicodeCookie.decode
+wtf.app.services.session_storage.sharedance.SessionCookieCodec.decode
+wtf.httputil.CookieCodecInterface.decode" class="py-name" href="#" onclick="return doclink('link-62', 'decode', 'link-28');">decode</a></tt> <tt class="py-op">=</tt> <tt class="py-keyword">lambda</tt> <tt class="py-name">x</tt><tt class="py-op">:</tt> <tt class="py-name">x</tt> </tt>
+<a name="L331"></a><tt class="py-lineno">331</tt>  <tt class="py-line">        <tt class="py-keyword">else</tt><tt class="py-op">:</tt> </tt>
+<a name="L332"></a><tt class="py-lineno">332</tt>  <tt class="py-line">            <tt id="link-63" class="py-name"><a title="wtf.app.cookie.BaseCookieCodec.decode
+wtf.app.cookie.DefaultCookie.decode
+wtf.app.cookie.UnicodeCookie.decode
+wtf.app.services.session_storage.sharedance.SessionCookieCodec.decode
+wtf.httputil.CookieCodecInterface.decode" class="py-name" href="#" onclick="return doclink('link-63', 'decode', 'link-28');">decode</a></tt> <tt class="py-op">=</tt> <tt class="py-name">codec</tt><tt class="py-op">.</tt><tt id="link-64" class="py-name"><a title="wtf.app.cookie.BaseCookieCodec.decode
+wtf.app.cookie.DefaultCookie.decode
+wtf.app.cookie.UnicodeCookie.decode
+wtf.app.services.session_storage.sharedance.SessionCookieCodec.decode
+wtf.httputil.CookieCodecInterface.decode" class="py-name" href="#" onclick="return doclink('link-64', 'decode', 'link-28');">decode</a></tt> </tt>
+<a name="L333"></a><tt class="py-lineno">333</tt>  <tt class="py-line">        <tt class="py-keyword">for</tt> <tt id="link-65" class="py-name"><a title="wtf.opi.listener.InetSocket.key
+wtf.opi.listener.SocketDecorator.key
+wtf.opi.listener.UnixSocket.key" class="py-name" href="#" onclick="return doclink('link-65', 'key', 'link-21');">key</a></tt><tt class="py-op">,</tt> <tt class="py-name">value</tt> <tt class="py-keyword">in</tt> <tt class="py-name">pairs</tt><tt class="py-op">:</tt> </tt>
+<a name="L334"></a><tt class="py-lineno">334</tt>  <tt class="py-line">            <tt class="py-keyword">if</tt> <tt class="py-name">value</tt> <tt class="py-keyword">is</tt> <tt class="py-keyword">not</tt> <tt class="py-name">None</tt> <tt class="py-keyword">and</tt> <tt class="py-keyword">not</tt> <tt id="link-66" class="py-name"><a title="wtf.opi.listener.InetSocket.key
+wtf.opi.listener.SocketDecorator.key
+wtf.opi.listener.UnixSocket.key" class="py-name" href="#" onclick="return doclink('link-66', 'key', 'link-21');">key</a></tt><tt class="py-op">.</tt><tt class="py-name">startswith</tt><tt class="py-op">(</tt><tt class="py-string">'$'</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L335"></a><tt class="py-lineno">335</tt>  <tt class="py-line">                <tt class="py-keyword">try</tt><tt class="py-op">:</tt> </tt>
+<a name="L336"></a><tt class="py-lineno">336</tt>  <tt class="py-line">                    <tt class="py-name">cookies</tt><tt class="py-op">.</tt><tt class="py-name">setdefault</tt><tt class="py-op">(</tt><tt id="link-67" class="py-name"><a title="wtf.opi.listener.InetSocket.key
+wtf.opi.listener.SocketDecorator.key
+wtf.opi.listener.UnixSocket.key" class="py-name" href="#" onclick="return doclink('link-67', 'key', 'link-21');">key</a></tt><tt class="py-op">,</tt> <tt class="py-op">[</tt><tt class="py-op">]</tt><tt class="py-op">)</tt><tt class="py-op">.</tt><tt class="py-name">append</tt><tt class="py-op">(</tt><tt id="link-68" class="py-name"><a title="wtf.app.cookie.BaseCookieCodec.decode
+wtf.app.cookie.DefaultCookie.decode
+wtf.app.cookie.UnicodeCookie.decode
+wtf.app.services.session_storage.sharedance.SessionCookieCodec.decode
+wtf.httputil.CookieCodecInterface.decode" class="py-name" href="#" onclick="return doclink('link-68', 'decode', 'link-28');">decode</a></tt><tt class="py-op">(</tt><tt class="py-name">value</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+<a name="L337"></a><tt class="py-lineno">337</tt>  <tt class="py-line">                <tt class="py-keyword">except</tt> <tt class="py-name">ValueError</tt><tt class="py-op">:</tt> </tt>
+<a name="L338"></a><tt class="py-lineno">338</tt>  <tt class="py-line">                    <tt class="py-keyword">continue</tt> <tt class="py-comment"># ignore the unreadable</tt> </tt>
+<a name="L339"></a><tt class="py-lineno">339</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">_cookies</tt> <tt class="py-op">=</tt> <tt class="py-name">cookies</tt> </tt>
+<a name="L340"></a><tt class="py-lineno">340</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">_cookiestring</tt> <tt class="py-op">=</tt> <tt class="py-name">cookiestring</tt> </tt>
+</div><a name="L341"></a><tt class="py-lineno">341</tt>  <tt class="py-line"> </tt>
+<a name="CookieCollection.__call__"></a><div id="CookieCollection.__call__-def"><a name="L342"></a><tt class="py-lineno">342</tt> <a class="py-toggle" href="#" id="CookieCollection.__call__-toggle" onclick="return toggle('CookieCollection.__call__');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="wtf.app.request.CookieCollection-class.html#__call__">__call__</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">codec</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="CookieCollection.__call__-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="CookieCollection.__call__-expanded"><a name="L343"></a><tt class="py-lineno">343</tt>  <tt class="py-line">        <tt class="py-docstring">"""</tt> </tt>
+<a name="L344"></a><tt class="py-lineno">344</tt>  <tt class="py-line"><tt class="py-docstring">        Create a cookie collection with a particular codec</tt> </tt>
+<a name="L345"></a><tt class="py-lineno">345</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L346"></a><tt class="py-lineno">346</tt>  <tt class="py-line"><tt class="py-docstring">        :Parameters:</tt> </tt>
+<a name="L347"></a><tt class="py-lineno">347</tt>  <tt class="py-line"><tt class="py-docstring">         - `codec`: The codec to aplpy</tt> </tt>
+<a name="L348"></a><tt class="py-lineno">348</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L349"></a><tt class="py-lineno">349</tt>  <tt class="py-line"><tt class="py-docstring">        :Types:</tt> </tt>
+<a name="L350"></a><tt class="py-lineno">350</tt>  <tt class="py-line"><tt class="py-docstring">         - `codec`: `CookieCodecInterface`</tt> </tt>
+<a name="L351"></a><tt class="py-lineno">351</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L352"></a><tt class="py-lineno">352</tt>  <tt class="py-line"><tt class="py-docstring">        :return: New CookieCollection instance</tt> </tt>
+<a name="L353"></a><tt class="py-lineno">353</tt>  <tt class="py-line"><tt class="py-docstring">        :rtype: `CookieCollection`</tt> </tt>
+<a name="L354"></a><tt class="py-lineno">354</tt>  <tt class="py-line"><tt class="py-docstring">        """</tt> </tt>
+<a name="L355"></a><tt class="py-lineno">355</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">__class__</tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">_cookiestring</tt><tt class="py-op">,</tt> <tt class="py-name">codec</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L356"></a><tt class="py-lineno">356</tt>  <tt class="py-line"> </tt>
+<a name="CookieCollection.__getitem__"></a><div id="CookieCollection.__getitem__-def"><a name="L357"></a><tt class="py-lineno">357</tt> <a class="py-toggle" href="#" id="CookieCollection.__getitem__-toggle" onclick="return toggle('CookieCollection.__getitem__');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="wtf.app.request.CookieCollection-class.html#__getitem__">__getitem__</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">name</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="CookieCollection.__getitem__-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="CookieCollection.__getitem__-expanded"><a name="L358"></a><tt class="py-lineno">358</tt>  <tt class="py-line">        <tt class="py-docstring">"""</tt> </tt>
+<a name="L359"></a><tt class="py-lineno">359</tt>  <tt class="py-line"><tt class="py-docstring">        Determine the value of a cookie</tt> </tt>
+<a name="L360"></a><tt class="py-lineno">360</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L361"></a><tt class="py-lineno">361</tt>  <tt class="py-line"><tt class="py-docstring">        :Parameters:</tt> </tt>
+<a name="L362"></a><tt class="py-lineno">362</tt>  <tt class="py-line"><tt class="py-docstring">         - `name`: The cookie name</tt> </tt>
+<a name="L363"></a><tt class="py-lineno">363</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L364"></a><tt class="py-lineno">364</tt>  <tt class="py-line"><tt class="py-docstring">        :Types:</tt> </tt>
+<a name="L365"></a><tt class="py-lineno">365</tt>  <tt class="py-line"><tt class="py-docstring">         - `name`: ``str``</tt> </tt>
+<a name="L366"></a><tt class="py-lineno">366</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L367"></a><tt class="py-lineno">367</tt>  <tt class="py-line"><tt class="py-docstring">        :return: The cookie value</tt> </tt>
+<a name="L368"></a><tt class="py-lineno">368</tt>  <tt class="py-line"><tt class="py-docstring">        :rtype: ``unicode``</tt> </tt>
+<a name="L369"></a><tt class="py-lineno">369</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L370"></a><tt class="py-lineno">370</tt>  <tt class="py-line"><tt class="py-docstring">        :Exceptions:</tt> </tt>
+<a name="L371"></a><tt class="py-lineno">371</tt>  <tt class="py-line"><tt class="py-docstring">         - `KeyError`: The cookie name does not exist</tt> </tt>
+<a name="L372"></a><tt class="py-lineno">372</tt>  <tt class="py-line"><tt class="py-docstring">        """</tt> </tt>
+<a name="L373"></a><tt class="py-lineno">373</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">_cookies</tt><tt class="py-op">[</tt><tt id="link-69" class="py-name"><a title="wtf._wtf_cstream.GenericStream.name
+wtf._wtf_cstream.MinimalSocketStream.name
+wtf.opi.daemon.Pidfile.name
+wtf.stream.GenericStream.name
+wtf.stream.MinimalSocketStream.name" class="py-name" href="#" onclick="return doclink('link-69', 'name', 'link-6');">name</a></tt><tt class="py-op">]</tt><tt class="py-op">[</tt><tt class="py-number">0</tt><tt class="py-op">]</tt> </tt>
+</div><a name="L374"></a><tt class="py-lineno">374</tt>  <tt class="py-line"> </tt>
+<a name="CookieCollection.__iter__"></a><div id="CookieCollection.__iter__-def"><a name="L375"></a><tt class="py-lineno">375</tt> <a class="py-toggle" href="#" id="CookieCollection.__iter__-toggle" onclick="return toggle('CookieCollection.__iter__');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="wtf.app.request.CookieCollection-class.html#__iter__">__iter__</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="CookieCollection.__iter__-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="CookieCollection.__iter__-expanded"><a name="L376"></a><tt class="py-lineno">376</tt>  <tt class="py-line">        <tt class="py-docstring">"""</tt> </tt>
+<a name="L377"></a><tt class="py-lineno">377</tt>  <tt class="py-line"><tt class="py-docstring">        Create an iterator over the available cookie names</tt> </tt>
+<a name="L378"></a><tt class="py-lineno">378</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L379"></a><tt class="py-lineno">379</tt>  <tt class="py-line"><tt class="py-docstring">        :return: Iterator over the names</tt> </tt>
+<a name="L380"></a><tt class="py-lineno">380</tt>  <tt class="py-line"><tt class="py-docstring">        :rtype: ``iterable``</tt> </tt>
+<a name="L381"></a><tt class="py-lineno">381</tt>  <tt class="py-line"><tt class="py-docstring">        """</tt> </tt>
+<a name="L382"></a><tt class="py-lineno">382</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">_cookies</tt><tt class="py-op">.</tt><tt class="py-name">iterkeys</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L383"></a><tt class="py-lineno">383</tt>  <tt class="py-line"> </tt>
+<a name="CookieCollection.__contains__"></a><div id="CookieCollection.__contains__-def"><a name="L384"></a><tt class="py-lineno">384</tt> <a class="py-toggle" href="#" id="CookieCollection.__contains__-toggle" onclick="return toggle('CookieCollection.__contains__');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="wtf.app.request.CookieCollection-class.html#__contains__">__contains__</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">name</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="CookieCollection.__contains__-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="CookieCollection.__contains__-expanded"><a name="L385"></a><tt class="py-lineno">385</tt>  <tt class="py-line">        <tt class="py-docstring">"""</tt> </tt>
+<a name="L386"></a><tt class="py-lineno">386</tt>  <tt class="py-line"><tt class="py-docstring">        Determine whether a particular cookie name was submitted</tt> </tt>
+<a name="L387"></a><tt class="py-lineno">387</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L388"></a><tt class="py-lineno">388</tt>  <tt class="py-line"><tt class="py-docstring">        :Parameters:</tt> </tt>
+<a name="L389"></a><tt class="py-lineno">389</tt>  <tt class="py-line"><tt class="py-docstring">         - `name`: The cookie name to look up</tt> </tt>
+<a name="L390"></a><tt class="py-lineno">390</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L391"></a><tt class="py-lineno">391</tt>  <tt class="py-line"><tt class="py-docstring">        :Types:</tt> </tt>
+<a name="L392"></a><tt class="py-lineno">392</tt>  <tt class="py-line"><tt class="py-docstring">         - `name`: ``str``</tt> </tt>
+<a name="L393"></a><tt class="py-lineno">393</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L394"></a><tt class="py-lineno">394</tt>  <tt class="py-line"><tt class="py-docstring">        :return: Is the name available?</tt> </tt>
+<a name="L395"></a><tt class="py-lineno">395</tt>  <tt class="py-line"><tt class="py-docstring">        :rtype: ``bool``</tt> </tt>
+<a name="L396"></a><tt class="py-lineno">396</tt>  <tt class="py-line"><tt class="py-docstring">        """</tt> </tt>
+<a name="L397"></a><tt class="py-lineno">397</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt id="link-70" class="py-name"><a title="wtf._wtf_cstream.GenericStream.name
+wtf._wtf_cstream.MinimalSocketStream.name
+wtf.opi.daemon.Pidfile.name
+wtf.stream.GenericStream.name
+wtf.stream.MinimalSocketStream.name" class="py-name" href="#" onclick="return doclink('link-70', 'name', 'link-6');">name</a></tt> <tt class="py-keyword">in</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">_cookies</tt> </tt>
+</div><a name="L398"></a><tt class="py-lineno">398</tt>  <tt class="py-line">    <tt class="py-name">has_key</tt> <tt class="py-op">=</tt> <tt id="link-71" class="py-name"><a title="wtf.app.request.CookieCollection.__contains__
+wtf.app.request.ParameterWrapper.__contains__
+wtf.app.request.Uploads.__contains__
+wtf.app.response.HeaderCollection.__contains__
+wtf.app.services.resources.GlobalResources.__contains__
+wtf.app.services.session.Session.__contains__
+wtf.config.Config.__contains__
+wtf.config.Section.__contains__
+wtf.webutil.Query.__contains__" class="py-name" href="#" onclick="return doclink('link-71', '__contains__', 'link-41');">__contains__</a></tt> </tt>
+<a name="L399"></a><tt class="py-lineno">399</tt>  <tt class="py-line"> </tt>
+<a name="CookieCollection.keys"></a><div id="CookieCollection.keys-def"><a name="L400"></a><tt class="py-lineno">400</tt> <a class="py-toggle" href="#" id="CookieCollection.keys-toggle" onclick="return toggle('CookieCollection.keys');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="wtf.app.request.CookieCollection-class.html#keys">keys</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="CookieCollection.keys-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="CookieCollection.keys-expanded"><a name="L401"></a><tt class="py-lineno">401</tt>  <tt class="py-line">        <tt class="py-docstring">"""</tt> </tt>
+<a name="L402"></a><tt class="py-lineno">402</tt>  <tt class="py-line"><tt class="py-docstring">        Determine the list of all available cookie names</tt> </tt>
+<a name="L403"></a><tt class="py-lineno">403</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L404"></a><tt class="py-lineno">404</tt>  <tt class="py-line"><tt class="py-docstring">        :return: The cookie name list (``['name', ...]``)</tt> </tt>
+<a name="L405"></a><tt class="py-lineno">405</tt>  <tt class="py-line"><tt class="py-docstring">        :rtype: ``list``</tt> </tt>
+<a name="L406"></a><tt class="py-lineno">406</tt>  <tt class="py-line"><tt class="py-docstring">        """</tt> </tt>
+<a name="L407"></a><tt class="py-lineno">407</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">_cookies</tt><tt class="py-op">.</tt><tt id="link-72" class="py-name"><a title="wtf.app.request.CookieCollection.keys
+wtf.app.request.ParameterWrapper.keys
+wtf.app.request.Uploads.keys" class="py-name" href="#" onclick="return doclink('link-72', 'keys', 'link-8');">keys</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L408"></a><tt class="py-lineno">408</tt>  <tt class="py-line"> </tt>
+<a name="CookieCollection.multi"></a><div id="CookieCollection.multi-def"><a name="L409"></a><tt class="py-lineno">409</tt> <a class="py-toggle" href="#" id="CookieCollection.multi-toggle" onclick="return toggle('CookieCollection.multi');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="wtf.app.request.CookieCollection-class.html#multi">multi</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">name</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="CookieCollection.multi-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="CookieCollection.multi-expanded"><a name="L410"></a><tt class="py-lineno">410</tt>  <tt class="py-line">        <tt class="py-docstring">"""</tt> </tt>
+<a name="L411"></a><tt class="py-lineno">411</tt>  <tt class="py-line"><tt class="py-docstring">        Determine a list of all cookies under that name</tt> </tt>
+<a name="L412"></a><tt class="py-lineno">412</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L413"></a><tt class="py-lineno">413</tt>  <tt class="py-line"><tt class="py-docstring">        :Parameters:</tt> </tt>
+<a name="L414"></a><tt class="py-lineno">414</tt>  <tt class="py-line"><tt class="py-docstring">         - `name`: Name of the cookie(s)</tt> </tt>
+<a name="L415"></a><tt class="py-lineno">415</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L416"></a><tt class="py-lineno">416</tt>  <tt class="py-line"><tt class="py-docstring">        :Types:</tt> </tt>
+<a name="L417"></a><tt class="py-lineno">417</tt>  <tt class="py-line"><tt class="py-docstring">         - `name`: ``str``</tt> </tt>
+<a name="L418"></a><tt class="py-lineno">418</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L419"></a><tt class="py-lineno">419</tt>  <tt class="py-line"><tt class="py-docstring">        :return: Tuple of cookie values (``(u'value', ...)``); maybe empty</tt> </tt>
+<a name="L420"></a><tt class="py-lineno">420</tt>  <tt class="py-line"><tt class="py-docstring">        :rtype: ``tuple``</tt> </tt>
+<a name="L421"></a><tt class="py-lineno">421</tt>  <tt class="py-line"><tt class="py-docstring">        """</tt> </tt>
+<a name="L422"></a><tt class="py-lineno">422</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-name">tuple</tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">_cookies</tt><tt class="py-op">.</tt><tt id="link-73" class="py-name"><a title="wtf.app.response.HeaderCollection.get
+wtf.app.services.memcache.ExceptionWrapper.get
+wtf.app.services.memcache.NoMemcacheWrapper.get
+wtf.app.services.session.Session.get
+wtf.app.services.session.StorageAdapter.get
+wtf.app.services.session.StorageInterface.get
+wtf.app.services.session_storage.sharedance.BoundSharedanceStorage.get
+wtf.ext.memcache.Memcache.get" class="py-name" href="#" onclick="return doclink('link-73', 'get', 'link-9');">get</a></tt><tt class="py-op">(</tt><tt id="link-74" class="py-name"><a title="wtf._wtf_cstream.GenericStream.name
+wtf._wtf_cstream.MinimalSocketStream.name
+wtf.opi.daemon.Pidfile.name
+wtf.stream.GenericStream.name
+wtf.stream.MinimalSocketStream.name" class="py-name" href="#" onclick="return doclink('link-74', 'name', 'link-6');">name</a></tt><tt class="py-op">,</tt> <tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+</div></div><a name="L423"></a><tt class="py-lineno">423</tt>  <tt class="py-line"> </tt>
+<a name="Request"></a><div id="Request-def"><a name="L424"></a><tt class="py-lineno">424</tt>  <tt class="py-line"> </tt>
+<a name="L425"></a><tt class="py-lineno">425</tt> <a class="py-toggle" href="#" id="Request-toggle" onclick="return toggle('Request');">-</a><tt class="py-line"><tt class="py-keyword">class</tt> <a class="py-def-name" href="wtf.app.request.Request-class.html">Request</a><tt class="py-op">(</tt><tt class="py-base-class">object</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="Request-collapsed" style="display:none;" pad="+++" indent="++++"></div><div id="Request-expanded"><a name="L426"></a><tt class="py-lineno">426</tt>  <tt class="py-line">    <tt class="py-docstring">"""</tt> </tt>
+<a name="L427"></a><tt class="py-lineno">427</tt>  <tt class="py-line"><tt class="py-docstring">    Request object passed to the application</tt> </tt>
+<a name="L428"></a><tt class="py-lineno">428</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L429"></a><tt class="py-lineno">429</tt>  <tt class="py-line"><tt class="py-docstring">    :CVariables:</tt> </tt>
+<a name="L430"></a><tt class="py-lineno">430</tt>  <tt class="py-line"><tt class="py-docstring">     - `_PORTS`: Default port mapping accessor for http and https</tt> </tt>
+<a name="L431"></a><tt class="py-lineno">431</tt>  <tt class="py-line"><tt class="py-docstring">     - `_PORTMATCH`: Host:port matching function</tt> </tt>
+<a name="L432"></a><tt class="py-lineno">432</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L433"></a><tt class="py-lineno">433</tt>  <tt class="py-line"><tt class="py-docstring">    :IVariables:</tt> </tt>
+<a name="L434"></a><tt class="py-lineno">434</tt>  <tt class="py-line"><tt class="py-docstring">     - `_param`: Request parameter store</tt> </tt>
+<a name="L435"></a><tt class="py-lineno">435</tt>  <tt class="py-line"><tt class="py-docstring">     - `env`: WSGI environment</tt> </tt>
+<a name="L436"></a><tt class="py-lineno">436</tt>  <tt class="py-line"><tt class="py-docstring">     - `match`: URL regex match or ``None``, filled from outside</tt> </tt>
+<a name="L437"></a><tt class="py-lineno">437</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L438"></a><tt class="py-lineno">438</tt>  <tt class="py-line"><tt class="py-docstring">    :Types:</tt> </tt>
+<a name="L439"></a><tt class="py-lineno">439</tt>  <tt class="py-line"><tt class="py-docstring">     - `_PORTS`: ``callable``</tt> </tt>
+<a name="L440"></a><tt class="py-lineno">440</tt>  <tt class="py-line"><tt class="py-docstring">     - `_PORTMATCH`: ``callable``</tt> </tt>
+<a name="L441"></a><tt class="py-lineno">441</tt>  <tt class="py-line"><tt class="py-docstring">     - `_param`: `ParameterWrapper`</tt> </tt>
+<a name="L442"></a><tt class="py-lineno">442</tt>  <tt class="py-line"><tt class="py-docstring">     - `env`: ``dict``</tt> </tt>
+<a name="L443"></a><tt class="py-lineno">443</tt>  <tt class="py-line"><tt class="py-docstring">     - `match`: regex match</tt> </tt>
+<a name="L444"></a><tt class="py-lineno">444</tt>  <tt class="py-line"><tt class="py-docstring">    """</tt> </tt>
+<a name="L445"></a><tt class="py-lineno">445</tt>  <tt class="py-line">    <tt id="link-75" class="py-name" targets="Variable wtf.app.request.Request._param=wtf.app.request.Request-class.html#_param"><a title="wtf.app.request.Request._param" class="py-name" href="#" onclick="return doclink('link-75', '_param', 'link-75');">_param</a></tt><tt class="py-op">,</tt> <tt id="link-76" class="py-name" targets="Variable wtf.app.request.Request._cookie=wtf.app.request.Request-class.html#_cookie"><a title="wtf.app.request.Request._cookie" class="py-name" href="#" onclick="return doclink('link-76', '_cookie', 'link-76');">_cookie</a></tt><tt class="py-op">,</tt> <tt id="link-77" class="py-name" targets="Variable wtf.app.request.Request.match=wtf.app.request.Request-class.html#match"><a title="wtf.app.request.Request.match" class="py-name" href="#" onclick="return doclink('link-77', 'match', 'link-77');">match</a></tt><tt class="py-op">,</tt> <tt id="link-78" class="py-name" targets="Method wtf.app.request.Request._PORTS()=wtf.app.request.Request-class.html#_PORTS"><a title="wtf.app.request.Request._PORTS" class="py-name" href="#" onclick="return doclink('link-78', '_PORTS', 'link-78');">_PORTS</a></tt> <tt class="py-op">=</tt> <tt class="py-name">None</tt><tt class="py-op">,</tt> <tt class="py-name">None</tt><tt class="py-op">,</tt> <tt class="py-name">None</tt><tt class="py-op">,</tt> <tt class="py-op">{</tt> </tt>
+<a name="L446"></a><tt class="py-lineno">446</tt>  <tt class="py-line">        <tt class="py-string">'http'</tt><tt class="py-op">:</tt> <tt class="py-number">80</tt><tt class="py-op">,</tt> </tt>
+<a name="L447"></a><tt class="py-lineno">447</tt>  <tt class="py-line">        <tt class="py-string">'https'</tt><tt class="py-op">:</tt> <tt class="py-number">443</tt><tt class="py-op">,</tt> </tt>
+<a name="L448"></a><tt class="py-lineno">448</tt>  <tt class="py-line">    <tt class="py-op">}</tt><tt class="py-op">.</tt><tt id="link-79" class="py-name"><a title="wtf.app.response.HeaderCollection.get
+wtf.app.services.memcache.ExceptionWrapper.get
+wtf.app.services.memcache.NoMemcacheWrapper.get
+wtf.app.services.session.Session.get
+wtf.app.services.session.StorageAdapter.get
+wtf.app.services.session.StorageInterface.get
+wtf.app.services.session_storage.sharedance.BoundSharedanceStorage.get
+wtf.ext.memcache.Memcache.get" class="py-name" href="#" onclick="return doclink('link-79', 'get', 'link-9');">get</a></tt> </tt>
+<a name="L449"></a><tt class="py-lineno">449</tt>  <tt class="py-line">    <tt id="link-80" class="py-name" targets="Method wtf.app.request.Request._PORTMATCH()=wtf.app.request.Request-class.html#_PORTMATCH"><a title="wtf.app.request.Request._PORTMATCH" class="py-name" href="#" onclick="return doclink('link-80', '_PORTMATCH', 'link-80');">_PORTMATCH</a></tt> <tt class="py-op">=</tt> <tt class="py-name">_re</tt><tt class="py-op">.</tt><tt class="py-name">compile</tt><tt class="py-op">(</tt><tt class="py-string">r'(?P&lt;host&gt;.+):(?P&lt;port&gt;\d+)$'</tt><tt class="py-op">)</tt><tt class="py-op">.</tt><tt id="link-81" class="py-name"><a title="wtf.app.request.Request.match" class="py-name" href="#" onclick="return doclink('link-81', 'match', 'link-77');">match</a></tt> </tt>
+<a name="L450"></a><tt class="py-lineno">450</tt>  <tt class="py-line"> </tt>
+<a name="Request.__init__"></a><div id="Request.__init__-def"><a name="L451"></a><tt class="py-lineno">451</tt> <a class="py-toggle" href="#" id="Request.__init__-toggle" onclick="return toggle('Request.__init__');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="wtf.app.request.Request-class.html#__init__">__init__</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">environ</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="Request.__init__-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="Request.__init__-expanded"><a name="L452"></a><tt class="py-lineno">452</tt>  <tt class="py-line">        <tt class="py-docstring">"""</tt> </tt>
+<a name="L453"></a><tt class="py-lineno">453</tt>  <tt class="py-line"><tt class="py-docstring">        Initialization</tt> </tt>
+<a name="L454"></a><tt class="py-lineno">454</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L455"></a><tt class="py-lineno">455</tt>  <tt class="py-line"><tt class="py-docstring">        :Parameters:</tt> </tt>
+<a name="L456"></a><tt class="py-lineno">456</tt>  <tt class="py-line"><tt class="py-docstring">         - `environ`: WSGI environment</tt> </tt>
+<a name="L457"></a><tt class="py-lineno">457</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L458"></a><tt class="py-lineno">458</tt>  <tt class="py-line"><tt class="py-docstring">        :Types:</tt> </tt>
+<a name="L459"></a><tt class="py-lineno">459</tt>  <tt class="py-line"><tt class="py-docstring">         - `environ`: ``dict``</tt> </tt>
+<a name="L460"></a><tt class="py-lineno">460</tt>  <tt class="py-line"><tt class="py-docstring">        """</tt> </tt>
+<a name="L461"></a><tt class="py-lineno">461</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">env</tt> <tt class="py-op">=</tt> <tt class="py-name">environ</tt> </tt>
+<a name="L462"></a><tt class="py-lineno">462</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-82" class="py-name" targets="Variable wtf.impl.http._request.HTTPRequest.url=wtf.impl.http._request.HTTPRequest-class.html#url"><a title="wtf.impl.http._request.HTTPRequest.url" class="py-name" href="#" onclick="return doclink('link-82', 'url', 'link-82');">url</a></tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-83" class="py-name" targets="Method wtf.app.request.Request.abs_uri()=wtf.app.request.Request-class.html#abs_uri"><a title="wtf.app.request.Request.abs_uri" class="py-name" href="#" onclick="return doclink('link-83', 'abs_uri', 'link-83');">abs_uri</a></tt><tt class="py-op">(</tt><tt class="py-name">_webutil</tt><tt class="py-op">.</tt><tt id="link-84" class="py-name" targets="Class wtf.webutil.URL=wtf.webutil.URL-class.html"><a title="wtf.webutil.URL" class="py-name" href="#" onclick="return doclink('link-84', 'URL', 'link-84');">URL</a></tt><tt class="py-op">.</tt><tt id="link-85" class="py-name" targets="Class Method wtf.webutil.URL.fromcomponents()=wtf.webutil.URL-class.html#fromcomponents"><a title="wtf.webutil.URL.fromcomponents" class="py-name" href="#" onclick="return doclink('link-85', 'fromcomponents', 'link-85');">fromcomponents</a></tt><tt class="py-op">(</tt><tt class="py-name">_urlparse</tt><tt class="py-op">.</tt><tt class="py-name">urljoin</tt><tt class="py-op">(</tt> </tt>
+<a name="L463"></a><tt class="py-lineno">463</tt>  <tt class="py-line">            <tt class="py-string">'/'</tt><tt class="py-op">,</tt> </tt>
+<a name="L464"></a><tt class="py-lineno">464</tt>  <tt class="py-line">            <tt class="py-string">''</tt><tt class="py-op">.</tt><tt class="py-name">join</tt><tt class="py-op">(</tt><tt class="py-op">(</tt><tt class="py-name">environ</tt><tt class="py-op">[</tt><tt class="py-string">'SCRIPT_NAME'</tt><tt class="py-op">]</tt><tt class="py-op">,</tt> <tt class="py-name">environ</tt><tt class="py-op">.</tt><tt id="link-86" class="py-name"><a title="wtf.app.response.HeaderCollection.get
+wtf.app.services.memcache.ExceptionWrapper.get
+wtf.app.services.memcache.NoMemcacheWrapper.get
+wtf.app.services.session.Session.get
+wtf.app.services.session.StorageAdapter.get
+wtf.app.services.session.StorageInterface.get
+wtf.app.services.session_storage.sharedance.BoundSharedanceStorage.get
+wtf.ext.memcache.Memcache.get" class="py-name" href="#" onclick="return doclink('link-86', 'get', 'link-9');">get</a></tt><tt class="py-op">(</tt><tt class="py-string">'PATH_INFO'</tt><tt class="py-op">,</tt> <tt class="py-string">''</tt><tt class="py-op">)</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+<a name="L465"></a><tt class="py-lineno">465</tt>  <tt class="py-line">        <tt class="py-op">)</tt><tt class="py-op">,</tt>  <tt id="link-87" class="py-name" targets="Variable wtf.webutil.URL.netloc=wtf.webutil.URL-class.html#netloc"><a title="wtf.webutil.URL.netloc" class="py-name" href="#" onclick="return doclink('link-87', 'netloc', 'link-87');">netloc</a></tt><tt class="py-op">=</tt><tt class="py-name">environ</tt><tt class="py-op">.</tt><tt id="link-88" class="py-name"><a title="wtf.app.response.HeaderCollection.get
+wtf.app.services.memcache.ExceptionWrapper.get
+wtf.app.services.memcache.NoMemcacheWrapper.get
+wtf.app.services.session.Session.get
+wtf.app.services.session.StorageAdapter.get
+wtf.app.services.session.StorageInterface.get
+wtf.app.services.session_storage.sharedance.BoundSharedanceStorage.get
+wtf.ext.memcache.Memcache.get" class="py-name" href="#" onclick="return doclink('link-88', 'get', 'link-9');">get</a></tt><tt class="py-op">(</tt><tt class="py-string">'HTTP_HOST'</tt><tt class="py-op">)</tt><tt class="py-op">,</tt> </tt>
+<a name="L466"></a><tt class="py-lineno">466</tt>  <tt class="py-line">            <tt id="link-89" class="py-name" targets="Variable wtf.webutil.URL.query=wtf.webutil.URL-class.html#query"><a title="wtf.webutil.URL.query" class="py-name" href="#" onclick="return doclink('link-89', 'query', 'link-89');">query</a></tt><tt class="py-op">=</tt><tt class="py-name">_webutil</tt><tt class="py-op">.</tt><tt id="link-90" class="py-name" targets="Class wtf.webutil.Query=wtf.webutil.Query-class.html"><a title="wtf.webutil.Query" class="py-name" href="#" onclick="return doclink('link-90', 'Query', 'link-90');">Query</a></tt><tt class="py-op">(</tt><tt class="py-name">environ</tt><tt class="py-op">.</tt><tt id="link-91" class="py-name"><a title="wtf.app.response.HeaderCollection.get
+wtf.app.services.memcache.ExceptionWrapper.get
+wtf.app.services.memcache.NoMemcacheWrapper.get
+wtf.app.services.session.Session.get
+wtf.app.services.session.StorageAdapter.get
+wtf.app.services.session.StorageInterface.get
+wtf.app.services.session_storage.sharedance.BoundSharedanceStorage.get
+wtf.ext.memcache.Memcache.get" class="py-name" href="#" onclick="return doclink('link-91', 'get', 'link-9');">get</a></tt><tt class="py-op">(</tt><tt class="py-string">'QUERY_STRING'</tt><tt class="py-op">,</tt> <tt class="py-string">''</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+<a name="L467"></a><tt class="py-lineno">467</tt>  <tt class="py-line">        <tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L468"></a><tt class="py-lineno">468</tt>  <tt class="py-line"> </tt>
+<a name="Request.__getattr__"></a><div id="Request.__getattr__-def"><a name="L469"></a><tt class="py-lineno">469</tt> <a class="py-toggle" href="#" id="Request.__getattr__-toggle" onclick="return toggle('Request.__getattr__');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="wtf.app.request.Request-class.html#__getattr__">__getattr__</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">name</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="Request.__getattr__-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="Request.__getattr__-expanded"><a name="L470"></a><tt class="py-lineno">470</tt>  <tt class="py-line">        <tt class="py-docstring">"""</tt> </tt>
+<a name="L471"></a><tt class="py-lineno">471</tt>  <tt class="py-line"><tt class="py-docstring">        Resolve unknown attributes</tt> </tt>
+<a name="L472"></a><tt class="py-lineno">472</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L473"></a><tt class="py-lineno">473</tt>  <tt class="py-line"><tt class="py-docstring">        We're looking for special env variables inserted by the middleware</tt> </tt>
+<a name="L474"></a><tt class="py-lineno">474</tt>  <tt class="py-line"><tt class="py-docstring">        stack: ``wtf.request.&lt;name&gt;``. These are expected to be factories,</tt> </tt>
+<a name="L475"></a><tt class="py-lineno">475</tt>  <tt class="py-line"><tt class="py-docstring">        which are lazily initialized with the request object and return</tt> </tt>
+<a name="L476"></a><tt class="py-lineno">476</tt>  <tt class="py-line"><tt class="py-docstring">        the actual attribute, which is cached in the request object for</tt> </tt>
+<a name="L477"></a><tt class="py-lineno">477</tt>  <tt class="py-line"><tt class="py-docstring">        further use.</tt> </tt>
+<a name="L478"></a><tt class="py-lineno">478</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L479"></a><tt class="py-lineno">479</tt>  <tt class="py-line"><tt class="py-docstring">        :Parameters:</tt> </tt>
+<a name="L480"></a><tt class="py-lineno">480</tt>  <tt class="py-line"><tt class="py-docstring">         - `name`: The name to look up</tt> </tt>
+<a name="L481"></a><tt class="py-lineno">481</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L482"></a><tt class="py-lineno">482</tt>  <tt class="py-line"><tt class="py-docstring">        :Types:</tt> </tt>
+<a name="L483"></a><tt class="py-lineno">483</tt>  <tt class="py-line"><tt class="py-docstring">         - `name`: ``str``</tt> </tt>
+<a name="L484"></a><tt class="py-lineno">484</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L485"></a><tt class="py-lineno">485</tt>  <tt class="py-line"><tt class="py-docstring">        :return: The attribute in question</tt> </tt>
+<a name="L486"></a><tt class="py-lineno">486</tt>  <tt class="py-line"><tt class="py-docstring">        :rtype: any</tt> </tt>
+<a name="L487"></a><tt class="py-lineno">487</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L488"></a><tt class="py-lineno">488</tt>  <tt class="py-line"><tt class="py-docstring">        :Exceptions:</tt> </tt>
+<a name="L489"></a><tt class="py-lineno">489</tt>  <tt class="py-line"><tt class="py-docstring">         - `AttributeError`: Attribute could not be resolved</tt> </tt>
+<a name="L490"></a><tt class="py-lineno">490</tt>  <tt class="py-line"><tt class="py-docstring">        """</tt> </tt>
+<a name="L491"></a><tt class="py-lineno">491</tt>  <tt class="py-line">        <tt class="py-keyword">try</tt><tt class="py-op">:</tt> </tt>
+<a name="L492"></a><tt class="py-lineno">492</tt>  <tt class="py-line">            <tt id="link-92" class="py-name" targets="Class Method wtf.app.Application.factory()=wtf.app.Application-class.html#factory,Function wtf.impl.factory()=wtf.impl-module.html#factory,Function wtf.opi.factory()=wtf.opi-module.html#factory,Function wtf.opi.worker.factory()=wtf.opi.worker-module.html#factory"><a title="wtf.app.Application.factory
+wtf.impl.factory
+wtf.opi.factory
+wtf.opi.worker.factory" class="py-name" href="#" onclick="return doclink('link-92', 'factory', 'link-92');">factory</a></tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">env</tt><tt class="py-op">[</tt><tt class="py-string">'wtf.request.%s'</tt> <tt class="py-op">%</tt> <tt id="link-93" class="py-name"><a title="wtf._wtf_cstream.GenericStream.name
+wtf._wtf_cstream.MinimalSocketStream.name
+wtf.opi.daemon.Pidfile.name
+wtf.stream.GenericStream.name
+wtf.stream.MinimalSocketStream.name" class="py-name" href="#" onclick="return doclink('link-93', 'name', 'link-6');">name</a></tt><tt class="py-op">]</tt> </tt>
+<a name="L493"></a><tt class="py-lineno">493</tt>  <tt class="py-line">        <tt class="py-keyword">except</tt> <tt class="py-name">KeyError</tt><tt class="py-op">:</tt> </tt>
+<a name="L494"></a><tt class="py-lineno">494</tt>  <tt class="py-line">            <tt class="py-keyword">pass</tt> </tt>
+<a name="L495"></a><tt class="py-lineno">495</tt>  <tt class="py-line">        <tt class="py-keyword">else</tt><tt class="py-op">:</tt> </tt>
+<a name="L496"></a><tt class="py-lineno">496</tt>  <tt class="py-line">            <tt class="py-name">setattr</tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">,</tt> <tt id="link-94" class="py-name"><a title="wtf._wtf_cstream.GenericStream.name
+wtf._wtf_cstream.MinimalSocketStream.name
+wtf.opi.daemon.Pidfile.name
+wtf.stream.GenericStream.name
+wtf.stream.MinimalSocketStream.name" class="py-name" href="#" onclick="return doclink('link-94', 'name', 'link-6');">name</a></tt><tt class="py-op">,</tt> <tt id="link-95" class="py-name"><a title="wtf.app.Application.factory
+wtf.impl.factory
+wtf.opi.factory
+wtf.opi.worker.factory" class="py-name" href="#" onclick="return doclink('link-95', 'factory', 'link-92');">factory</a></tt><tt class="py-op">(</tt><tt class="py-name">_weakref</tt><tt class="py-op">.</tt><tt class="py-name">proxy</tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">)</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+<a name="L497"></a><tt class="py-lineno">497</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-name">super</tt><tt class="py-op">(</tt><tt id="link-96" class="py-name" targets="Class wtf.app.request.Request=wtf.app.request.Request-class.html"><a title="wtf.app.request.Request" class="py-name" href="#" onclick="return doclink('link-96', 'Request', 'link-96');">Request</a></tt><tt class="py-op">,</tt> <tt class="py-name">self</tt><tt class="py-op">)</tt><tt class="py-op">.</tt><tt id="link-97" class="py-name" targets="Method wtf._wtf_cstream.MinimalSocketStream.__getattribute__()=wtf._wtf_cstream.MinimalSocketStream-class.html#__getattribute__"><a title="wtf._wtf_cstream.MinimalSocketStream.__getattribute__" class="py-name" href="#" onclick="return doclink('link-97', '__getattribute__', 'link-97');">__getattribute__</a></tt><tt class="py-op">(</tt><tt id="link-98" class="py-name"><a title="wtf._wtf_cstream.GenericStream.name
+wtf._wtf_cstream.MinimalSocketStream.name
+wtf.opi.daemon.Pidfile.name
+wtf.stream.GenericStream.name
+wtf.stream.MinimalSocketStream.name" class="py-name" href="#" onclick="return doclink('link-98', 'name', 'link-6');">name</a></tt><tt class="py-op">)</tt> </tt>
+</div><a name="L498"></a><tt class="py-lineno">498</tt>  <tt class="py-line"> </tt>
+<a name="L499"></a><tt class="py-lineno">499</tt>  <tt class="py-line">    <tt class="py-decorator">@</tt><tt class="py-decorator">Property</tt> </tt>
+<a name="Request.param"></a><div id="Request.param-def"><a name="L500"></a><tt class="py-lineno">500</tt> <a class="py-toggle" href="#" id="Request.param-toggle" onclick="return toggle('Request.param');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="wtf.app.request.Request-class.html#param">param</a><tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="Request.param-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="Request.param-expanded"><a name="L501"></a><tt class="py-lineno">501</tt>  <tt class="py-line">        <tt class="py-docstring">"""</tt> </tt>
+<a name="L502"></a><tt class="py-lineno">502</tt>  <tt class="py-line"><tt class="py-docstring">        The request parameters (Query string or POST data)</tt> </tt>
+<a name="L503"></a><tt class="py-lineno">503</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L504"></a><tt class="py-lineno">504</tt>  <tt class="py-line"><tt class="py-docstring">        This property is lazily initialized on first request.</tt> </tt>
+<a name="L505"></a><tt class="py-lineno">505</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L506"></a><tt class="py-lineno">506</tt>  <tt class="py-line"><tt class="py-docstring">        :Type: `ParameterWrapper`</tt> </tt>
+<a name="L507"></a><tt class="py-lineno">507</tt>  <tt class="py-line"><tt class="py-docstring">        """</tt> </tt>
+<a name="L508"></a><tt class="py-lineno">508</tt>  <tt class="py-line">        <tt class="py-comment"># pylint: disable = E0211, C0111, W0212, W0612</tt> </tt>
+<a name="L509"></a><tt class="py-lineno">509</tt>  <tt class="py-line"> </tt>
+<a name="L510"></a><tt class="py-lineno">510</tt>  <tt class="py-line">        <tt class="py-keyword">def</tt> <tt class="py-def-name">fget</tt><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L511"></a><tt class="py-lineno">511</tt>  <tt class="py-line">            <tt class="py-name">result</tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-99" class="py-name"><a title="wtf.app.request.Request._param" class="py-name" href="#" onclick="return doclink('link-99', '_param', 'link-75');">_param</a></tt> </tt>
+<a name="L512"></a><tt class="py-lineno">512</tt>  <tt class="py-line">            <tt class="py-keyword">if</tt> <tt class="py-name">result</tt> <tt class="py-keyword">is</tt> <tt class="py-name">None</tt><tt class="py-op">:</tt> </tt>
+<a name="L513"></a><tt class="py-lineno">513</tt>  <tt class="py-line">                <tt class="py-name">result</tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-100" class="py-name"><a title="wtf.app.request.Request._param" class="py-name" href="#" onclick="return doclink('link-100', '_param', 'link-75');">_param</a></tt> <tt class="py-op">=</tt> <tt id="link-101" class="py-name" targets="Class wtf.app.request.ParameterWrapper=wtf.app.request.ParameterWrapper-class.html"><a title="wtf.app.request.ParameterWrapper" class="py-name" href="#" onclick="return doclink('link-101', 'ParameterWrapper', 'link-101');">ParameterWrapper</a></tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">)</tt> </tt>
+<a name="L514"></a><tt class="py-lineno">514</tt>  <tt class="py-line">            <tt class="py-keyword">return</tt> <tt class="py-name">result</tt> </tt>
+</div><a name="L515"></a><tt class="py-lineno">515</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-name">locals</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L516"></a><tt class="py-lineno">516</tt>  <tt class="py-line"> </tt>
+<a name="L517"></a><tt class="py-lineno">517</tt>  <tt class="py-line">    <tt class="py-decorator">@</tt><tt class="py-decorator">Property</tt> </tt>
+<a name="Request.cookie"></a><div id="Request.cookie-def"><a name="L518"></a><tt class="py-lineno">518</tt> <a class="py-toggle" href="#" id="Request.cookie-toggle" onclick="return toggle('Request.cookie');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="wtf.app.request.Request-class.html#cookie">cookie</a><tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="Request.cookie-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="Request.cookie-expanded"><a name="L519"></a><tt class="py-lineno">519</tt>  <tt class="py-line">        <tt class="py-docstring">"""</tt> </tt>
+<a name="L520"></a><tt class="py-lineno">520</tt>  <tt class="py-line"><tt class="py-docstring">        The cookies</tt> </tt>
+<a name="L521"></a><tt class="py-lineno">521</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L522"></a><tt class="py-lineno">522</tt>  <tt class="py-line"><tt class="py-docstring">        This property is lazily initialized on first request.</tt> </tt>
+<a name="L523"></a><tt class="py-lineno">523</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L524"></a><tt class="py-lineno">524</tt>  <tt class="py-line"><tt class="py-docstring">        :Type: `CookieCollection`</tt> </tt>
+<a name="L525"></a><tt class="py-lineno">525</tt>  <tt class="py-line"><tt class="py-docstring">        """</tt> </tt>
+<a name="L526"></a><tt class="py-lineno">526</tt>  <tt class="py-line">        <tt class="py-comment"># pylint: disable = E0211, C0111, W0212, W0612</tt> </tt>
+<a name="L527"></a><tt class="py-lineno">527</tt>  <tt class="py-line"> </tt>
+<a name="L528"></a><tt class="py-lineno">528</tt>  <tt class="py-line">        <tt class="py-keyword">def</tt> <tt class="py-def-name">fget</tt><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L529"></a><tt class="py-lineno">529</tt>  <tt class="py-line">            <tt class="py-name">result</tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-102" class="py-name"><a title="wtf.app.request.Request._cookie" class="py-name" href="#" onclick="return doclink('link-102', '_cookie', 'link-76');">_cookie</a></tt> </tt>
+<a name="L530"></a><tt class="py-lineno">530</tt>  <tt class="py-line">            <tt class="py-keyword">if</tt> <tt class="py-name">result</tt> <tt class="py-keyword">is</tt> <tt class="py-name">None</tt><tt class="py-op">:</tt> </tt>
+<a name="L531"></a><tt class="py-lineno">531</tt>  <tt class="py-line">                <tt class="py-name">result</tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-103" class="py-name"><a title="wtf.app.request.Request._cookie" class="py-name" href="#" onclick="return doclink('link-103', '_cookie', 'link-76');">_cookie</a></tt> <tt class="py-op">=</tt> <tt id="link-104" class="py-name" targets="Class wtf.app.request.CookieCollection=wtf.app.request.CookieCollection-class.html"><a title="wtf.app.request.CookieCollection" class="py-name" href="#" onclick="return doclink('link-104', 'CookieCollection', 'link-104');">CookieCollection</a></tt><tt class="py-op">(</tt> </tt>
+<a name="L532"></a><tt class="py-lineno">532</tt>  <tt class="py-line">                    <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">env</tt><tt class="py-op">.</tt><tt id="link-105" class="py-name"><a title="wtf.app.response.HeaderCollection.get
+wtf.app.services.memcache.ExceptionWrapper.get
+wtf.app.services.memcache.NoMemcacheWrapper.get
+wtf.app.services.session.Session.get
+wtf.app.services.session.StorageAdapter.get
+wtf.app.services.session.StorageInterface.get
+wtf.app.services.session_storage.sharedance.BoundSharedanceStorage.get
+wtf.ext.memcache.Memcache.get" class="py-name" href="#" onclick="return doclink('link-105', 'get', 'link-9');">get</a></tt><tt class="py-op">(</tt><tt class="py-string">'HTTP_COOKIE'</tt><tt class="py-op">,</tt> <tt class="py-string">''</tt><tt class="py-op">)</tt><tt class="py-op">,</tt> </tt>
+<a name="L533"></a><tt class="py-lineno">533</tt>  <tt class="py-line">                    <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">env</tt><tt class="py-op">.</tt><tt id="link-106" class="py-name"><a title="wtf.app.response.HeaderCollection.get
+wtf.app.services.memcache.ExceptionWrapper.get
+wtf.app.services.memcache.NoMemcacheWrapper.get
+wtf.app.services.session.Session.get
+wtf.app.services.session.StorageAdapter.get
+wtf.app.services.session.StorageInterface.get
+wtf.app.services.session_storage.sharedance.BoundSharedanceStorage.get
+wtf.ext.memcache.Memcache.get" class="py-name" href="#" onclick="return doclink('link-106', 'get', 'link-9');">get</a></tt><tt class="py-op">(</tt><tt class="py-string">'wtf.codec.cookie'</tt><tt class="py-op">)</tt><tt class="py-op">,</tt> </tt>
+<a name="L534"></a><tt class="py-lineno">534</tt>  <tt class="py-line">                <tt class="py-op">)</tt> </tt>
+<a name="L535"></a><tt class="py-lineno">535</tt>  <tt class="py-line">            <tt class="py-keyword">return</tt> <tt class="py-name">result</tt> </tt>
+</div><a name="L536"></a><tt class="py-lineno">536</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-name">locals</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L537"></a><tt class="py-lineno">537</tt>  <tt class="py-line"> </tt>
+<a name="L538"></a><tt class="py-lineno">538</tt>  <tt class="py-line">    <tt class="py-decorator">@</tt><tt class="py-decorator">Property</tt> </tt>
+<a name="Request.basic_auth"></a><div id="Request.basic_auth-def"><a name="L539"></a><tt class="py-lineno">539</tt> <a class="py-toggle" href="#" id="Request.basic_auth-toggle" onclick="return toggle('Request.basic_auth');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="wtf.app.request.Request-class.html#basic_auth">basic_auth</a><tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="Request.basic_auth-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="Request.basic_auth-expanded"><a name="L540"></a><tt class="py-lineno">540</tt>  <tt class="py-line">        <tt class="py-docstring">"""</tt> </tt>
+<a name="L541"></a><tt class="py-lineno">541</tt>  <tt class="py-line"><tt class="py-docstring">        Credentials of HTTP basic authentication</tt> </tt>
+<a name="L542"></a><tt class="py-lineno">542</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L543"></a><tt class="py-lineno">543</tt>  <tt class="py-line"><tt class="py-docstring">        (username, password) tuple or (None, None)</tt> </tt>
+<a name="L544"></a><tt class="py-lineno">544</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L545"></a><tt class="py-lineno">545</tt>  <tt class="py-line"><tt class="py-docstring">        :Type: ``tuple``</tt> </tt>
+<a name="L546"></a><tt class="py-lineno">546</tt>  <tt class="py-line"><tt class="py-docstring">        """</tt> </tt>
+<a name="L547"></a><tt class="py-lineno">547</tt>  <tt class="py-line">        <tt class="py-comment"># pylint: disable = E0211, C0111, W0612</tt> </tt>
+<a name="L548"></a><tt class="py-lineno">548</tt>  <tt class="py-line"> </tt>
+<a name="L549"></a><tt class="py-lineno">549</tt>  <tt class="py-line">        <tt class="py-keyword">def</tt> <tt class="py-def-name">fget</tt><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L550"></a><tt class="py-lineno">550</tt>  <tt class="py-line">            <tt id="link-107" class="py-name" targets="Method wtf.app.services._crash_tb.DebugRender.header()=wtf.app.services._crash_tb.DebugRender-class.html#header"><a title="wtf.app.services._crash_tb.DebugRender.header" class="py-name" href="#" onclick="return doclink('link-107', 'header', 'link-107');">header</a></tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">env</tt><tt class="py-op">.</tt><tt id="link-108" class="py-name"><a title="wtf.app.response.HeaderCollection.get
+wtf.app.services.memcache.ExceptionWrapper.get
+wtf.app.services.memcache.NoMemcacheWrapper.get
+wtf.app.services.session.Session.get
+wtf.app.services.session.StorageAdapter.get
+wtf.app.services.session.StorageInterface.get
+wtf.app.services.session_storage.sharedance.BoundSharedanceStorage.get
+wtf.ext.memcache.Memcache.get" class="py-name" href="#" onclick="return doclink('link-108', 'get', 'link-9');">get</a></tt><tt class="py-op">(</tt><tt class="py-string">'HTTP_AUTHORIZATION'</tt><tt class="py-op">)</tt> </tt>
+<a name="L551"></a><tt class="py-lineno">551</tt>  <tt class="py-line">            <tt class="py-keyword">if</tt> <tt id="link-109" class="py-name"><a title="wtf.app.services._crash_tb.DebugRender.header" class="py-name" href="#" onclick="return doclink('link-109', 'header', 'link-107');">header</a></tt> <tt class="py-keyword">is</tt> <tt class="py-name">None</tt><tt class="py-op">:</tt> </tt>
+<a name="L552"></a><tt class="py-lineno">552</tt>  <tt class="py-line">                <tt id="link-110" class="py-name"><a title="wtf.app.services._crash_tb.DebugRender.header" class="py-name" href="#" onclick="return doclink('link-110', 'header', 'link-107');">header</a></tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">env</tt><tt class="py-op">.</tt><tt id="link-111" class="py-name"><a title="wtf.app.response.HeaderCollection.get
+wtf.app.services.memcache.ExceptionWrapper.get
+wtf.app.services.memcache.NoMemcacheWrapper.get
+wtf.app.services.session.Session.get
+wtf.app.services.session.StorageAdapter.get
+wtf.app.services.session.StorageInterface.get
+wtf.app.services.session_storage.sharedance.BoundSharedanceStorage.get
+wtf.ext.memcache.Memcache.get" class="py-name" href="#" onclick="return doclink('link-111', 'get', 'link-9');">get</a></tt><tt class="py-op">(</tt><tt class="py-string">'Authorization'</tt><tt class="py-op">)</tt> </tt>
+<a name="L553"></a><tt class="py-lineno">553</tt>  <tt class="py-line">            <tt class="py-keyword">if</tt> <tt id="link-112" class="py-name"><a title="wtf.app.services._crash_tb.DebugRender.header" class="py-name" href="#" onclick="return doclink('link-112', 'header', 'link-107');">header</a></tt> <tt class="py-keyword">is</tt> <tt class="py-keyword">not</tt> <tt class="py-name">None</tt><tt class="py-op">:</tt> </tt>
+<a name="L554"></a><tt class="py-lineno">554</tt>  <tt class="py-line">                <tt id="link-113" class="py-name"><a title="wtf.app.services._crash_tb.DebugRender.header" class="py-name" href="#" onclick="return doclink('link-113', 'header', 'link-107');">header</a></tt> <tt class="py-op">=</tt> <tt id="link-114" class="py-name"><a title="wtf.app.services._crash_tb.DebugRender.header" class="py-name" href="#" onclick="return doclink('link-114', 'header', 'link-107');">header</a></tt><tt class="py-op">.</tt><tt class="py-name">strip</tt><tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">.</tt><tt class="py-name">split</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L555"></a><tt class="py-lineno">555</tt>  <tt class="py-line">                <tt class="py-keyword">if</tt> <tt class="py-name">len</tt><tt class="py-op">(</tt><tt id="link-115" class="py-name"><a title="wtf.app.services._crash_tb.DebugRender.header" class="py-name" href="#" onclick="return doclink('link-115', 'header', 'link-107');">header</a></tt><tt class="py-op">)</tt> <tt class="py-op">==</tt> <tt class="py-number">2</tt> <tt class="py-keyword">and</tt> <tt id="link-116" class="py-name"><a title="wtf.app.services._crash_tb.DebugRender.header" class="py-name" href="#" onclick="return doclink('link-116', 'header', 'link-107');">header</a></tt><tt class="py-op">[</tt><tt class="py-number">0</tt><tt class="py-op">]</tt><tt class="py-op">.</tt><tt class="py-name">lower</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> <tt class="py-op">==</tt> <tt class="py-string">'basic'</tt><tt class="py-op">:</tt> </tt>
+<a name="L556"></a><tt class="py-lineno">556</tt>  <tt class="py-line">                    <tt class="py-keyword">try</tt><tt class="py-op">:</tt> </tt>
+<a name="L557"></a><tt class="py-lineno">557</tt>  <tt class="py-line">                        <tt id="link-117" class="py-name"><a title="wtf.app.services._crash_tb.DebugRender.header" class="py-name" href="#" onclick="return doclink('link-117', 'header', 'link-107');">header</a></tt> <tt class="py-op">=</tt> <tt id="link-118" class="py-name"><a title="wtf.app.services._crash_tb.DebugRender.header" class="py-name" href="#" onclick="return doclink('link-118', 'header', 'link-107');">header</a></tt><tt class="py-op">[</tt><tt class="py-number">1</tt><tt class="py-op">]</tt><tt class="py-op">.</tt><tt id="link-119" class="py-name"><a title="wtf.app.cookie.BaseCookieCodec.decode
+wtf.app.cookie.DefaultCookie.decode
+wtf.app.cookie.UnicodeCookie.decode
+wtf.app.services.session_storage.sharedance.SessionCookieCodec.decode
+wtf.httputil.CookieCodecInterface.decode" class="py-name" href="#" onclick="return doclink('link-119', 'decode', 'link-28');">decode</a></tt><tt class="py-op">(</tt><tt class="py-string">'base64'</tt><tt class="py-op">)</tt> </tt>
+<a name="L558"></a><tt class="py-lineno">558</tt>  <tt class="py-line">                    <tt class="py-keyword">except</tt> <tt class="py-op">(</tt><tt class="py-name">ValueError</tt><tt class="py-op">,</tt> <tt class="py-name">_binascii</tt><tt class="py-op">.</tt><tt id="link-120" class="py-name" targets="Class wtf.Error=wtf.Error-class.html"><a title="wtf.Error" class="py-name" href="#" onclick="return doclink('link-120', 'Error', 'link-120');">Error</a></tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L559"></a><tt class="py-lineno">559</tt>  <tt class="py-line">                        <tt class="py-keyword">pass</tt> </tt>
+<a name="L560"></a><tt class="py-lineno">560</tt>  <tt class="py-line">                    <tt class="py-keyword">else</tt><tt class="py-op">:</tt> </tt>
+<a name="L561"></a><tt class="py-lineno">561</tt>  <tt class="py-line">                        <tt id="link-121" class="py-name"><a title="wtf.app.services._crash_tb.DebugRender.header" class="py-name" href="#" onclick="return doclink('link-121', 'header', 'link-107');">header</a></tt> <tt class="py-op">=</tt> <tt id="link-122" class="py-name"><a title="wtf.app.services._crash_tb.DebugRender.header" class="py-name" href="#" onclick="return doclink('link-122', 'header', 'link-107');">header</a></tt><tt class="py-op">.</tt><tt class="py-name">split</tt><tt class="py-op">(</tt><tt class="py-string">':'</tt><tt class="py-op">,</tt> <tt class="py-number">1</tt><tt class="py-op">)</tt> </tt>
+<a name="L562"></a><tt class="py-lineno">562</tt>  <tt class="py-line">                        <tt class="py-keyword">if</tt> <tt class="py-name">len</tt><tt class="py-op">(</tt><tt id="link-123" class="py-name"><a title="wtf.app.services._crash_tb.DebugRender.header" class="py-name" href="#" onclick="return doclink('link-123', 'header', 'link-107');">header</a></tt><tt class="py-op">)</tt> <tt class="py-op">==</tt> <tt class="py-number">1</tt><tt class="py-op">:</tt> </tt>
+<a name="L563"></a><tt class="py-lineno">563</tt>  <tt class="py-line">                            <tt id="link-124" class="py-name"><a title="wtf.app.services._crash_tb.DebugRender.header" class="py-name" href="#" onclick="return doclink('link-124', 'header', 'link-107');">header</a></tt> <tt class="py-op">=</tt> <tt class="py-op">(</tt><tt id="link-125" class="py-name"><a title="wtf.app.services._crash_tb.DebugRender.header" class="py-name" href="#" onclick="return doclink('link-125', 'header', 'link-107');">header</a></tt><tt class="py-op">,</tt> <tt class="py-name">None</tt><tt class="py-op">)</tt> </tt>
+<a name="L564"></a><tt class="py-lineno">564</tt>  <tt class="py-line">                        <tt class="py-keyword">return</tt> <tt id="link-126" class="py-name"><a title="wtf.app.services._crash_tb.DebugRender.header" class="py-name" href="#" onclick="return doclink('link-126', 'header', 'link-107');">header</a></tt> </tt>
+<a name="L565"></a><tt class="py-lineno">565</tt>  <tt class="py-line">            <tt class="py-keyword">return</tt> <tt class="py-name">None</tt><tt class="py-op">,</tt> <tt class="py-name">None</tt> </tt>
+</div><a name="L566"></a><tt class="py-lineno">566</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-name">locals</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L567"></a><tt class="py-lineno">567</tt>  <tt class="py-line"> </tt>
+<a name="L568"></a><tt class="py-lineno">568</tt>  <tt class="py-line">    <tt class="py-decorator">@</tt><tt class="py-decorator">Property</tt> </tt>
+<a name="Request.is_ssl"></a><div id="Request.is_ssl-def"><a name="L569"></a><tt class="py-lineno">569</tt> <a class="py-toggle" href="#" id="Request.is_ssl-toggle" onclick="return toggle('Request.is_ssl');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="wtf.app.request.Request-class.html#is_ssl">is_ssl</a><tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="Request.is_ssl-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="Request.is_ssl-expanded"><a name="L570"></a><tt class="py-lineno">570</tt>  <tt class="py-line">        <tt class="py-docstring">"""</tt> </tt>
+<a name="L571"></a><tt class="py-lineno">571</tt>  <tt class="py-line"><tt class="py-docstring">        Is the request is SSL enabled?</tt> </tt>
+<a name="L572"></a><tt class="py-lineno">572</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L573"></a><tt class="py-lineno">573</tt>  <tt class="py-line"><tt class="py-docstring">        :Type: ``bool``</tt> </tt>
+<a name="L574"></a><tt class="py-lineno">574</tt>  <tt class="py-line"><tt class="py-docstring">        """</tt> </tt>
+<a name="L575"></a><tt class="py-lineno">575</tt>  <tt class="py-line">        <tt class="py-comment"># pylint: disable = E0211, C0111, W0612</tt> </tt>
+<a name="L576"></a><tt class="py-lineno">576</tt>  <tt class="py-line"> </tt>
+<a name="L577"></a><tt class="py-lineno">577</tt>  <tt class="py-line">        <tt class="py-keyword">def</tt> <tt class="py-def-name">fget</tt><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L578"></a><tt class="py-lineno">578</tt>  <tt class="py-line">            <tt class="py-keyword">return</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">env</tt><tt class="py-op">[</tt><tt class="py-string">'wsgi.url_scheme'</tt><tt class="py-op">]</tt> <tt class="py-op">==</tt> <tt class="py-string">'https'</tt> </tt>
+</div><a name="L579"></a><tt class="py-lineno">579</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-name">locals</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L580"></a><tt class="py-lineno">580</tt>  <tt class="py-line"> </tt>
+<a name="L581"></a><tt class="py-lineno">581</tt>  <tt class="py-line">    <tt class="py-decorator">@</tt><tt class="py-decorator">Property</tt> </tt>
+<a name="Request.method"></a><div id="Request.method-def"><a name="L582"></a><tt class="py-lineno">582</tt> <a class="py-toggle" href="#" id="Request.method-toggle" onclick="return toggle('Request.method');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="wtf.app.request.Request-class.html#method">method</a><tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="Request.method-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="Request.method-expanded"><a name="L583"></a><tt class="py-lineno">583</tt>  <tt class="py-line">        <tt class="py-docstring">"""</tt> </tt>
+<a name="L584"></a><tt class="py-lineno">584</tt>  <tt class="py-line"><tt class="py-docstring">        The request method</tt> </tt>
+<a name="L585"></a><tt class="py-lineno">585</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L586"></a><tt class="py-lineno">586</tt>  <tt class="py-line"><tt class="py-docstring">        :Type: ``str``</tt> </tt>
+<a name="L587"></a><tt class="py-lineno">587</tt>  <tt class="py-line"><tt class="py-docstring">        """</tt> </tt>
+<a name="L588"></a><tt class="py-lineno">588</tt>  <tt class="py-line">        <tt class="py-comment"># pylint: disable = E0211, C0111, W0612</tt> </tt>
+<a name="L589"></a><tt class="py-lineno">589</tt>  <tt class="py-line"> </tt>
+<a name="L590"></a><tt class="py-lineno">590</tt>  <tt class="py-line">        <tt class="py-keyword">def</tt> <tt class="py-def-name">fget</tt><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L591"></a><tt class="py-lineno">591</tt>  <tt class="py-line">            <tt class="py-keyword">return</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">env</tt><tt class="py-op">[</tt><tt class="py-string">'REQUEST_METHOD'</tt><tt class="py-op">]</tt> </tt>
+</div><a name="L592"></a><tt class="py-lineno">592</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-name">locals</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L593"></a><tt class="py-lineno">593</tt>  <tt class="py-line"> </tt>
+<a name="Request.remote_addr"></a><div id="Request.remote_addr-def"><a name="L594"></a><tt class="py-lineno">594</tt> <a class="py-toggle" href="#" id="Request.remote_addr-toggle" onclick="return toggle('Request.remote_addr');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="wtf.app.request.Request-class.html#remote_addr">remote_addr</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">check_proxy</tt><tt class="py-op">=</tt><tt class="py-name">False</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="Request.remote_addr-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="Request.remote_addr-expanded"><a name="L595"></a><tt class="py-lineno">595</tt>  <tt class="py-line">        <tt class="py-docstring">"""</tt> </tt>
+<a name="L596"></a><tt class="py-lineno">596</tt>  <tt class="py-line"><tt class="py-docstring">        Determine the remote address</tt> </tt>
+<a name="L597"></a><tt class="py-lineno">597</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L598"></a><tt class="py-lineno">598</tt>  <tt class="py-line"><tt class="py-docstring">        :Parameters:</tt> </tt>
+<a name="L599"></a><tt class="py-lineno">599</tt>  <tt class="py-line"><tt class="py-docstring">         - `check_proxy`: Check for ``X-Forwarded-For``?</tt> </tt>
+<a name="L600"></a><tt class="py-lineno">600</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L601"></a><tt class="py-lineno">601</tt>  <tt class="py-line"><tt class="py-docstring">        :Types:</tt> </tt>
+<a name="L602"></a><tt class="py-lineno">602</tt>  <tt class="py-line"><tt class="py-docstring">         - `check_proxy`: ``bool``</tt> </tt>
+<a name="L603"></a><tt class="py-lineno">603</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L604"></a><tt class="py-lineno">604</tt>  <tt class="py-line"><tt class="py-docstring">        :return: The remote address</tt> </tt>
+<a name="L605"></a><tt class="py-lineno">605</tt>  <tt class="py-line"><tt class="py-docstring">        :rtype: ``str``</tt> </tt>
+<a name="L606"></a><tt class="py-lineno">606</tt>  <tt class="py-line"><tt class="py-docstring">        """</tt> </tt>
+<a name="L607"></a><tt class="py-lineno">607</tt>  <tt class="py-line">        <tt class="py-name">addr</tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">env</tt><tt class="py-op">[</tt><tt class="py-string">'REMOTE_ADDR'</tt><tt class="py-op">]</tt> </tt>
+<a name="L608"></a><tt class="py-lineno">608</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt class="py-name">check_proxy</tt><tt class="py-op">:</tt> </tt>
+<a name="L609"></a><tt class="py-lineno">609</tt>  <tt class="py-line">            <tt class="py-name">addr</tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">env</tt><tt class="py-op">.</tt><tt id="link-127" class="py-name"><a title="wtf.app.response.HeaderCollection.get
+wtf.app.services.memcache.ExceptionWrapper.get
+wtf.app.services.memcache.NoMemcacheWrapper.get
+wtf.app.services.session.Session.get
+wtf.app.services.session.StorageAdapter.get
+wtf.app.services.session.StorageInterface.get
+wtf.app.services.session_storage.sharedance.BoundSharedanceStorage.get
+wtf.ext.memcache.Memcache.get" class="py-name" href="#" onclick="return doclink('link-127', 'get', 'link-9');">get</a></tt><tt class="py-op">(</tt><tt class="py-string">'HTTP_X_FORWARDED_FOR'</tt><tt class="py-op">,</tt> <tt class="py-name">addr</tt> </tt>
+<a name="L610"></a><tt class="py-lineno">610</tt>  <tt class="py-line">                <tt class="py-op">)</tt><tt class="py-op">.</tt><tt class="py-name">split</tt><tt class="py-op">(</tt><tt class="py-string">','</tt><tt class="py-op">)</tt><tt class="py-op">[</tt><tt class="py-op">-</tt><tt class="py-number">1</tt><tt class="py-op">]</tt><tt class="py-op">.</tt><tt class="py-name">strip</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L611"></a><tt class="py-lineno">611</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-name">addr</tt> </tt>
+</div><a name="L612"></a><tt class="py-lineno">612</tt>  <tt class="py-line"> </tt>
+<a name="Request.abs_uri"></a><div id="Request.abs_uri-def"><a name="L613"></a><tt class="py-lineno">613</tt> <a class="py-toggle" href="#" id="Request.abs_uri-toggle" onclick="return toggle('Request.abs_uri');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="wtf.app.request.Request-class.html#abs_uri">abs_uri</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">url</tt><tt class="py-op">,</tt> <tt class="py-param">decode</tt><tt class="py-op">=</tt><tt class="py-name">None</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="Request.abs_uri-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="Request.abs_uri-expanded"><a name="L614"></a><tt class="py-lineno">614</tt>  <tt class="py-line">        <tt class="py-docstring">"""</tt> </tt>
+<a name="L615"></a><tt class="py-lineno">615</tt>  <tt class="py-line"><tt class="py-docstring">        Determine absolute URI out of a (possibly) path only one</tt> </tt>
+<a name="L616"></a><tt class="py-lineno">616</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L617"></a><tt class="py-lineno">617</tt>  <tt class="py-line"><tt class="py-docstring">        :Parameters:</tt> </tt>
+<a name="L618"></a><tt class="py-lineno">618</tt>  <tt class="py-line"><tt class="py-docstring">         - `url`: URL to expand</tt> </tt>
+<a name="L619"></a><tt class="py-lineno">619</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L620"></a><tt class="py-lineno">620</tt>  <tt class="py-line"><tt class="py-docstring">        :Types:</tt> </tt>
+<a name="L621"></a><tt class="py-lineno">621</tt>  <tt class="py-line"><tt class="py-docstring">         - `url`: ``basestring`` or `wtf.webutil.URL`</tt> </tt>
+<a name="L622"></a><tt class="py-lineno">622</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L623"></a><tt class="py-lineno">623</tt>  <tt class="py-line"><tt class="py-docstring">        :return: The expanded URL</tt> </tt>
+<a name="L624"></a><tt class="py-lineno">624</tt>  <tt class="py-line"><tt class="py-docstring">        :rtype: `wtf.webutil.URL`</tt> </tt>
+<a name="L625"></a><tt class="py-lineno">625</tt>  <tt class="py-line"><tt class="py-docstring">        """</tt> </tt>
+<a name="L626"></a><tt class="py-lineno">626</tt>  <tt class="py-line">        <tt class="py-name">env</tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">env</tt> </tt>
+<a name="L627"></a><tt class="py-lineno">627</tt>  <tt class="py-line">        <tt class="py-name">parsed</tt> <tt class="py-op">=</tt> <tt class="py-name">_webutil</tt><tt class="py-op">.</tt><tt id="link-128" class="py-name"><a title="wtf.webutil.URL" class="py-name" href="#" onclick="return doclink('link-128', 'URL', 'link-84');">URL</a></tt><tt class="py-op">(</tt><tt id="link-129" class="py-name"><a title="wtf.impl.http._request.HTTPRequest.url" class="py-name" href="#" onclick="return doclink('link-129', 'url', 'link-82');">url</a></tt><tt class="py-op">,</tt> <tt id="link-130" class="py-name"><a title="wtf.app.cookie.BaseCookieCodec.decode
+wtf.app.cookie.DefaultCookie.decode
+wtf.app.cookie.UnicodeCookie.decode
+wtf.app.services.session_storage.sharedance.SessionCookieCodec.decode
+wtf.httputil.CookieCodecInterface.decode" class="py-name" href="#" onclick="return doclink('link-130', 'decode', 'link-28');">decode</a></tt><tt class="py-op">=</tt><tt id="link-131" class="py-name"><a title="wtf.app.cookie.BaseCookieCodec.decode
+wtf.app.cookie.DefaultCookie.decode
+wtf.app.cookie.UnicodeCookie.decode
+wtf.app.services.session_storage.sharedance.SessionCookieCodec.decode
+wtf.httputil.CookieCodecInterface.decode" class="py-name" href="#" onclick="return doclink('link-131', 'decode', 'link-28');">decode</a></tt><tt class="py-op">)</tt> </tt>
+<a name="L628"></a><tt class="py-lineno">628</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt class="py-keyword">not</tt> <tt class="py-name">parsed</tt><tt class="py-op">.</tt><tt id="link-132" class="py-name" targets="Variable wtf.webutil.URL.scheme=wtf.webutil.URL-class.html#scheme"><a title="wtf.webutil.URL.scheme" class="py-name" href="#" onclick="return doclink('link-132', 'scheme', 'link-132');">scheme</a></tt><tt class="py-op">:</tt> </tt>
+<a name="L629"></a><tt class="py-lineno">629</tt>  <tt class="py-line">            <tt class="py-name">parsed</tt><tt class="py-op">.</tt><tt id="link-133" class="py-name"><a title="wtf.webutil.URL.scheme" class="py-name" href="#" onclick="return doclink('link-133', 'scheme', 'link-132');">scheme</a></tt> <tt class="py-op">=</tt> <tt class="py-name">env</tt><tt class="py-op">[</tt><tt class="py-string">'wsgi.url_scheme'</tt><tt class="py-op">]</tt> </tt>
+<a name="L630"></a><tt class="py-lineno">630</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt class="py-keyword">not</tt> <tt class="py-name">parsed</tt><tt class="py-op">.</tt><tt id="link-134" class="py-name"><a title="wtf.webutil.URL.netloc" class="py-name" href="#" onclick="return doclink('link-134', 'netloc', 'link-87');">netloc</a></tt><tt class="py-op">:</tt> </tt>
+<a name="L631"></a><tt class="py-lineno">631</tt>  <tt class="py-line">            <tt class="py-name">parsed</tt><tt class="py-op">.</tt><tt id="link-135" class="py-name"><a title="wtf.webutil.URL.netloc" class="py-name" href="#" onclick="return doclink('link-135', 'netloc', 'link-87');">netloc</a></tt> <tt class="py-op">=</tt> <tt class="py-name">env</tt><tt class="py-op">[</tt><tt class="py-string">'SERVER_NAME'</tt><tt class="py-op">]</tt> </tt>
+<a name="L632"></a><tt class="py-lineno">632</tt>  <tt class="py-line">            <tt id="link-136" class="py-name"><a title="wtf.app.request.Request.match" class="py-name" href="#" onclick="return doclink('link-136', 'match', 'link-77');">match</a></tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-137" class="py-name"><a title="wtf.app.request.Request._PORTMATCH" class="py-name" href="#" onclick="return doclink('link-137', '_PORTMATCH', 'link-80');">_PORTMATCH</a></tt><tt class="py-op">(</tt><tt class="py-name">parsed</tt><tt class="py-op">.</tt><tt id="link-138" class="py-name"><a title="wtf.webutil.URL.netloc" class="py-name" href="#" onclick="return doclink('link-138', 'netloc', 'link-87');">netloc</a></tt><tt class="py-op">)</tt> </tt>
+<a name="L633"></a><tt class="py-lineno">633</tt>  <tt class="py-line">            <tt class="py-keyword">if</tt> <tt class="py-keyword">not</tt> <tt id="link-139" class="py-name"><a title="wtf.app.request.Request.match" class="py-name" href="#" onclick="return doclink('link-139', 'match', 'link-77');">match</a></tt> <tt class="py-keyword">and</tt> \ </tt>
+<a name="L634"></a><tt class="py-lineno">634</tt>  <tt class="py-line">                    <tt class="py-name">env</tt><tt class="py-op">[</tt><tt class="py-string">'SERVER_PORT'</tt><tt class="py-op">]</tt> <tt class="py-op">!=</tt> <tt class="py-name">str</tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-140" class="py-name"><a title="wtf.app.request.Request._PORTS" class="py-name" href="#" onclick="return doclink('link-140', '_PORTS', 'link-78');">_PORTS</a></tt><tt class="py-op">(</tt><tt class="py-name">parsed</tt><tt class="py-op">.</tt><tt id="link-141" class="py-name"><a title="wtf.webutil.URL.scheme" class="py-name" href="#" onclick="return doclink('link-141', 'scheme', 'link-132');">scheme</a></tt><tt class="py-op">)</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L635"></a><tt class="py-lineno">635</tt>  <tt class="py-line">                <tt class="py-name">parsed</tt><tt class="py-op">.</tt><tt id="link-142" class="py-name"><a title="wtf.webutil.URL.netloc" class="py-name" href="#" onclick="return doclink('link-142', 'netloc', 'link-87');">netloc</a></tt> <tt class="py-op">=</tt> <tt class="py-string">"%s:%s"</tt> <tt class="py-op">%</tt> <tt class="py-op">(</tt><tt class="py-name">parsed</tt><tt class="py-op">.</tt><tt id="link-143" class="py-name"><a title="wtf.webutil.URL.netloc" class="py-name" href="#" onclick="return doclink('link-143', 'netloc', 'link-87');">netloc</a></tt><tt class="py-op">,</tt> <tt class="py-name">env</tt><tt class="py-op">[</tt><tt class="py-string">'SERVER_PORT'</tt><tt class="py-op">]</tt><tt class="py-op">)</tt> </tt>
+<a name="L636"></a><tt class="py-lineno">636</tt>  <tt class="py-line">        <tt class="py-keyword">else</tt><tt class="py-op">:</tt> </tt>
+<a name="L637"></a><tt class="py-lineno">637</tt>  <tt class="py-line">            <tt id="link-144" class="py-name"><a title="wtf.app.request.Request.match" class="py-name" href="#" onclick="return doclink('link-144', 'match', 'link-77');">match</a></tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-145" class="py-name"><a title="wtf.app.request.Request._PORTMATCH" class="py-name" href="#" onclick="return doclink('link-145', '_PORTMATCH', 'link-80');">_PORTMATCH</a></tt><tt class="py-op">(</tt><tt class="py-name">parsed</tt><tt class="py-op">.</tt><tt id="link-146" class="py-name"><a title="wtf.webutil.URL.netloc" class="py-name" href="#" onclick="return doclink('link-146', 'netloc', 'link-87');">netloc</a></tt><tt class="py-op">)</tt> </tt>
+<a name="L638"></a><tt class="py-lineno">638</tt>  <tt class="py-line">            <tt class="py-keyword">if</tt> <tt id="link-147" class="py-name"><a title="wtf.app.request.Request.match" class="py-name" href="#" onclick="return doclink('link-147', 'match', 'link-77');">match</a></tt> <tt class="py-keyword">and</tt> \ </tt>
+<a name="L639"></a><tt class="py-lineno">639</tt>  <tt class="py-line">                    <tt id="link-148" class="py-name"><a title="wtf.app.request.Request.match" class="py-name" href="#" onclick="return doclink('link-148', 'match', 'link-77');">match</a></tt><tt class="py-op">.</tt><tt class="py-name">group</tt><tt class="py-op">(</tt><tt class="py-string">'port'</tt><tt class="py-op">)</tt> <tt class="py-op">==</tt> <tt class="py-name">str</tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-149" class="py-name"><a title="wtf.app.request.Request._PORTS" class="py-name" href="#" onclick="return doclink('link-149', '_PORTS', 'link-78');">_PORTS</a></tt><tt class="py-op">(</tt><tt class="py-name">parsed</tt><tt class="py-op">.</tt><tt id="link-150" class="py-name"><a title="wtf.webutil.URL.scheme" class="py-name" href="#" onclick="return doclink('link-150', 'scheme', 'link-132');">scheme</a></tt><tt class="py-op">)</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L640"></a><tt class="py-lineno">640</tt>  <tt class="py-line">                <tt class="py-name">parsed</tt><tt class="py-op">.</tt><tt id="link-151" class="py-name"><a title="wtf.webutil.URL.netloc" class="py-name" href="#" onclick="return doclink('link-151', 'netloc', 'link-87');">netloc</a></tt> <tt class="py-op">=</tt> <tt id="link-152" class="py-name"><a title="wtf.app.request.Request.match" class="py-name" href="#" onclick="return doclink('link-152', 'match', 'link-77');">match</a></tt><tt class="py-op">.</tt><tt class="py-name">group</tt><tt class="py-op">(</tt><tt class="py-string">'host'</tt><tt class="py-op">)</tt> </tt>
+<a name="L641"></a><tt class="py-lineno">641</tt>  <tt class="py-line"> </tt>
+<a name="L642"></a><tt class="py-lineno">642</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-name">parsed</tt> </tt>
+</div></div><a name="L643"></a><tt class="py-lineno">643</tt>  <tt class="py-line"> </tt><script type="text/javascript">
+<!--
+expandto(location.href);
+// -->
+</script>
+</pre>
+<br />
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+  <!-- Home link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="wtf-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            ><a href="http://opensource.perlig.de/wtf/">Visit WTF Online</a></th>
+          </tr></table></th>
+  </tr>
+</table>
+
+<script type="text/javascript">
+  <!--
+  // Private objects are initially displayed (because if
+  // javascript is turned off then we want them to be
+  // visible); but by default, we want to hide them.  So hide
+  // them unless we have a cookie that says to show them.
+  checkCookie();
+  // -->
+</script>
+</body>
+</html>
