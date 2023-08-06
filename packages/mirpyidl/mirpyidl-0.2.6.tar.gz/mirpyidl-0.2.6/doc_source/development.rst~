@@ -1,0 +1,80 @@
+
+*******************
+ Development Notes 
+*******************
+
+This page contains information for developers of mirpyidl.
+
+
+Building the documentation
+==========================
+
+To build the mirpyidl documentation separately from the main installation, the type following from the mirpyidl source directory::
+
+    sphinx-build -b html doc_source doc_build
+
+
+Updating the repository
+=======================
+
+First commit the code locally::
+
+    git add -A .
+    git diff --staged
+    git commit -m "Some useful comment"
+
+Then update the bitbuket repository::
+
+    git push bitbucket master
+
+
+Updating the public release
+===========================
+
+After doing a repository update we need to also update the website and pypi entry. Generally we will only do this afer creating a new release.
+
+First update setup.py with the new version number and commit the changes.
+
+To tag a new release use::
+
+    git tag -a 0.1.3 -m "Version 0.1.3"
+    git push --tags bitbucket master
+    
+
+To update the website do the following::
+
+    cd ../bitbucket.org
+    sphinx-build -b html ../mirpyidl/doc_source/ mirpyidl/
+    git add -A .
+    git commit -m "Updated the mirpyidl documentation"
+    git push bitbucket master
+
+To update the pyPI repository::
+
+    cd ../mirpyidl
+    python setup.py clean --all
+    python setup.py register
+    python setup.py sdist upload
+
+
+Testing the public release
+==========================
+
+Hopefully I've already done testing before making a release, but it is still good to do a final check.
+
+Here is my tesing procedure for OS X::
+
+   cd mirpyidl
+   sudo port select --set python python27
+   sudo easy_install-2.7 -m mirpyidl
+   sudo rm -rf /opt/local/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/site-packages/mirpyidl*
+
+   sudo easy_install-2.7 mirpyidl
+   python tests/examples.py
+
+   sudo port select --set python python34
+   sudo easy_install-3.4 -m mirpyidl
+   sudo rm -rfv /opt/local/Library/Frameworks/Python.framework/Versions/3.4/lib/python3.4/site-packages/mirpyidl*
+
+   sudo easy_install-3.4 mirpyidl
+   python tests/examples.py
