@@ -1,0 +1,125 @@
+{% load i18n %}
+<div class="GenericFKAdmin">
+  <input class="vGenericFKAdminField" type="text" name="{{ name }}" value="{{ value }}" id="id_{{ name }}">
+  <div class="object-representation float-left">{{ obj_repr|safe }}</div>
+  <div class="current-object">
+    <div class="search-widget">
+        <label>{% trans "Search" %}</label>
+        <a href="{{ related }}{{ url}}" class="related-lookup float-left" id="lookup_id_{{ name }}" onclick="return showGenericRelatedObjectLookupPopup('{{ ct_field }}', this, '../../../{{ url }}');">
+           <div class="search-widget-image"> <img src="{{static_admin}}img/selector-search.gif" width="16" height="16" alt="Lookup" /></div>
+        </a>
+    </div>
+  </div>
+  <div class="create-content-inlined-form">
+  </div>
+</div>
+
+<script type="text/javascript">
+
+var gfkSetNewValue = function( id_name,value){
+    var obj = $("#" + id_name);
+    obj.attr("newValue", value);
+    obj.val(value);
+}
+
+var gfkEnsureRepresentation = function(id_name, ct_id){
+    var obj = $("#" + id_name);
+    if (obj.attr("value") !== obj.attr("newValue")){
+        var obj_id = obj.attr("value");
+        gfkSetNewValue(id_name, ct_id + "-" + obj.attr("value"));
+        $.get("/related_admin/render_object/" + ct_id + "/" + obj_id + "/", function(data) {
+            obj.siblings(".object-representation").html(data);
+        });
+    }
+}
+
+function showGenericRelatedObjectLookupPopup(ct_field, triggering_link, url_base) {
+    var id_name = triggering_link.id.replace(/^lookup_/, '');
+    // If ct is inline
+    var indx_prefix = ct_field.indexOf("__prefix__")
+    if (indx_prefix != -1){
+        // get the index of the inline
+        var index = triggering_link.id.split("lookup_id_")[1].slice(indx_prefix).split("-")[0];
+        ct_field = ct_field.replace("__prefix__", index);
+    }
+    ct_select = document.getElementById('id_' + ct_field);
+
+    var getCTId = function(ct_select){
+        return ct_select.options[ct_select.selectedIndex].value;
+    }
+    var ct_id = getCTId(ct_select);
+    var url = content_types[ct_id];
+
+    // Yes this is insane but there isn't a robust way to fire an event by a
+    // closing window that has a long ajax function inside without blocking
+    setInterval(function() {gfkEnsureRepresentation(id_name, getCTId(ct_select)); }, 200);
+
+    if (url != undefined) {
+        triggering_link.href = url_base + url;
+        var rv = showRelatedObjectLookupPopup(triggering_link);
+        gfkSetNewValue(id_name, "");
+        return rv;
+    }
+    return false;
+}
+
+$(".vGenericFKAdminField").css("display", "none");
+
+var content_types = new Array();
+{% for ct in content_types %}
+    content_types[{{ ct.0 }}] = '{{ ct.1 }}/{{ ct.2 }}/';
+{% endfor %}
+    var htmlGFKCreateButton = function(html){
+        return '<div class="gfk_create_title">{% trans "Create a new image" %}</div>' + html + '<div class="gfk_create_button">{% trans "Load" %}</div>';
+    };
+    var ct_id = $("#id_{{ ct_field }}").val();
+    if (ct_id){
+        $.get("/api/create/", {"ct_id": ct_id}, function (data){
+            if(data){
+                $("#id_{{ name }}").closest(".GenericFKAdmin").find(".create-content-inlined-form").html(htmlGFKCreateButton(data));
+            }
+        })
+    }
+
+    $( "body" ).delegate("fieldset select", "change", function(event){
+        ct_field = event.currentTarget;
+        if ($(ct_field).closest("fieldset").find(".GenericFKAdmin")){
+            $.ajax({
+                url: "/api/create/",
+                data: {"ct_id": $(ct_field).val()},
+                context: ct_field,
+                success: function(data){
+                    if(data){
+                        $(this).closest("fieldset").find(".create-content-inlined-form").html(htmlGFKCreateButton(data));
+                    }
+                }
+            });
+        }
+        return false;
+    });
+
+    $( "body" ).delegate( ".gfk_create_button", "click", function(event) {
+
+        var fileInput = $(this).siblings().find("input[name*=simplified__-file]")[0];
+        var name = $(this).siblings().find("input[name*=simplified__-name]").val();
+        var file = fileInput.files[0];
+        var formData = new FormData();
+        var ct_id = $(this).closest("fieldset").find("select").val();
+        formData.append('file', file);
+        formData.append('name', name);
+        formData.append('ct_id', ct_id);
+
+        var xhr = new XMLHttpRequest();
+        xhr.onload = function(){
+            var jsonResponse = JSON.parse(this.responseText);
+            $("#"+this.gfk_id).val(jsonResponse.obj_id);
+            gfkEnsureRepresentation(this.gfk_id, jsonResponse.ct_id);
+        }
+        xhr.gfk_id = $(this).closest(".GenericFKAdmin").find(".vGenericFKAdminField").attr("id");
+        xhr.open('POST', "/api/create/", true);
+        xhr.setRequestHeader("X-CSRFToken", $("input[name=csrfmiddlewaretoken]").val());
+        xhr.send(formData);
+
+        return false; // prevent multiple events
+    });
+</script>

@@ -1,0 +1,52 @@
+{% extends host_template %}
+
+{% load i18n cyclope_utils crispy_forms_tags %}
+
+{% comment %}
+The content of this view is composed by including a template for each content matching the selected filters.
+It is based on the category_teaser_list template.
+{% endcomment %}
+
+{% block content %}
+{% if form %}
+{# TODO(nicoechaniz): remove this style once proper CSS styling is done #}
+
+	<div class="panel panel-primary">
+    <div class="panel-heading">
+      <h3 class="panel-title"> {% trans "Filter" %}</h3>
+    </div>
+		<div class="panel-body">
+			{% crispy form %}
+		</div>
+  </div>
+
+
+{% endif %}
+
+{% block category_content %}
+  {% for categorization in categorizations %}
+    {% spaceless %}
+    {% join categorization.content_type.app_label  "/" categorization.content_type.model "_" inline_view_name ".html" as template_path %}
+    {% comment %}
+    The alias to the model name and 'media' are deprecated and remains only for backwards compatibility
+    {% endcomment %}
+    {% alias categorization.content_object as categorization.content_type.model %}
+    {% alias categorization.content_object as 'media' %}
+    {% endspaceless %}
+    {% if not user.is_authenticated and not media.published %}{% else %}
+			{% include template_path with current_object=categorization.content_object host_template="cyclope/inline_view.html" %}
+		{% endif %}
+  {% endfor %}
+{% endblock %}
+
+  {% spaceless %}
+  {% if page %}
+    {% if view_options.sort_by == "ALPHABETIC" %}
+      {% include 'cyclope/alphabetical_pagination_block.html' %}
+    {% else %}
+      {% include 'cyclope/pagination_block.html' %}
+    {% endif %}
+  {% endif %}
+  {% endspaceless %}
+
+{% endblock %}
