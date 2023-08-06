@@ -1,0 +1,101 @@
+Metadata-Version: 1.1
+Name: django-slack-notification
+Version: 1.0.0
+Summary: A simple Django app to send notifications to slack.
+Home-page: https://github.com/johnnykim/django-slack-notifications
+Author: johnnykim
+Author-email: kidskorea7@gmail.com
+License: MIT License
+Description: django-slack-notifications
+        ==========================
+        
+        **Extremely simple and easy slack integration with django.**
+        
+        Overview
+        ========
+        
+        Requirements
+        ============
+        
+        -  Python (3.3+)
+        -  Django (1.7, 1.8, 1.9)
+        -  Slack Webhook Url: https://api.slack.com/custom-integrations
+        
+        Installation
+        ============
+        
+        Install using ``pip``
+        
+        ::
+        
+            pip install django-slack-notifications
+        
+        Add ``django-slack-notifications`` to your ``INSTALLED_APPS`` setting.
+        
+        ::
+        
+            INSTALLED_APPS = (
+                ...
+                'django-slack-notifications',
+            )
+        
+        Add ``SLACK_NOTIFICATIONS`` to your ``settings.py``
+        
+        ::
+        
+            SLACK_NOTIFICATIONS = {
+                'WEBHOOK_URL': '{your slack webhook url}'
+                'CHANNEL': '{default slack channel that you want to send message.}',
+                'USERNAME': '{default message sender name}',
+                'ICON_EMOJI': '{default sender emoticon}',
+            }
+        
+        ``WEBHOOK URL`` is required. You can get your webhook url from slack.
+        See https://api.slack.com/custom-integrations
+        
+        ``CHANNEL``, ``USERNAME``, ``ICON_EMOJI`` is optional parameters. If
+        default value is set, you don't need to pass parameter to your
+        ``send_message`` method. See below.
+        
+        Usage
+        =====
+        
+        In your python code,
+        
+        ::
+        
+            from django-slack-notifications.utils import send_message
+        
+            send_message(channel='#general', username='test', text="Hi, I'm a test message.")
+        
+        ``send_message`` returns default slack response. If succeed, it returns
+        200.
+        
+        If you set default values ``CHANNEL``, ``USERNAME``, you can call
+        ``send_message`` like...
+        
+        ::
+        
+            from django-slack-notifications.utils import send_message
+        
+            send_message(text="Hi, I'm a test message.")
+        
+        ``channel`` and ``username`` is set default value that you defined in
+        ``settings.py``
+        
+        if ``ICON_EMOJI`` is not set, it uses default slack webhook integrations
+        settings that you've defined at
+        https://prnd.slack.com/apps/manage/custom-integrations
+        
+Platform: UNKNOWN
+Classifier: Environment :: Web Environment
+Classifier: Framework :: Django
+Classifier: Framework :: Django :: 1.9
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.4
+Classifier: Programming Language :: Python :: 3.5
+Classifier: Topic :: Internet :: WWW/HTTP
+Classifier: Topic :: Internet :: WWW/HTTP :: Dynamic Content
