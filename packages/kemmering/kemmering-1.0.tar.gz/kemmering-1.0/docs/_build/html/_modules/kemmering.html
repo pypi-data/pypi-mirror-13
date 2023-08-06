@@ -1,0 +1,562 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>kemmering &mdash; kemmering 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/pylons.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="kemmering 1.0 documentation" href="../index.html" />
+    <link rel="up" title="Module code" href="index.html" />
+<link rel="stylesheet" href="http://static.pylonsproject.org/fonts/nobile/stylesheet.css" type="text/css" media="screen" charset="utf-8" />
+<link rel="stylesheet" href="http://static.pylonsproject.org/fonts/neuton/stylesheet.css" type="text/css" media="screen" charset="utf-8" />
+<!--[if lte IE 6]>
+<link rel="stylesheet" href="../_static/ie6.css" type="text/css" media="screen" charset="utf-8" />
+<![endif]-->
+<link rel="shortcut icon" href="../_static/pylons.ico"/>
+
+  </head>
+  <body role="document">
+
+
+
+
+
+
+
+<div class="header-small">
+	
+	<div class="logo-small">
+		<a href="../index.html">
+      		<img class="logo" src="../_static/pylons-small.png" alt="Logo"/>
+		</a>
+  	</div>
+</div>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+    	<li><a href="../index.html">kemmering 1.0 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for kemmering</h1><div class="highlight"><pre>
+<span class="kn">import</span> <span class="nn">sys</span>
+
+<span class="n">PY2</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">version_info</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">2</span>
+<span class="n">strbase</span> <span class="o">=</span> <span class="nb">basestring</span> <span class="k">if</span> <span class="n">PY2</span> <span class="k">else</span> <span class="nb">str</span>  <span class="c1"># nopep8</span>
+<span class="n">strclass</span> <span class="o">=</span> <span class="nb">unicode</span> <span class="k">if</span> <span class="n">PY2</span> <span class="k">else</span> <span class="nb">str</span>    <span class="c1"># nopep8</span>
+
+
+<div class="viewcode-block" id="tag"><a class="viewcode-back" href="../api.html#kemmering.tag">[docs]</a><span class="k">class</span> <span class="nc">tag</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    An XML tag.</span>
+
+<span class="sd">    `tag` is the name of the tag.  Add a trailing forward slash (`/`) character</span>
+<span class="sd">    to create a self-closing tag.  `attrs` are the attributes for tag.  The tag</span>
+<span class="sd">    itself is callable.  Call the tag to add children.</span>
+
+<span class="sd">    .. doctest:: api-tag</span>
+
+<span class="sd">       &gt;&gt;&gt; from kemmering import tag</span>
+<span class="sd">       &gt;&gt;&gt; str(tag(&#39;a&#39;, b=&#39;c&#39;)(&#39;d&#39;))</span>
+<span class="sd">       &#39;&lt;a b=&quot;c&quot;&gt;d&lt;/a&gt;&#39;</span>
+<span class="sd">       &gt;&gt;&gt; str(tag(&#39;e/&#39;))</span>
+<span class="sd">       &#39;&lt;e/&gt;&#39;</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">self_closing</span> <span class="o">=</span> <span class="bp">False</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tag</span><span class="p">,</span> <span class="o">**</span><span class="n">attrs</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_init</span><span class="p">(</span><span class="n">tag</span><span class="p">,</span> <span class="n">attrs</span><span class="p">,</span> <span class="p">())</span>
+
+    <span class="k">def</span> <span class="nf">_init</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tag</span><span class="p">,</span> <span class="n">attrs</span><span class="p">,</span> <span class="n">children</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">tag</span> <span class="ow">and</span> <span class="n">tag</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">self_closing</span> <span class="o">=</span> <span class="bp">True</span>
+            <span class="n">tag</span> <span class="o">=</span> <span class="n">tag</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tag</span> <span class="o">=</span> <span class="n">tag</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">attrs</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">attrs</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+                      <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">children</span> <span class="o">=</span> <span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_extend</span><span class="p">(</span><span class="o">*</span><span class="n">children</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_extend</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">children</span><span class="p">):</span>
+        <span class="k">def</span> <span class="nf">mkchild</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">strbase</span><span class="p">):</span>
+                <span class="n">x</span> <span class="o">=</span> <span class="n">text</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+            <span class="n">x</span><span class="o">.</span><span class="n">parent</span> <span class="o">=</span> <span class="bp">self</span>
+            <span class="k">return</span> <span class="n">x</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">children</span> <span class="o">+=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">mkchild</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">children</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="n">__call__</span> <span class="o">=</span> <span class="n">_extend</span>
+
+    <span class="k">def</span> <span class="nf">_bind</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+        <span class="n">attrs</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">bind</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">context</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+        <span class="n">children</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">bind</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">context</span><span class="p">)</span> <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">children</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_copy</span><span class="p">(</span><span class="n">attrs</span><span class="p">,</span> <span class="n">children</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_copy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attrs</span><span class="p">,</span> <span class="n">children</span><span class="p">):</span>
+        <span class="n">cls</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="n">obj</span> <span class="o">=</span> <span class="n">cls</span><span class="o">.</span><span class="n">__new__</span><span class="p">(</span><span class="n">cls</span><span class="p">)</span>
+        <span class="n">obj</span><span class="o">.</span><span class="n">_init</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tag</span><span class="p">,</span> <span class="n">attrs</span><span class="p">,</span> <span class="n">children</span><span class="p">)</span>
+        <span class="n">obj</span><span class="o">.</span><span class="n">self_closing</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">self_closing</span>
+        <span class="k">return</span> <span class="n">obj</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_stream</span><span class="p">())</span>
+
+    <span class="n">__unicode__</span> <span class="o">=</span> <span class="n">__str__</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">attrs</span><span class="p">:</span>
+            <span class="n">attrs</span> <span class="o">=</span> <span class="s1">&#39;, &#39;</span> <span class="o">+</span> <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                <span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">=</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="nb">repr</span><span class="p">(</span><span class="n">v</span><span class="p">))</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">attrs</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">self_closing</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">children</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s1">&#39;tag({}{})&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tag</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span><span class="p">),</span> <span class="n">attrs</span><span class="p">)</span>
+
+        <span class="n">children</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;(</span><span class="si">%s</span><span class="s1">)&#39;</span> <span class="o">%</span> <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">repr</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">children</span><span class="p">))</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">children</span> <span class="k">else</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">tag</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s1">&#39;tag(</span><span class="si">%s%s</span><span class="s1">)</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tag</span><span class="p">),</span> <span class="n">attrs</span><span class="p">,</span> <span class="n">children</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s1">&#39;notag{}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">children</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_stream</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">attrs</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+        <span class="k">if</span> <span class="n">attrs</span><span class="p">:</span>
+            <span class="n">attrs</span> <span class="o">=</span> <span class="s1">&#39; &#39;</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                <span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">=&quot;</span><span class="si">%s</span><span class="s1">&quot;&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">k</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">),</span> <span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">attrs</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">attrs</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">self_closing</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">children</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="s1">&#39;&lt;</span><span class="si">%s%s</span><span class="s1">/&gt;&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tag</span><span class="p">,</span> <span class="n">attrs</span><span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">tag</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="s1">&#39;&lt;</span><span class="si">%s%s</span><span class="s1">&gt;&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tag</span><span class="p">,</span> <span class="n">attrs</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">children</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">child</span><span class="o">.</span><span class="n">_stream</span><span class="p">():</span>
+                <span class="k">yield</span> <span class="n">x</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">tag</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="s1">&#39;&lt;/</span><span class="si">%s</span><span class="s1">&gt;&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">tag</span></div>
+
+
+<div class="viewcode-block" id="notag"><a class="viewcode-back" href="../api.html#kemmering.notag">[docs]</a><span class="k">class</span> <span class="nc">notag</span><span class="p">(</span><span class="n">tag</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Used to represent a set of sibling elements with no enclosing parent tag.</span>
+
+<span class="sd">    `children` is a sequence of elements.</span>
+
+<span class="sd">    `notag` is particularly useful with `defer` and any of the template</span>
+<span class="sd">    helpers which are based on `defer`.</span>
+
+<span class="sd">    .. doctest:: api-notag</span>
+
+<span class="sd">       &gt;&gt;&gt; from kemmering import notag, tag</span>
+<span class="sd">       &gt;&gt;&gt; str(tag(&#39;a&#39;)(</span>
+<span class="sd">       ...   tag(&#39;b/&#39;),</span>
+<span class="sd">       ...   notag(</span>
+<span class="sd">       ...      tag(&#39;c/&#39;),</span>
+<span class="sd">       ...      tag(&#39;d/&#39;)</span>
+<span class="sd">       ...   )</span>
+<span class="sd">       ... ))</span>
+<span class="sd">       &#39;&lt;a&gt;&lt;b/&gt;&lt;c/&gt;&lt;d/&gt;&lt;/a&gt;&#39;</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">children</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">notag</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">(</span><span class="o">*</span><span class="n">children</span><span class="p">)</span></div>
+
+
+<span class="n">_nothing</span> <span class="o">=</span> <span class="n">notag</span><span class="p">()</span>
+
+
+<span class="k">class</span> <span class="nc">text</span><span class="p">(</span><span class="n">strclass</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">_stream</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">yield</span> <span class="bp">self</span>
+
+
+<div class="viewcode-block" id="bind"><a class="viewcode-back" href="../api.html#kemmering.bind">[docs]</a><span class="k">def</span> <span class="nf">bind</span><span class="p">(</span><span class="n">template</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Realize a template by binding it to a context.</span>
+
+<span class="sd">    `template` is a `tag` instance which should contain some instances of</span>
+<span class="sd">    `defer` in its structure.  `context` is the context object that is passed</span>
+<span class="sd">    to deferred functions in the template.  Most template helpers assume the</span>
+<span class="sd">    context is a dictionary.</span>
+
+<span class="sd">    Returns new `tag` instance that is a copy of the template with any</span>
+<span class="sd">    deferred elements replaced by the return values of their deferred</span>
+<span class="sd">    functions.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">template</span><span class="p">,</span> <span class="s1">&#39;_bind&#39;</span><span class="p">):</span>
+        <span class="n">template</span> <span class="o">=</span> <span class="n">template</span><span class="o">.</span><span class="n">_bind</span><span class="p">(</span><span class="n">context</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">template</span></div>
+
+
+<div class="viewcode-block" id="defer"><a class="viewcode-back" href="../api.html#kemmering.defer">[docs]</a><span class="k">class</span> <span class="nc">defer</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Defer the realization of a part of a template until a later time.</span>
+
+<span class="sd">    Use of a deferred function in a snippet comprised of `tag` objects, turns</span>
+<span class="sd">    that snippet into a template.  That template is said to be realized when</span>
+<span class="sd">    `bind` is called on the snippet, which generates a concrete snippet based</span>
+<span class="sd">    on the template and a context passed in via `bind`.</span>
+
+<span class="sd">    `f` is a function with the signature:</span>
+
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">       def deferred(context):</span>
+<span class="sd">           &quot;Return a `tag`, `notag`, or string.&quot;</span>
+
+<span class="sd">    The function will be called at realization time when `bind` is called on</span>
+<span class="sd">    the containing snippet and passed the context object.  Most template</span>
+<span class="sd">    helpers assume the context is a dictionary.</span>
+
+<span class="sd">    Instances of `defer` may be used as children of `tag` objects or as values</span>
+<span class="sd">    of tag atrributes.  When used as a child of a tag, the return value should</span>
+<span class="sd">    be either another `tag` instance or a string for a text element.  When used</span>
+<span class="sd">    as an attribute value, the return value should be a string or `None`.</span>
+<span class="sd">    Setting an attribute to `None` causes it to be omitted from the realized</span>
+<span class="sd">    template.</span>
+
+<span class="sd">    Most use cases for `defer` are actually covered by more specific helpers</span>
+<span class="sd">    based on `defer`, described below.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">f</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">f</span> <span class="o">=</span> <span class="n">f</span>
+
+    <span class="k">def</span> <span class="nf">_bind</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">bind</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">f</span><span class="p">(</span><span class="n">context</span><span class="p">),</span> <span class="n">context</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_stream</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Unbound defer, unable to stream.&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s1">&#39;{}({})&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__name__</span><span class="p">,</span>
+            <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">f</span><span class="p">,</span> <span class="s1">&#39;__name__&#39;</span><span class="p">,</span> <span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">f</span><span class="p">)))</span></div>
+
+
+<div class="viewcode-block" id="from_context"><a class="viewcode-back" href="../api.html#kemmering.from_context">[docs]</a><span class="k">class</span> <span class="nc">from_context</span><span class="p">(</span><span class="n">defer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This specialization of `defer` simply returns a value from the bind</span>
+<span class="sd">    context.</span>
+
+<span class="sd">    `key` is the name to look up in the bind context dictionary.  Whatever is</span>
+<span class="sd">    the value in the bind context is returned.  If `default` is specified and</span>
+<span class="sd">    `key` is not found in the bind context, `default` is returned instead.</span>
+
+<span class="sd">    .. doctest:: api-from_context</span>
+
+<span class="sd">       &gt;&gt;&gt; from kemmering import bind, from_context, tag</span>
+<span class="sd">       &gt;&gt;&gt; template = tag(&#39;a&#39;)(from_context(&#39;b&#39;, &#39;c&#39;))</span>
+<span class="sd">       &gt;&gt;&gt; str(bind(template, {&#39;b&#39;: &#39;d&#39;}))</span>
+<span class="sd">       &#39;&lt;a&gt;d&lt;/a&gt;&#39;</span>
+<span class="sd">       &gt;&gt;&gt; str(bind(template, {}))</span>
+<span class="sd">       &#39;&lt;a&gt;c&lt;/a&gt;&#39;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">_nothing</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">key</span> <span class="o">=</span> <span class="n">key</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">default</span> <span class="o">=</span> <span class="n">default</span>
+
+    <span class="k">def</span> <span class="nf">_bind</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">key</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">default</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="n">_nothing</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">key</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">bind</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">context</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s1">&#39;{}({})&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__name__</span><span class="p">,</span> <span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">key</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="in_context"><a class="viewcode-back" href="../api.html#kemmering.in_context">[docs]</a><span class="k">class</span> <span class="nc">in_context</span><span class="p">(</span><span class="n">defer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This specialization of `defer` looks up a value in the bind context by</span>
+<span class="sd">    traversing the context using a sequence of keys where the bind context is</span>
+<span class="sd">    presumed to be a structure of nested dictionaries.</span>
+
+<span class="sd">    `keys` is a sequence of names to look up, in order, in the bind context.</span>
+<span class="sd">    If `default` is specified and a value is not found in the bind context for</span>
+<span class="sd">    the given keys, `default` is returned instead.</span>
+
+<span class="sd">    .. doctest:: api-in_context</span>
+
+<span class="sd">       &gt;&gt;&gt; from kemmering import bind, in_context, tag</span>
+<span class="sd">       &gt;&gt;&gt; template = tag(&#39;a&#39;)(in_context([&#39;b&#39;, &#39;c&#39;], &#39;d&#39;))</span>
+<span class="sd">       &gt;&gt;&gt; str(bind(template, {&#39;b&#39;: {&#39;c&#39;: &#39;e&#39;}}))</span>
+<span class="sd">       &#39;&lt;a&gt;e&lt;/a&gt;&#39;</span>
+<span class="sd">       &gt;&gt;&gt; str(bind(template, {}))</span>
+<span class="sd">       &#39;&lt;a&gt;d&lt;/a&gt;&#39;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">keys</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">_nothing</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">keys</span> <span class="o">=</span> <span class="n">keys</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">default</span> <span class="o">=</span> <span class="n">default</span>
+
+    <span class="k">def</span> <span class="nf">_bind</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="n">context</span>
+        <span class="n">keys</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">keys</span>
+        <span class="k">while</span> <span class="n">keys</span><span class="p">:</span>
+            <span class="n">key</span> <span class="o">=</span> <span class="n">keys</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">keys</span> <span class="o">=</span> <span class="n">keys</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">_nothing</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="n">_nothing</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">default</span> <span class="ow">is</span> <span class="n">_nothing</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">keys</span><span class="p">)</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">default</span>
+        <span class="k">return</span> <span class="n">bind</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">context</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s1">&#39;{}({})&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__name__</span><span class="p">,</span> <span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">keys</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="format_context"><a class="viewcode-back" href="../api.html#kemmering.format_context">[docs]</a><span class="k">class</span> <span class="nc">format_context</span><span class="p">(</span><span class="n">defer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This specialization of `defer` uses the bind context to perform Python</span>
+<span class="sd">    string formatting on a format string.</span>
+
+<span class="sd">    `s` is the format string.  The return value is the equivalent of</span>
+<span class="sd">    `s.format(**context)`.</span>
+
+<span class="sd">    .. doctest:: api-format_context</span>
+
+<span class="sd">       &gt;&gt;&gt; from kemmering import bind, format_context, tag</span>
+<span class="sd">       &gt;&gt;&gt; template = tag(&#39;a&#39;)(format_context(&#39;{b} {c}&#39;))</span>
+<span class="sd">       &gt;&gt;&gt; str(bind(template, {&#39;b&#39;: &#39;d&#39;, &#39;c&#39;: &#39;e&#39;}))</span>
+<span class="sd">       &#39;&lt;a&gt;d e&lt;/a&gt;&#39;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">s</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">s</span> <span class="o">=</span> <span class="n">s</span>
+
+    <span class="k">def</span> <span class="nf">_bind</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">s</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">**</span><span class="n">context</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s1">&#39;{}({})&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__name__</span><span class="p">,</span> <span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">s</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="cond"><a class="viewcode-back" href="../api.html#kemmering.cond">[docs]</a><span class="k">class</span> <span class="nc">cond</span><span class="p">(</span><span class="n">defer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This specialization of `defer` conditionally includes an element based</span>
+<span class="sd">    on the bind context.</span>
+
+<span class="sd">    `condition` is a function which accepts a single argument, `context` and</span>
+<span class="sd">    returns a boolean.  `condition` may optionally be a string, in which case</span>
+<span class="sd">    it is used as a key for performing a dictionary lookup in the bind context,</span>
+<span class="sd">    the value of which will be treated as a boolean.</span>
+
+<span class="sd">    `affirmative` is the return value if the condition is `True`.  `negative`</span>
+<span class="sd">    is the return value of the condition is `False`.  If the condition is</span>
+<span class="sd">    `False` and no `negative` value is given, this element is elided from the</span>
+<span class="sd">    realized snippet.</span>
+
+<span class="sd">    .. doctest:: api-cond</span>
+
+<span class="sd">       &gt;&gt;&gt; from kemmering import bind, cond, tag</span>
+<span class="sd">       &gt;&gt;&gt; def has_b(context):</span>
+<span class="sd">       ...     return &#39;b&#39; in context</span>
+<span class="sd">       &gt;&gt;&gt; template = tag(&#39;a&#39;)(cond(has_b, &#39;b&#39;))</span>
+<span class="sd">       &gt;&gt;&gt; str(bind(template, {&#39;b&#39;: &#39;&#39;}))</span>
+<span class="sd">       &#39;&lt;a&gt;b&lt;/a&gt;&#39;</span>
+<span class="sd">       &gt;&gt;&gt; str(bind(template, {}))</span>
+<span class="sd">       &#39;&lt;a&gt;&lt;/a&gt;&#39;</span>
+<span class="sd">       &gt;&gt;&gt; template = tag(&#39;a&#39;)(cond(&#39;b&#39;, &#39;c&#39;, &#39;d&#39;))</span>
+<span class="sd">       &gt;&gt;&gt; str(bind(template, {&#39;b&#39;: True}))</span>
+<span class="sd">       &#39;&lt;a&gt;c&lt;/a&gt;&#39;</span>
+<span class="sd">       &gt;&gt;&gt; str(bind(template, {}))</span>
+<span class="sd">       &#39;&lt;a&gt;d&lt;/a&gt;&#39;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">condition</span><span class="p">,</span> <span class="n">affirmative</span><span class="p">,</span> <span class="n">negative</span><span class="o">=</span><span class="n">_nothing</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cond</span> <span class="o">=</span> <span class="n">condition</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">yes</span> <span class="o">=</span> <span class="n">affirmative</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">no</span> <span class="o">=</span> <span class="n">negative</span>
+
+    <span class="k">def</span> <span class="nf">_bind</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+        <span class="n">cond</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cond</span>
+        <span class="n">cond</span> <span class="o">=</span> <span class="n">cond</span><span class="p">(</span><span class="n">context</span><span class="p">)</span> <span class="k">if</span> <span class="nb">callable</span><span class="p">(</span><span class="n">cond</span><span class="p">)</span> <span class="k">else</span> <span class="n">context</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">cond</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">bind</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">yes</span><span class="p">,</span> <span class="n">context</span><span class="p">)</span> <span class="k">if</span> <span class="n">cond</span> <span class="k">else</span> <span class="n">bind</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">no</span><span class="p">,</span> <span class="n">context</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s1">&#39;{}({}, {}{})&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__name__</span><span class="p">,</span>
+            <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cond</span><span class="p">,</span> <span class="s1">&#39;__name__&#39;</span><span class="p">,</span> <span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cond</span><span class="p">)),</span>
+            <span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">yes</span><span class="p">),</span>
+            <span class="s1">&#39;&#39;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">no</span> <span class="ow">is</span> <span class="n">_nothing</span> <span class="k">else</span>
+            <span class="s1">&#39;, {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">no</span><span class="p">))</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="loop"><a class="viewcode-back" href="../api.html#kemmering.loop">[docs]</a><span class="k">class</span> <span class="nc">loop</span><span class="p">(</span><span class="n">defer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This specialization of `defer` repeats a snippet while iterating over a</span>
+<span class="sd">    sequence.</span>
+
+<span class="sd">    `key` is the name of a key that will be added to the context on each</span>
+<span class="sd">    iteration whose value is the current item in the sequence. This makes the</span>
+<span class="sd">    current item available to deferred functions in the repeated snippet. `key`</span>
+<span class="sd">    may optionally be a `list` or `tuple` of string key names, in which case</span>
+<span class="sd">    the sequence values, which should be sequences of equal length, will be</span>
+<span class="sd">    unpacked into those keys.</span>
+
+<span class="sd">    `seq` is a function which accepts a single argument, `context`, and returns</span>
+<span class="sd">    an iterable sequence.  Alternatively, `seq` can be the name of a key in the</span>
+<span class="sd">    current context whose value is an iterable sequence.</span>
+
+<span class="sd">    `template` is the snippet to be repeated.</span>
+
+<span class="sd">    .. doctest:: api-loop</span>
+
+<span class="sd">       &gt;&gt;&gt; from kemmering import bind, from_context, loop, tag</span>
+<span class="sd">       &gt;&gt;&gt; def fruits(context):</span>
+<span class="sd">       ...     return [&#39;apple&#39;, &#39;pear&#39;, &#39;banana&#39;]</span>
+<span class="sd">       &gt;&gt;&gt; template = tag(&#39;ul&#39;)(</span>
+<span class="sd">       ...     loop(&#39;fruit&#39;, fruits, tag(&#39;li&#39;)(from_context(&#39;fruit&#39;))))</span>
+<span class="sd">       &gt;&gt;&gt; str(bind(template, {&#39;fruit&#39;: &#39;hamburger&#39;}))</span>
+<span class="sd">       &#39;&lt;ul&gt;&lt;li&gt;apple&lt;/li&gt;&lt;li&gt;pear&lt;/li&gt;&lt;li&gt;banana&lt;/li&gt;&lt;/ul&gt;&#39;</span>
+<span class="sd">       &gt;&gt;&gt; template = tag(&#39;ul&#39;)(</span>
+<span class="sd">       ...     loop(&#39;fruit&#39;, &#39;fruits&#39;, tag(&#39;li&#39;)(from_context(&#39;fruit&#39;))))</span>
+<span class="sd">       &gt;&gt;&gt; str(bind(template, {&#39;fruits&#39;: [&#39;apple&#39;, &#39;pear&#39;, &#39;banana&#39;]}))</span>
+<span class="sd">       &#39;&lt;ul&gt;&lt;li&gt;apple&lt;/li&gt;&lt;li&gt;pear&lt;/li&gt;&lt;li&gt;banana&lt;/li&gt;&lt;/ul&gt;&#39;</span>
+
+<span class="sd">    And an example which uses unpacking:</span>
+
+<span class="sd">    .. doctest:: api-loop</span>
+
+<span class="sd">       &gt;&gt;&gt; from kemmering import cond</span>
+<span class="sd">       &gt;&gt;&gt; from kemmering.html import pretty</span>
+<span class="sd">       &gt;&gt;&gt; def fruits(context):</span>
+<span class="sd">       ...     return enumerate([&#39;apple&#39;, &#39;pear&#39;, &#39;banana&#39;])</span>
+<span class="sd">       &gt;&gt;&gt; def is_even(context):</span>
+<span class="sd">       ...     return context[&#39;i&#39;] % 2 == 0</span>
+<span class="sd">       &gt;&gt;&gt; template = tag(&#39;ul&#39;)(</span>
+<span class="sd">       ...     loop((&#39;i&#39;, &#39;fruit&#39;), fruits,</span>
+<span class="sd">       ...         tag(&#39;li&#39;, class_=cond(is_even, &#39;even&#39;, &#39;odd&#39;))(</span>
+<span class="sd">       ...             from_context(&#39;fruit&#39;))))</span>
+<span class="sd">       &gt;&gt;&gt; print(pretty(bind(template, {})))</span>
+<span class="sd">       &lt;ul&gt;</span>
+<span class="sd">         &lt;li class=&quot;even&quot;&gt;apple&lt;/li&gt;</span>
+<span class="sd">         &lt;li class=&quot;odd&quot;&gt;pear&lt;/li&gt;</span>
+<span class="sd">         &lt;li class=&quot;even&quot;&gt;banana&lt;/li&gt;</span>
+<span class="sd">       &lt;/ul&gt;</span>
+<span class="sd">       &lt;BLANKLINE&gt;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">seq</span><span class="p">,</span> <span class="n">template</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">key</span> <span class="o">=</span> <span class="n">key</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">seq</span> <span class="o">=</span> <span class="n">seq</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">template</span> <span class="o">=</span> <span class="n">template</span>
+
+    <span class="k">def</span> <span class="nf">_bind</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+        <span class="k">def</span> <span class="nf">subcontext</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+            <span class="n">sub</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">key</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
+                <span class="n">_check_unpack</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">key</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">value</span><span class="p">))</span>
+                <span class="n">sub</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)})</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">sub</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+            <span class="k">return</span> <span class="n">sub</span>
+
+        <span class="n">seq</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">seq</span><span class="p">(</span><span class="n">context</span><span class="p">)</span> <span class="k">if</span> <span class="nb">callable</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">seq</span><span class="p">)</span> <span class="k">else</span> <span class="n">context</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">seq</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">notag</span><span class="p">(</span><span class="o">*</span><span class="p">(</span>
+            <span class="n">bind</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">template</span><span class="p">,</span> <span class="n">subcontext</span><span class="p">(</span><span class="n">value</span><span class="p">))</span>
+            <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">seq</span>
+        <span class="p">))</span></div>
+
+
+<span class="k">def</span> <span class="nf">_check_unpack</span><span class="p">(</span><span class="n">expected</span><span class="p">,</span> <span class="n">got</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">got</span> <span class="o">&lt;</span> <span class="n">expected</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s1">&#39;not enough values to unpack (expected {},  got {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">expected</span><span class="p">,</span> <span class="n">got</span><span class="p">))</span>
+    <span class="k">elif</span> <span class="n">got</span> <span class="o">&gt;</span> <span class="n">expected</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s1">&#39;too many values to unpack (expected {})&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">expected</span><span class="p">))</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+    	<li><a href="../index.html">kemmering 1.0 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2016, Chris Rossi &lt;chris@archimedeanco.com&gt;.
+      Last updated on Feb 06, 2016.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.5.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,527 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Kemmering &mdash; kemmering 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/pylons.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="kemmering 1.0 documentation" href="#" />
+    <link rel="next" title="kemmering API" href="api.html" />
+<link rel="stylesheet" href="http://static.pylonsproject.org/fonts/nobile/stylesheet.css" type="text/css" media="screen" charset="utf-8" />
+<link rel="stylesheet" href="http://static.pylonsproject.org/fonts/neuton/stylesheet.css" type="text/css" media="screen" charset="utf-8" />
+<!--[if lte IE 6]>
+<link rel="stylesheet" href="_static/ie6.css" type="text/css" media="screen" charset="utf-8" />
+<![endif]-->
+<link rel="shortcut icon" href="_static/pylons.ico"/>
+
+  </head>
+  <body role="document">
+
+
+
+
+
+
+
+<div class="header-small">
+	
+	<div class="logo-small">
+		<a href="#">
+      		<img class="logo" src="_static/pylons-small.png" alt="Logo"/>
+		</a>
+  	</div>
+</div>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="api.html" title="kemmering API"
+             accesskey="N">next</a> |</li>
+    	<li><a href="#">kemmering 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="kemmering">
+<h1>Kemmering<a class="headerlink" href="#kemmering" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="overview">
+<span id="id1"></span><h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
+<p><cite>Kemmering</cite> is a lightweight library for producing XML and HTML5 snippets in
+Python code with a minimum of fuss and bother.   The snippets can be templated,
+or not.  <cite>Kemmering</cite> is not an XML parser, doesn&#8217;t know anything about SAX,
+DOM, XPATH, or namespaces, and generally doesn&#8217;t try to think too hard about
+what an XML document is in the abstract.</p>
+<p><cite>Kemmering</cite> isn&#8217;t intended as a wholesale replacement for template languages.
+If you&#8217;re editing a whole page of HTML, you may as well edit it as HTML, not
+Python code.  <cite>Kemmering</cite> is intended to make it easy to produce little bits of
+HTML or other XMLish markup and glue them together in convenient ways.  Imagine
+you&#8217;re writing a form library, for instance, that involves a lot of little
+snippets of HTML that get composed together to make a form.  You could have
+each widget in a separate template file, with dozens of files each containing
+a few lines of markup.  Or you could put your widgets in a single Python file,
+which may be more convenient.</p>
+<p>One thing I recently used this for was producing SVG from a completely
+different drawing format.  This would have been a pain in the neck using a
+template language, but was pretty straightforward using <cite>Kemmer</cite> and a
+functional programming style.</p>
+<p>Maybe you&#8217;ll find this useful.  YMMV, y&#8217;all.</p>
+</div>
+<div class="section" id="installation">
+<span id="id2"></span><h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
+<p>Install using setuptools, e.g. (within a virtualenv):</p>
+<div class="highlight-python"><div class="highlight"><pre>$ $VENV/bin/pip install kemmering
+</pre></div>
+</div>
+</div>
+<div class="section" id="tags">
+<h2>Tags<a class="headerlink" href="#tags" title="Permalink to this headline">¶</a></h2>
+<p>The heart and soul of <cite>Kemmering</cite> is the <a class="reference internal" href="api.html#kemmering.tag" title="kemmering.tag"><code class="xref py py-class docutils literal"><span class="pre">tag</span></code></a> class:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">kemmering</span> <span class="kn">import</span> <span class="n">tag</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">hello_world</span> <span class="o">=</span> <span class="n">tag</span><span class="p">(</span><span class="s1">&#39;hello&#39;</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="s1">&#39;salutation&#39;</span><span class="p">)(</span><span class="s1">&#39;world&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">str</span><span class="p">(</span><span class="n">hello_world</span><span class="p">)</span>
+<span class="go">&#39;&lt;hello id=&quot;salutation&quot;&gt;world&lt;/hello&gt;&#39;</span>
+</pre></div>
+</div>
+<p>In a nutshell, the first and only positional argument is the name of the tag,
+any keyword arguments are attributes, and calling the result adds children,
+where children can be more tags or text elements.  Use <cite>str</cite> to realize a
+snippet as a string.</p>
+<p>Appending a forward slash (<cite>/</cite>) character to the end of the tag name creates a
+self-closing tag.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">kemmering</span> <span class="kn">import</span> <span class="n">tag</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">str</span><span class="p">(</span><span class="n">tag</span><span class="p">(</span><span class="s1">&#39;hello/&#39;</span><span class="p">))</span>
+<span class="go">&#39;&lt;hello/&gt;&#39;</span>
+</pre></div>
+</div>
+<p>If you are still using Python 2, you&#8217;ll want to use <cite>unicode</cite> instead of <cite>str</cite>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">kemmering</span> <span class="kn">import</span> <span class="n">tag</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">hello_world</span> <span class="o">=</span> <span class="n">tag</span><span class="p">(</span><span class="s1">&#39;hello&#39;</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="s1">&#39;salutation&#39;</span><span class="p">)(</span><span class="s1">&#39;world&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">unicode</span><span class="p">(</span><span class="n">hello_world</span><span class="p">)</span>
+<span class="go">u&#39;&lt;hello id=&quot;salutation&quot;&gt;world&lt;/hello&gt;&#39;</span>
+</pre></div>
+</div>
+<p>A tag may be called more than once to add children to it:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">kemmering</span> <span class="kn">import</span> <span class="n">tag</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ul</span> <span class="o">=</span> <span class="n">tag</span><span class="p">(</span><span class="s1">&#39;ul&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ul</span><span class="p">(</span><span class="n">tag</span><span class="p">(</span><span class="s1">&#39;li&#39;</span><span class="p">)(</span><span class="s1">&#39;one&#39;</span><span class="p">))</span>
+<span class="go">tag(&#39;ul&#39;)(tag(&#39;li&#39;)(&#39;one&#39;))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ul</span><span class="p">(</span><span class="n">tag</span><span class="p">(</span><span class="s1">&#39;li&#39;</span><span class="p">)(</span><span class="s1">&#39;two&#39;</span><span class="p">))</span>
+<span class="go">tag(&#39;ul&#39;)(tag(&#39;li&#39;)(&#39;one&#39;), tag(&#39;li&#39;)(&#39;two&#39;))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">str</span><span class="p">(</span><span class="n">ul</span><span class="p">)</span>
+<span class="go">&#39;&lt;ul&gt;&lt;li&gt;one&lt;/li&gt;&lt;li&gt;two&lt;/li&gt;&lt;/ul&gt;&#39;</span>
+</pre></div>
+</div>
+<div class="section" id="partial-pattern">
+<h3>Partial Pattern<a class="headerlink" href="#partial-pattern" title="Permalink to this headline">¶</a></h3>
+<p>A pattern some might find useful is to use partials to create tag-specific
+callables. For example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">kemmering</span> <span class="kn">import</span> <span class="n">tag</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">div</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">tag</span><span class="p">,</span> <span class="s1">&#39;div&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">str</span><span class="p">(</span><span class="n">div</span><span class="p">()(</span><span class="s1">&#39;Hello World!&#39;</span><span class="p">))</span>
+<span class="go">&#39;&lt;div&gt;Hello World!&lt;/div&gt;&#39;</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="html-tags">
+<h3>HTML Tags<a class="headerlink" href="#html-tags" title="Permalink to this headline">¶</a></h3>
+<p>The partial pattern is the basic strategy used by the vast majority of the
+<a class="reference internal" href="api.html#module-kemmering.html" title="kemmering.html"><code class="xref py py-mod docutils literal"><span class="pre">kemmering.html</span></code></a> package, which contains all valid HTML5 tags.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">kemmering</span> <span class="kn">import</span> <span class="n">html</span> <span class="k">as</span> <span class="n">h</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">snippet</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">dl</span><span class="p">(</span><span class="n">class_</span><span class="o">=</span><span class="s1">&#39;fruits&#39;</span><span class="p">)(</span>
+<span class="gp">... </span>    <span class="n">h</span><span class="o">.</span><span class="n">dt</span><span class="p">()(</span><span class="s1">&#39;Pomegranate&#39;</span><span class="p">),</span>
+<span class="gp">... </span>    <span class="n">h</span><span class="o">.</span><span class="n">dd</span><span class="p">()(</span><span class="s1">&#39;It has &#39;</span><span class="p">,</span> <span class="n">h</span><span class="o">.</span><span class="n">em</span><span class="p">()(</span><span class="s1">&#39;lots&#39;</span><span class="p">),</span> <span class="s1">&#39; of seeds!&#39;</span><span class="p">),</span>
+<span class="gp">... </span>    <span class="n">h</span><span class="o">.</span><span class="n">dt</span><span class="p">()(</span><span class="s1">&#39;Kiwi&#39;</span><span class="p">),</span>
+<span class="gp">... </span>    <span class="n">h</span><span class="o">.</span><span class="n">dd</span><span class="p">()(</span><span class="s1">&#39;It tastes like strawberry.&#39;</span><span class="p">),</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">str</span><span class="p">(</span><span class="n">snippet</span><span class="p">)</span>
+<span class="go">&#39;&lt;dl class=&quot;fruits&quot;&gt;&lt;dt&gt;Pomegranate&lt;/dt&gt;&lt;dd&gt;It has &lt;em&gt;lots&lt;/em&gt; of seeds!&lt;/dd&gt;&lt;dt&gt;Kiwi&lt;/dt&gt;&lt;dd&gt;It tastes like strawberry.&lt;/dd&gt;&lt;/dl&gt;&#39;</span>
+</pre></div>
+</div>
+<p>Two tags, <a class="reference internal" href="api.html#kemmering.html.doc" title="kemmering.html.doc"><code class="xref py py-class docutils literal"><span class="pre">doc</span></code></a> and
+<a class="reference internal" href="api.html#kemmering.html.style" title="kemmering.html.style"><code class="xref py py-class docutils literal"><span class="pre">style</span></code></a>, have different behavior from the standard
+<cite>tag</cite>.  See their respective API docs for more information.</p>
+<div class="section" id="make-it-pretty">
+<h4>Make it pretty<a class="headerlink" href="#make-it-pretty" title="Permalink to this headline">¶</a></h4>
+<p>The <a class="reference internal" href="api.html#module-kemmering.html" title="kemmering.html"><code class="xref py py-mod docutils literal"><span class="pre">html</span></code></a> package also as a
+<a class="reference internal" href="api.html#kemmering.html.pretty" title="kemmering.html.pretty"><code class="xref py py-func docutils literal"><span class="pre">pretty</span></code></a> function that will render a snippet
+with line breaks and indentation, which can be useful for debugging.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">kemmering</span> <span class="kn">import</span> <span class="n">html</span> <span class="k">as</span> <span class="n">h</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">h</span><span class="o">.</span><span class="n">pretty</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">h</span><span class="o">.</span><span class="n">doc</span><span class="p">(</span><span class="n">h</span><span class="o">.</span><span class="n">html</span><span class="p">()(</span>
+<span class="gp">... </span>       <span class="n">h</span><span class="o">.</span><span class="n">head</span><span class="p">()(</span>
+<span class="gp">... </span>           <span class="n">h</span><span class="o">.</span><span class="n">title</span><span class="p">()(</span><span class="s1">&#39;Hello World!&#39;</span><span class="p">)</span>
+<span class="gp">... </span>       <span class="p">),</span>
+<span class="gp">... </span>       <span class="n">h</span><span class="o">.</span><span class="n">body</span><span class="p">()(</span>
+<span class="gp">... </span>           <span class="n">h</span><span class="o">.</span><span class="n">p</span><span class="p">(</span><span class="n">class_</span><span class="o">=</span><span class="s1">&#39;salutation&#39;</span><span class="p">)(</span><span class="s1">&#39;Hello World!&#39;</span><span class="p">)</span>
+<span class="gp">... </span>       <span class="p">)</span>
+<span class="gp">... </span>    <span class="p">))</span>
+<span class="gp">... </span><span class="p">))</span>
+<span class="go">&lt;!DOCTYPE html&gt;</span>
+<span class="go">&lt;html&gt;</span>
+<span class="go">  &lt;head&gt;</span>
+<span class="go">    &lt;title&gt;Hello World!&lt;/title&gt;</span>
+<span class="go">  &lt;/head&gt;</span>
+<span class="go">  &lt;body&gt;</span>
+<span class="go">    &lt;p class=&quot;salutation&quot;&gt;Hello World!&lt;/p&gt;</span>
+<span class="go">  &lt;/body&gt;</span>
+<span class="go">&lt;/html&gt;</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="reserved-word-attributes">
+<h3>Reserved Word Attributes<a class="headerlink" href="#reserved-word-attributes" title="Permalink to this headline">¶</a></h3>
+<p>You might have noticed in the example above that the <cite>class</cite> attribute for the
+<cite>&lt;p&gt;</cite> element is specified using <cite>class_</cite>.  Because <cite>class</cite> is a reserved word
+in Python, you wouldn&#8217;t be able to say <cite>h.p(class=&#8217;salutation&#8217;)</cite>.  For this
+reason, any attribute name can end with an underscore character, and the
+trailing underscore will be elided from the ultimate attribute name.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">kemmering</span> <span class="kn">import</span> <span class="n">html</span> <span class="k">as</span> <span class="n">h</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">snippet</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">label</span><span class="p">(</span><span class="n">for_</span><span class="o">=</span><span class="s1">&#39;full_name&#39;</span><span class="p">)(</span><span class="s1">&#39;Your full legal name&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">str</span><span class="p">(</span><span class="n">snippet</span><span class="p">)</span>
+<span class="go">&#39;&lt;label for=&quot;full_name&quot;&gt;Your full legal name&lt;/label&gt;&#39;</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="templates">
+<h2>Templates<a class="headerlink" href="#templates" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="defer-and-bind">
+<h3><cite>defer</cite> and <cite>bind</cite><a class="headerlink" href="#defer-and-bind" title="Permalink to this headline">¶</a></h3>
+<p>Using <a class="reference internal" href="api.html#kemmering.defer" title="kemmering.defer"><code class="xref py py-class docutils literal"><span class="pre">defer</span></code></a> and <a class="reference internal" href="api.html#kemmering.bind" title="kemmering.bind"><code class="xref py py-class docutils literal"><span class="pre">bind</span></code></a> you
+can create and render templates.  <cite>defer</cite> allows you to create an element that
+is realized at a later time with information not available when the snippet is
+being created.  <cite>bind</cite> is used to realize the snippet later.  <cite>defer</cite> accepts a
+single argument which is a function that is called at bind time.  The deferred
+function accepts a single argument, <cite>context</cite>, which should contain any
+information needed to realize the snippet at bind time.  In theory, the
+<cite>context</cite> can be any object, but the standard set of template helpers provided
+mostly assume the context is a dictionary or an object which provides a
+dictionary interface.  The deferred function returns either a tag instance or a
+string which replaces the deferred function in the bound snippet.</p>
+<p>The signature of <cite>defer</cite> allows it to be used as a decorator, if you&#8217;re into
+that kind of thing:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">kemmering</span> <span class="kn">import</span> <span class="n">bind</span><span class="p">,</span> <span class="n">defer</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">kemmering</span> <span class="kn">import</span> <span class="n">html</span> <span class="k">as</span> <span class="n">h</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nd">@defer</span>
+<span class="gp">... </span><span class="k">def</span> <span class="nf">things</span><span class="p">(</span><span class="n">context</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="n">ul</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">ul</span><span class="p">()</span>
+<span class="gp">... </span>    <span class="k">for</span> <span class="n">thing</span> <span class="ow">in</span> <span class="n">context</span><span class="p">[</span><span class="s1">&#39;things&#39;</span><span class="p">]:</span>
+<span class="gp">... </span>        <span class="n">ul</span><span class="p">(</span><span class="n">h</span><span class="o">.</span><span class="n">li</span><span class="p">()(</span><span class="n">thing</span><span class="p">))</span>
+<span class="gp">... </span>    <span class="k">return</span> <span class="n">ul</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">snippet</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">div</span><span class="p">()(</span><span class="n">things</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">bound</span> <span class="o">=</span> <span class="n">bind</span><span class="p">(</span><span class="n">snippet</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;things&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;bat&#39;</span><span class="p">,</span> <span class="s1">&#39;glove&#39;</span><span class="p">]})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">str</span><span class="p">(</span><span class="n">bound</span><span class="p">)</span>
+<span class="go">&#39;&lt;div&gt;&lt;ul&gt;&lt;li&gt;bat&lt;/li&gt;&lt;li&gt;glove&lt;/li&gt;&lt;/ul&gt;&lt;/div&gt;&#39;</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="notag">
+<h3><cite>notag</cite><a class="headerlink" href="#notag" title="Permalink to this headline">¶</a></h3>
+<p><a class="reference internal" href="api.html#kemmering.notag" title="kemmering.notag"><code class="xref py py-class docutils literal"><span class="pre">notag</span></code></a> is useful if you&#8217;d like for a deferred to
+provide more than one child at the level it is placed in the snippet:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">kemmering</span> <span class="kn">import</span> <span class="n">bind</span><span class="p">,</span> <span class="n">defer</span><span class="p">,</span> <span class="n">notag</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">kemmering</span> <span class="kn">import</span> <span class="n">html</span> <span class="k">as</span> <span class="n">h</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nd">@defer</span>
+<span class="gp">... </span><span class="k">def</span> <span class="nf">address</span><span class="p">(</span><span class="n">context</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">return</span> <span class="n">notag</span><span class="p">(</span>
+<span class="gp">... </span>        <span class="n">context</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span> <span class="n">h</span><span class="o">.</span><span class="n">br</span><span class="p">(),</span>
+<span class="gp">... </span>        <span class="n">context</span><span class="p">[</span><span class="s1">&#39;address&#39;</span><span class="p">],</span> <span class="n">h</span><span class="o">.</span><span class="n">br</span><span class="p">(),</span>
+<span class="gp">... </span>        <span class="n">context</span><span class="p">[</span><span class="s1">&#39;city&#39;</span><span class="p">],</span> <span class="s1">&#39;, &#39;</span><span class="p">,</span>
+<span class="gp">... </span>        <span class="n">context</span><span class="p">[</span><span class="s1">&#39;state&#39;</span><span class="p">],</span> <span class="s1">&#39; &#39;</span><span class="p">,</span>
+<span class="gp">... </span>        <span class="n">context</span><span class="p">[</span><span class="s1">&#39;zip&#39;</span><span class="p">],</span>
+<span class="gp">... </span>    <span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">snippet</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">p</span><span class="p">()(</span><span class="n">address</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">bound</span> <span class="o">=</span> <span class="n">bind</span><span class="p">(</span><span class="n">snippet</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;Joe Blow&#39;</span><span class="p">,</span> <span class="s1">&#39;address&#39;</span><span class="p">:</span> <span class="s1">&#39;123 Main St.&#39;</span><span class="p">,</span>
+<span class="gp">... </span>                       <span class="s1">&#39;city&#39;</span><span class="p">:</span> <span class="s1">&#39;Minsk&#39;</span><span class="p">,</span> <span class="s1">&#39;state&#39;</span><span class="p">:</span> <span class="s1">&#39;MS&#39;</span><span class="p">,</span> <span class="s1">&#39;zip&#39;</span><span class="p">:</span> <span class="s1">&#39;12345&#39;</span><span class="p">})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">str</span><span class="p">(</span><span class="n">bound</span><span class="p">)</span>
+<span class="go">&#39;&lt;p&gt;Joe Blow&lt;br/&gt;123 Main St.&lt;br/&gt;Minsk, MS 12345&lt;/p&gt;&#39;</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="templating-attributes">
+<h3>Templating attributes<a class="headerlink" href="#templating-attributes" title="Permalink to this headline">¶</a></h3>
+<p>Attributes can be templated as well as tag children. For obvious reasons, a
+deferred function being used for an attribute can&#8217;t return a tag.  A deferred
+function used for an attribute may return a string, or it may return <cite>None</cite>. If
+an attribute is set to <cite>None</cite> that attribute is omitted from the final bound
+snippet.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">kemmering</span> <span class="kn">import</span> <span class="n">bind</span><span class="p">,</span> <span class="n">defer</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">kemmering</span> <span class="kn">import</span> <span class="n">html</span> <span class="k">as</span> <span class="n">h</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">selected</span><span class="p">(</span><span class="n">context</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">if</span> <span class="n">context</span><span class="p">[</span><span class="s1">&#39;option&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">context</span><span class="p">[</span><span class="s1">&#39;selected&#39;</span><span class="p">]:</span>
+<span class="gp">... </span>        <span class="k">return</span> <span class="s1">&#39;&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">snippet</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">option</span><span class="p">(</span><span class="n">selected</span><span class="o">=</span><span class="n">defer</span><span class="p">(</span><span class="n">selected</span><span class="p">))(</span>
+<span class="gp">... </span>    <span class="n">defer</span><span class="p">(</span><span class="k">lambda</span> <span class="n">context</span><span class="p">:</span> <span class="n">context</span><span class="p">[</span><span class="s1">&#39;option&#39;</span><span class="p">]))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">bound</span> <span class="o">=</span> <span class="n">bind</span><span class="p">(</span><span class="n">snippet</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;option&#39;</span><span class="p">:</span> <span class="s1">&#39;fish&#39;</span><span class="p">,</span> <span class="s1">&#39;selected&#39;</span><span class="p">:</span> <span class="s1">&#39;fish&#39;</span><span class="p">})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">str</span><span class="p">(</span><span class="n">bound</span><span class="p">)</span>
+<span class="go">&#39;&lt;option selected=&quot;&quot;&gt;fish&lt;/option&gt;&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">bound</span> <span class="o">=</span> <span class="n">bind</span><span class="p">(</span><span class="n">snippet</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;option&#39;</span><span class="p">:</span> <span class="s1">&#39;medicine&#39;</span><span class="p">,</span> <span class="s1">&#39;selected&#39;</span><span class="p">:</span> <span class="s1">&#39;fish&#39;</span><span class="p">})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">str</span><span class="p">(</span><span class="n">bound</span><span class="p">)</span>
+<span class="go">&#39;&lt;option&gt;medicine&lt;/option&gt;&#39;</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="template-helpers">
+<h2>Template Helpers<a class="headerlink" href="#template-helpers" title="Permalink to this headline">¶</a></h2>
+<p>The examples above which use <a class="reference internal" href="api.html#kemmering.defer" title="kemmering.defer"><code class="xref py py-class docutils literal"><span class="pre">defer</span></code></a> are a bit
+contrived. In practice, it will probably be rare to use the general purpose
+<cite>defer</cite>, although it is general enough it should cover any use case.  The most
+common use cases for <cite>defer</cite> are covered by the helpers described below, which
+should cover the vast majority of cases for <cite>defer</cite>.</p>
+<div class="section" id="from-context">
+<h3><cite>from_context</cite><a class="headerlink" href="#from-context" title="Permalink to this headline">¶</a></h3>
+<p><a class="reference internal" href="api.html#kemmering.from_context" title="kemmering.from_context"><code class="xref py py-class docutils literal"><span class="pre">from_context</span></code></a> substitutes a value from the
+context:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">kemmering</span> <span class="kn">import</span> <span class="n">bind</span><span class="p">,</span> <span class="n">from_context</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">kemmering</span> <span class="kn">import</span> <span class="n">html</span> <span class="k">as</span> <span class="n">h</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">snippet</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">p</span><span class="p">()(</span><span class="s2">&quot;Hello &quot;</span><span class="p">,</span> <span class="n">from_context</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">),</span> <span class="s1">&#39;!&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">bound</span> <span class="o">=</span> <span class="n">bind</span><span class="p">(</span><span class="n">snippet</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;Edgar&#39;</span><span class="p">})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">str</span><span class="p">(</span><span class="n">bound</span><span class="p">)</span>
+<span class="go">&#39;&lt;p&gt;Hello Edgar!&lt;/p&gt;&#39;</span>
+</pre></div>
+</div>
+<p><cite>from_context</cite> accepts an optional default argument:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">kemmering</span> <span class="kn">import</span> <span class="n">bind</span><span class="p">,</span> <span class="n">from_context</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">kemmering</span> <span class="kn">import</span> <span class="n">html</span> <span class="k">as</span> <span class="n">h</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">snippet</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">p</span><span class="p">()(</span><span class="s2">&quot;Hello &quot;</span><span class="p">,</span> <span class="n">from_context</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;World&#39;</span><span class="p">),</span> <span class="s1">&#39;!&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">bound</span> <span class="o">=</span> <span class="n">bind</span><span class="p">(</span><span class="n">snippet</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;Edgar&#39;</span><span class="p">})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">str</span><span class="p">(</span><span class="n">bound</span><span class="p">)</span>
+<span class="go">&#39;&lt;p&gt;Hello Edgar!&lt;/p&gt;&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">bound</span> <span class="o">=</span> <span class="n">bind</span><span class="p">(</span><span class="n">snippet</span><span class="p">,</span> <span class="p">{})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">str</span><span class="p">(</span><span class="n">bound</span><span class="p">)</span>
+<span class="go">&#39;&lt;p&gt;Hello World!&lt;/p&gt;&#39;</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="in-context">
+<h3><cite>in_context</cite><a class="headerlink" href="#in-context" title="Permalink to this headline">¶</a></h3>
+<p><a class="reference internal" href="api.html#kemmering.in_context" title="kemmering.in_context"><code class="xref py py-class docutils literal"><span class="pre">in_context</span></code></a> works very simlarly to
+<cite>from_context</cite> but accepts a sequence of keys as an argument and can traverse a
+seris of nested dictionaries to retrieve a value from the context:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">kemmering</span> <span class="kn">import</span> <span class="n">bind</span><span class="p">,</span> <span class="n">in_context</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">kemmering</span> <span class="kn">import</span> <span class="n">html</span> <span class="k">as</span> <span class="n">h</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">snippet</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">p</span><span class="p">()(</span><span class="s2">&quot;Hello &quot;</span><span class="p">,</span> <span class="n">in_context</span><span class="p">([</span><span class="s1">&#39;user&#39;</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">]),</span> <span class="s1">&#39;!&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">bound</span> <span class="o">=</span> <span class="n">bind</span><span class="p">(</span><span class="n">snippet</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;user&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;Edgar&#39;</span><span class="p">}})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">str</span><span class="p">(</span><span class="n">bound</span><span class="p">)</span>
+<span class="go">&#39;&lt;p&gt;Hello Edgar!&lt;/p&gt;&#39;</span>
+</pre></div>
+</div>
+<p><cite>in_context</cite> also accepts an optional default argument:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">kemmering</span> <span class="kn">import</span> <span class="n">bind</span><span class="p">,</span> <span class="n">in_context</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">kemmering</span> <span class="kn">import</span> <span class="n">html</span> <span class="k">as</span> <span class="n">h</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">snippet</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">p</span><span class="p">()(</span><span class="s2">&quot;Hello &quot;</span><span class="p">,</span> <span class="n">in_context</span><span class="p">([</span><span class="s1">&#39;user&#39;</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">],</span> <span class="s1">&#39;World&#39;</span><span class="p">),</span> <span class="s1">&#39;!&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">bound</span> <span class="o">=</span> <span class="n">bind</span><span class="p">(</span><span class="n">snippet</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;user&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;Edgar&#39;</span><span class="p">}})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">str</span><span class="p">(</span><span class="n">bound</span><span class="p">)</span>
+<span class="go">&#39;&lt;p&gt;Hello Edgar!&lt;/p&gt;&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">bound</span> <span class="o">=</span> <span class="n">bind</span><span class="p">(</span><span class="n">snippet</span><span class="p">,</span> <span class="p">{})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">str</span><span class="p">(</span><span class="n">bound</span><span class="p">)</span>
+<span class="go">&#39;&lt;p&gt;Hello World!&lt;/p&gt;&#39;</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="format-context">
+<h3><cite>format_context</cite><a class="headerlink" href="#format-context" title="Permalink to this headline">¶</a></h3>
+<p><a class="reference internal" href="api.html#kemmering.format_context" title="kemmering.format_context"><code class="xref py py-class docutils literal"><span class="pre">format_context</span></code></a> is passed a format string,
+<cite>s</cite>, and returns the equivalent of <cite>s.format(**context)</cite> when it is bound:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">kemmering</span> <span class="kn">import</span> <span class="n">bind</span><span class="p">,</span> <span class="n">format_context</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">kemmering</span> <span class="kn">import</span> <span class="n">html</span> <span class="k">as</span> <span class="n">h</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">snippet</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">p</span><span class="p">()(</span><span class="n">format_context</span><span class="p">(</span><span class="s1">&#39;Hello {name}!&#39;</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">bound</span> <span class="o">=</span> <span class="n">bind</span><span class="p">(</span><span class="n">snippet</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;Edgar&#39;</span><span class="p">})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">str</span><span class="p">(</span><span class="n">bound</span><span class="p">)</span>
+<span class="go">&#39;&lt;p&gt;Hello Edgar!&lt;/p&gt;&#39;</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="cond">
+<h3><cite>cond</cite><a class="headerlink" href="#cond" title="Permalink to this headline">¶</a></h3>
+<p><a class="reference internal" href="api.html#kemmering.cond" title="kemmering.cond"><code class="xref py py-class docutils literal"><span class="pre">cond</span></code></a> includes a sub-snippet or not conditionally.
+The first argument is a function, <cite>condition</cite>, which accepts a single argument,
+<cite>context</cite>, and returns a boolean.  The second argument is the snippet to
+include if <cite>condition</cite> returns <cite>True</cite>.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">kemmering</span> <span class="kn">import</span> <span class="n">bind</span><span class="p">,</span> <span class="n">cond</span><span class="p">,</span> <span class="n">format_context</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">kemmering</span> <span class="kn">import</span> <span class="n">html</span> <span class="k">as</span> <span class="n">h</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">logged_in</span><span class="p">(</span><span class="n">context</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">return</span> <span class="s1">&#39;user&#39;</span> <span class="ow">in</span> <span class="n">context</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">snippet</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">div</span><span class="p">()(</span>
+<span class="gp">... </span>    <span class="s1">&#39;Welcome to Acme!&#39;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">cond</span><span class="p">(</span><span class="n">logged_in</span><span class="p">,</span> <span class="n">format_context</span><span class="p">(</span><span class="s1">&#39; Hello {user[name]}!&#39;</span><span class="p">)))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">bound</span> <span class="o">=</span> <span class="n">bind</span><span class="p">(</span><span class="n">snippet</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;user&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;Fred&#39;</span><span class="p">}})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">str</span><span class="p">(</span><span class="n">bound</span><span class="p">)</span>
+<span class="go">&#39;&lt;div&gt;Welcome to Acme! Hello Fred!&lt;/div&gt;&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">bound</span> <span class="o">=</span> <span class="n">bind</span><span class="p">(</span><span class="n">snippet</span><span class="p">,</span> <span class="p">{})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">str</span><span class="p">(</span><span class="n">bound</span><span class="p">)</span>
+<span class="go">&#39;&lt;div&gt;Welcome to Acme!&lt;/div&gt;&#39;</span>
+</pre></div>
+</div>
+<p><cite>cond</cite> also accepts an optional third argument, which is a snippet to include
+if <cite>condition</cite> returns <cite>False</cite>.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">kemmering</span> <span class="kn">import</span> <span class="n">bind</span><span class="p">,</span> <span class="n">cond</span><span class="p">,</span> <span class="n">format_context</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">kemmering</span> <span class="kn">import</span> <span class="n">html</span> <span class="k">as</span> <span class="n">h</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">logged_in</span><span class="p">(</span><span class="n">context</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">return</span> <span class="s1">&#39;user&#39;</span> <span class="ow">in</span> <span class="n">context</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">snippet</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">div</span><span class="p">()(</span>
+<span class="gp">... </span>    <span class="s1">&#39;Welcome to Acme!&#39;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">cond</span><span class="p">(</span><span class="n">logged_in</span><span class="p">,</span> <span class="n">format_context</span><span class="p">(</span><span class="s1">&#39; Hello {user[name]}!&#39;</span><span class="p">),</span>
+<span class="gp">... </span>         <span class="s1">&#39; You are not logged in!&#39;</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">bound</span> <span class="o">=</span> <span class="n">bind</span><span class="p">(</span><span class="n">snippet</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;user&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;Fred&#39;</span><span class="p">}})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">str</span><span class="p">(</span><span class="n">bound</span><span class="p">)</span>
+<span class="go">&#39;&lt;div&gt;Welcome to Acme! Hello Fred!&lt;/div&gt;&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">bound</span> <span class="o">=</span> <span class="n">bind</span><span class="p">(</span><span class="n">snippet</span><span class="p">,</span> <span class="p">{})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">str</span><span class="p">(</span><span class="n">bound</span><span class="p">)</span>
+<span class="go">&#39;&lt;div&gt;Welcome to Acme! You are not logged in!&lt;/div&gt;&#39;</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="loop">
+<h3><cite>loop</cite><a class="headerlink" href="#loop" title="Permalink to this headline">¶</a></h3>
+<p><a class="reference internal" href="api.html#kemmering.loop" title="kemmering.loop"><code class="xref py py-class docutils literal"><span class="pre">loop</span></code></a> allows for repeating of a sub-snippet inside of
+another snippet by looping over items in a sequence.  The first argument to
+<cite>loop</cite> is the name of a key to maintain in the <cite>context</cite> with the value of the
+current item being iterated over.  This argument can optionally be a <cite>list</cite> or
+<cite>tuple</cite> of key names, which will cause sequence values to be unpacked.  The
+second argument is either a function, which accepts the <cite>context</cite> as an
+argument and returns a sequence, or the name of a key inside of <cite>context</cite> whose
+value is the sequence to iterate over.  The third argument is the snippet to be
+repeated for each item in the sequence.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">kemmering</span> <span class="kn">import</span> <span class="n">bind</span><span class="p">,</span> <span class="n">from_context</span><span class="p">,</span> <span class="n">loop</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">kemmering</span> <span class="kn">import</span> <span class="n">html</span> <span class="k">as</span> <span class="n">h</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">snippet</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">ul</span><span class="p">()(</span>
+<span class="gp">... </span>    <span class="n">loop</span><span class="p">(</span><span class="s1">&#39;fruit&#39;</span><span class="p">,</span> <span class="s1">&#39;fruits&#39;</span><span class="p">,</span> <span class="n">h</span><span class="o">.</span><span class="n">li</span><span class="p">()(</span><span class="n">from_context</span><span class="p">(</span><span class="s1">&#39;fruit&#39;</span><span class="p">))))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">bound</span> <span class="o">=</span> <span class="n">bind</span><span class="p">(</span><span class="n">snippet</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;fruits&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;apple&#39;</span><span class="p">,</span> <span class="s1">&#39;pear&#39;</span><span class="p">,</span> <span class="s1">&#39;banana&#39;</span><span class="p">]})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">str</span><span class="p">(</span><span class="n">bound</span><span class="p">)</span>
+<span class="go">&#39;&lt;ul&gt;&lt;li&gt;apple&lt;/li&gt;&lt;li&gt;pear&lt;/li&gt;&lt;li&gt;banana&lt;/li&gt;&lt;/ul&gt;&#39;</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="more-information">
+<h2>More Information<a class="headerlink" href="#more-information" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="api.html"><code class="docutils literal"><span class="pre">kemmering</span></code> API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html#module-kemmering.html"><code class="docutils literal"><span class="pre">kemmering.html</span></code> API</a></li>
+</ul>
+</div>
+</div>
+<div class="section" id="reporting-bugs-development-versions">
+<h2>Reporting Bugs / Development Versions<a class="headerlink" href="#reporting-bugs-development-versions" title="Permalink to this headline">¶</a></h2>
+<p>Visit <a class="reference external" href="http://github.com/chrisrossi/kemmering">http://github.com/chrisrossi/kemmering</a> to download development or tagged
+versions.</p>
+<p>Visit <a class="reference external" href="http://github.com/chrisrossi/kemmering/issues">http://github.com/chrisrossi/kemmering/issues</a> to report bugs.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="#">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Kemmering</a><ul>
+<li><a class="reference internal" href="#overview">Overview</a></li>
+<li><a class="reference internal" href="#installation">Installation</a></li>
+<li><a class="reference internal" href="#tags">Tags</a><ul>
+<li><a class="reference internal" href="#partial-pattern">Partial Pattern</a></li>
+<li><a class="reference internal" href="#html-tags">HTML Tags</a><ul>
+<li><a class="reference internal" href="#make-it-pretty">Make it pretty</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#reserved-word-attributes">Reserved Word Attributes</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#templates">Templates</a><ul>
+<li><a class="reference internal" href="#defer-and-bind"><cite>defer</cite> and <cite>bind</cite></a></li>
+<li><a class="reference internal" href="#notag"><cite>notag</cite></a></li>
+<li><a class="reference internal" href="#templating-attributes">Templating attributes</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#template-helpers">Template Helpers</a><ul>
+<li><a class="reference internal" href="#from-context"><cite>from_context</cite></a></li>
+<li><a class="reference internal" href="#in-context"><cite>in_context</cite></a></li>
+<li><a class="reference internal" href="#format-context"><cite>format_context</cite></a></li>
+<li><a class="reference internal" href="#cond"><cite>cond</cite></a></li>
+<li><a class="reference internal" href="#loop"><cite>loop</cite></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#more-information">More Information</a></li>
+<li><a class="reference internal" href="#reporting-bugs-development-versions">Reporting Bugs / Development Versions</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Next topic</h4>
+  <p class="topless"><a href="api.html"
+                        title="next chapter"><code class="docutils literal"><span class="pre">kemmering</span></code> API</a></p>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="api.html" title="kemmering API"
+             >next</a> |</li>
+    	<li><a href="#">kemmering 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2016, Chris Rossi &lt;chris@archimedeanco.com&gt;.
+      Last updated on Feb 06, 2016.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.5.
+    </div>
+  </body>
+</html>

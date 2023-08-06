@@ -1,0 +1,350 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>kemmering.html &mdash; kemmering 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/pylons.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="kemmering 1.0 documentation" href="../../index.html" />
+    <link rel="up" title="kemmering" href="../kemmering.html" />
+<link rel="stylesheet" href="http://static.pylonsproject.org/fonts/nobile/stylesheet.css" type="text/css" media="screen" charset="utf-8" />
+<link rel="stylesheet" href="http://static.pylonsproject.org/fonts/neuton/stylesheet.css" type="text/css" media="screen" charset="utf-8" />
+<!--[if lte IE 6]>
+<link rel="stylesheet" href="../../_static/ie6.css" type="text/css" media="screen" charset="utf-8" />
+<![endif]-->
+<link rel="shortcut icon" href="../../_static/pylons.ico"/>
+
+  </head>
+  <body role="document">
+
+
+
+
+
+
+
+<div class="header-small">
+	
+	<div class="logo-small">
+		<a href="../../index.html">
+      		<img class="logo" src="../../_static/pylons-small.png" alt="Logo"/>
+		</a>
+  	</div>
+</div>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+    	<li><a href="../../index.html">kemmering 1.0 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="../kemmering.html" accesskey="U">kemmering</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for kemmering.html</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">HTML tags</span>
+
+<span class="sd">Reference: http://www.html-5-tutorial.com/all-html-tags.htm</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">OrderedDict</span>
+<span class="kn">from</span> <span class="nn">xml.dom</span> <span class="kn">import</span> <span class="n">minidom</span>
+
+<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">tag</span>
+
+<span class="n">PY2</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">version_info</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">2</span>
+<span class="n">strclass</span> <span class="o">=</span> <span class="nb">unicode</span> <span class="k">if</span> <span class="n">PY2</span> <span class="k">else</span> <span class="nb">str</span>    <span class="c1"># nopep8</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;doc&#39;</span><span class="p">,</span> <span class="s1">&#39;style&#39;</span><span class="p">,</span> <span class="s1">&#39;pretty&#39;</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="doc"><a class="viewcode-back" href="../../api.html#kemmering.html.doc">[docs]</a><span class="k">class</span> <span class="nc">doc</span><span class="p">(</span><span class="n">tag</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Top level HTML5 document, includes doctype declaration.</span>
+
+<span class="sd">    .. doctest:: api-doc</span>
+
+<span class="sd">       &gt;&gt;&gt; from kemmering.html import doc, html</span>
+<span class="sd">       &gt;&gt;&gt; print(doc(html()))</span>
+<span class="sd">       &lt;!DOCTYPE html&gt;</span>
+<span class="sd">       &lt;BLANKLINE&gt;</span>
+<span class="sd">       &lt;html&gt;&lt;/html&gt;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">children</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">doc</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">(</span><span class="o">*</span><span class="n">children</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_stream</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">yield</span> <span class="s1">&#39;&lt;!DOCTYPE html&gt;</span><span class="se">\n\n</span><span class="s1">&#39;</span>
+        <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="nb">super</span><span class="p">(</span><span class="n">doc</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">_stream</span><span class="p">():</span>
+            <span class="k">yield</span> <span class="n">child</span></div>
+
+
+<div class="viewcode-block" id="style"><a class="viewcode-back" href="../../api.html#kemmering.html.style">[docs]</a><span class="k">class</span> <span class="nc">style</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    HTML tag &lt;style&gt;&lt;/style&gt;.</span>
+
+<span class="sd">    Each positional argument should be a tuple of `(selector, style)` where</span>
+<span class="sd">    `selector` is the CSS selector and `style` is a dictionary containing the</span>
+<span class="sd">    CSS styles for that selector.  Calling the resulting object uses the same</span>
+<span class="sd">    signature and adds those styles to this tag.</span>
+
+<span class="sd">    .. doctest:: api-style</span>
+
+<span class="sd">       &gt;&gt;&gt; from kemmering.html import style</span>
+<span class="sd">       &gt;&gt;&gt; print(style(</span>
+<span class="sd">       ...     (&#39;a&#39;, {&#39;b&#39;: &#39;c&#39;, }),</span>
+<span class="sd">       ...     (&#39;d&#39;, {&#39;e&#39;: &#39;f&#39;})))</span>
+<span class="sd">       &lt;BLANKLINE&gt;</span>
+<span class="sd">       &lt;style&gt;</span>
+<span class="sd">         a {</span>
+<span class="sd">           b: c;</span>
+<span class="sd">         }</span>
+<span class="sd">         d {</span>
+<span class="sd">           e: f;</span>
+<span class="sd">         }</span>
+<span class="sd">       &lt;/style&gt;</span>
+<span class="sd">       &lt;BLANKLINE&gt;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">styles</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">()</span>
+        <span class="bp">self</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_stream</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">yield</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&lt;style&gt;</span><span class="se">\n</span><span class="s1">&#39;</span>
+        <span class="k">for</span> <span class="n">selector</span><span class="p">,</span> <span class="n">style</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">styles</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">yield</span> <span class="s1">&#39;  {} {{</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">selector</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">style</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">yield</span> <span class="s1">&#39;    {}: {};</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+            <span class="k">yield</span> <span class="s1">&#39;  }</span><span class="se">\n</span><span class="s1">&#39;</span>
+        <span class="k">yield</span> <span class="s1">&#39;&lt;/style&gt;</span><span class="se">\n</span><span class="s1">&#39;</span>
+
+    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">selector</span><span class="p">,</span> <span class="n">style</span> <span class="ow">in</span> <span class="n">args</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">styles</span><span class="p">[</span><span class="n">selector</span><span class="p">]</span> <span class="o">=</span> <span class="n">style</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_stream</span><span class="p">())</span>
+
+    <span class="n">__unicode__</span> <span class="o">=</span> <span class="n">__str__</span></div>
+
+
+<div class="viewcode-block" id="pretty"><a class="viewcode-back" href="../../api.html#kemmering.html.pretty">[docs]</a><span class="k">def</span> <span class="nf">pretty</span><span class="p">(</span><span class="n">snippet</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Render a snippet of HTML as a string with line breaks and indentation.</span>
+<span class="sd">    This is not necessarily a particularly fast implementation, but it can be</span>
+<span class="sd">    useful for debugging.</span>
+
+<span class="sd">    .. doctest:: api-pretty</span>
+
+<span class="sd">       &gt;&gt;&gt; from kemmering import tag</span>
+<span class="sd">       &gt;&gt;&gt; from kemmering.html import pretty</span>
+<span class="sd">       &gt;&gt;&gt; print(pretty(tag(&#39;a&#39;)(tag(&#39;b&#39;)(tag(&#39;c/&#39;)))))</span>
+<span class="sd">       &lt;a&gt;</span>
+<span class="sd">         &lt;b&gt;</span>
+<span class="sd">           &lt;c/&gt;</span>
+<span class="sd">         &lt;/b&gt;</span>
+<span class="sd">       &lt;/a&gt;</span>
+<span class="sd">       &lt;BLANKLINE&gt;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">xml</span> <span class="o">=</span> <span class="n">minidom</span><span class="o">.</span><span class="n">parseString</span><span class="p">(</span><span class="n">strclass</span><span class="p">(</span><span class="n">snippet</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">xml</span><span class="o">.</span><span class="n">toprettyxml</span><span class="p">(</span><span class="n">indent</span><span class="o">=</span><span class="s2">&quot;  &quot;</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span></div>
+
+
+<span class="k">def</span> <span class="nf">_htmltag</span><span class="p">(</span><span class="n">_tag</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_inner</span><span class="p">(</span><span class="o">**</span><span class="n">attrs</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">tag</span><span class="p">(</span><span class="n">_tag</span><span class="p">,</span> <span class="o">**</span><span class="n">attrs</span><span class="p">)</span>
+    <span class="n">closing</span> <span class="o">=</span> <span class="n">_tag</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)</span>
+    <span class="n">__all__</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">name</span> <span class="k">if</span> <span class="n">name</span> <span class="k">else</span> <span class="n">_tag</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">))</span>
+    <span class="n">_inner</span><span class="o">.</span><span class="n">__name__</span> <span class="o">=</span> <span class="n">_tag</span>
+    <span class="n">_inner</span><span class="o">.</span><span class="n">__doc__</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="s2">&quot;HTML tag &lt;{0}&gt;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">_tag</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">closing</span> <span class="k">else</span>
+        <span class="s2">&quot;HTML tag &lt;{0}&gt;&lt;/{0}&gt;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">_tag</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">_inner</span>
+
+
+<span class="n">a</span> <span class="o">=</span> <span class="n">_htmltag</span><span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">)</span>
+<span class="n">abbr</span> <span class="o">=</span> <span class="n">_htmltag</span><span class="p">(</span><span class="s1">&#39;abbr&#39;</span><span class="p">)</span>
+<span class="n">address</span> <span class="o">=</span> <span class="n">_htmltag</span><span class="p">(</span><span class="s1">&#39;address&#39;</span><span class="p">)</span>
+<span class="n">area</span> <span class="o">=</span> <span class="n">_htmltag</span><span class="p">(</span><span class="s1">&#39;area/&#39;</span><span class="p">)</span>
+<span class="n">article</span> <span class="o">=</span> <span class="n">_htmltag</span><span class="p">(</span><span class="s1">&#39;article&#39;</span><span class="p">)</span>
+<span class="n">aside</span> <span class="o">=</span> <span class="n">_htmltag</span><span class="p">(</span><span class="s1">&#39;aside&#39;</span><span class="p">)</span>
+<span class="n">audio</span> <span class="o">=</span> <span class="n">_htmltag</span><span class="p">(</span><span class="s1">&#39;audio&#39;</span><span class="p">)</span>
+<span class="n">b</span> <span class="o">=</span> <span class="n">_htmltag</span><span class="p">(</span><span class="s1">&#39;b&#39;</span><span class="p">)</span>
+<span class="n">base</span> <span class="o">=</span> <span class="n">_htmltag</span><span class="p">(</span><span class="s1">&#39;base/&#39;</span><span class="p">)</span>
+<span class="n">bdi</span> <span class="o">=</span> <span class="n">_htmltag</span><span class="p">(</span><span class="s1">&#39;bdi&#39;</span><span class="p">)</span>
+<span class="n">bdo</span> <span class="o">=</span> <span class="n">_htmltag</span><span class="p">(</span><span class="s1">&#39;bdo&#39;</span><span class="p">)</span>
+<span class="n">blockquote</span> <span class="o">=</span> <span class="n">_htmltag</span><span class="p">(</span><span class="s1">&#39;blockquote&#39;</span><span class="p">)</span>
+<span class="n">body</span> <span class="o">=</span> <span class="n">_htmltag</span><span class="p">(</span><span class="s1">&#39;body&#39;</span><span class="p">)</span>
+<span class="n">br</span> <span class="o">=</span> <span class="n">_htmltag</span><span class="p">(</span><span class="s1">&#39;br/&#39;</span><span class="p">)</span>
+<span class="n">button</span> <span class="o">=</span> <span class="n">_htmltag</span><span class="p">(</span><span class="s1">&#39;button&#39;</span><span class="p">)</span>
+<span class="n">canvas</span> <span class="o">=</span> <span class="n">_htmltag</span><span class="p">(</span><span class="s1">&#39;canvas&#39;</span><span class="p">)</span>
+<span class="n">caption</span> <span class="o">=</span> <span class="n">_htmltag</span><span class="p">(</span><span class="s1">&#39;caption&#39;</span><span class="p">)</span>
+<span class="n">cite</span> <span class="o">=</span> <span class="n">_htmltag</span><span class="p">(</span><span class="s1">&#39;cite&#39;</span><span class="p">)</span>
+<span class="n">code</span> <span class="o">=</span> <span class="n">_htmltag</span><span class="p">(</span><span class="s1">&#39;code&#39;</span><span class="p">)</span>
+<span class="n">col</span> <span class="o">=</span> <span class="n">_htmltag</span><span class="p">(</span><span class="s1">&#39;col/&#39;</span><span class="p">)</span>
+<span class="n">colgroup</span> <span class="o">=</span> <span class="n">_htmltag</span><span class="p">(</span><span class="s1">&#39;colgroup&#39;</span><span class="p">)</span>
+<span class="n">datalist</span> <span class="o">=</span> <span class="n">_htmltag</span><span class="p">(</span><span class="s1">&#39;datalist&#39;</span><span class="p">)</span>
+<span class="n">dd</span> <span class="o">=</span> <span class="n">_htmltag</span><span class="p">(</span><span class="s1">&#39;dd&#39;</span><span class="p">)</span>
+<span class="n">del_</span> <span class="o">=</span> <span class="n">_htmltag</span><span class="p">(</span><span class="s1">&#39;del&#39;</span><span class="p">,</span> <span class="s1">&#39;del_&#39;</span><span class="p">)</span>
+<span class="n">details</span> <span class="o">=</span> <span class="n">_htmltag</span><span class="p">(</span><span class="s1">&#39;details&#39;</span><span class="p">)</span>
+<span class="n">dfn</span> <span class="o">=</span> <span class="n">_htmltag</span><span class="p">(</span><span class="s1">&#39;dfn&#39;</span><span class="p">)</span>
+<span class="n">div</span> <span class="o">=</span> <span class="n">_htmltag</span><span class="p">(</span><span class="s1">&#39;div&#39;</span><span class="p">)</span>
+<span class="n">dl</span> <span class="o">=</span> <span class="n">_htmltag</span><span class="p">(</span><span class="s1">&#39;dl&#39;</span><span class="p">)</span>
+<span class="n">dt</span> <span class="o">=</span> <span class="n">_htmltag</span><span class="p">(</span><span class="s1">&#39;dt&#39;</span><span class="p">)</span>
+<span class="n">em</span> <span class="o">=</span> <span class="n">_htmltag</span><span class="p">(</span><span class="s1">&#39;em&#39;</span><span class="p">)</span>
+<span class="n">embed</span> <span class="o">=</span> <span class="n">_htmltag</span><span class="p">(</span><span class="s1">&#39;embed/&#39;</span><span class="p">)</span>
+<span class="n">fieldset</span> <span class="o">=</span> <span class="n">_htmltag</span><span class="p">(</span><span class="s1">&#39;fieldset&#39;</span><span class="p">)</span>
+<span class="n">figcaption</span> <span class="o">=</span> <span class="n">_htmltag</span><span class="p">(</span><span class="s1">&#39;figcaption&#39;</span><span class="p">)</span>
+<span class="n">figure</span> <span class="o">=</span> <span class="n">_htmltag</span><span class="p">(</span><span class="s1">&#39;figure&#39;</span><span class="p">)</span>
+<span class="n">footer</span> <span class="o">=</span> <span class="n">_htmltag</span><span class="p">(</span><span class="s1">&#39;footer&#39;</span><span class="p">)</span>
+<span class="n">form</span> <span class="o">=</span> <span class="n">_htmltag</span><span class="p">(</span><span class="s1">&#39;form&#39;</span><span class="p">)</span>
+<span class="n">h1</span> <span class="o">=</span> <span class="n">_htmltag</span><span class="p">(</span><span class="s1">&#39;h1&#39;</span><span class="p">)</span>
+<span class="n">h2</span> <span class="o">=</span> <span class="n">_htmltag</span><span class="p">(</span><span class="s1">&#39;h2&#39;</span><span class="p">)</span>
+<span class="n">h3</span> <span class="o">=</span> <span class="n">_htmltag</span><span class="p">(</span><span class="s1">&#39;h3&#39;</span><span class="p">)</span>
+<span class="n">h4</span> <span class="o">=</span> <span class="n">_htmltag</span><span class="p">(</span><span class="s1">&#39;h4&#39;</span><span class="p">)</span>
+<span class="n">h5</span> <span class="o">=</span> <span class="n">_htmltag</span><span class="p">(</span><span class="s1">&#39;h5&#39;</span><span class="p">)</span>
+<span class="n">h6</span> <span class="o">=</span> <span class="n">_htmltag</span><span class="p">(</span><span class="s1">&#39;h6&#39;</span><span class="p">)</span>
+<span class="n">head</span> <span class="o">=</span> <span class="n">_htmltag</span><span class="p">(</span><span class="s1">&#39;head&#39;</span><span class="p">)</span>
+<span class="n">header</span> <span class="o">=</span> <span class="n">_htmltag</span><span class="p">(</span><span class="s1">&#39;header&#39;</span><span class="p">)</span>
+<span class="n">hgroup</span> <span class="o">=</span> <span class="n">_htmltag</span><span class="p">(</span><span class="s1">&#39;hgroup&#39;</span><span class="p">)</span>
+<span class="n">hr</span> <span class="o">=</span> <span class="n">_htmltag</span><span class="p">(</span><span class="s1">&#39;hr/&#39;</span><span class="p">)</span>
+<span class="n">html</span> <span class="o">=</span> <span class="n">_htmltag</span><span class="p">(</span><span class="s1">&#39;html&#39;</span><span class="p">)</span>
+<span class="n">i</span> <span class="o">=</span> <span class="n">_htmltag</span><span class="p">(</span><span class="s1">&#39;i&#39;</span><span class="p">)</span>
+<span class="n">iframe</span> <span class="o">=</span> <span class="n">_htmltag</span><span class="p">(</span><span class="s1">&#39;iframe&#39;</span><span class="p">)</span>
+<span class="n">img</span> <span class="o">=</span> <span class="n">_htmltag</span><span class="p">(</span><span class="s1">&#39;img/&#39;</span><span class="p">)</span>
+<span class="nb">input</span> <span class="o">=</span> <span class="n">_htmltag</span><span class="p">(</span><span class="s1">&#39;input/&#39;</span><span class="p">)</span>
+<span class="n">ins</span> <span class="o">=</span> <span class="n">_htmltag</span><span class="p">(</span><span class="s1">&#39;ins&#39;</span><span class="p">)</span>
+<span class="n">kbd</span> <span class="o">=</span> <span class="n">_htmltag</span><span class="p">(</span><span class="s1">&#39;kbd&#39;</span><span class="p">)</span>
+<span class="n">keygen</span> <span class="o">=</span> <span class="n">_htmltag</span><span class="p">(</span><span class="s1">&#39;keygen&#39;</span><span class="p">)</span>
+<span class="n">label</span> <span class="o">=</span> <span class="n">_htmltag</span><span class="p">(</span><span class="s1">&#39;label&#39;</span><span class="p">)</span>
+<span class="n">legend</span> <span class="o">=</span> <span class="n">_htmltag</span><span class="p">(</span><span class="s1">&#39;legend&#39;</span><span class="p">)</span>
+<span class="n">li</span> <span class="o">=</span> <span class="n">_htmltag</span><span class="p">(</span><span class="s1">&#39;li&#39;</span><span class="p">)</span>
+<span class="n">link</span> <span class="o">=</span> <span class="n">_htmltag</span><span class="p">(</span><span class="s1">&#39;link/&#39;</span><span class="p">)</span>
+<span class="nb">map</span> <span class="o">=</span> <span class="n">_htmltag</span><span class="p">(</span><span class="s1">&#39;map&#39;</span><span class="p">)</span>
+<span class="n">mark</span> <span class="o">=</span> <span class="n">_htmltag</span><span class="p">(</span><span class="s1">&#39;mark&#39;</span><span class="p">)</span>
+<span class="n">menu</span> <span class="o">=</span> <span class="n">_htmltag</span><span class="p">(</span><span class="s1">&#39;menu&#39;</span><span class="p">)</span>
+<span class="n">meta</span> <span class="o">=</span> <span class="n">_htmltag</span><span class="p">(</span><span class="s1">&#39;meta/&#39;</span><span class="p">)</span>
+<span class="n">meter</span> <span class="o">=</span> <span class="n">_htmltag</span><span class="p">(</span><span class="s1">&#39;meter&#39;</span><span class="p">)</span>
+<span class="n">nav</span> <span class="o">=</span> <span class="n">_htmltag</span><span class="p">(</span><span class="s1">&#39;nav&#39;</span><span class="p">)</span>
+<span class="n">noscript</span> <span class="o">=</span> <span class="n">_htmltag</span><span class="p">(</span><span class="s1">&#39;noscript&#39;</span><span class="p">)</span>
+<span class="nb">object</span> <span class="o">=</span> <span class="n">_htmltag</span><span class="p">(</span><span class="s1">&#39;object&#39;</span><span class="p">)</span>
+<span class="n">ol</span> <span class="o">=</span> <span class="n">_htmltag</span><span class="p">(</span><span class="s1">&#39;ol&#39;</span><span class="p">)</span>
+<span class="n">optgroup</span> <span class="o">=</span> <span class="n">_htmltag</span><span class="p">(</span><span class="s1">&#39;optgroup&#39;</span><span class="p">)</span>
+<span class="n">option</span> <span class="o">=</span> <span class="n">_htmltag</span><span class="p">(</span><span class="s1">&#39;option&#39;</span><span class="p">)</span>
+<span class="n">output</span> <span class="o">=</span> <span class="n">_htmltag</span><span class="p">(</span><span class="s1">&#39;output&#39;</span><span class="p">)</span>
+<span class="n">p</span> <span class="o">=</span> <span class="n">_htmltag</span><span class="p">(</span><span class="s1">&#39;p&#39;</span><span class="p">)</span>
+<span class="n">param</span> <span class="o">=</span> <span class="n">_htmltag</span><span class="p">(</span><span class="s1">&#39;param/&#39;</span><span class="p">)</span>
+<span class="n">pre</span> <span class="o">=</span> <span class="n">_htmltag</span><span class="p">(</span><span class="s1">&#39;pre&#39;</span><span class="p">)</span>
+<span class="n">progress</span> <span class="o">=</span> <span class="n">_htmltag</span><span class="p">(</span><span class="s1">&#39;progress&#39;</span><span class="p">)</span>
+<span class="n">q</span> <span class="o">=</span> <span class="n">_htmltag</span><span class="p">(</span><span class="s1">&#39;q&#39;</span><span class="p">)</span>
+<span class="n">rp</span> <span class="o">=</span> <span class="n">_htmltag</span><span class="p">(</span><span class="s1">&#39;rp&#39;</span><span class="p">)</span>
+<span class="n">rt</span> <span class="o">=</span> <span class="n">_htmltag</span><span class="p">(</span><span class="s1">&#39;rt&#39;</span><span class="p">)</span>
+<span class="n">ruby</span> <span class="o">=</span> <span class="n">_htmltag</span><span class="p">(</span><span class="s1">&#39;ruby&#39;</span><span class="p">)</span>
+<span class="n">s</span> <span class="o">=</span> <span class="n">_htmltag</span><span class="p">(</span><span class="s1">&#39;s&#39;</span><span class="p">)</span>
+<span class="n">samp</span> <span class="o">=</span> <span class="n">_htmltag</span><span class="p">(</span><span class="s1">&#39;samp&#39;</span><span class="p">)</span>
+<span class="n">script</span> <span class="o">=</span> <span class="n">_htmltag</span><span class="p">(</span><span class="s1">&#39;script&#39;</span><span class="p">)</span>
+<span class="n">section</span> <span class="o">=</span> <span class="n">_htmltag</span><span class="p">(</span><span class="s1">&#39;section&#39;</span><span class="p">)</span>
+<span class="n">select</span> <span class="o">=</span> <span class="n">_htmltag</span><span class="p">(</span><span class="s1">&#39;select&#39;</span><span class="p">)</span>
+<span class="n">small</span> <span class="o">=</span> <span class="n">_htmltag</span><span class="p">(</span><span class="s1">&#39;small&#39;</span><span class="p">)</span>
+<span class="n">source</span> <span class="o">=</span> <span class="n">_htmltag</span><span class="p">(</span><span class="s1">&#39;source/&#39;</span><span class="p">)</span>
+<span class="n">span</span> <span class="o">=</span> <span class="n">_htmltag</span><span class="p">(</span><span class="s1">&#39;span&#39;</span><span class="p">)</span>
+<span class="n">strong</span> <span class="o">=</span> <span class="n">_htmltag</span><span class="p">(</span><span class="s1">&#39;strong&#39;</span><span class="p">)</span>
+<span class="n">sub</span> <span class="o">=</span> <span class="n">_htmltag</span><span class="p">(</span><span class="s1">&#39;sub&#39;</span><span class="p">)</span>
+<span class="n">summary</span> <span class="o">=</span> <span class="n">_htmltag</span><span class="p">(</span><span class="s1">&#39;summary&#39;</span><span class="p">)</span>
+<span class="n">sup</span> <span class="o">=</span> <span class="n">_htmltag</span><span class="p">(</span><span class="s1">&#39;sup&#39;</span><span class="p">)</span>
+<span class="n">table</span> <span class="o">=</span> <span class="n">_htmltag</span><span class="p">(</span><span class="s1">&#39;table&#39;</span><span class="p">)</span>
+<span class="n">tbody</span> <span class="o">=</span> <span class="n">_htmltag</span><span class="p">(</span><span class="s1">&#39;tbody&#39;</span><span class="p">)</span>
+<span class="n">td</span> <span class="o">=</span> <span class="n">_htmltag</span><span class="p">(</span><span class="s1">&#39;td&#39;</span><span class="p">)</span>
+<span class="n">textarea</span> <span class="o">=</span> <span class="n">_htmltag</span><span class="p">(</span><span class="s1">&#39;textarea&#39;</span><span class="p">)</span>
+<span class="n">tfoot</span> <span class="o">=</span> <span class="n">_htmltag</span><span class="p">(</span><span class="s1">&#39;tfoot&#39;</span><span class="p">)</span>
+<span class="n">th</span> <span class="o">=</span> <span class="n">_htmltag</span><span class="p">(</span><span class="s1">&#39;th&#39;</span><span class="p">)</span>
+<span class="n">thead</span> <span class="o">=</span> <span class="n">_htmltag</span><span class="p">(</span><span class="s1">&#39;thead&#39;</span><span class="p">)</span>
+<span class="n">time</span> <span class="o">=</span> <span class="n">_htmltag</span><span class="p">(</span><span class="s1">&#39;time&#39;</span><span class="p">)</span>
+<span class="n">title</span> <span class="o">=</span> <span class="n">_htmltag</span><span class="p">(</span><span class="s1">&#39;title&#39;</span><span class="p">)</span>
+<span class="n">tr</span> <span class="o">=</span> <span class="n">_htmltag</span><span class="p">(</span><span class="s1">&#39;tr&#39;</span><span class="p">)</span>
+<span class="n">track</span> <span class="o">=</span> <span class="n">_htmltag</span><span class="p">(</span><span class="s1">&#39;track/&#39;</span><span class="p">)</span>
+<span class="n">u</span> <span class="o">=</span> <span class="n">_htmltag</span><span class="p">(</span><span class="s1">&#39;u&#39;</span><span class="p">)</span>
+<span class="n">ul</span> <span class="o">=</span> <span class="n">_htmltag</span><span class="p">(</span><span class="s1">&#39;ul&#39;</span><span class="p">)</span>
+<span class="n">var</span> <span class="o">=</span> <span class="n">_htmltag</span><span class="p">(</span><span class="s1">&#39;var&#39;</span><span class="p">)</span>
+<span class="n">video</span> <span class="o">=</span> <span class="n">_htmltag</span><span class="p">(</span><span class="s1">&#39;video&#39;</span><span class="p">)</span>
+<span class="n">wbr</span> <span class="o">=</span> <span class="n">_htmltag</span><span class="p">(</span><span class="s1">&#39;wbr&#39;</span><span class="p">)</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+    	<li><a href="../../index.html">kemmering 1.0 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="../kemmering.html" >kemmering</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2016, Chris Rossi &lt;chris@archimedeanco.com&gt;.
+      Last updated on Feb 06, 2016.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.5.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,1040 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>kemmering API &mdash; kemmering 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/pylons.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="kemmering 1.0 documentation" href="index.html" />
+    <link rel="prev" title="Kemmering" href="index.html" />
+<link rel="stylesheet" href="http://static.pylonsproject.org/fonts/nobile/stylesheet.css" type="text/css" media="screen" charset="utf-8" />
+<link rel="stylesheet" href="http://static.pylonsproject.org/fonts/neuton/stylesheet.css" type="text/css" media="screen" charset="utf-8" />
+<!--[if lte IE 6]>
+<link rel="stylesheet" href="_static/ie6.css" type="text/css" media="screen" charset="utf-8" />
+<![endif]-->
+<link rel="shortcut icon" href="_static/pylons.ico"/>
+
+  </head>
+  <body role="document">
+
+
+
+
+
+
+
+<div class="header-small">
+	
+	<div class="logo-small">
+		<a href="index.html">
+      		<img class="logo" src="_static/pylons-small.png" alt="Logo"/>
+		</a>
+  	</div>
+</div>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Kemmering"
+             accesskey="P">previous</a> |</li>
+    	<li><a href="index.html">kemmering 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-kemmering">
+<span id="id1"></span><span id="kemmering-api"></span><h1><a class="reference internal" href="#module-kemmering" title="kemmering"><code class="xref py py-mod docutils literal"><span class="pre">kemmering</span></code></a> API<a class="headerlink" href="#module-kemmering" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="kemmering.tag">
+<em class="property">class </em><code class="descclassname">kemmering.</code><code class="descname">tag</code><span class="sig-paren">(</span><em>tag</em>, <em>**attrs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/kemmering.html#tag"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#kemmering.tag" title="Permalink to this definition">¶</a></dt>
+<dd><p>An XML tag.</p>
+<p><cite>tag</cite> is the name of the tag.  Add a trailing forward slash (<cite>/</cite>) character
+to create a self-closing tag.  <cite>attrs</cite> are the attributes for tag.  The tag
+itself is callable.  Call the tag to add children.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">kemmering</span> <span class="kn">import</span> <span class="n">tag</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">str</span><span class="p">(</span><span class="n">tag</span><span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="s1">&#39;c&#39;</span><span class="p">)(</span><span class="s1">&#39;d&#39;</span><span class="p">))</span>
+<span class="go">&#39;&lt;a b=&quot;c&quot;&gt;d&lt;/a&gt;&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">str</span><span class="p">(</span><span class="n">tag</span><span class="p">(</span><span class="s1">&#39;e/&#39;</span><span class="p">))</span>
+<span class="go">&#39;&lt;e/&gt;&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="class">
+<dt id="kemmering.notag">
+<em class="property">class </em><code class="descclassname">kemmering.</code><code class="descname">notag</code><span class="sig-paren">(</span><em>*children</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/kemmering.html#notag"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#kemmering.notag" title="Permalink to this definition">¶</a></dt>
+<dd><p>Used to represent a set of sibling elements with no enclosing parent tag.</p>
+<p><cite>children</cite> is a sequence of elements.</p>
+<p><cite>notag</cite> is particularly useful with <cite>defer</cite> and any of the template
+helpers which are based on <cite>defer</cite>.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">kemmering</span> <span class="kn">import</span> <span class="n">notag</span><span class="p">,</span> <span class="n">tag</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">str</span><span class="p">(</span><span class="n">tag</span><span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">)(</span>
+<span class="gp">... </span>  <span class="n">tag</span><span class="p">(</span><span class="s1">&#39;b/&#39;</span><span class="p">),</span>
+<span class="gp">... </span>  <span class="n">notag</span><span class="p">(</span>
+<span class="gp">... </span>     <span class="n">tag</span><span class="p">(</span><span class="s1">&#39;c/&#39;</span><span class="p">),</span>
+<span class="gp">... </span>     <span class="n">tag</span><span class="p">(</span><span class="s1">&#39;d/&#39;</span><span class="p">)</span>
+<span class="gp">... </span>  <span class="p">)</span>
+<span class="gp">... </span><span class="p">))</span>
+<span class="go">&#39;&lt;a&gt;&lt;b/&gt;&lt;c/&gt;&lt;d/&gt;&lt;/a&gt;&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="class">
+<dt id="kemmering.defer">
+<em class="property">class </em><code class="descclassname">kemmering.</code><code class="descname">defer</code><span class="sig-paren">(</span><em>f</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/kemmering.html#defer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#kemmering.defer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Defer the realization of a part of a template until a later time.</p>
+<p>Use of a deferred function in a snippet comprised of <cite>tag</cite> objects, turns
+that snippet into a template.  That template is said to be realized when
+<cite>bind</cite> is called on the snippet, which generates a concrete snippet based
+on the template and a context passed in via <cite>bind</cite>.</p>
+<p><cite>f</cite> is a function with the signature:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">deferred</span><span class="p">(</span><span class="n">context</span><span class="p">):</span>
+    <span class="s2">&quot;Return a `tag`, `notag`, or string.&quot;</span>
+</pre></div>
+</div>
+<p>The function will be called at realization time when <cite>bind</cite> is called on
+the containing snippet and passed the context object.  Most template
+helpers assume the context is a dictionary.</p>
+<p>Instances of <cite>defer</cite> may be used as children of <cite>tag</cite> objects or as values
+of tag atrributes.  When used as a child of a tag, the return value should
+be either another <cite>tag</cite> instance or a string for a text element.  When used
+as an attribute value, the return value should be a string or <cite>None</cite>.
+Setting an attribute to <cite>None</cite> causes it to be omitted from the realized
+template.</p>
+<p>Most use cases for <cite>defer</cite> are actually covered by more specific helpers
+based on <cite>defer</cite>, described below.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.bind">
+<code class="descclassname">kemmering.</code><code class="descname">bind</code><span class="sig-paren">(</span><em>template</em>, <em>context</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/kemmering.html#bind"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#kemmering.bind" title="Permalink to this definition">¶</a></dt>
+<dd><p>Realize a template by binding it to a context.</p>
+<p><cite>template</cite> is a <cite>tag</cite> instance which should contain some instances of
+<cite>defer</cite> in its structure.  <cite>context</cite> is the context object that is passed
+to deferred functions in the template.  Most template helpers assume the
+context is a dictionary.</p>
+<p>Returns new <cite>tag</cite> instance that is a copy of the template with any
+deferred elements replaced by the return values of their deferred
+functions.</p>
+</dd></dl>
+
+<div class="section" id="template-helpers">
+<h2>Template Helpers<a class="headerlink" href="#template-helpers" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="kemmering.from_context">
+<em class="property">class </em><code class="descclassname">kemmering.</code><code class="descname">from_context</code><span class="sig-paren">(</span><em>key</em>, <em>default=notag</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/kemmering.html#from_context"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#kemmering.from_context" title="Permalink to this definition">¶</a></dt>
+<dd><p>This specialization of <cite>defer</cite> simply returns a value from the bind
+context.</p>
+<p><cite>key</cite> is the name to look up in the bind context dictionary.  Whatever is
+the value in the bind context is returned.  If <cite>default</cite> is specified and
+<cite>key</cite> is not found in the bind context, <cite>default</cite> is returned instead.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">kemmering</span> <span class="kn">import</span> <span class="n">bind</span><span class="p">,</span> <span class="n">from_context</span><span class="p">,</span> <span class="n">tag</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">template</span> <span class="o">=</span> <span class="n">tag</span><span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">)(</span><span class="n">from_context</span><span class="p">(</span><span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">str</span><span class="p">(</span><span class="n">bind</span><span class="p">(</span><span class="n">template</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="s1">&#39;d&#39;</span><span class="p">}))</span>
+<span class="go">&#39;&lt;a&gt;d&lt;/a&gt;&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">str</span><span class="p">(</span><span class="n">bind</span><span class="p">(</span><span class="n">template</span><span class="p">,</span> <span class="p">{}))</span>
+<span class="go">&#39;&lt;a&gt;c&lt;/a&gt;&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="class">
+<dt id="kemmering.in_context">
+<em class="property">class </em><code class="descclassname">kemmering.</code><code class="descname">in_context</code><span class="sig-paren">(</span><em>keys</em>, <em>default=notag</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/kemmering.html#in_context"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#kemmering.in_context" title="Permalink to this definition">¶</a></dt>
+<dd><p>This specialization of <cite>defer</cite> looks up a value in the bind context by
+traversing the context using a sequence of keys where the bind context is
+presumed to be a structure of nested dictionaries.</p>
+<p><cite>keys</cite> is a sequence of names to look up, in order, in the bind context.
+If <cite>default</cite> is specified and a value is not found in the bind context for
+the given keys, <cite>default</cite> is returned instead.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">kemmering</span> <span class="kn">import</span> <span class="n">bind</span><span class="p">,</span> <span class="n">in_context</span><span class="p">,</span> <span class="n">tag</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">template</span> <span class="o">=</span> <span class="n">tag</span><span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">)(</span><span class="n">in_context</span><span class="p">([</span><span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">],</span> <span class="s1">&#39;d&#39;</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">str</span><span class="p">(</span><span class="n">bind</span><span class="p">(</span><span class="n">template</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;c&#39;</span><span class="p">:</span> <span class="s1">&#39;e&#39;</span><span class="p">}}))</span>
+<span class="go">&#39;&lt;a&gt;e&lt;/a&gt;&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">str</span><span class="p">(</span><span class="n">bind</span><span class="p">(</span><span class="n">template</span><span class="p">,</span> <span class="p">{}))</span>
+<span class="go">&#39;&lt;a&gt;d&lt;/a&gt;&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="class">
+<dt id="kemmering.format_context">
+<em class="property">class </em><code class="descclassname">kemmering.</code><code class="descname">format_context</code><span class="sig-paren">(</span><em>s</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/kemmering.html#format_context"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#kemmering.format_context" title="Permalink to this definition">¶</a></dt>
+<dd><p>This specialization of <cite>defer</cite> uses the bind context to perform Python
+string formatting on a format string.</p>
+<p><cite>s</cite> is the format string.  The return value is the equivalent of
+<cite>s.format(**context)</cite>.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">kemmering</span> <span class="kn">import</span> <span class="n">bind</span><span class="p">,</span> <span class="n">format_context</span><span class="p">,</span> <span class="n">tag</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">template</span> <span class="o">=</span> <span class="n">tag</span><span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">)(</span><span class="n">format_context</span><span class="p">(</span><span class="s1">&#39;{b} {c}&#39;</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">str</span><span class="p">(</span><span class="n">bind</span><span class="p">(</span><span class="n">template</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="s1">&#39;d&#39;</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">:</span> <span class="s1">&#39;e&#39;</span><span class="p">}))</span>
+<span class="go">&#39;&lt;a&gt;d e&lt;/a&gt;&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="class">
+<dt id="kemmering.cond">
+<em class="property">class </em><code class="descclassname">kemmering.</code><code class="descname">cond</code><span class="sig-paren">(</span><em>condition</em>, <em>affirmative</em>, <em>negative=notag</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/kemmering.html#cond"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#kemmering.cond" title="Permalink to this definition">¶</a></dt>
+<dd><p>This specialization of <cite>defer</cite> conditionally includes an element based
+on the bind context.</p>
+<p><cite>condition</cite> is a function which accepts a single argument, <cite>context</cite> and
+returns a boolean.  <cite>condition</cite> may optionally be a string, in which case
+it is used as a key for performing a dictionary lookup in the bind context,
+the value of which will be treated as a boolean.</p>
+<p><cite>affirmative</cite> is the return value if the condition is <cite>True</cite>.  <cite>negative</cite>
+is the return value of the condition is <cite>False</cite>.  If the condition is
+<cite>False</cite> and no <cite>negative</cite> value is given, this element is elided from the
+realized snippet.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">kemmering</span> <span class="kn">import</span> <span class="n">bind</span><span class="p">,</span> <span class="n">cond</span><span class="p">,</span> <span class="n">tag</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">has_b</span><span class="p">(</span><span class="n">context</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">return</span> <span class="s1">&#39;b&#39;</span> <span class="ow">in</span> <span class="n">context</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">template</span> <span class="o">=</span> <span class="n">tag</span><span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">)(</span><span class="n">cond</span><span class="p">(</span><span class="n">has_b</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">str</span><span class="p">(</span><span class="n">bind</span><span class="p">(</span><span class="n">template</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">}))</span>
+<span class="go">&#39;&lt;a&gt;b&lt;/a&gt;&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">str</span><span class="p">(</span><span class="n">bind</span><span class="p">(</span><span class="n">template</span><span class="p">,</span> <span class="p">{}))</span>
+<span class="go">&#39;&lt;a&gt;&lt;/a&gt;&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">template</span> <span class="o">=</span> <span class="n">tag</span><span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">)(</span><span class="n">cond</span><span class="p">(</span><span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">,</span> <span class="s1">&#39;d&#39;</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">str</span><span class="p">(</span><span class="n">bind</span><span class="p">(</span><span class="n">template</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">}))</span>
+<span class="go">&#39;&lt;a&gt;c&lt;/a&gt;&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">str</span><span class="p">(</span><span class="n">bind</span><span class="p">(</span><span class="n">template</span><span class="p">,</span> <span class="p">{}))</span>
+<span class="go">&#39;&lt;a&gt;d&lt;/a&gt;&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="class">
+<dt id="kemmering.loop">
+<em class="property">class </em><code class="descclassname">kemmering.</code><code class="descname">loop</code><span class="sig-paren">(</span><em>key</em>, <em>seq</em>, <em>template</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/kemmering.html#loop"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#kemmering.loop" title="Permalink to this definition">¶</a></dt>
+<dd><p>This specialization of <cite>defer</cite> repeats a snippet while iterating over a
+sequence.</p>
+<p><cite>key</cite> is the name of a key that will be added to the context on each
+iteration whose value is the current item in the sequence. This makes the
+current item available to deferred functions in the repeated snippet. <cite>key</cite>
+may optionally be a <cite>list</cite> or <cite>tuple</cite> of string key names, in which case
+the sequence values, which should be sequences of equal length, will be
+unpacked into those keys.</p>
+<p><cite>seq</cite> is a function which accepts a single argument, <cite>context</cite>, and returns
+an iterable sequence.  Alternatively, <cite>seq</cite> can be the name of a key in the
+current context whose value is an iterable sequence.</p>
+<p><cite>template</cite> is the snippet to be repeated.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">kemmering</span> <span class="kn">import</span> <span class="n">bind</span><span class="p">,</span> <span class="n">from_context</span><span class="p">,</span> <span class="n">loop</span><span class="p">,</span> <span class="n">tag</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">fruits</span><span class="p">(</span><span class="n">context</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">return</span> <span class="p">[</span><span class="s1">&#39;apple&#39;</span><span class="p">,</span> <span class="s1">&#39;pear&#39;</span><span class="p">,</span> <span class="s1">&#39;banana&#39;</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">template</span> <span class="o">=</span> <span class="n">tag</span><span class="p">(</span><span class="s1">&#39;ul&#39;</span><span class="p">)(</span>
+<span class="gp">... </span>    <span class="n">loop</span><span class="p">(</span><span class="s1">&#39;fruit&#39;</span><span class="p">,</span> <span class="n">fruits</span><span class="p">,</span> <span class="n">tag</span><span class="p">(</span><span class="s1">&#39;li&#39;</span><span class="p">)(</span><span class="n">from_context</span><span class="p">(</span><span class="s1">&#39;fruit&#39;</span><span class="p">))))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">str</span><span class="p">(</span><span class="n">bind</span><span class="p">(</span><span class="n">template</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;fruit&#39;</span><span class="p">:</span> <span class="s1">&#39;hamburger&#39;</span><span class="p">}))</span>
+<span class="go">&#39;&lt;ul&gt;&lt;li&gt;apple&lt;/li&gt;&lt;li&gt;pear&lt;/li&gt;&lt;li&gt;banana&lt;/li&gt;&lt;/ul&gt;&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">template</span> <span class="o">=</span> <span class="n">tag</span><span class="p">(</span><span class="s1">&#39;ul&#39;</span><span class="p">)(</span>
+<span class="gp">... </span>    <span class="n">loop</span><span class="p">(</span><span class="s1">&#39;fruit&#39;</span><span class="p">,</span> <span class="s1">&#39;fruits&#39;</span><span class="p">,</span> <span class="n">tag</span><span class="p">(</span><span class="s1">&#39;li&#39;</span><span class="p">)(</span><span class="n">from_context</span><span class="p">(</span><span class="s1">&#39;fruit&#39;</span><span class="p">))))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">str</span><span class="p">(</span><span class="n">bind</span><span class="p">(</span><span class="n">template</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;fruits&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;apple&#39;</span><span class="p">,</span> <span class="s1">&#39;pear&#39;</span><span class="p">,</span> <span class="s1">&#39;banana&#39;</span><span class="p">]}))</span>
+<span class="go">&#39;&lt;ul&gt;&lt;li&gt;apple&lt;/li&gt;&lt;li&gt;pear&lt;/li&gt;&lt;li&gt;banana&lt;/li&gt;&lt;/ul&gt;&#39;</span>
+</pre></div>
+</div>
+<p>And an example which uses unpacking:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">kemmering</span> <span class="kn">import</span> <span class="n">cond</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">kemmering.html</span> <span class="kn">import</span> <span class="n">pretty</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">fruits</span><span class="p">(</span><span class="n">context</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">return</span> <span class="nb">enumerate</span><span class="p">([</span><span class="s1">&#39;apple&#39;</span><span class="p">,</span> <span class="s1">&#39;pear&#39;</span><span class="p">,</span> <span class="s1">&#39;banana&#39;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">is_even</span><span class="p">(</span><span class="n">context</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">return</span> <span class="n">context</span><span class="p">[</span><span class="s1">&#39;i&#39;</span><span class="p">]</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">template</span> <span class="o">=</span> <span class="n">tag</span><span class="p">(</span><span class="s1">&#39;ul&#39;</span><span class="p">)(</span>
+<span class="gp">... </span>    <span class="n">loop</span><span class="p">((</span><span class="s1">&#39;i&#39;</span><span class="p">,</span> <span class="s1">&#39;fruit&#39;</span><span class="p">),</span> <span class="n">fruits</span><span class="p">,</span>
+<span class="gp">... </span>        <span class="n">tag</span><span class="p">(</span><span class="s1">&#39;li&#39;</span><span class="p">,</span> <span class="n">class_</span><span class="o">=</span><span class="n">cond</span><span class="p">(</span><span class="n">is_even</span><span class="p">,</span> <span class="s1">&#39;even&#39;</span><span class="p">,</span> <span class="s1">&#39;odd&#39;</span><span class="p">))(</span>
+<span class="gp">... </span>            <span class="n">from_context</span><span class="p">(</span><span class="s1">&#39;fruit&#39;</span><span class="p">))))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">pretty</span><span class="p">(</span><span class="n">bind</span><span class="p">(</span><span class="n">template</span><span class="p">,</span> <span class="p">{})))</span>
+<span class="go">&lt;ul&gt;</span>
+<span class="go">  &lt;li class=&quot;even&quot;&gt;apple&lt;/li&gt;</span>
+<span class="go">  &lt;li class=&quot;odd&quot;&gt;pear&lt;/li&gt;</span>
+<span class="go">  &lt;li class=&quot;even&quot;&gt;banana&lt;/li&gt;</span>
+<span class="go">&lt;/ul&gt;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="module-kemmering.html">
+<span id="kemmering-html-api"></span><h1><a class="reference internal" href="#module-kemmering.html" title="kemmering.html"><code class="xref py py-mod docutils literal"><span class="pre">kemmering.html</span></code></a> API<a class="headerlink" href="#module-kemmering.html" title="Permalink to this headline">¶</a></h1>
+<p>HTML tags</p>
+<p>Reference: <a class="reference external" href="http://www.html-5-tutorial.com/all-html-tags.htm">http://www.html-5-tutorial.com/all-html-tags.htm</a></p>
+<dl class="class">
+<dt id="kemmering.html.doc">
+<em class="property">class </em><code class="descclassname">kemmering.html.</code><code class="descname">doc</code><span class="sig-paren">(</span><em>*children</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/kemmering/html.html#doc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#kemmering.html.doc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Top level HTML5 document, includes doctype declaration.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">kemmering.html</span> <span class="kn">import</span> <span class="n">doc</span><span class="p">,</span> <span class="n">html</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">doc</span><span class="p">(</span><span class="n">html</span><span class="p">()))</span>
+<span class="go">&lt;!DOCTYPE html&gt;</span>
+
+<span class="go">&lt;html&gt;&lt;/html&gt;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="class">
+<dt id="kemmering.html.style">
+<em class="property">class </em><code class="descclassname">kemmering.html.</code><code class="descname">style</code><span class="sig-paren">(</span><em>*args</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/kemmering/html.html#style"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#kemmering.html.style" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;style&gt;&lt;/style&gt;.</p>
+<p>Each positional argument should be a tuple of <cite>(selector, style)</cite> where
+<cite>selector</cite> is the CSS selector and <cite>style</cite> is a dictionary containing the
+CSS styles for that selector.  Calling the resulting object uses the same
+signature and adds those styles to this tag.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">kemmering.html</span> <span class="kn">import</span> <span class="n">style</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">style</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="s1">&#39;c&#39;</span><span class="p">,</span> <span class="p">}),</span>
+<span class="gp">... </span>    <span class="p">(</span><span class="s1">&#39;d&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;e&#39;</span><span class="p">:</span> <span class="s1">&#39;f&#39;</span><span class="p">})))</span>
+
+<span class="go">&lt;style&gt;</span>
+<span class="go">  a {</span>
+<span class="go">    b: c;</span>
+<span class="go">  }</span>
+<span class="go">  d {</span>
+<span class="go">    e: f;</span>
+<span class="go">  }</span>
+<span class="go">&lt;/style&gt;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.pretty">
+<code class="descclassname">kemmering.html.</code><code class="descname">pretty</code><span class="sig-paren">(</span><em>snippet</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/kemmering/html.html#pretty"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#kemmering.html.pretty" title="Permalink to this definition">¶</a></dt>
+<dd><p>Render a snippet of HTML as a string with line breaks and indentation.
+This is not necessarily a particularly fast implementation, but it can be
+useful for debugging.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">kemmering</span> <span class="kn">import</span> <span class="n">tag</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">kemmering.html</span> <span class="kn">import</span> <span class="n">pretty</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">pretty</span><span class="p">(</span><span class="n">tag</span><span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">)(</span><span class="n">tag</span><span class="p">(</span><span class="s1">&#39;b&#39;</span><span class="p">)(</span><span class="n">tag</span><span class="p">(</span><span class="s1">&#39;c/&#39;</span><span class="p">)))))</span>
+<span class="go">&lt;a&gt;</span>
+<span class="go">  &lt;b&gt;</span>
+<span class="go">    &lt;c/&gt;</span>
+<span class="go">  &lt;/b&gt;</span>
+<span class="go">&lt;/a&gt;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.a">
+<code class="descclassname">kemmering.html.</code><code class="descname">a</code><span class="sig-paren">(</span><em>**attrs</em><span class="sig-paren">)</span><a class="headerlink" href="#kemmering.html.a" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;a&gt;&lt;/a&gt;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.abbr">
+<code class="descclassname">kemmering.html.</code><code class="descname">abbr</code><span class="sig-paren">(</span><em>**attrs</em><span class="sig-paren">)</span><a class="headerlink" href="#kemmering.html.abbr" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;abbr&gt;&lt;/abbr&gt;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.address">
+<code class="descclassname">kemmering.html.</code><code class="descname">address</code><span class="sig-paren">(</span><em>**attrs</em><span class="sig-paren">)</span><a class="headerlink" href="#kemmering.html.address" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;address&gt;&lt;/address&gt;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.area">
+<code class="descclassname">kemmering.html.</code><code class="descname">area</code><span class="sig-paren">(</span><em>**attrs</em><span class="sig-paren">)</span><a class="headerlink" href="#kemmering.html.area" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;area/&gt;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.article">
+<code class="descclassname">kemmering.html.</code><code class="descname">article</code><span class="sig-paren">(</span><em>**attrs</em><span class="sig-paren">)</span><a class="headerlink" href="#kemmering.html.article" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;article&gt;&lt;/article&gt;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.aside">
+<code class="descclassname">kemmering.html.</code><code class="descname">aside</code><span class="sig-paren">(</span><em>**attrs</em><span class="sig-paren">)</span><a class="headerlink" href="#kemmering.html.aside" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;aside&gt;&lt;/aside&gt;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.audio">
+<code class="descclassname">kemmering.html.</code><code class="descname">audio</code><span class="sig-paren">(</span><em>**attrs</em><span class="sig-paren">)</span><a class="headerlink" href="#kemmering.html.audio" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;audio&gt;&lt;/audio&gt;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.b">
+<code class="descclassname">kemmering.html.</code><code class="descname">b</code><span class="sig-paren">(</span><em>**attrs</em><span class="sig-paren">)</span><a class="headerlink" href="#kemmering.html.b" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;b&gt;&lt;/b&gt;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.base">
+<code class="descclassname">kemmering.html.</code><code class="descname">base</code><span class="sig-paren">(</span><em>**attrs</em><span class="sig-paren">)</span><a class="headerlink" href="#kemmering.html.base" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;base/&gt;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.bdi">
+<code class="descclassname">kemmering.html.</code><code class="descname">bdi</code><span class="sig-paren">(</span><em>**attrs</em><span class="sig-paren">)</span><a class="headerlink" href="#kemmering.html.bdi" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;bdi&gt;&lt;/bdi&gt;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.bdo">
+<code class="descclassname">kemmering.html.</code><code class="descname">bdo</code><span class="sig-paren">(</span><em>**attrs</em><span class="sig-paren">)</span><a class="headerlink" href="#kemmering.html.bdo" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;bdo&gt;&lt;/bdo&gt;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.blockquote">
+<code class="descclassname">kemmering.html.</code><code class="descname">blockquote</code><span class="sig-paren">(</span><em>**attrs</em><span class="sig-paren">)</span><a class="headerlink" href="#kemmering.html.blockquote" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;blockquote&gt;&lt;/blockquote&gt;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.body">
+<code class="descclassname">kemmering.html.</code><code class="descname">body</code><span class="sig-paren">(</span><em>**attrs</em><span class="sig-paren">)</span><a class="headerlink" href="#kemmering.html.body" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;body&gt;&lt;/body&gt;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.br">
+<code class="descclassname">kemmering.html.</code><code class="descname">br</code><span class="sig-paren">(</span><em>**attrs</em><span class="sig-paren">)</span><a class="headerlink" href="#kemmering.html.br" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;br/&gt;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.button">
+<code class="descclassname">kemmering.html.</code><code class="descname">button</code><span class="sig-paren">(</span><em>**attrs</em><span class="sig-paren">)</span><a class="headerlink" href="#kemmering.html.button" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;button&gt;&lt;/button&gt;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.canvas">
+<code class="descclassname">kemmering.html.</code><code class="descname">canvas</code><span class="sig-paren">(</span><em>**attrs</em><span class="sig-paren">)</span><a class="headerlink" href="#kemmering.html.canvas" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;canvas&gt;&lt;/canvas&gt;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.caption">
+<code class="descclassname">kemmering.html.</code><code class="descname">caption</code><span class="sig-paren">(</span><em>**attrs</em><span class="sig-paren">)</span><a class="headerlink" href="#kemmering.html.caption" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;caption&gt;&lt;/caption&gt;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.cite">
+<code class="descclassname">kemmering.html.</code><code class="descname">cite</code><span class="sig-paren">(</span><em>**attrs</em><span class="sig-paren">)</span><a class="headerlink" href="#kemmering.html.cite" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;cite&gt;&lt;/cite&gt;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.code">
+<code class="descclassname">kemmering.html.</code><code class="descname">code</code><span class="sig-paren">(</span><em>**attrs</em><span class="sig-paren">)</span><a class="headerlink" href="#kemmering.html.code" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;code&gt;&lt;/code&gt;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.col">
+<code class="descclassname">kemmering.html.</code><code class="descname">col</code><span class="sig-paren">(</span><em>**attrs</em><span class="sig-paren">)</span><a class="headerlink" href="#kemmering.html.col" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;col/&gt;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.colgroup">
+<code class="descclassname">kemmering.html.</code><code class="descname">colgroup</code><span class="sig-paren">(</span><em>**attrs</em><span class="sig-paren">)</span><a class="headerlink" href="#kemmering.html.colgroup" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;colgroup&gt;&lt;/colgroup&gt;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.datalist">
+<code class="descclassname">kemmering.html.</code><code class="descname">datalist</code><span class="sig-paren">(</span><em>**attrs</em><span class="sig-paren">)</span><a class="headerlink" href="#kemmering.html.datalist" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;datalist&gt;&lt;/datalist&gt;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.dd">
+<code class="descclassname">kemmering.html.</code><code class="descname">dd</code><span class="sig-paren">(</span><em>**attrs</em><span class="sig-paren">)</span><a class="headerlink" href="#kemmering.html.dd" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;dd&gt;&lt;/dd&gt;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.del_">
+<code class="descclassname">kemmering.html.</code><code class="descname">del_</code><span class="sig-paren">(</span><em>**attrs</em><span class="sig-paren">)</span><a class="headerlink" href="#kemmering.html.del_" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;del&gt;&lt;/del&gt;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.details">
+<code class="descclassname">kemmering.html.</code><code class="descname">details</code><span class="sig-paren">(</span><em>**attrs</em><span class="sig-paren">)</span><a class="headerlink" href="#kemmering.html.details" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;details&gt;&lt;/details&gt;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.dfn">
+<code class="descclassname">kemmering.html.</code><code class="descname">dfn</code><span class="sig-paren">(</span><em>**attrs</em><span class="sig-paren">)</span><a class="headerlink" href="#kemmering.html.dfn" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;dfn&gt;&lt;/dfn&gt;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.div">
+<code class="descclassname">kemmering.html.</code><code class="descname">div</code><span class="sig-paren">(</span><em>**attrs</em><span class="sig-paren">)</span><a class="headerlink" href="#kemmering.html.div" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;div&gt;&lt;/div&gt;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.dl">
+<code class="descclassname">kemmering.html.</code><code class="descname">dl</code><span class="sig-paren">(</span><em>**attrs</em><span class="sig-paren">)</span><a class="headerlink" href="#kemmering.html.dl" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;dl&gt;&lt;/dl&gt;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.dt">
+<code class="descclassname">kemmering.html.</code><code class="descname">dt</code><span class="sig-paren">(</span><em>**attrs</em><span class="sig-paren">)</span><a class="headerlink" href="#kemmering.html.dt" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;dt&gt;&lt;/dt&gt;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.em">
+<code class="descclassname">kemmering.html.</code><code class="descname">em</code><span class="sig-paren">(</span><em>**attrs</em><span class="sig-paren">)</span><a class="headerlink" href="#kemmering.html.em" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;em&gt;&lt;/em&gt;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.embed">
+<code class="descclassname">kemmering.html.</code><code class="descname">embed</code><span class="sig-paren">(</span><em>**attrs</em><span class="sig-paren">)</span><a class="headerlink" href="#kemmering.html.embed" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;embed/&gt;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.fieldset">
+<code class="descclassname">kemmering.html.</code><code class="descname">fieldset</code><span class="sig-paren">(</span><em>**attrs</em><span class="sig-paren">)</span><a class="headerlink" href="#kemmering.html.fieldset" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;fieldset&gt;&lt;/fieldset&gt;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.figcaption">
+<code class="descclassname">kemmering.html.</code><code class="descname">figcaption</code><span class="sig-paren">(</span><em>**attrs</em><span class="sig-paren">)</span><a class="headerlink" href="#kemmering.html.figcaption" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;figcaption&gt;&lt;/figcaption&gt;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.figure">
+<code class="descclassname">kemmering.html.</code><code class="descname">figure</code><span class="sig-paren">(</span><em>**attrs</em><span class="sig-paren">)</span><a class="headerlink" href="#kemmering.html.figure" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;figure&gt;&lt;/figure&gt;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.footer">
+<code class="descclassname">kemmering.html.</code><code class="descname">footer</code><span class="sig-paren">(</span><em>**attrs</em><span class="sig-paren">)</span><a class="headerlink" href="#kemmering.html.footer" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;footer&gt;&lt;/footer&gt;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.form">
+<code class="descclassname">kemmering.html.</code><code class="descname">form</code><span class="sig-paren">(</span><em>**attrs</em><span class="sig-paren">)</span><a class="headerlink" href="#kemmering.html.form" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;form&gt;&lt;/form&gt;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.h1">
+<code class="descclassname">kemmering.html.</code><code class="descname">h1</code><span class="sig-paren">(</span><em>**attrs</em><span class="sig-paren">)</span><a class="headerlink" href="#kemmering.html.h1" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;h1&gt;&lt;/h1&gt;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.h2">
+<code class="descclassname">kemmering.html.</code><code class="descname">h2</code><span class="sig-paren">(</span><em>**attrs</em><span class="sig-paren">)</span><a class="headerlink" href="#kemmering.html.h2" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;h2&gt;&lt;/h2&gt;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.h3">
+<code class="descclassname">kemmering.html.</code><code class="descname">h3</code><span class="sig-paren">(</span><em>**attrs</em><span class="sig-paren">)</span><a class="headerlink" href="#kemmering.html.h3" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;h3&gt;&lt;/h3&gt;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.h4">
+<code class="descclassname">kemmering.html.</code><code class="descname">h4</code><span class="sig-paren">(</span><em>**attrs</em><span class="sig-paren">)</span><a class="headerlink" href="#kemmering.html.h4" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;h4&gt;&lt;/h4&gt;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.h5">
+<code class="descclassname">kemmering.html.</code><code class="descname">h5</code><span class="sig-paren">(</span><em>**attrs</em><span class="sig-paren">)</span><a class="headerlink" href="#kemmering.html.h5" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;h5&gt;&lt;/h5&gt;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.h6">
+<code class="descclassname">kemmering.html.</code><code class="descname">h6</code><span class="sig-paren">(</span><em>**attrs</em><span class="sig-paren">)</span><a class="headerlink" href="#kemmering.html.h6" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;h6&gt;&lt;/h6&gt;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.head">
+<code class="descclassname">kemmering.html.</code><code class="descname">head</code><span class="sig-paren">(</span><em>**attrs</em><span class="sig-paren">)</span><a class="headerlink" href="#kemmering.html.head" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;head&gt;&lt;/head&gt;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.header">
+<code class="descclassname">kemmering.html.</code><code class="descname">header</code><span class="sig-paren">(</span><em>**attrs</em><span class="sig-paren">)</span><a class="headerlink" href="#kemmering.html.header" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;header&gt;&lt;/header&gt;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.hgroup">
+<code class="descclassname">kemmering.html.</code><code class="descname">hgroup</code><span class="sig-paren">(</span><em>**attrs</em><span class="sig-paren">)</span><a class="headerlink" href="#kemmering.html.hgroup" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;hgroup&gt;&lt;/hgroup&gt;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.hr">
+<code class="descclassname">kemmering.html.</code><code class="descname">hr</code><span class="sig-paren">(</span><em>**attrs</em><span class="sig-paren">)</span><a class="headerlink" href="#kemmering.html.hr" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;hr/&gt;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.html">
+<code class="descclassname">kemmering.html.</code><code class="descname">html</code><span class="sig-paren">(</span><em>**attrs</em><span class="sig-paren">)</span><a class="headerlink" href="#kemmering.html.html" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;html&gt;&lt;/html&gt;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.i">
+<code class="descclassname">kemmering.html.</code><code class="descname">i</code><span class="sig-paren">(</span><em>**attrs</em><span class="sig-paren">)</span><a class="headerlink" href="#kemmering.html.i" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;i&gt;&lt;/i&gt;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.iframe">
+<code class="descclassname">kemmering.html.</code><code class="descname">iframe</code><span class="sig-paren">(</span><em>**attrs</em><span class="sig-paren">)</span><a class="headerlink" href="#kemmering.html.iframe" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;iframe&gt;&lt;/iframe&gt;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.img">
+<code class="descclassname">kemmering.html.</code><code class="descname">img</code><span class="sig-paren">(</span><em>**attrs</em><span class="sig-paren">)</span><a class="headerlink" href="#kemmering.html.img" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;img/&gt;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.input">
+<code class="descclassname">kemmering.html.</code><code class="descname">input</code><span class="sig-paren">(</span><em>**attrs</em><span class="sig-paren">)</span><a class="headerlink" href="#kemmering.html.input" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;input/&gt;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.ins">
+<code class="descclassname">kemmering.html.</code><code class="descname">ins</code><span class="sig-paren">(</span><em>**attrs</em><span class="sig-paren">)</span><a class="headerlink" href="#kemmering.html.ins" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;ins&gt;&lt;/ins&gt;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.kbd">
+<code class="descclassname">kemmering.html.</code><code class="descname">kbd</code><span class="sig-paren">(</span><em>**attrs</em><span class="sig-paren">)</span><a class="headerlink" href="#kemmering.html.kbd" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;kbd&gt;&lt;/kbd&gt;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.keygen">
+<code class="descclassname">kemmering.html.</code><code class="descname">keygen</code><span class="sig-paren">(</span><em>**attrs</em><span class="sig-paren">)</span><a class="headerlink" href="#kemmering.html.keygen" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;keygen&gt;&lt;/keygen&gt;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.label">
+<code class="descclassname">kemmering.html.</code><code class="descname">label</code><span class="sig-paren">(</span><em>**attrs</em><span class="sig-paren">)</span><a class="headerlink" href="#kemmering.html.label" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;label&gt;&lt;/label&gt;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.legend">
+<code class="descclassname">kemmering.html.</code><code class="descname">legend</code><span class="sig-paren">(</span><em>**attrs</em><span class="sig-paren">)</span><a class="headerlink" href="#kemmering.html.legend" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;legend&gt;&lt;/legend&gt;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.li">
+<code class="descclassname">kemmering.html.</code><code class="descname">li</code><span class="sig-paren">(</span><em>**attrs</em><span class="sig-paren">)</span><a class="headerlink" href="#kemmering.html.li" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;li&gt;&lt;/li&gt;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.link">
+<code class="descclassname">kemmering.html.</code><code class="descname">link</code><span class="sig-paren">(</span><em>**attrs</em><span class="sig-paren">)</span><a class="headerlink" href="#kemmering.html.link" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;link/&gt;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.map">
+<code class="descclassname">kemmering.html.</code><code class="descname">map</code><span class="sig-paren">(</span><em>**attrs</em><span class="sig-paren">)</span><a class="headerlink" href="#kemmering.html.map" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;map&gt;&lt;/map&gt;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.mark">
+<code class="descclassname">kemmering.html.</code><code class="descname">mark</code><span class="sig-paren">(</span><em>**attrs</em><span class="sig-paren">)</span><a class="headerlink" href="#kemmering.html.mark" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;mark&gt;&lt;/mark&gt;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.menu">
+<code class="descclassname">kemmering.html.</code><code class="descname">menu</code><span class="sig-paren">(</span><em>**attrs</em><span class="sig-paren">)</span><a class="headerlink" href="#kemmering.html.menu" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;menu&gt;&lt;/menu&gt;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.meta">
+<code class="descclassname">kemmering.html.</code><code class="descname">meta</code><span class="sig-paren">(</span><em>**attrs</em><span class="sig-paren">)</span><a class="headerlink" href="#kemmering.html.meta" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;meta/&gt;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.meter">
+<code class="descclassname">kemmering.html.</code><code class="descname">meter</code><span class="sig-paren">(</span><em>**attrs</em><span class="sig-paren">)</span><a class="headerlink" href="#kemmering.html.meter" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;meter&gt;&lt;/meter&gt;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.nav">
+<code class="descclassname">kemmering.html.</code><code class="descname">nav</code><span class="sig-paren">(</span><em>**attrs</em><span class="sig-paren">)</span><a class="headerlink" href="#kemmering.html.nav" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;nav&gt;&lt;/nav&gt;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.noscript">
+<code class="descclassname">kemmering.html.</code><code class="descname">noscript</code><span class="sig-paren">(</span><em>**attrs</em><span class="sig-paren">)</span><a class="headerlink" href="#kemmering.html.noscript" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;noscript&gt;&lt;/noscript&gt;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.object">
+<code class="descclassname">kemmering.html.</code><code class="descname">object</code><span class="sig-paren">(</span><em>**attrs</em><span class="sig-paren">)</span><a class="headerlink" href="#kemmering.html.object" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;object&gt;&lt;/object&gt;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.ol">
+<code class="descclassname">kemmering.html.</code><code class="descname">ol</code><span class="sig-paren">(</span><em>**attrs</em><span class="sig-paren">)</span><a class="headerlink" href="#kemmering.html.ol" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;ol&gt;&lt;/ol&gt;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.optgroup">
+<code class="descclassname">kemmering.html.</code><code class="descname">optgroup</code><span class="sig-paren">(</span><em>**attrs</em><span class="sig-paren">)</span><a class="headerlink" href="#kemmering.html.optgroup" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;optgroup&gt;&lt;/optgroup&gt;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.option">
+<code class="descclassname">kemmering.html.</code><code class="descname">option</code><span class="sig-paren">(</span><em>**attrs</em><span class="sig-paren">)</span><a class="headerlink" href="#kemmering.html.option" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;option&gt;&lt;/option&gt;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.output">
+<code class="descclassname">kemmering.html.</code><code class="descname">output</code><span class="sig-paren">(</span><em>**attrs</em><span class="sig-paren">)</span><a class="headerlink" href="#kemmering.html.output" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;output&gt;&lt;/output&gt;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.p">
+<code class="descclassname">kemmering.html.</code><code class="descname">p</code><span class="sig-paren">(</span><em>**attrs</em><span class="sig-paren">)</span><a class="headerlink" href="#kemmering.html.p" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;p&gt;&lt;/p&gt;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.param">
+<code class="descclassname">kemmering.html.</code><code class="descname">param</code><span class="sig-paren">(</span><em>**attrs</em><span class="sig-paren">)</span><a class="headerlink" href="#kemmering.html.param" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;param/&gt;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.pre">
+<code class="descclassname">kemmering.html.</code><code class="descname">pre</code><span class="sig-paren">(</span><em>**attrs</em><span class="sig-paren">)</span><a class="headerlink" href="#kemmering.html.pre" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;pre&gt;&lt;/pre&gt;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.progress">
+<code class="descclassname">kemmering.html.</code><code class="descname">progress</code><span class="sig-paren">(</span><em>**attrs</em><span class="sig-paren">)</span><a class="headerlink" href="#kemmering.html.progress" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;progress&gt;&lt;/progress&gt;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.q">
+<code class="descclassname">kemmering.html.</code><code class="descname">q</code><span class="sig-paren">(</span><em>**attrs</em><span class="sig-paren">)</span><a class="headerlink" href="#kemmering.html.q" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;q&gt;&lt;/q&gt;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.rp">
+<code class="descclassname">kemmering.html.</code><code class="descname">rp</code><span class="sig-paren">(</span><em>**attrs</em><span class="sig-paren">)</span><a class="headerlink" href="#kemmering.html.rp" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;rp&gt;&lt;/rp&gt;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.rt">
+<code class="descclassname">kemmering.html.</code><code class="descname">rt</code><span class="sig-paren">(</span><em>**attrs</em><span class="sig-paren">)</span><a class="headerlink" href="#kemmering.html.rt" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;rt&gt;&lt;/rt&gt;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.ruby">
+<code class="descclassname">kemmering.html.</code><code class="descname">ruby</code><span class="sig-paren">(</span><em>**attrs</em><span class="sig-paren">)</span><a class="headerlink" href="#kemmering.html.ruby" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;ruby&gt;&lt;/ruby&gt;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.s">
+<code class="descclassname">kemmering.html.</code><code class="descname">s</code><span class="sig-paren">(</span><em>**attrs</em><span class="sig-paren">)</span><a class="headerlink" href="#kemmering.html.s" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;s&gt;&lt;/s&gt;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.samp">
+<code class="descclassname">kemmering.html.</code><code class="descname">samp</code><span class="sig-paren">(</span><em>**attrs</em><span class="sig-paren">)</span><a class="headerlink" href="#kemmering.html.samp" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;samp&gt;&lt;/samp&gt;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.script">
+<code class="descclassname">kemmering.html.</code><code class="descname">script</code><span class="sig-paren">(</span><em>**attrs</em><span class="sig-paren">)</span><a class="headerlink" href="#kemmering.html.script" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;script&gt;&lt;/script&gt;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.section">
+<code class="descclassname">kemmering.html.</code><code class="descname">section</code><span class="sig-paren">(</span><em>**attrs</em><span class="sig-paren">)</span><a class="headerlink" href="#kemmering.html.section" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;section&gt;&lt;/section&gt;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.select">
+<code class="descclassname">kemmering.html.</code><code class="descname">select</code><span class="sig-paren">(</span><em>**attrs</em><span class="sig-paren">)</span><a class="headerlink" href="#kemmering.html.select" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;select&gt;&lt;/select&gt;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.small">
+<code class="descclassname">kemmering.html.</code><code class="descname">small</code><span class="sig-paren">(</span><em>**attrs</em><span class="sig-paren">)</span><a class="headerlink" href="#kemmering.html.small" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;small&gt;&lt;/small&gt;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.source">
+<code class="descclassname">kemmering.html.</code><code class="descname">source</code><span class="sig-paren">(</span><em>**attrs</em><span class="sig-paren">)</span><a class="headerlink" href="#kemmering.html.source" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;source/&gt;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.span">
+<code class="descclassname">kemmering.html.</code><code class="descname">span</code><span class="sig-paren">(</span><em>**attrs</em><span class="sig-paren">)</span><a class="headerlink" href="#kemmering.html.span" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;span&gt;&lt;/span&gt;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.strong">
+<code class="descclassname">kemmering.html.</code><code class="descname">strong</code><span class="sig-paren">(</span><em>**attrs</em><span class="sig-paren">)</span><a class="headerlink" href="#kemmering.html.strong" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;strong&gt;&lt;/strong&gt;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.sub">
+<code class="descclassname">kemmering.html.</code><code class="descname">sub</code><span class="sig-paren">(</span><em>**attrs</em><span class="sig-paren">)</span><a class="headerlink" href="#kemmering.html.sub" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;sub&gt;&lt;/sub&gt;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.summary">
+<code class="descclassname">kemmering.html.</code><code class="descname">summary</code><span class="sig-paren">(</span><em>**attrs</em><span class="sig-paren">)</span><a class="headerlink" href="#kemmering.html.summary" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;summary&gt;&lt;/summary&gt;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.sup">
+<code class="descclassname">kemmering.html.</code><code class="descname">sup</code><span class="sig-paren">(</span><em>**attrs</em><span class="sig-paren">)</span><a class="headerlink" href="#kemmering.html.sup" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;sup&gt;&lt;/sup&gt;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.table">
+<code class="descclassname">kemmering.html.</code><code class="descname">table</code><span class="sig-paren">(</span><em>**attrs</em><span class="sig-paren">)</span><a class="headerlink" href="#kemmering.html.table" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;table&gt;&lt;/table&gt;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.tbody">
+<code class="descclassname">kemmering.html.</code><code class="descname">tbody</code><span class="sig-paren">(</span><em>**attrs</em><span class="sig-paren">)</span><a class="headerlink" href="#kemmering.html.tbody" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;tbody&gt;&lt;/tbody&gt;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.td">
+<code class="descclassname">kemmering.html.</code><code class="descname">td</code><span class="sig-paren">(</span><em>**attrs</em><span class="sig-paren">)</span><a class="headerlink" href="#kemmering.html.td" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;td&gt;&lt;/td&gt;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.textarea">
+<code class="descclassname">kemmering.html.</code><code class="descname">textarea</code><span class="sig-paren">(</span><em>**attrs</em><span class="sig-paren">)</span><a class="headerlink" href="#kemmering.html.textarea" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;textarea&gt;&lt;/textarea&gt;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.tfoot">
+<code class="descclassname">kemmering.html.</code><code class="descname">tfoot</code><span class="sig-paren">(</span><em>**attrs</em><span class="sig-paren">)</span><a class="headerlink" href="#kemmering.html.tfoot" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;tfoot&gt;&lt;/tfoot&gt;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.th">
+<code class="descclassname">kemmering.html.</code><code class="descname">th</code><span class="sig-paren">(</span><em>**attrs</em><span class="sig-paren">)</span><a class="headerlink" href="#kemmering.html.th" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;th&gt;&lt;/th&gt;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.thead">
+<code class="descclassname">kemmering.html.</code><code class="descname">thead</code><span class="sig-paren">(</span><em>**attrs</em><span class="sig-paren">)</span><a class="headerlink" href="#kemmering.html.thead" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;thead&gt;&lt;/thead&gt;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.time">
+<code class="descclassname">kemmering.html.</code><code class="descname">time</code><span class="sig-paren">(</span><em>**attrs</em><span class="sig-paren">)</span><a class="headerlink" href="#kemmering.html.time" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;time&gt;&lt;/time&gt;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.title">
+<code class="descclassname">kemmering.html.</code><code class="descname">title</code><span class="sig-paren">(</span><em>**attrs</em><span class="sig-paren">)</span><a class="headerlink" href="#kemmering.html.title" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;title&gt;&lt;/title&gt;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.tr">
+<code class="descclassname">kemmering.html.</code><code class="descname">tr</code><span class="sig-paren">(</span><em>**attrs</em><span class="sig-paren">)</span><a class="headerlink" href="#kemmering.html.tr" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;tr&gt;&lt;/tr&gt;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.track">
+<code class="descclassname">kemmering.html.</code><code class="descname">track</code><span class="sig-paren">(</span><em>**attrs</em><span class="sig-paren">)</span><a class="headerlink" href="#kemmering.html.track" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;track/&gt;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.u">
+<code class="descclassname">kemmering.html.</code><code class="descname">u</code><span class="sig-paren">(</span><em>**attrs</em><span class="sig-paren">)</span><a class="headerlink" href="#kemmering.html.u" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;u&gt;&lt;/u&gt;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.ul">
+<code class="descclassname">kemmering.html.</code><code class="descname">ul</code><span class="sig-paren">(</span><em>**attrs</em><span class="sig-paren">)</span><a class="headerlink" href="#kemmering.html.ul" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;ul&gt;&lt;/ul&gt;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.var">
+<code class="descclassname">kemmering.html.</code><code class="descname">var</code><span class="sig-paren">(</span><em>**attrs</em><span class="sig-paren">)</span><a class="headerlink" href="#kemmering.html.var" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;var&gt;&lt;/var&gt;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.video">
+<code class="descclassname">kemmering.html.</code><code class="descname">video</code><span class="sig-paren">(</span><em>**attrs</em><span class="sig-paren">)</span><a class="headerlink" href="#kemmering.html.video" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;video&gt;&lt;/video&gt;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="kemmering.html.wbr">
+<code class="descclassname">kemmering.html.</code><code class="descname">wbr</code><span class="sig-paren">(</span><em>**attrs</em><span class="sig-paren">)</span><a class="headerlink" href="#kemmering.html.wbr" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML tag &lt;wbr&gt;&lt;/wbr&gt;</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#"><code class="docutils literal"><span class="pre">kemmering</span></code> API</a><ul>
+<li><a class="reference internal" href="#template-helpers">Template Helpers</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-kemmering.html"><code class="docutils literal"><span class="pre">kemmering.html</span></code> API</a></li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">Kemmering</a></p>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Kemmering"
+             >previous</a> |</li>
+    	<li><a href="index.html">kemmering 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2016, Chris Rossi &lt;chris@archimedeanco.com&gt;.
+      Last updated on Feb 06, 2016.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.5.
+    </div>
+  </body>
+</html>
