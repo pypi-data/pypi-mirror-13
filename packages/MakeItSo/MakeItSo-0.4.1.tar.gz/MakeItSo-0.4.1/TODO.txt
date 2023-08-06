@@ -1,0 +1,107 @@
+= MakeItSo! TODO =
+
+Bugs:
+
+- Perhaps a `MANIFEST.in` should be used in order to package?
+  https://docs.python.org/2/distutils/sourcedist.html
+
+Planned features:
+
+ - Have a filepath or URL as the basic thing that gets "filled". (These
+   should be files, directories, entry_points, or URLs)
+
+ - There'd be hooks, so you could define a Python file in the control
+   config, and have stuff like:
+
+   def wrap(filename, rendered_content, vars)
+   def conflict(filename, prev_content, new_content, vars) # Could do prepend here, for instance
+   def some_helper_func()
+
+ - An option to display this at the end of the run:
+
+        makeitso -t my/template/ var1=value var2=value
+
+   Then you can easily rerun the command
+
+ - ability to specify delimeters (both for file interpolation and
+   filename interpolation);  normally, i'd want '${' + '}', but this
+   works poor with, say, bash scripts, and not having this makes it
+   difficult to write templates that make other templates
+   ``(This is done in tempita; can we use it?)``
+
+- should be able to contain as much information as possible in a
+  single file.  Since most often I want to give someone (possibly
+  myself) a single file to run, it would be nice to have some local
+  maximum of the product of flexibility and legibility
+
+- the ability to create a self-executing script from a file for easy
+  portability
+
+- ability to find the variables used in templates;  I find this
+  absolutely critical.  In PasteScript, this isn't there (unless you
+  use cheetah) and it is problematic if you want to deal with
+  templates programmatically.  If you do allow things, like
+  single-file templates, then this becomes mandatory. This is to say,
+  amongst other things, there should be a command-line option that
+  will list the template variables.
+
+- ability to import templates:
+  ability to make existing directory structures or files into
+  templates
+
+- ability to make a python package from a python file
+
+- ability to have a pre-hook and pluggable setup; e.g. setup a repo
+
+- ability to use defaults (--use-defaults) when they are specified
+
+ - ability to save variables used in a run into a file:
+
+           makeitso --save-variables=myvars.txt mytemplate
+
+ - ability to have executing script files (for packaged tests or via a shebang)
+
+ - a dotfile for metadata (e.g. ~/.makeitso)
+
+ - hooks for things to do after creation (licensing, uploading
+   somewhere, creating a repository, etc)
+
+ - not having to name template files 'foo_tmpl';  it is better not to
+   munge the file extension at all and have other mechanisms for
+   denoting files to be interpolated
+
+ - ability to use python in interpolation
+
+ - backwards compatability with pastescript templates
+
+ - a web interface (or a few)
+
+ - Like pastescript currently does, the ability to apply templates
+   sequentially.
+
+Directories:
+
+ - a file like makeitso.ini (in that directory) can control stuff
+
+Nice-to-haves:
+
+ - ability to munge files (e.g. combining setup.py from several
+  packages) [HARD]
+
+ - ability to push changes from a downstream instance to a template [HARD]
+
+ - It would also be nice (but not required) to be able to control how
+   things get put together.  That is, for a setup.py or a README, what
+   do you do?  For the latter, you probably mostly want append.  For
+   the former you want to do various things : e.g. add dependencies,
+   add entry points, etc.  So we should figure out a way to write a
+   template like that and have each template applied e.g. increment
+   dependencies.  So the latter are like variables.
+
+- ability to output to a POST request to a URL
+
+Tempita:
+
+ - Parsing variables out of tempita should be workable.  Even if a
+   couple are missed, you could possibly put some in config.ini and
+   have the rest detected (so you don't worry about forgetting new variables)

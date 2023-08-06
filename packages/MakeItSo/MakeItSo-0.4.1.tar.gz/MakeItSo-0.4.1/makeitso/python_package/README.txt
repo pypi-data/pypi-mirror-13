@@ -1,0 +1,10 @@
+{{project}}
+===========
+
+{{description}}
+
+----
+
+{{author}}
+
+{{url}}
