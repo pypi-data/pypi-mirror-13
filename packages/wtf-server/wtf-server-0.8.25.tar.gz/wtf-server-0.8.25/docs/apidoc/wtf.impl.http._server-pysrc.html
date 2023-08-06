@@ -1,0 +1,708 @@
+<?xml version="1.0" encoding="ascii"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>wtf.impl.http._server</title>
+  <link rel="stylesheet" href="epydoc.css" type="text/css" />
+  <script type="text/javascript" src="epydoc.js"></script>
+</head>
+
+<body bgcolor="white" text="black" link="blue" vlink="#204080"
+      alink="#204080">
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+  <!-- Home link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="wtf-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            ><a href="http://opensource.perlig.de/wtf/">Visit WTF Online</a></th>
+          </tr></table></th>
+  </tr>
+</table>
+<table width="100%" cellpadding="0" cellspacing="0">
+  <tr valign="top">
+    <td width="100%">
+      <span class="breadcrumbs">
+        <a href="wtf-module.html">Package&nbsp;wtf</a> ::
+        <a href="wtf.impl-module.html">Package&nbsp;impl</a> ::
+        <a href="wtf.impl.http-module.html">Package&nbsp;http</a> ::
+        Module&nbsp;_server
+      </span>
+    </td>
+    <td>
+      <table cellpadding="0" cellspacing="0">
+        <!-- hide/show private -->
+        <tr><td align="right"><span class="options">[<a href="javascript:void(0);" class="privatelink"
+    onclick="toggle_private();">hide&nbsp;private</a>]</span></td></tr>
+        <tr><td align="right"><span class="options"
+            >[<a href="frames.html" target="_top">frames</a
+            >]&nbsp;|&nbsp;<a href="wtf.impl.http._server-pysrc.html"
+            target="_top">no&nbsp;frames</a>]</span></td></tr>
+      </table>
+    </td>
+  </tr>
+</table>
+<h1 class="epydoc">Source Code for <a href="wtf.impl.http._server-module.html" onclick="show_private();">Module wtf.impl.http._server</a></h1>
+<pre class="py-src">
+<a name="L1"></a><tt class="py-lineno">  1</tt>  <tt class="py-line"><tt class="py-comment"># -*- coding: ascii -*-</tt> </tt>
+<a name="L2"></a><tt class="py-lineno">  2</tt>  <tt class="py-line"><tt class="py-comment">#</tt> </tt>
+<a name="L3"></a><tt class="py-lineno">  3</tt>  <tt class="py-line"><tt class="py-comment"># Copyright 2006-2012</tt> </tt>
+<a name="L4"></a><tt class="py-lineno">  4</tt>  <tt class="py-line"><tt class="py-comment"># Andr\xe9 Malo or his licensors, as applicable</tt> </tt>
+<a name="L5"></a><tt class="py-lineno">  5</tt>  <tt class="py-line"><tt class="py-comment">#</tt> </tt>
+<a name="L6"></a><tt class="py-lineno">  6</tt>  <tt class="py-line"><tt class="py-comment"># Licensed under the Apache License, Version 2.0 (the "License");</tt> </tt>
+<a name="L7"></a><tt class="py-lineno">  7</tt>  <tt class="py-line"><tt class="py-comment"># you may not use this file except in compliance with the License.</tt> </tt>
+<a name="L8"></a><tt class="py-lineno">  8</tt>  <tt class="py-line"><tt class="py-comment"># You may obtain a copy of the License at</tt> </tt>
+<a name="L9"></a><tt class="py-lineno">  9</tt>  <tt class="py-line"><tt class="py-comment">#</tt> </tt>
+<a name="L10"></a><tt class="py-lineno"> 10</tt>  <tt class="py-line"><tt class="py-comment">#     http://www.apache.org/licenses/LICENSE-2.0</tt> </tt>
+<a name="L11"></a><tt class="py-lineno"> 11</tt>  <tt class="py-line"><tt class="py-comment">#</tt> </tt>
+<a name="L12"></a><tt class="py-lineno"> 12</tt>  <tt class="py-line"><tt class="py-comment"># Unless required by applicable law or agreed to in writing, software</tt> </tt>
+<a name="L13"></a><tt class="py-lineno"> 13</tt>  <tt class="py-line"><tt class="py-comment"># distributed under the License is distributed on an "AS IS" BASIS,</tt> </tt>
+<a name="L14"></a><tt class="py-lineno"> 14</tt>  <tt class="py-line"><tt class="py-comment"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</tt> </tt>
+<a name="L15"></a><tt class="py-lineno"> 15</tt>  <tt class="py-line"><tt class="py-comment"># See the License for the specific language governing permissions and</tt> </tt>
+<a name="L16"></a><tt class="py-lineno"> 16</tt>  <tt class="py-line"><tt class="py-comment"># limitations under the License.</tt> </tt>
+<a name="L17"></a><tt class="py-lineno"> 17</tt>  <tt class="py-line"><tt class="py-docstring">"""</tt> </tt>
+<a name="L18"></a><tt class="py-lineno"> 18</tt>  <tt class="py-line"><tt class="py-docstring">HTTP Server Implementation</tt> </tt>
+<a name="L19"></a><tt class="py-lineno"> 19</tt>  <tt class="py-line"><tt class="py-docstring">==========================</tt> </tt>
+<a name="L20"></a><tt class="py-lineno"> 20</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L21"></a><tt class="py-lineno"> 21</tt>  <tt class="py-line"><tt class="py-docstring">Here's the http handling implemented.</tt> </tt>
+<a name="L22"></a><tt class="py-lineno"> 22</tt>  <tt class="py-line"><tt class="py-docstring">"""</tt> </tt>
+<a name="L23"></a><tt class="py-lineno"> 23</tt>  <tt class="py-line"><tt class="py-name">__author__</tt> <tt class="py-op">=</tt> <tt class="py-string">u"Andr\xe9 Malo"</tt> </tt>
+<a name="L24"></a><tt class="py-lineno"> 24</tt>  <tt class="py-line"><tt class="py-name">__docformat__</tt> <tt class="py-op">=</tt> <tt class="py-string">"restructuredtext en"</tt> </tt>
+<a name="L25"></a><tt class="py-lineno"> 25</tt>  <tt class="py-line"> </tt>
+<a name="L26"></a><tt class="py-lineno"> 26</tt>  <tt class="py-line"><tt class="py-keyword">import</tt> <tt class="py-name">errno</tt> <tt class="py-keyword">as</tt> <tt class="py-name">_errno</tt> </tt>
+<a name="L27"></a><tt class="py-lineno"> 27</tt>  <tt class="py-line"><tt class="py-keyword">import</tt> <tt class="py-name">re</tt> <tt class="py-keyword">as</tt> <tt class="py-name">_re</tt> </tt>
+<a name="L28"></a><tt class="py-lineno"> 28</tt>  <tt class="py-line"><tt class="py-keyword">import</tt> <tt class="py-name">socket</tt> <tt class="py-keyword">as</tt> <tt class="py-name">_socket</tt> </tt>
+<a name="L29"></a><tt class="py-lineno"> 29</tt>  <tt class="py-line"><tt class="py-keyword">import</tt> <tt class="py-name">sys</tt> <tt class="py-keyword">as</tt> <tt class="py-name">_sys</tt> </tt>
+<a name="L30"></a><tt class="py-lineno"> 30</tt>  <tt class="py-line"><tt class="py-keyword">import</tt> <tt id="link-0" class="py-name" targets="Method wtf.app.services._crash_tb.DebugRender.traceback()=wtf.app.services._crash_tb.DebugRender-class.html#traceback"><a title="wtf.app.services._crash_tb.DebugRender.traceback" class="py-name" href="#" onclick="return doclink('link-0', 'traceback', 'link-0');">traceback</a></tt> <tt class="py-keyword">as</tt> <tt class="py-name">_traceback</tt> </tt>
+<a name="L31"></a><tt class="py-lineno"> 31</tt>  <tt class="py-line"><tt class="py-keyword">import</tt> <tt class="py-name">urlparse</tt> <tt class="py-keyword">as</tt> <tt class="py-name">_urlparse</tt> </tt>
+<a name="L32"></a><tt class="py-lineno"> 32</tt>  <tt class="py-line"> </tt>
+<a name="L33"></a><tt class="py-lineno"> 33</tt>  <tt class="py-line"><tt class="py-keyword">from</tt> <tt id="link-1" class="py-name" targets="Package wtf=wtf-module.html"><a title="wtf" class="py-name" href="#" onclick="return doclink('link-1', 'wtf', 'link-1');">wtf</a></tt> <tt class="py-keyword">import</tt> <tt id="link-2" class="py-name" targets="Package wtf.impl=wtf.impl-module.html"><a title="wtf.impl" class="py-name" href="#" onclick="return doclink('link-2', 'impl', 'link-2');">impl</a></tt> <tt class="py-keyword">as</tt> <tt class="py-name">_impl</tt> </tt>
+<a name="L34"></a><tt class="py-lineno"> 34</tt>  <tt class="py-line"><tt class="py-keyword">from</tt> <tt id="link-3" class="py-name"><a title="wtf" class="py-name" href="#" onclick="return doclink('link-3', 'wtf', 'link-1');">wtf</a></tt> <tt class="py-keyword">import</tt> <tt id="link-4" class="py-name" targets="Module wtf.stream=wtf.stream-module.html"><a title="wtf.stream" class="py-name" href="#" onclick="return doclink('link-4', 'stream', 'link-4');">stream</a></tt> <tt class="py-keyword">as</tt> <tt id="link-5" class="py-name" targets="Variable wtf.impl._gateway.ResponseStarter._stream=wtf.impl._gateway.ResponseStarter-class.html#_stream"><a title="wtf.impl._gateway.ResponseStarter._stream" class="py-name" href="#" onclick="return doclink('link-5', '_stream', 'link-5');">_stream</a></tt> </tt>
+<a name="L35"></a><tt class="py-lineno"> 35</tt>  <tt class="py-line"><tt class="py-keyword">from</tt> <tt id="link-6" class="py-name"><a title="wtf" class="py-name" href="#" onclick="return doclink('link-6', 'wtf', 'link-1');">wtf</a></tt> <tt class="py-keyword">import</tt> <tt id="link-7" class="py-name" targets="Module wtf.webutil=wtf.webutil-module.html"><a title="wtf.webutil" class="py-name" href="#" onclick="return doclink('link-7', 'webutil', 'link-7');">webutil</a></tt> <tt class="py-keyword">as</tt> <tt class="py-name">_webutil</tt> </tt>
+<a name="L36"></a><tt class="py-lineno"> 36</tt>  <tt class="py-line"><tt class="py-keyword">from</tt> <tt id="link-8" class="py-name"><a title="wtf" class="py-name" href="#" onclick="return doclink('link-8', 'wtf', 'link-1');">wtf</a></tt><tt class="py-op">.</tt><tt id="link-9" class="py-name"><a title="wtf.impl" class="py-name" href="#" onclick="return doclink('link-9', 'impl', 'link-2');">impl</a></tt> <tt class="py-keyword">import</tt> <tt id="link-10" class="py-name" targets="Module wtf.ext.db._connection=wtf.ext.db._connection-module.html,Module wtf.impl._connection=wtf.impl._connection-module.html"><a title="wtf.ext.db._connection
+wtf.impl._connection" class="py-name" href="#" onclick="return doclink('link-10', '_connection', 'link-10');">_connection</a></tt> </tt>
+<a name="L37"></a><tt class="py-lineno"> 37</tt>  <tt class="py-line"><tt class="py-keyword">from</tt> <tt id="link-11" class="py-name"><a title="wtf" class="py-name" href="#" onclick="return doclink('link-11', 'wtf', 'link-1');">wtf</a></tt><tt class="py-op">.</tt><tt id="link-12" class="py-name"><a title="wtf.impl" class="py-name" href="#" onclick="return doclink('link-12', 'impl', 'link-2');">impl</a></tt> <tt class="py-keyword">import</tt> <tt id="link-13" class="py-name" targets="Module wtf.impl._gateway=wtf.impl._gateway-module.html"><a title="wtf.impl._gateway" class="py-name" href="#" onclick="return doclink('link-13', '_gateway', 'link-13');">_gateway</a></tt> </tt>
+<a name="L38"></a><tt class="py-lineno"> 38</tt>  <tt class="py-line"><tt class="py-keyword">from</tt> <tt id="link-14" class="py-name"><a title="wtf" class="py-name" href="#" onclick="return doclink('link-14', 'wtf', 'link-1');">wtf</a></tt><tt class="py-op">.</tt><tt id="link-15" class="py-name"><a title="wtf.impl" class="py-name" href="#" onclick="return doclink('link-15', 'impl', 'link-2');">impl</a></tt><tt class="py-op">.</tt><tt id="link-16" class="py-name" targets="Package wtf.impl.http=wtf.impl.http-module.html"><a title="wtf.impl.http" class="py-name" href="#" onclick="return doclink('link-16', 'http', 'link-16');">http</a></tt> <tt class="py-keyword">import</tt> <tt id="link-17" class="py-name" targets="Module wtf.impl.http._request=wtf.impl.http._request-module.html"><a title="wtf.impl.http._request" class="py-name" href="#" onclick="return doclink('link-17', '_request', 'link-17');">_request</a></tt> </tt>
+<a name="L39"></a><tt class="py-lineno"> 39</tt>  <tt class="py-line"> </tt>
+<a name="L40"></a><tt class="py-lineno"> 40</tt>  <tt class="py-line"> </tt>
+<a name="HTTPServer"></a><div id="HTTPServer-def"><a name="L41"></a><tt class="py-lineno"> 41</tt> <a class="py-toggle" href="#" id="HTTPServer-toggle" onclick="return toggle('HTTPServer');">-</a><tt class="py-line"><tt class="py-keyword">class</tt> <a class="py-def-name" href="wtf.impl.http._server.HTTPServer-class.html">HTTPServer</a><tt class="py-op">(</tt><tt class="py-base-class">object</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="HTTPServer-collapsed" style="display:none;" pad="+++" indent="++++"></div><div id="HTTPServer-expanded"><a name="L42"></a><tt class="py-lineno"> 42</tt>  <tt class="py-line">    <tt class="py-docstring">"""</tt> </tt>
+<a name="L43"></a><tt class="py-lineno"> 43</tt>  <tt class="py-line"><tt class="py-docstring">    HTTP server</tt> </tt>
+<a name="L44"></a><tt class="py-lineno"> 44</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L45"></a><tt class="py-lineno"> 45</tt>  <tt class="py-line"><tt class="py-docstring">    :IVariables:</tt> </tt>
+<a name="L46"></a><tt class="py-lineno"> 46</tt>  <tt class="py-line"><tt class="py-docstring">     - `config`: Configuration</tt> </tt>
+<a name="L47"></a><tt class="py-lineno"> 47</tt>  <tt class="py-line"><tt class="py-docstring">     - `opts`: Command line options</tt> </tt>
+<a name="L48"></a><tt class="py-lineno"> 48</tt>  <tt class="py-line"><tt class="py-docstring">     - `args`: Positioned command line arguments</tt> </tt>
+<a name="L49"></a><tt class="py-lineno"> 49</tt>  <tt class="py-line"><tt class="py-docstring">     - `timeouts`: Timeout specs</tt> </tt>
+<a name="L50"></a><tt class="py-lineno"> 50</tt>  <tt class="py-line"><tt class="py-docstring">     - `http_version`: Supported HTTP version (``(major, minor)``)</tt> </tt>
+<a name="L51"></a><tt class="py-lineno"> 51</tt>  <tt class="py-line"><tt class="py-docstring">     - `_gateway`: Gateway instance</tt> </tt>
+<a name="L52"></a><tt class="py-lineno"> 52</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L53"></a><tt class="py-lineno"> 53</tt>  <tt class="py-line"><tt class="py-docstring">    :Types:</tt> </tt>
+<a name="L54"></a><tt class="py-lineno"> 54</tt>  <tt class="py-line"><tt class="py-docstring">     - `config`: `wtf.config.Config`</tt> </tt>
+<a name="L55"></a><tt class="py-lineno"> 55</tt>  <tt class="py-line"><tt class="py-docstring">     - `opts`: ``optparse.OptionContainer``</tt> </tt>
+<a name="L56"></a><tt class="py-lineno"> 56</tt>  <tt class="py-line"><tt class="py-docstring">     - `args`: ``list``</tt> </tt>
+<a name="L57"></a><tt class="py-lineno"> 57</tt>  <tt class="py-line"><tt class="py-docstring">     - `timeouts`: `_TimeOuts`</tt> </tt>
+<a name="L58"></a><tt class="py-lineno"> 58</tt>  <tt class="py-line"><tt class="py-docstring">     - `http_version`: ``tuple``</tt> </tt>
+<a name="L59"></a><tt class="py-lineno"> 59</tt>  <tt class="py-line"><tt class="py-docstring">     - `_gateway`: `Gateway`</tt> </tt>
+<a name="L60"></a><tt class="py-lineno"> 60</tt>  <tt class="py-line"><tt class="py-docstring">    """</tt> </tt>
+<a name="L61"></a><tt class="py-lineno"> 61</tt>  <tt class="py-line">    <tt id="link-18" class="py-name" targets="Variable wtf.app.cookie.BaseCookieCodec.__implements__=wtf.app.cookie.BaseCookieCodec-class.html#__implements__,Variable wtf.app.resolver.MapResolver.__implements__=wtf.app.resolver.MapResolver-class.html#__implements__,Variable wtf.app.services.config.ConfigService.__implements__=wtf.app.services.config.ConfigService-class.html#__implements__,Variable wtf.app.services.crash.CrashService.__implements__=wtf.app.services.crash.CrashService-class.html#__implements__,Variable wtf.app.services.log.LogService.__implements__=wtf.app.services.log.LogService-class.html#__implements__,Variable wtf.app.services.memcache.MemcacheService.__implements__=wtf.app.services.memcache.MemcacheService-class.html#__implements__,Variable wtf.app.services.resources.ResourceService.__implements__=wtf.app.services.resources.ResourceService-class.html#__implements__,Variable wtf.app.services.session.SessionService.__implements__=wtf.app.services.session.SessionService-class.html#__implements__,Variable wtf.app.services.session_storage.sharedance.BoundSharedanceStorage.__implements__=wtf.app.services.session_storage.sharedance.BoundSharedanceStorage-class.html#__implements__,Variable wtf.app.services.session_storage.sharedance.SessionCookieCodec.__implements__=wtf.app.services.session_storage.sharedance.SessionCookieCodec-class.html#__implements__,Variable wtf.app.services.session_storage.sharedance.SharedanceStorage.__implements__=wtf.app.services.session_storage.sharedance.SharedanceStorage-class.html#__implements__,Variable wtf.app.services.static.StaticService.__implements__=wtf.app.services.static.StaticService-class.html#__implements__,Variable wtf.ext.db._service.DBService.__implements__=wtf.ext.db._service.DBService-class.html#__implements__,Variable wtf.ext.memcache.MemcacheConnection.__implements__=wtf.ext.memcache.MemcacheConnection-class.html#__implements__,Variable wtf.impl.http._server.HTTPServer.__implements__=wtf.impl.http._server.HTTPServer-class.html#__implements__,Variable wtf.impl.scgi.SCGIServer.__implements__=wtf.impl.scgi.SCGIServer-class.html#__implements__,Variable wtf.opi.daemon.DaemonOPI.__implements__=wtf.opi.daemon.DaemonOPI-class.html#__implements__,Variable wtf.opi.listener._PollAdapter.__implements__=wtf.opi.listener._PollAdapter-class.html#__implements__,Variable wtf.opi.listener._SelectAdapter.__implements__=wtf.opi.listener._SelectAdapter-class.html#__implements__,Variable wtf.opi.worker.single.Flags.__implements__=wtf.opi.worker.single.Flags-class.html#__implements__,Variable wtf.opi.worker.single.SingleWorker.__implements__=wtf.opi.worker.single.SingleWorker-class.html#__implements__,Variable wtf.opi.worker.single.Worker.__implements__=wtf.opi.worker.single.Worker-class.html#__implements__,Variable wtf.opi.worker.threaded.Flags.__implements__=wtf.opi.worker.threaded.Flags-class.html#__implements__,Variable wtf.opi.worker.threaded.ThreadedWorker.__implements__=wtf.opi.worker.threaded.ThreadedWorker-class.html#__implements__,Variable wtf.opi.worker.threaded.WorkerChild.__implements__=wtf.opi.worker.threaded.WorkerChild-class.html#__implements__"><a title="wtf.app.cookie.BaseCookieCodec.__implements__
+wtf.app.resolver.MapResolver.__implements__
+wtf.app.services.config.ConfigService.__implements__
+wtf.app.services.crash.CrashService.__implements__
+wtf.app.services.log.LogService.__implements__
+wtf.app.services.memcache.MemcacheService.__implements__
+wtf.app.services.resources.ResourceService.__implements__
+wtf.app.services.session.SessionService.__implements__
+wtf.app.services.session_storage.sharedance.BoundSharedanceStorage.__implements__
+wtf.app.services.session_storage.sharedance.SessionCookieCodec.__implements__
+wtf.app.services.session_storage.sharedance.SharedanceStorage.__implements__
+wtf.app.services.static.StaticService.__implements__
+wtf.ext.db._service.DBService.__implements__
+wtf.ext.memcache.MemcacheConnection.__implements__
+wtf.impl.http._server.HTTPServer.__implements__
+wtf.impl.scgi.SCGIServer.__implements__
+wtf.opi.daemon.DaemonOPI.__implements__
+wtf.opi.listener._PollAdapter.__implements__
+wtf.opi.listener._SelectAdapter.__implements__
+wtf.opi.worker.single.Flags.__implements__
+wtf.opi.worker.single.SingleWorker.__implements__
+wtf.opi.worker.single.Worker.__implements__
+wtf.opi.worker.threaded.Flags.__implements__
+wtf.opi.worker.threaded.ThreadedWorker.__implements__
+wtf.opi.worker.threaded.WorkerChild.__implements__" class="py-name" href="#" onclick="return doclink('link-18', '__implements__', 'link-18');">__implements__</a></tt> <tt class="py-op">=</tt> <tt class="py-op">[</tt><tt class="py-name">_impl</tt><tt class="py-op">.</tt><tt id="link-19" class="py-name" targets="Class wtf.impl.ServerInterface=wtf.impl.ServerInterface-class.html"><a title="wtf.impl.ServerInterface" class="py-name" href="#" onclick="return doclink('link-19', 'ServerInterface', 'link-19');">ServerInterface</a></tt><tt class="py-op">]</tt> </tt>
+<a name="L62"></a><tt class="py-lineno"> 62</tt>  <tt class="py-line"> </tt>
+<a name="HTTPServer.__init__"></a><div id="HTTPServer.__init__-def"><a name="L63"></a><tt class="py-lineno"> 63</tt> <a class="py-toggle" href="#" id="HTTPServer.__init__-toggle" onclick="return toggle('HTTPServer.__init__');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="wtf.impl.http._server.HTTPServer-class.html#__init__">__init__</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">config</tt><tt class="py-op">,</tt> <tt class="py-param">opts</tt><tt class="py-op">,</tt> <tt class="py-param">args</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="HTTPServer.__init__-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="HTTPServer.__init__-expanded"><a name="L64"></a><tt class="py-lineno"> 64</tt>  <tt class="py-line">        <tt class="py-docstring">"""</tt> </tt>
+<a name="L65"></a><tt class="py-lineno"> 65</tt>  <tt class="py-line"><tt class="py-docstring">        Initialization</tt> </tt>
+<a name="L66"></a><tt class="py-lineno"> 66</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L67"></a><tt class="py-lineno"> 67</tt>  <tt class="py-line"><tt class="py-docstring">        :See: `wtf.impl.ServerInterface`</tt> </tt>
+<a name="L68"></a><tt class="py-lineno"> 68</tt>  <tt class="py-line"><tt class="py-docstring">        """</tt> </tt>
+<a name="L69"></a><tt class="py-lineno"> 69</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-20" class="py-name" targets="Module wtf.app.services.config=wtf.app.services.config-module.html,Module wtf.config=wtf.config-module.html,Function wtf.init.config()=wtf.init-module.html#config"><a title="wtf.app.services.config
+wtf.config
+wtf.init.config" class="py-name" href="#" onclick="return doclink('link-20', 'config', 'link-20');">config</a></tt><tt class="py-op">,</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">opts</tt><tt class="py-op">,</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">args</tt> <tt class="py-op">=</tt> <tt id="link-21" class="py-name"><a title="wtf.app.services.config
+wtf.config
+wtf.init.config" class="py-name" href="#" onclick="return doclink('link-21', 'config', 'link-20');">config</a></tt><tt class="py-op">,</tt> <tt class="py-name">opts</tt><tt class="py-op">,</tt> <tt class="py-name">args</tt> </tt>
+<a name="L70"></a><tt class="py-lineno"> 70</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">timeouts</tt> <tt class="py-op">=</tt> <tt id="link-22" class="py-name" targets="Class wtf.impl.http._server._TimeOuts=wtf.impl.http._server._TimeOuts-class.html"><a title="wtf.impl.http._server._TimeOuts" class="py-name" href="#" onclick="return doclink('link-22', '_TimeOuts', 'link-22');">_TimeOuts</a></tt><tt class="py-op">(</tt><tt id="link-23" class="py-name"><a title="wtf.app.services.config
+wtf.config
+wtf.init.config" class="py-name" href="#" onclick="return doclink('link-23', 'config', 'link-20');">config</a></tt><tt class="py-op">)</tt> </tt>
+<a name="L71"></a><tt class="py-lineno"> 71</tt>  <tt class="py-line">        <tt id="link-24" class="py-name" targets="Variable wtf.version=wtf-module.html#version"><a title="wtf.version" class="py-name" href="#" onclick="return doclink('link-24', 'version', 'link-24');">version</a></tt> <tt class="py-op">=</tt> <tt class="py-name">unicode</tt><tt class="py-op">(</tt><tt id="link-25" class="py-name"><a title="wtf.app.services.config
+wtf.config
+wtf.init.config" class="py-name" href="#" onclick="return doclink('link-25', 'config', 'link-20');">config</a></tt><tt class="py-op">.</tt><tt id="link-26" class="py-name"><a title="wtf" class="py-name" href="#" onclick="return doclink('link-26', 'wtf', 'link-1');">wtf</a></tt><tt class="py-op">(</tt><tt class="py-string">'http-version'</tt><tt class="py-op">,</tt> <tt class="py-string">'1.1'</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+<a name="L72"></a><tt class="py-lineno"> 72</tt>  <tt class="py-line">        <tt class="py-name">vtuple</tt> <tt class="py-op">=</tt> <tt class="py-name">tuple</tt><tt class="py-op">(</tt><tt class="py-name">map</tt><tt class="py-op">(</tt><tt class="py-name">int</tt><tt class="py-op">,</tt> <tt id="link-27" class="py-name"><a title="wtf.version" class="py-name" href="#" onclick="return doclink('link-27', 'version', 'link-24');">version</a></tt><tt class="py-op">.</tt><tt class="py-name">split</tt><tt class="py-op">(</tt><tt class="py-string">'.'</tt><tt class="py-op">)</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+<a name="L73"></a><tt class="py-lineno"> 73</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt class="py-name">len</tt><tt class="py-op">(</tt><tt class="py-name">vtuple</tt><tt class="py-op">)</tt> <tt class="py-op">!=</tt> <tt class="py-number">2</tt> <tt class="py-keyword">or</tt> <tt class="py-keyword">not</tt><tt class="py-op">(</tt><tt class="py-op">(</tt><tt class="py-number">1</tt><tt class="py-op">,</tt> <tt class="py-number">0</tt><tt class="py-op">)</tt> <tt class="py-op">&lt;=</tt> <tt class="py-name">vtuple</tt> <tt class="py-op">&lt;=</tt> <tt class="py-op">(</tt><tt class="py-number">1</tt><tt class="py-op">,</tt> <tt class="py-number">1</tt><tt class="py-op">)</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L74"></a><tt class="py-lineno"> 74</tt>  <tt class="py-line">            <tt class="py-keyword">raise</tt> <tt class="py-name">ValueError</tt><tt class="py-op">(</tt><tt class="py-string">"Unrecognized HTTP version %s"</tt> <tt class="py-op">%</tt> <tt id="link-28" class="py-name"><a title="wtf.version" class="py-name" href="#" onclick="return doclink('link-28', 'version', 'link-24');">version</a></tt><tt class="py-op">)</tt> </tt>
+<a name="L75"></a><tt class="py-lineno"> 75</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">http_version</tt> <tt class="py-op">=</tt> <tt class="py-name">vtuple</tt> </tt>
+<a name="L76"></a><tt class="py-lineno"> 76</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">keep_alive</tt> <tt class="py-op">=</tt> <tt class="py-keyword">not</tt> <tt id="link-29" class="py-name"><a title="wtf.app.services.config
+wtf.config
+wtf.init.config" class="py-name" href="#" onclick="return doclink('link-29', 'config', 'link-20');">config</a></tt><tt class="py-op">.</tt><tt id="link-30" class="py-name"><a title="wtf" class="py-name" href="#" onclick="return doclink('link-30', 'wtf', 'link-1');">wtf</a></tt><tt class="py-op">(</tt><tt class="py-string">'autoreload'</tt><tt class="py-op">,</tt> <tt class="py-name">False</tt><tt class="py-op">)</tt> \ </tt>
+<a name="L77"></a><tt class="py-lineno"> 77</tt>  <tt class="py-line">            <tt class="py-keyword">and</tt> <tt id="link-31" class="py-name"><a title="wtf.app.services.config
+wtf.config
+wtf.init.config" class="py-name" href="#" onclick="return doclink('link-31', 'config', 'link-20');">config</a></tt><tt class="py-op">.</tt><tt id="link-32" class="py-name"><a title="wtf" class="py-name" href="#" onclick="return doclink('link-32', 'wtf', 'link-1');">wtf</a></tt><tt class="py-op">(</tt><tt class="py-string">'keep-alive'</tt><tt class="py-op">,</tt> <tt class="py-name">True</tt><tt class="py-op">)</tt> </tt>
+<a name="L78"></a><tt class="py-lineno"> 78</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-33" class="py-name"><a title="wtf.impl._gateway" class="py-name" href="#" onclick="return doclink('link-33', '_gateway', 'link-13');">_gateway</a></tt> <tt class="py-op">=</tt> <tt id="link-34" class="py-name" targets="Class wtf.impl._gateway.Gateway=wtf.impl._gateway.Gateway-class.html,Class wtf.impl.http._server.Gateway=wtf.impl.http._server.Gateway-class.html,Class wtf.impl.scgi.Gateway=wtf.impl.scgi.Gateway-class.html"><a title="wtf.impl._gateway.Gateway
+wtf.impl.http._server.Gateway
+wtf.impl.scgi.Gateway" class="py-name" href="#" onclick="return doclink('link-34', 'Gateway', 'link-34');">Gateway</a></tt><tt class="py-op">(</tt><tt id="link-35" class="py-name"><a title="wtf.app.services.config
+wtf.config
+wtf.init.config" class="py-name" href="#" onclick="return doclink('link-35', 'config', 'link-20');">config</a></tt><tt class="py-op">,</tt> <tt class="py-name">opts</tt><tt class="py-op">,</tt> <tt class="py-name">args</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L79"></a><tt class="py-lineno"> 79</tt>  <tt class="py-line"> </tt>
+<a name="HTTPServer.handle"></a><div id="HTTPServer.handle-def"><a name="L80"></a><tt class="py-lineno"> 80</tt> <a class="py-toggle" href="#" id="HTTPServer.handle-toggle" onclick="return toggle('HTTPServer.handle');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="wtf.impl.http._server.HTTPServer-class.html#handle">handle</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-op">(</tt><tt class="py-param">sock</tt><tt class="py-op">,</tt> <tt class="py-param">peername</tt><tt class="py-op">)</tt><tt class="py-op">,</tt> <tt class="py-param">application</tt><tt class="py-op">,</tt> <tt class="py-param">flags</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="HTTPServer.handle-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="HTTPServer.handle-expanded"><a name="L81"></a><tt class="py-lineno"> 81</tt>  <tt class="py-line">        <tt class="py-docstring">"""</tt> </tt>
+<a name="L82"></a><tt class="py-lineno"> 82</tt>  <tt class="py-line"><tt class="py-docstring">        Handle an accepted socket</tt> </tt>
+<a name="L83"></a><tt class="py-lineno"> 83</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L84"></a><tt class="py-lineno"> 84</tt>  <tt class="py-line"><tt class="py-docstring">        :See: `wtf.impl.ServerInterface`</tt> </tt>
+<a name="L85"></a><tt class="py-lineno"> 85</tt>  <tt class="py-line"><tt class="py-docstring">        """</tt> </tt>
+<a name="L86"></a><tt class="py-lineno"> 86</tt>  <tt class="py-line">        <tt class="py-comment"># pylint: disable = R0912, R0915</tt> </tt>
+<a name="L87"></a><tt class="py-lineno"> 87</tt>  <tt class="py-line"> </tt>
+<a name="L88"></a><tt class="py-lineno"> 88</tt>  <tt class="py-line">        <tt class="py-name">conn</tt> <tt class="py-op">=</tt> <tt id="link-36" class="py-name"><a title="wtf.ext.db._connection
+wtf.impl._connection" class="py-name" href="#" onclick="return doclink('link-36', '_connection', 'link-10');">_connection</a></tt><tt class="py-op">.</tt><tt id="link-37" class="py-name" targets="Class wtf.impl._connection.Connection=wtf.impl._connection.Connection-class.html"><a title="wtf.impl._connection.Connection" class="py-name" href="#" onclick="return doclink('link-37', 'Connection', 'link-37');">Connection</a></tt><tt class="py-op">(</tt><tt class="py-name">sock</tt><tt class="py-op">,</tt> <tt class="py-name">peername</tt><tt class="py-op">)</tt> </tt>
+<a name="L89"></a><tt class="py-lineno"> 89</tt>  <tt class="py-line">        <tt class="py-keyword">try</tt><tt class="py-op">:</tt> </tt>
+<a name="L90"></a><tt class="py-lineno"> 90</tt>  <tt class="py-line">            <tt class="py-name">conn</tt><tt class="py-op">.</tt><tt id="link-38" class="py-name" targets="Method wtf.impl._connection.Connection.settimeout()=wtf.impl._connection.Connection-class.html#settimeout,Method wtf.impl.http._util.HTTPConnection.settimeout()=wtf.impl.http._util.HTTPConnection-class.html#settimeout"><a title="wtf.impl._connection.Connection.settimeout
+wtf.impl.http._util.HTTPConnection.settimeout" class="py-name" href="#" onclick="return doclink('link-38', 'settimeout', 'link-38');">settimeout</a></tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">timeouts</tt><tt class="py-op">.</tt><tt class="py-name">general</tt><tt class="py-op">)</tt> </tt>
+<a name="L91"></a><tt class="py-lineno"> 91</tt>  <tt class="py-line">            <tt class="py-name">gateway</tt><tt class="py-op">,</tt> <tt class="py-name">first</tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-39" class="py-name"><a title="wtf.impl._gateway" class="py-name" href="#" onclick="return doclink('link-39', '_gateway', 'link-13');">_gateway</a></tt><tt class="py-op">.</tt><tt id="link-40" class="py-name" targets="Method wtf.impl.ServerInterface.handle()=wtf.impl.ServerInterface-class.html#handle,Method wtf.impl._gateway.Gateway.handle()=wtf.impl._gateway.Gateway-class.html#handle,Method wtf.impl.http._server.HTTPServer.handle()=wtf.impl.http._server.HTTPServer-class.html#handle,Method wtf.impl.scgi.SCGIServer.handle()=wtf.impl.scgi.SCGIServer-class.html#handle"><a title="wtf.impl.ServerInterface.handle
+wtf.impl._gateway.Gateway.handle
+wtf.impl.http._server.HTTPServer.handle
+wtf.impl.scgi.SCGIServer.handle" class="py-name" href="#" onclick="return doclink('link-40', 'handle', 'link-40');">handle</a></tt><tt class="py-op">,</tt> <tt class="py-name">True</tt> </tt>
+<a name="L92"></a><tt class="py-lineno"> 92</tt>  <tt class="py-line">            <tt class="py-keyword">while</tt> <tt class="py-name">True</tt><tt class="py-op">:</tt> </tt>
+<a name="L93"></a><tt class="py-lineno"> 93</tt>  <tt class="py-line">                <tt id="link-41" class="py-name" targets="Module wtf.app.request=wtf.app.request-module.html"><a title="wtf.app.request" class="py-name" href="#" onclick="return doclink('link-41', 'request', 'link-41');">request</a></tt> <tt class="py-op">=</tt> <tt id="link-42" class="py-name"><a title="wtf.impl.http._request" class="py-name" href="#" onclick="return doclink('link-42', '_request', 'link-17');">_request</a></tt><tt class="py-op">.</tt><tt id="link-43" class="py-name" targets="Class wtf.impl.http._request.HTTPRequest=wtf.impl.http._request.HTTPRequest-class.html"><a title="wtf.impl.http._request.HTTPRequest" class="py-name" href="#" onclick="return doclink('link-43', 'HTTPRequest', 'link-43');">HTTPRequest</a></tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">,</tt> <tt class="py-name">conn</tt><tt class="py-op">,</tt> <tt class="py-name">flags</tt><tt class="py-op">)</tt> </tt>
+<a name="L94"></a><tt class="py-lineno"> 94</tt>  <tt class="py-line">                <tt class="py-keyword">try</tt><tt class="py-op">:</tt> </tt>
+<a name="L95"></a><tt class="py-lineno"> 95</tt>  <tt class="py-line">                    <tt class="py-keyword">try</tt><tt class="py-op">:</tt> </tt>
+<a name="L96"></a><tt class="py-lineno"> 96</tt>  <tt class="py-line">                        <tt class="py-keyword">try</tt><tt class="py-op">:</tt> </tt>
+<a name="L97"></a><tt class="py-lineno"> 97</tt>  <tt class="py-line">                            <tt class="py-name">gateway</tt><tt class="py-op">(</tt><tt class="py-name">conn</tt><tt class="py-op">,</tt> <tt id="link-44" class="py-name"><a title="wtf.app.request" class="py-name" href="#" onclick="return doclink('link-44', 'request', 'link-41');">request</a></tt><tt class="py-op">,</tt> <tt class="py-name">application</tt><tt class="py-op">)</tt> </tt>
+<a name="L98"></a><tt class="py-lineno"> 98</tt>  <tt class="py-line">                        <tt class="py-keyword">except</tt> <tt id="link-45" class="py-name"><a title="wtf.impl.http._request" class="py-name" href="#" onclick="return doclink('link-45', '_request', 'link-17');">_request</a></tt><tt class="py-op">.</tt><tt id="link-46" class="py-name" targets="Class wtf.app.http_response.RequestTimeout=wtf.app.http_response.RequestTimeout-class.html,Class wtf.impl.http._request.RequestTimeout=wtf.impl.http._request.RequestTimeout-class.html"><a title="wtf.app.http_response.RequestTimeout
+wtf.impl.http._request.RequestTimeout" class="py-name" href="#" onclick="return doclink('link-46', 'RequestTimeout', 'link-46');">RequestTimeout</a></tt><tt class="py-op">:</tt> </tt>
+<a name="L99"></a><tt class="py-lineno"> 99</tt>  <tt class="py-line">                            <tt class="py-keyword">if</tt> <tt class="py-name">first</tt><tt class="py-op">:</tt> </tt>
+<a name="L100"></a><tt class="py-lineno">100</tt>  <tt class="py-line">                                <tt class="py-keyword">raise</tt> </tt>
+<a name="L101"></a><tt class="py-lineno">101</tt>  <tt class="py-line">                            <tt class="py-keyword">break</tt> <tt class="py-comment"># kept alive, but no further request</tt> </tt>
+<a name="L102"></a><tt class="py-lineno">102</tt>  <tt class="py-line">                        <tt class="py-keyword">except</tt> <tt class="py-name">_socket</tt><tt class="py-op">.</tt><tt id="link-47" class="py-name" targets="Method wtf.app.resolver.MapResolver.error()=wtf.app.resolver.MapResolver-class.html#error,Method wtf.app.resolver.ResolverInterface.error()=wtf.app.resolver.ResolverInterface-class.html#error,Method wtf.cmdline._OptionParser.error()=wtf.cmdline._OptionParser-class.html#error,Method wtf.impl.http._request.HTTPRequest.error()=wtf.impl.http._request.HTTPRequest-class.html#error,Method wtf.impl.scgi.SCGIRequest.error()=wtf.impl.scgi.SCGIRequest-class.html#error"><a title="wtf.app.resolver.MapResolver.error
+wtf.app.resolver.ResolverInterface.error
+wtf.cmdline._OptionParser.error
+wtf.impl.http._request.HTTPRequest.error
+wtf.impl.scgi.SCGIRequest.error" class="py-name" href="#" onclick="return doclink('link-47', 'error', 'link-47');">error</a></tt><tt class="py-op">,</tt> <tt class="py-name">e</tt><tt class="py-op">:</tt> </tt>
+<a name="L103"></a><tt class="py-lineno">103</tt>  <tt class="py-line">                            <tt class="py-keyword">if</tt> <tt class="py-name">e</tt><tt class="py-op">[</tt><tt class="py-number">0</tt><tt class="py-op">]</tt> <tt class="py-keyword">not</tt> <tt class="py-keyword">in</tt> <tt class="py-op">(</tt><tt class="py-name">_errno</tt><tt class="py-op">.</tt><tt class="py-name">EPIPE</tt><tt class="py-op">,</tt> <tt class="py-name">_errno</tt><tt class="py-op">.</tt><tt class="py-name">ECONNRESET</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L104"></a><tt class="py-lineno">104</tt>  <tt class="py-line">                                <tt class="py-keyword">raise</tt> </tt>
+<a name="L105"></a><tt class="py-lineno">105</tt>  <tt class="py-line">                            <tt class="py-keyword">break</tt> <tt class="py-comment"># no matter what, connection is done.</tt> </tt>
+<a name="L106"></a><tt class="py-lineno">106</tt>  <tt class="py-line">                    <tt class="py-keyword">except</tt> <tt class="py-op">(</tt><tt class="py-name">SystemExit</tt><tt class="py-op">,</tt> <tt class="py-name">KeyboardInterrupt</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L107"></a><tt class="py-lineno">107</tt>  <tt class="py-line">                        <tt class="py-keyword">raise</tt> </tt>
+<a name="L108"></a><tt class="py-lineno">108</tt>  <tt class="py-line">                    <tt class="py-keyword">except</tt> <tt id="link-48" class="py-name"><a title="wtf.impl.http._request" class="py-name" href="#" onclick="return doclink('link-48', '_request', 'link-17');">_request</a></tt><tt class="py-op">.</tt><tt id="link-49" class="py-name" targets="Class wtf.config.ParseError=wtf.config.ParseError-class.html,Class wtf.impl.http._util.ParseError=wtf.impl.http._util.ParseError-class.html"><a title="wtf.config.ParseError
+wtf.impl.http._util.ParseError" class="py-name" href="#" onclick="return doclink('link-49', 'ParseError', 'link-49');">ParseError</a></tt><tt class="py-op">,</tt> <tt class="py-name">e</tt><tt class="py-op">:</tt> </tt>
+<a name="L109"></a><tt class="py-lineno">109</tt>  <tt class="py-line">                        <tt class="py-keyword">try</tt><tt class="py-op">:</tt> </tt>
+<a name="L110"></a><tt class="py-lineno">110</tt>  <tt class="py-line">                            <tt id="link-50" class="py-name"><a title="wtf.app.request" class="py-name" href="#" onclick="return doclink('link-50', 'request', 'link-41');">request</a></tt><tt class="py-op">.</tt><tt id="link-51" class="py-name"><a title="wtf.app.resolver.MapResolver.error
+wtf.app.resolver.ResolverInterface.error
+wtf.cmdline._OptionParser.error
+wtf.impl.http._request.HTTPRequest.error
+wtf.impl.scgi.SCGIRequest.error" class="py-name" href="#" onclick="return doclink('link-51', 'error', 'link-47');">error</a></tt><tt class="py-op">(</tt><tt class="py-name">e</tt><tt class="py-op">.</tt><tt id="link-52" class="py-name" targets="Variable wtf.app.http_response.Accepted.status=wtf.app.http_response.Accepted-class.html#status,Variable wtf.app.http_response.AuthorizationRequired.status=wtf.app.http_response.AuthorizationRequired-class.html#status,Variable wtf.app.http_response.BadGateway.status=wtf.app.http_response.BadGateway-class.html#status,Variable wtf.app.http_response.BadRequest.status=wtf.app.http_response.BadRequest-class.html#status,Variable wtf.app.http_response.Conflict.status=wtf.app.http_response.Conflict-class.html#status,Variable wtf.app.http_response.Continue.status=wtf.app.http_response.Continue-class.html#status,Variable wtf.app.http_response.Created.status=wtf.app.http_response.Created-class.html#status,Variable wtf.app.http_response.ExpectationFailed.status=wtf.app.http_response.ExpectationFailed-class.html#status,Variable wtf.app.http_response.FailedDependency.status=wtf.app.http_response.FailedDependency-class.html#status,Variable wtf.app.http_response.Forbidden.status=wtf.app.http_response.Forbidden-class.html#status,Variable wtf.app.http_response.Found.status=wtf.app.http_response.Found-class.html#status,Variable wtf.app.http_response.GatewayTimeout.status=wtf.app.http_response.GatewayTimeout-class.html#status,Variable wtf.app.http_response.Gone.status=wtf.app.http_response.Gone-class.html#status,Variable wtf.app.http_response.HTTPResponse.status=wtf.app.http_response.HTTPResponse-class.html#status,Variable wtf.app.http_response.HTTPVersionNotSupported.status=wtf.app.http_response.HTTPVersionNotSupported-class.html#status,Variable wtf.app.http_response.InsufficientStorage.status=wtf.app.http_response.InsufficientStorage-class.html#status,Variable wtf.app.http_response.InternalServerError.status=wtf.app.http_response.InternalServerError-class.html#status,Variable wtf.app.http_response.LengthRequired.status=wtf.app.http_response.LengthRequired-class.html#status,Variable wtf.app.http_response.Locked.status=wtf.app.http_response.Locked-class.html#status,Variable wtf.app.http_response.MethodNotAllowed.status=wtf.app.http_response.MethodNotAllowed-class.html#status,Variable wtf.app.http_response.MovedPermanently.status=wtf.app.http_response.MovedPermanently-class.html#status,Variable wtf.app.http_response.MultiStatus.status=wtf.app.http_response.MultiStatus-class.html#status,Variable wtf.app.http_response.MultipleChoices.status=wtf.app.http_response.MultipleChoices-class.html#status,Variable wtf.app.http_response.NoContent.status=wtf.app.http_response.NoContent-class.html#status,Variable wtf.app.http_response.NonAuthoritativeInformation.status=wtf.app.http_response.NonAuthoritativeInformation-class.html#status,Variable wtf.app.http_response.NotAcceptable.status=wtf.app.http_response.NotAcceptable-class.html#status,Variable wtf.app.http_response.NotExtended.status=wtf.app.http_response.NotExtended-class.html#status,Variable wtf.app.http_response.NotFound.status=wtf.app.http_response.NotFound-class.html#status,Variable wtf.app.http_response.NotImplemented.status=wtf.app.http_response.NotImplemented-class.html#status,Variable wtf.app.http_response.NotModified.status=wtf.app.http_response.NotModified-class.html#status,Variable wtf.app.http_response.OK.status=wtf.app.http_response.OK-class.html#status,Variable wtf.app.http_response.PartialContent.status=wtf.app.http_response.PartialContent-class.html#status,Variable wtf.app.http_response.PaymentRequired.status=wtf.app.http_response.PaymentRequired-class.html#status,Variable wtf.app.http_response.PreconditionFailed.status=wtf.app.http_response.PreconditionFailed-class.html#status,Variable wtf.app.http_response.Processing.status=wtf.app.http_response.Processing-class.html#status,Variable wtf.app.http_response.ProxyAuthenticationRequired.status=wtf.app.http_response.ProxyAuthenticationRequired-class.html#status,Variable wtf.app.http_response.RequestEntityTooLarge.status=wtf.app.http_response.RequestEntityTooLarge-class.html#status,Variable wtf.app.http_response.RequestRangeNotSatisfiable.status=wtf.app.http_response.RequestRangeNotSatisfiable-class.html#status,Variable wtf.app.http_response.RequestTimeout.status=wtf.app.http_response.RequestTimeout-class.html#status,Variable wtf.app.http_response.RequestURITooLong.status=wtf.app.http_response.RequestURITooLong-class.html#status,Variable wtf.app.http_response.ResetContent.status=wtf.app.http_response.ResetContent-class.html#status,Variable wtf.app.http_response.SeeOther.status=wtf.app.http_response.SeeOther-class.html#status,Variable wtf.app.http_response.ServiceUnavailable.status=wtf.app.http_response.ServiceUnavailable-class.html#status,Variable wtf.app.http_response.SwitchingProtocols.status=wtf.app.http_response.SwitchingProtocols-class.html#status,Variable wtf.app.http_response.TemporaryRedirect.status=wtf.app.http_response.TemporaryRedirect-class.html#status,Variable wtf.app.http_response.UnprocessableEntity.status=wtf.app.http_response.UnprocessableEntity-class.html#status,Variable wtf.app.http_response.UnsupportedMediaType.status=wtf.app.http_response.UnsupportedMediaType-class.html#status,Variable wtf.app.http_response.Unused306.status=wtf.app.http_response.Unused306-class.html#status,Variable wtf.app.http_response.UpgradeRequired.status=wtf.app.http_response.UpgradeRequired-class.html#status,Variable wtf.app.http_response.UseProxy.status=wtf.app.http_response.UseProxy-class.html#status,Variable wtf.app.http_response.VariantAlsoNegotiates.status=wtf.app.http_response.VariantAlsoNegotiates-class.html#status,Method wtf.app.response.Response.status()=wtf.app.response.Response-class.html#status,Method wtf.app.services.crash.CrashService.status()=wtf.app.services.crash.CrashService-class.html#status,Method wtf.app.services.memcache.GlobalMemcache.status()=wtf.app.services.memcache.GlobalMemcache-class.html#status,Method wtf.app.services.session.StorageFactoryInterface.status()=wtf.app.services.session.StorageFactoryInterface-class.html#status,Method wtf.app.services.session_storage.sharedance.SharedanceStorage.status()=wtf.app.services.session_storage.sharedance.SharedanceStorage-class.html#status,Variable wtf.impl._gateway.ResponseStarter.status=wtf.impl._gateway.ResponseStarter-class.html#status,Variable wtf.impl.http._request.ExpectationFailed.status=wtf.impl.http._request.ExpectationFailed-class.html#status,Variable wtf.impl.http._request.RequestTimeout.status=wtf.impl.http._request.RequestTimeout-class.html#status,Variable wtf.impl.http._request.UnImplemented.status=wtf.impl.http._request.UnImplemented-class.html#status,Variable wtf.impl.http._request.UnsupportedHTTPVersion.status=wtf.impl.http._request.UnsupportedHTTPVersion-class.html#status,Variable wtf.impl.http._util.BadRequest.status=wtf.impl.http._util.BadRequest-class.html#status,Variable wtf.impl.http._util.ParseError.status=wtf.impl.http._util.ParseError-class.html#status"><a title="wtf.app.http_response.Accepted.status
+wtf.app.http_response.AuthorizationRequired.status
+wtf.app.http_response.BadGateway.status
+wtf.app.http_response.BadRequest.status
+wtf.app.http_response.Conflict.status
+wtf.app.http_response.Continue.status
+wtf.app.http_response.Created.status
+wtf.app.http_response.ExpectationFailed.status
+wtf.app.http_response.FailedDependency.status
+wtf.app.http_response.Forbidden.status
+wtf.app.http_response.Found.status
+wtf.app.http_response.GatewayTimeout.status
+wtf.app.http_response.Gone.status
+wtf.app.http_response.HTTPResponse.status
+wtf.app.http_response.HTTPVersionNotSupported.status
+wtf.app.http_response.InsufficientStorage.status
+wtf.app.http_response.InternalServerError.status
+wtf.app.http_response.LengthRequired.status
+wtf.app.http_response.Locked.status
+wtf.app.http_response.MethodNotAllowed.status
+wtf.app.http_response.MovedPermanently.status
+wtf.app.http_response.MultiStatus.status
+wtf.app.http_response.MultipleChoices.status
+wtf.app.http_response.NoContent.status
+wtf.app.http_response.NonAuthoritativeInformation.status
+wtf.app.http_response.NotAcceptable.status
+wtf.app.http_response.NotExtended.status
+wtf.app.http_response.NotFound.status
+wtf.app.http_response.NotImplemented.status
+wtf.app.http_response.NotModified.status
+wtf.app.http_response.OK.status
+wtf.app.http_response.PartialContent.status
+wtf.app.http_response.PaymentRequired.status
+wtf.app.http_response.PreconditionFailed.status
+wtf.app.http_response.Processing.status
+wtf.app.http_response.ProxyAuthenticationRequired.status
+wtf.app.http_response.RequestEntityTooLarge.status
+wtf.app.http_response.RequestRangeNotSatisfiable.status
+wtf.app.http_response.RequestTimeout.status
+wtf.app.http_response.RequestURITooLong.status
+wtf.app.http_response.ResetContent.status
+wtf.app.http_response.SeeOther.status
+wtf.app.http_response.ServiceUnavailable.status
+wtf.app.http_response.SwitchingProtocols.status
+wtf.app.http_response.TemporaryRedirect.status
+wtf.app.http_response.UnprocessableEntity.status
+wtf.app.http_response.UnsupportedMediaType.status
+wtf.app.http_response.Unused306.status
+wtf.app.http_response.UpgradeRequired.status
+wtf.app.http_response.UseProxy.status
+wtf.app.http_response.VariantAlsoNegotiates.status
+wtf.app.response.Response.status
+wtf.app.services.crash.CrashService.status
+wtf.app.services.memcache.GlobalMemcache.status
+wtf.app.services.session.StorageFactoryInterface.status
+wtf.app.services.session_storage.sharedance.SharedanceStorage.status
+wtf.impl._gateway.ResponseStarter.status
+wtf.impl.http._request.ExpectationFailed.status
+wtf.impl.http._request.RequestTimeout.status
+wtf.impl.http._request.UnImplemented.status
+wtf.impl.http._request.UnsupportedHTTPVersion.status
+wtf.impl.http._util.BadRequest.status
+wtf.impl.http._util.ParseError.status" class="py-name" href="#" onclick="return doclink('link-52', 'status', 'link-52');">status</a></tt><tt class="py-op">,</tt> <tt class="py-name">e</tt><tt class="py-op">.</tt><tt class="py-name">msg</tt><tt class="py-op">)</tt> </tt>
+<a name="L111"></a><tt class="py-lineno">111</tt>  <tt class="py-line">                        <tt class="py-keyword">except</tt> <tt class="py-name">_socket</tt><tt class="py-op">.</tt><tt id="link-53" class="py-name"><a title="wtf.app.resolver.MapResolver.error
+wtf.app.resolver.ResolverInterface.error
+wtf.cmdline._OptionParser.error
+wtf.impl.http._request.HTTPRequest.error
+wtf.impl.scgi.SCGIRequest.error" class="py-name" href="#" onclick="return doclink('link-53', 'error', 'link-47');">error</a></tt><tt class="py-op">:</tt> </tt>
+<a name="L112"></a><tt class="py-lineno">112</tt>  <tt class="py-line">                            <tt class="py-keyword">pass</tt> <tt class="py-comment"># who cares?</tt> </tt>
+<a name="L113"></a><tt class="py-lineno">113</tt>  <tt class="py-line">                        <tt class="py-keyword">break</tt> </tt>
+<a name="L114"></a><tt class="py-lineno">114</tt>  <tt class="py-line">                    <tt class="py-keyword">except</tt><tt class="py-op">:</tt> </tt>
+<a name="L115"></a><tt class="py-lineno">115</tt>  <tt class="py-line">                        <tt class="py-keyword">if</tt> <tt class="py-keyword">not</tt> <tt id="link-54" class="py-name"><a title="wtf.app.request" class="py-name" href="#" onclick="return doclink('link-54', 'request', 'link-41');">request</a></tt><tt class="py-op">.</tt><tt id="link-55" class="py-name" targets="Variable wtf.impl.http._request.BaseState.response_started=wtf.impl.http._request.BaseState-class.html#response_started,Variable wtf.impl.http._request.RequestHeadersReadyState.response_started=wtf.impl.http._request.RequestHeadersReadyState-class.html#response_started,Variable wtf.impl.http._request.RequestInitialState.response_started=wtf.impl.http._request.RequestInitialState-class.html#response_started,Variable wtf.impl.http._request.RequestLineReadyState.response_started=wtf.impl.http._request.RequestLineReadyState-class.html#response_started,Variable wtf.impl.http._request.ResponseBodyWaitState.response_started=wtf.impl.http._request.ResponseBodyWaitState-class.html#response_started,Variable wtf.impl.http._request.ResponseContinueWaitState.response_started=wtf.impl.http._request.ResponseContinueWaitState-class.html#response_started,Variable wtf.impl.http._request.ResponseDoneState.response_started=wtf.impl.http._request.ResponseDoneState-class.html#response_started,Variable wtf.impl.http._request.ResponseHeadersWaitState.response_started=wtf.impl.http._request.ResponseHeadersWaitState-class.html#response_started,Variable wtf.impl.http._request.ResponseStatusWaitState.response_started=wtf.impl.http._request.ResponseStatusWaitState-class.html#response_started"><a title="wtf.impl.http._request.BaseState.response_started
+wtf.impl.http._request.RequestHeadersReadyState.response_started
+wtf.impl.http._request.RequestInitialState.response_started
+wtf.impl.http._request.RequestLineReadyState.response_started
+wtf.impl.http._request.ResponseBodyWaitState.response_started
+wtf.impl.http._request.ResponseContinueWaitState.response_started
+wtf.impl.http._request.ResponseDoneState.response_started
+wtf.impl.http._request.ResponseHeadersWaitState.response_started
+wtf.impl.http._request.ResponseStatusWaitState.response_started" class="py-name" href="#" onclick="return doclink('link-55', 'response_started', 'link-55');">response_started</a></tt><tt class="py-op">:</tt> </tt>
+<a name="L116"></a><tt class="py-lineno">116</tt>  <tt class="py-line">                            <tt class="py-keyword">try</tt><tt class="py-op">:</tt> </tt>
+<a name="L117"></a><tt class="py-lineno">117</tt>  <tt class="py-line">                                <tt id="link-56" class="py-name"><a title="wtf.app.request" class="py-name" href="#" onclick="return doclink('link-56', 'request', 'link-41');">request</a></tt><tt class="py-op">.</tt><tt id="link-57" class="py-name"><a title="wtf.app.resolver.MapResolver.error
+wtf.app.resolver.ResolverInterface.error
+wtf.cmdline._OptionParser.error
+wtf.impl.http._request.HTTPRequest.error
+wtf.impl.scgi.SCGIRequest.error" class="py-name" href="#" onclick="return doclink('link-57', 'error', 'link-47');">error</a></tt><tt class="py-op">(</tt> </tt>
+<a name="L118"></a><tt class="py-lineno">118</tt>  <tt class="py-line">                                    <tt class="py-string">"500 Internal Server Error"</tt><tt class="py-op">,</tt> </tt>
+<a name="L119"></a><tt class="py-lineno">119</tt>  <tt class="py-line">                                    <tt class="py-string">"Something went wrong while processing "</tt> </tt>
+<a name="L120"></a><tt class="py-lineno">120</tt>  <tt class="py-line">                                    <tt class="py-string">"the request. You might want to try "</tt> </tt>
+<a name="L121"></a><tt class="py-lineno">121</tt>  <tt class="py-line">                                    <tt class="py-string">"again later. Sorry for the "</tt> </tt>
+<a name="L122"></a><tt class="py-lineno">122</tt>  <tt class="py-line">                                    <tt class="py-string">"inconvenience."</tt> </tt>
+<a name="L123"></a><tt class="py-lineno">123</tt>  <tt class="py-line">                                <tt class="py-op">)</tt> </tt>
+<a name="L124"></a><tt class="py-lineno">124</tt>  <tt class="py-line">                            <tt class="py-keyword">except</tt> <tt class="py-name">_socket</tt><tt class="py-op">.</tt><tt id="link-58" class="py-name"><a title="wtf.app.resolver.MapResolver.error
+wtf.app.resolver.ResolverInterface.error
+wtf.cmdline._OptionParser.error
+wtf.impl.http._request.HTTPRequest.error
+wtf.impl.scgi.SCGIRequest.error" class="py-name" href="#" onclick="return doclink('link-58', 'error', 'link-47');">error</a></tt><tt class="py-op">:</tt> </tt>
+<a name="L125"></a><tt class="py-lineno">125</tt>  <tt class="py-line">                                <tt class="py-keyword">pass</tt> </tt>
+<a name="L126"></a><tt class="py-lineno">126</tt>  <tt class="py-line">                        <tt class="py-keyword">print</tt> <tt class="py-op">&gt;&gt;</tt> <tt class="py-name">_sys</tt><tt class="py-op">.</tt><tt class="py-name">stderr</tt><tt class="py-op">,</tt> \ </tt>
+<a name="L127"></a><tt class="py-lineno">127</tt>  <tt class="py-line">                            <tt class="py-string">"Request aborted due to exception:\n"</tt> <tt class="py-op">+</tt> <tt class="py-string">''</tt><tt class="py-op">.</tt><tt class="py-name">join</tt><tt class="py-op">(</tt> </tt>
+<a name="L128"></a><tt class="py-lineno">128</tt>  <tt class="py-line">                                <tt class="py-name">_traceback</tt><tt class="py-op">.</tt><tt class="py-name">format_exception</tt><tt class="py-op">(</tt><tt class="py-op">*</tt><tt class="py-name">_sys</tt><tt class="py-op">.</tt><tt class="py-name">exc_info</tt><tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+<a name="L129"></a><tt class="py-lineno">129</tt>  <tt class="py-line">                            <tt class="py-op">)</tt> </tt>
+<a name="L130"></a><tt class="py-lineno">130</tt>  <tt class="py-line">                        <tt class="py-keyword">break</tt> </tt>
+<a name="L131"></a><tt class="py-lineno">131</tt>  <tt class="py-line">                    <tt class="py-keyword">else</tt><tt class="py-op">:</tt> </tt>
+<a name="L132"></a><tt class="py-lineno">132</tt>  <tt class="py-line">                        <tt class="py-keyword">if</tt> <tt class="py-keyword">not</tt> <tt id="link-59" class="py-name"><a title="wtf.app.request" class="py-name" href="#" onclick="return doclink('link-59', 'request', 'link-41');">request</a></tt><tt class="py-op">.</tt><tt id="link-60" class="py-name" targets="Method wtf.app.services.memcache.GlobalMemcache.connection()=wtf.app.services.memcache.GlobalMemcache-class.html#connection,Function wtf.app.services.memcache.connection()=wtf.app.services.memcache-module.html#connection,Function wtf.ext.db._decorators.connection()=wtf.ext.db._decorators-module.html#connection,Function wtf.ext.db._tagged.connection()=wtf.ext.db._tagged-module.html#connection,Variable wtf.impl.http._request.HTTPRequest.connection=wtf.impl.http._request.HTTPRequest-class.html#connection"><a title="wtf.app.services.memcache.GlobalMemcache.connection
+wtf.app.services.memcache.connection
+wtf.ext.db._decorators.connection
+wtf.ext.db._tagged.connection
+wtf.impl.http._request.HTTPRequest.connection" class="py-name" href="#" onclick="return doclink('link-60', 'connection', 'link-60');">connection</a></tt><tt class="py-op">.</tt><tt id="link-61" class="py-name" targets="Variable wtf.impl.http._util.HTTPConnection.persist=wtf.impl.http._util.HTTPConnection-class.html#persist"><a title="wtf.impl.http._util.HTTPConnection.persist" class="py-name" href="#" onclick="return doclink('link-61', 'persist', 'link-61');">persist</a></tt><tt class="py-op">:</tt> </tt>
+<a name="L133"></a><tt class="py-lineno">133</tt>  <tt class="py-line">                            <tt class="py-keyword">break</tt> </tt>
+<a name="L134"></a><tt class="py-lineno">134</tt>  <tt class="py-line">                <tt class="py-keyword">finally</tt><tt class="py-op">:</tt> </tt>
+<a name="L135"></a><tt class="py-lineno">135</tt>  <tt class="py-line">                    <tt id="link-62" class="py-name"><a title="wtf.app.request" class="py-name" href="#" onclick="return doclink('link-62', 'request', 'link-41');">request</a></tt><tt class="py-op">.</tt><tt id="link-63" class="py-name" targets="Method wtf._wtf_cstream.GenericStream.close()=wtf._wtf_cstream.GenericStream-class.html#close,Method wtf._wtf_cstream.MinimalSocketStream.close()=wtf._wtf_cstream.MinimalSocketStream-class.html#close,Method wtf.ext.memcache.MemcacheConnection.close()=wtf.ext.memcache.MemcacheConnection-class.html#close,Method wtf.impl._connection.Connection.close()=wtf.impl._connection.Connection-class.html#close,Method wtf.impl.http._request.HTTPRequest.close()=wtf.impl.http._request.HTTPRequest-class.html#close,Method wtf.impl.http._util.ChunkedWriter.close()=wtf.impl.http._util.ChunkedWriter-class.html#close,Method wtf.impl.http._util.HTTPConnection.close()=wtf.impl.http._util.HTTPConnection-class.html#close,Method wtf.impl.scgi.SCGIConnection.close()=wtf.impl.scgi.SCGIConnection-class.html#close,Method wtf.impl.scgi.SCGIRequest.close()=wtf.impl.scgi.SCGIRequest-class.html#close,Method wtf.opi.daemon.Pidfile.close()=wtf.opi.daemon.Pidfile-class.html#close,Method wtf.opi.listener.ListenerSocket.close()=wtf.opi.listener.ListenerSocket-class.html#close,Method wtf.opi.listener.UnixSocket.close()=wtf.opi.listener.UnixSocket-class.html#close,Method wtf.stream.GenericStream.close()=wtf.stream.GenericStream-class.html#close,Method wtf.stream.MinimalSocketStream.close()=wtf.stream.MinimalSocketStream-class.html#close"><a title="wtf._wtf_cstream.GenericStream.close
+wtf._wtf_cstream.MinimalSocketStream.close
+wtf.ext.memcache.MemcacheConnection.close
+wtf.impl._connection.Connection.close
+wtf.impl.http._request.HTTPRequest.close
+wtf.impl.http._util.ChunkedWriter.close
+wtf.impl.http._util.HTTPConnection.close
+wtf.impl.scgi.SCGIConnection.close
+wtf.impl.scgi.SCGIRequest.close
+wtf.opi.daemon.Pidfile.close
+wtf.opi.listener.ListenerSocket.close
+wtf.opi.listener.UnixSocket.close
+wtf.stream.GenericStream.close
+wtf.stream.MinimalSocketStream.close" class="py-name" href="#" onclick="return doclink('link-63', 'close', 'link-63');">close</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L136"></a><tt class="py-lineno">136</tt>  <tt class="py-line">                <tt class="py-name">first</tt><tt class="py-op">,</tt> <tt class="py-name">_</tt> <tt class="py-op">=</tt> <tt class="py-name">False</tt><tt class="py-op">,</tt> <tt class="py-name">conn</tt><tt class="py-op">.</tt><tt id="link-64" class="py-name"><a title="wtf.impl._connection.Connection.settimeout
+wtf.impl.http._util.HTTPConnection.settimeout" class="py-name" href="#" onclick="return doclink('link-64', 'settimeout', 'link-38');">settimeout</a></tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">timeouts</tt><tt class="py-op">.</tt><tt class="py-name">keep_alive</tt><tt class="py-op">)</tt> </tt>
+<a name="L137"></a><tt class="py-lineno">137</tt>  <tt class="py-line">        <tt class="py-keyword">finally</tt><tt class="py-op">:</tt> </tt>
+<a name="L138"></a><tt class="py-lineno">138</tt>  <tt class="py-line">            <tt class="py-keyword">try</tt><tt class="py-op">:</tt> </tt>
+<a name="L139"></a><tt class="py-lineno">139</tt>  <tt class="py-line">                <tt class="py-name">conn</tt><tt class="py-op">.</tt><tt id="link-65" class="py-name"><a title="wtf._wtf_cstream.GenericStream.close
+wtf._wtf_cstream.MinimalSocketStream.close
+wtf.ext.memcache.MemcacheConnection.close
+wtf.impl._connection.Connection.close
+wtf.impl.http._request.HTTPRequest.close
+wtf.impl.http._util.ChunkedWriter.close
+wtf.impl.http._util.HTTPConnection.close
+wtf.impl.scgi.SCGIConnection.close
+wtf.impl.scgi.SCGIRequest.close
+wtf.opi.daemon.Pidfile.close
+wtf.opi.listener.ListenerSocket.close
+wtf.opi.listener.UnixSocket.close
+wtf.stream.GenericStream.close
+wtf.stream.MinimalSocketStream.close" class="py-name" href="#" onclick="return doclink('link-65', 'close', 'link-63');">close</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L140"></a><tt class="py-lineno">140</tt>  <tt class="py-line">            <tt class="py-keyword">except</tt> <tt class="py-op">(</tt><tt class="py-name">SystemExit</tt><tt class="py-op">,</tt> <tt class="py-name">KeyboardInterrupt</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L141"></a><tt class="py-lineno">141</tt>  <tt class="py-line">                <tt class="py-keyword">raise</tt> </tt>
+<a name="L142"></a><tt class="py-lineno">142</tt>  <tt class="py-line">            <tt class="py-keyword">except</tt><tt class="py-op">:</tt> </tt>
+<a name="L143"></a><tt class="py-lineno">143</tt>  <tt class="py-line">                <tt class="py-keyword">pass</tt> <tt class="py-comment"># nothing we could do here anyway, maybe log it?</tt> </tt>
+</div></div><a name="L144"></a><tt class="py-lineno">144</tt>  <tt class="py-line"> </tt>
+<a name="L145"></a><tt class="py-lineno">145</tt>  <tt class="py-line"> </tt>
+<a name="Gateway"></a><div id="Gateway-def"><a name="L146"></a><tt class="py-lineno">146</tt> <a class="py-toggle" href="#" id="Gateway-toggle" onclick="return toggle('Gateway');">-</a><tt class="py-line"><tt class="py-keyword">class</tt> <a class="py-def-name" href="wtf.impl.http._server.Gateway-class.html">Gateway</a><tt class="py-op">(</tt><tt class="py-base-class">_gateway</tt><tt class="py-op">.</tt><tt class="py-base-class">Gateway</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="Gateway-collapsed" style="display:none;" pad="+++" indent="++++"></div><div id="Gateway-expanded"><a name="L147"></a><tt class="py-lineno">147</tt>  <tt class="py-line">    <tt class="py-docstring">"""</tt> </tt>
+<a name="L148"></a><tt class="py-lineno">148</tt>  <tt class="py-line"><tt class="py-docstring">    HTTP implementation specific gateway</tt> </tt>
+<a name="L149"></a><tt class="py-lineno">149</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L150"></a><tt class="py-lineno">150</tt>  <tt class="py-line"><tt class="py-docstring">    :CVariables:</tt> </tt>
+<a name="L151"></a><tt class="py-lineno">151</tt>  <tt class="py-line"><tt class="py-docstring">     - `_NORM_SUB`: Regex substitution callable for norming HTTP header names</tt> </tt>
+<a name="L152"></a><tt class="py-lineno">152</tt>  <tt class="py-line"><tt class="py-docstring">     - `_SLASH_SPLIT`: Regex splitter callable for encoded slashes</tt> </tt>
+<a name="L153"></a><tt class="py-lineno">153</tt>  <tt class="py-line"><tt class="py-docstring">     - `_STRIPPED`: List of HTTP variable names, which are expected to</tt> </tt>
+<a name="L154"></a><tt class="py-lineno">154</tt>  <tt class="py-line"><tt class="py-docstring">       appear without the ``HTTP_`` prefix</tt> </tt>
+<a name="L155"></a><tt class="py-lineno">155</tt>  <tt class="py-line"><tt class="py-docstring">     - `_HOPS`: Set of standard Hop-by-Hop headers</tt> </tt>
+<a name="L156"></a><tt class="py-lineno">156</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L157"></a><tt class="py-lineno">157</tt>  <tt class="py-line"><tt class="py-docstring">    :Types:</tt> </tt>
+<a name="L158"></a><tt class="py-lineno">158</tt>  <tt class="py-line"><tt class="py-docstring">     - `_NORM_SUB`: ``callable``</tt> </tt>
+<a name="L159"></a><tt class="py-lineno">159</tt>  <tt class="py-line"><tt class="py-docstring">     - `_SLASH_SPLIT`: ``callable``</tt> </tt>
+<a name="L160"></a><tt class="py-lineno">160</tt>  <tt class="py-line"><tt class="py-docstring">     - `_STRIPPED`: ``tuple``</tt> </tt>
+<a name="L161"></a><tt class="py-lineno">161</tt>  <tt class="py-line"><tt class="py-docstring">     - `_HOPS`: ``set``</tt> </tt>
+<a name="L162"></a><tt class="py-lineno">162</tt>  <tt class="py-line"><tt class="py-docstring">    """</tt> </tt>
+<a name="L163"></a><tt class="py-lineno">163</tt>  <tt class="py-line">    <tt id="link-66" class="py-name" targets="Method wtf.impl.http._server.Gateway._NORM_SUB()=wtf.impl.http._server.Gateway-class.html#_NORM_SUB"><a title="wtf.impl.http._server.Gateway._NORM_SUB" class="py-name" href="#" onclick="return doclink('link-66', '_NORM_SUB', 'link-66');">_NORM_SUB</a></tt> <tt class="py-op">=</tt> <tt class="py-name">_re</tt><tt class="py-op">.</tt><tt class="py-name">compile</tt><tt class="py-op">(</tt><tt class="py-string">r'[^a-zA-Z\d]'</tt><tt class="py-op">)</tt><tt class="py-op">.</tt><tt class="py-name">sub</tt> </tt>
+<a name="L164"></a><tt class="py-lineno">164</tt>  <tt class="py-line">    <tt id="link-67" class="py-name" targets="Method wtf.impl.http._server.Gateway._SLASH_SPLIT()=wtf.impl.http._server.Gateway-class.html#_SLASH_SPLIT"><a title="wtf.impl.http._server.Gateway._SLASH_SPLIT" class="py-name" href="#" onclick="return doclink('link-67', '_SLASH_SPLIT', 'link-67');">_SLASH_SPLIT</a></tt> <tt class="py-op">=</tt> <tt class="py-name">_re</tt><tt class="py-op">.</tt><tt class="py-name">compile</tt><tt class="py-op">(</tt><tt class="py-string">r'%2[fF]'</tt><tt class="py-op">)</tt><tt class="py-op">.</tt><tt class="py-name">split</tt> </tt>
+<a name="L165"></a><tt class="py-lineno">165</tt>  <tt class="py-line">    <tt id="link-68" class="py-name" targets="Variable wtf.impl.http._server.Gateway._STRIPPED=wtf.impl.http._server.Gateway-class.html#_STRIPPED"><a title="wtf.impl.http._server.Gateway._STRIPPED" class="py-name" href="#" onclick="return doclink('link-68', '_STRIPPED', 'link-68');">_STRIPPED</a></tt> <tt class="py-op">=</tt> <tt class="py-op">(</tt><tt class="py-string">"HTTP_CONTENT_TYPE"</tt><tt class="py-op">,</tt> <tt class="py-string">"HTTP_CONTENT_LENGTH"</tt><tt class="py-op">)</tt> </tt>
+<a name="L166"></a><tt class="py-lineno">166</tt>  <tt class="py-line">    <tt id="link-69" class="py-name" targets="Variable wtf.impl.http._server.Gateway._HOPS=wtf.impl.http._server.Gateway-class.html#_HOPS"><a title="wtf.impl.http._server.Gateway._HOPS" class="py-name" href="#" onclick="return doclink('link-69', '_HOPS', 'link-69');">_HOPS</a></tt> <tt class="py-op">=</tt> <tt id="link-70" class="py-name" targets="Method wtf.app.response.HeaderCollection.set()=wtf.app.response.HeaderCollection-class.html#set,Method wtf.app.services.memcache.MemcacheWrapper.set()=wtf.app.services.memcache.MemcacheWrapper-class.html#set,Method wtf.app.services.memcache.NoMemcacheWrapper.set()=wtf.app.services.memcache.NoMemcacheWrapper-class.html#set,Method wtf.app.services.session.StorageAdapter.set()=wtf.app.services.session.StorageAdapter-class.html#set,Method wtf.app.services.session.StorageInterface.set()=wtf.app.services.session.StorageInterface-class.html#set,Method wtf.app.services.session_storage.sharedance.BoundSharedanceStorage.set()=wtf.app.services.session_storage.sharedance.BoundSharedanceStorage-class.html#set,Method wtf.ext.memcache.Memcache.set()=wtf.ext.memcache.Memcache-class.html#set"><a title="wtf.app.response.HeaderCollection.set
+wtf.app.services.memcache.MemcacheWrapper.set
+wtf.app.services.memcache.NoMemcacheWrapper.set
+wtf.app.services.session.StorageAdapter.set
+wtf.app.services.session.StorageInterface.set
+wtf.app.services.session_storage.sharedance.BoundSharedanceStorage.set
+wtf.ext.memcache.Memcache.set" class="py-name" href="#" onclick="return doclink('link-70', 'set', 'link-70');">set</a></tt><tt class="py-op">(</tt><tt class="py-op">[</tt><tt class="py-string">"HTTP_"</tt> <tt class="py-op">+</tt> <tt id="link-71" class="py-name"><a title="wtf.impl.http._server.Gateway._NORM_SUB" class="py-name" href="#" onclick="return doclink('link-71', '_NORM_SUB', 'link-66');">_NORM_SUB</a></tt><tt class="py-op">(</tt><tt class="py-string">"_"</tt><tt class="py-op">,</tt> <tt id="link-72" class="py-name"><a title="wtf.impl.http._server.Gateway._HOPS" class="py-name" href="#" onclick="return doclink('link-72', '_HOPS', 'link-69');">_HOPS</a></tt><tt class="py-op">)</tt><tt class="py-op">.</tt><tt class="py-name">upper</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> <tt class="py-keyword">for</tt> <tt id="link-73" class="py-name"><a title="wtf.impl.http._server.Gateway._HOPS" class="py-name" href="#" onclick="return doclink('link-73', '_HOPS', 'link-69');">_HOPS</a></tt> <tt class="py-keyword">in</tt> <tt class="py-string">"""</tt> </tt>
+<a name="L167"></a><tt class="py-lineno">167</tt>  <tt class="py-line"><tt class="py-string">        Connection</tt> </tt>
+<a name="L168"></a><tt class="py-lineno">168</tt>  <tt class="py-line"><tt class="py-string">        Keep-Alive</tt> </tt>
+<a name="L169"></a><tt class="py-lineno">169</tt>  <tt class="py-line"><tt class="py-string">        Proxy-Authenticate</tt> </tt>
+<a name="L170"></a><tt class="py-lineno">170</tt>  <tt class="py-line"><tt class="py-string">        Proxy-Authorization</tt> </tt>
+<a name="L171"></a><tt class="py-lineno">171</tt>  <tt class="py-line"><tt class="py-string">        TE</tt> </tt>
+<a name="L172"></a><tt class="py-lineno">172</tt>  <tt class="py-line"><tt class="py-string">        Trailers</tt> </tt>
+<a name="L173"></a><tt class="py-lineno">173</tt>  <tt class="py-line"><tt class="py-string">        Transfer-Encoding</tt> </tt>
+<a name="L174"></a><tt class="py-lineno">174</tt>  <tt class="py-line"><tt class="py-string">        Upgrade</tt> </tt>
+<a name="L175"></a><tt class="py-lineno">175</tt>  <tt class="py-line"><tt class="py-string">    """</tt><tt class="py-op">.</tt><tt class="py-name">split</tt><tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">]</tt><tt class="py-op">)</tt> </tt>
+<a name="L176"></a><tt class="py-lineno">176</tt>  <tt class="py-line"> </tt>
+<a name="Gateway._populate_base_env"></a><div id="Gateway._populate_base_env-def"><a name="L177"></a><tt class="py-lineno">177</tt> <a class="py-toggle" href="#" id="Gateway._populate_base_env-toggle" onclick="return toggle('Gateway._populate_base_env');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="wtf.impl.http._server.Gateway-class.html#_populate_base_env">_populate_base_env</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">base_env</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="Gateway._populate_base_env-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="Gateway._populate_base_env-expanded"><a name="L178"></a><tt class="py-lineno">178</tt>  <tt class="py-line">        <tt class="py-docstring">"""</tt> </tt>
+<a name="L179"></a><tt class="py-lineno">179</tt>  <tt class="py-line"><tt class="py-docstring">        Add HTTP implementation specific env constants</tt> </tt>
+<a name="L180"></a><tt class="py-lineno">180</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L181"></a><tt class="py-lineno">181</tt>  <tt class="py-line"><tt class="py-docstring">        :See: `_gateway.Gateway._populate_base_env`</tt> </tt>
+<a name="L182"></a><tt class="py-lineno">182</tt>  <tt class="py-line"><tt class="py-docstring">        """</tt> </tt>
+<a name="L183"></a><tt class="py-lineno">183</tt>  <tt class="py-line">        <tt class="py-name">base_env</tt><tt class="py-op">.</tt><tt class="py-name">update</tt><tt class="py-op">(</tt><tt class="py-op">{</tt> </tt>
+<a name="L184"></a><tt class="py-lineno">184</tt>  <tt class="py-line">            <tt class="py-string">'SERVER_NAME'</tt><tt class="py-op">:</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-74" class="py-name"><a title="wtf.app.services.config
+wtf.config
+wtf.init.config" class="py-name" href="#" onclick="return doclink('link-74', 'config', 'link-20');">config</a></tt><tt class="py-op">.</tt><tt id="link-75" class="py-name"><a title="wtf" class="py-name" href="#" onclick="return doclink('link-75', 'wtf', 'link-1');">wtf</a></tt><tt class="py-op">.</tt><tt class="py-name">servername</tt><tt class="py-op">,</tt> </tt>
+<a name="L185"></a><tt class="py-lineno">185</tt>  <tt class="py-line">            <tt class="py-string">'SCRIPT_NAME'</tt><tt class="py-op">:</tt> <tt class="py-string">''</tt><tt class="py-op">,</tt> </tt>
+<a name="L186"></a><tt class="py-lineno">186</tt>  <tt class="py-line">        <tt class="py-op">}</tt><tt class="py-op">)</tt> </tt>
+<a name="L187"></a><tt class="py-lineno">187</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-name">base_env</tt> </tt>
+</div><a name="L188"></a><tt class="py-lineno">188</tt>  <tt class="py-line"> </tt>
+<a name="Gateway._init_from_request"></a><div id="Gateway._init_from_request-def"><a name="L189"></a><tt class="py-lineno">189</tt> <a class="py-toggle" href="#" id="Gateway._init_from_request-toggle" onclick="return toggle('Gateway._init_from_request');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="wtf.impl.http._server.Gateway-class.html#_init_from_request">_init_from_request</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">connection</tt><tt class="py-op">,</tt> <tt class="py-param">request</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="Gateway._init_from_request-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="Gateway._init_from_request-expanded"><a name="L190"></a><tt class="py-lineno">190</tt>  <tt class="py-line">        <tt class="py-docstring">"""</tt> </tt>
+<a name="L191"></a><tt class="py-lineno">191</tt>  <tt class="py-line"><tt class="py-docstring">        Create HTTP implementation specific request environment</tt> </tt>
+<a name="L192"></a><tt class="py-lineno">192</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L193"></a><tt class="py-lineno">193</tt>  <tt class="py-line"><tt class="py-docstring">        :See: `_gateway.Gateway._init_from_request`</tt> </tt>
+<a name="L194"></a><tt class="py-lineno">194</tt>  <tt class="py-line"><tt class="py-docstring">        """</tt> </tt>
+<a name="L195"></a><tt class="py-lineno">195</tt>  <tt class="py-line">        <tt id="link-76" class="py-name"><a title="wtf.app.request" class="py-name" href="#" onclick="return doclink('link-76', 'request', 'link-41');">request</a></tt><tt class="py-op">.</tt><tt id="link-77" class="py-name" targets="Method wtf.app.services._crash_tb.PythonParser.parse()=wtf.app.services._crash_tb.PythonParser-class.html#parse,Function wtf.cmdline.parse()=wtf.cmdline-module.html#parse,Method wtf.config.Parser.parse()=wtf.config.Parser-class.html#parse,Method wtf.impl.http._request.HTTPRequest.parse()=wtf.impl.http._request.HTTPRequest-class.html#parse"><a title="wtf.app.services._crash_tb.PythonParser.parse
+wtf.cmdline.parse
+wtf.config.Parser.parse
+wtf.impl.http._request.HTTPRequest.parse" class="py-name" href="#" onclick="return doclink('link-77', 'parse', 'link-77');">parse</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L196"></a><tt class="py-lineno">196</tt>  <tt class="py-line">        <tt class="py-name">environ</tt> <tt class="py-op">=</tt> <tt class="py-name">dict</tt><tt class="py-op">(</tt><tt class="py-op">(</tt><tt class="py-string">"HTTP_"</tt> <tt class="py-op">+</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-78" class="py-name"><a title="wtf.impl.http._server.Gateway._NORM_SUB" class="py-name" href="#" onclick="return doclink('link-78', '_NORM_SUB', 'link-66');">_NORM_SUB</a></tt><tt class="py-op">(</tt><tt class="py-string">"_"</tt><tt class="py-op">,</tt> <tt id="link-79" class="py-name" targets="Method wtf.opi.listener.InetSocket.key()=wtf.opi.listener.InetSocket-class.html#key,Method wtf.opi.listener.SocketDecorator.key()=wtf.opi.listener.SocketDecorator-class.html#key,Method wtf.opi.listener.UnixSocket.key()=wtf.opi.listener.UnixSocket-class.html#key"><a title="wtf.opi.listener.InetSocket.key
+wtf.opi.listener.SocketDecorator.key
+wtf.opi.listener.UnixSocket.key" class="py-name" href="#" onclick="return doclink('link-79', 'key', 'link-79');">key</a></tt><tt class="py-op">)</tt><tt class="py-op">.</tt><tt class="py-name">upper</tt><tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">,</tt> <tt class="py-name">value</tt><tt class="py-op">)</tt> </tt>
+<a name="L197"></a><tt class="py-lineno">197</tt>  <tt class="py-line">            <tt class="py-keyword">for</tt> <tt id="link-80" class="py-name"><a title="wtf.opi.listener.InetSocket.key
+wtf.opi.listener.SocketDecorator.key
+wtf.opi.listener.UnixSocket.key" class="py-name" href="#" onclick="return doclink('link-80', 'key', 'link-79');">key</a></tt><tt class="py-op">,</tt> <tt class="py-name">value</tt> <tt class="py-keyword">in</tt> <tt id="link-81" class="py-name"><a title="wtf.app.request" class="py-name" href="#" onclick="return doclink('link-81', 'request', 'link-41');">request</a></tt><tt class="py-op">.</tt><tt id="link-82" class="py-name" targets="Method wtf.app.http_response.AuthorizationRequired.headers()=wtf.app.http_response.AuthorizationRequired-class.html#headers,Method wtf.app.http_response.Created.headers()=wtf.app.http_response.Created-class.html#headers,Method wtf.app.http_response.HTTPResponse.headers()=wtf.app.http_response.HTTPResponse-class.html#headers,Method wtf.app.http_response.MethodNotAllowed.headers()=wtf.app.http_response.MethodNotAllowed-class.html#headers,Method wtf.app.http_response.UpgradeRequired.headers()=wtf.app.http_response.UpgradeRequired-class.html#headers,Method wtf.app.http_response._BaseRedirect.headers()=wtf.app.http_response._BaseRedirect-class.html#headers,Variable wtf.impl._gateway.ResponseStarter.headers=wtf.impl._gateway.ResponseStarter-class.html#headers,Variable wtf.impl.http._request.HTTPRequest.headers=wtf.impl.http._request.HTTPRequest-class.html#headers"><a title="wtf.app.http_response.AuthorizationRequired.headers
+wtf.app.http_response.Created.headers
+wtf.app.http_response.HTTPResponse.headers
+wtf.app.http_response.MethodNotAllowed.headers
+wtf.app.http_response.UpgradeRequired.headers
+wtf.app.http_response._BaseRedirect.headers
+wtf.impl._gateway.ResponseStarter.headers
+wtf.impl.http._request.HTTPRequest.headers" class="py-name" href="#" onclick="return doclink('link-82', 'headers', 'link-82');">headers</a></tt><tt class="py-op">.</tt><tt class="py-name">iteritems</tt><tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+<a name="L198"></a><tt class="py-lineno">198</tt>  <tt class="py-line">        <tt class="py-keyword">for</tt> <tt id="link-83" class="py-name"><a title="wtf.opi.listener.InetSocket.key
+wtf.opi.listener.SocketDecorator.key
+wtf.opi.listener.UnixSocket.key" class="py-name" href="#" onclick="return doclink('link-83', 'key', 'link-79');">key</a></tt> <tt class="py-keyword">in</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-84" class="py-name"><a title="wtf.impl.http._server.Gateway._STRIPPED" class="py-name" href="#" onclick="return doclink('link-84', '_STRIPPED', 'link-68');">_STRIPPED</a></tt><tt class="py-op">:</tt> </tt>
+<a name="L199"></a><tt class="py-lineno">199</tt>  <tt class="py-line">            <tt class="py-keyword">if</tt> <tt id="link-85" class="py-name"><a title="wtf.opi.listener.InetSocket.key
+wtf.opi.listener.SocketDecorator.key
+wtf.opi.listener.UnixSocket.key" class="py-name" href="#" onclick="return doclink('link-85', 'key', 'link-79');">key</a></tt> <tt class="py-keyword">in</tt> <tt class="py-name">environ</tt><tt class="py-op">:</tt> </tt>
+<a name="L200"></a><tt class="py-lineno">200</tt>  <tt class="py-line">                <tt class="py-name">environ</tt><tt class="py-op">[</tt><tt id="link-86" class="py-name"><a title="wtf.opi.listener.InetSocket.key
+wtf.opi.listener.SocketDecorator.key
+wtf.opi.listener.UnixSocket.key" class="py-name" href="#" onclick="return doclink('link-86', 'key', 'link-79');">key</a></tt><tt class="py-op">[</tt><tt class="py-number">5</tt><tt class="py-op">:</tt><tt class="py-op">]</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-name">environ</tt><tt class="py-op">.</tt><tt class="py-name">pop</tt><tt class="py-op">(</tt><tt id="link-87" class="py-name"><a title="wtf.opi.listener.InetSocket.key
+wtf.opi.listener.SocketDecorator.key
+wtf.opi.listener.UnixSocket.key" class="py-name" href="#" onclick="return doclink('link-87', 'key', 'link-79');">key</a></tt><tt class="py-op">)</tt> </tt>
+<a name="L201"></a><tt class="py-lineno">201</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt class="py-string">'HTTP_TRANSFER_ENCODING'</tt> <tt class="py-keyword">in</tt> <tt class="py-name">environ</tt><tt class="py-op">:</tt> </tt>
+<a name="L202"></a><tt class="py-lineno">202</tt>  <tt class="py-line">            <tt class="py-name">environ</tt><tt class="py-op">[</tt><tt class="py-string">'CONTENT_LENGTH'</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-string">'-1'</tt> </tt>
+<a name="L203"></a><tt class="py-lineno">203</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt class="py-string">'HTTP_CONNECTION'</tt> <tt class="py-keyword">in</tt> <tt class="py-name">environ</tt><tt class="py-op">:</tt> </tt>
+<a name="L204"></a><tt class="py-lineno">204</tt>  <tt class="py-line">            <tt class="py-name">connhops</tt> <tt class="py-op">=</tt> <tt id="link-88" class="py-name"><a title="wtf.app.response.HeaderCollection.set
+wtf.app.services.memcache.MemcacheWrapper.set
+wtf.app.services.memcache.NoMemcacheWrapper.set
+wtf.app.services.session.StorageAdapter.set
+wtf.app.services.session.StorageInterface.set
+wtf.app.services.session_storage.sharedance.BoundSharedanceStorage.set
+wtf.ext.memcache.Memcache.set" class="py-name" href="#" onclick="return doclink('link-88', 'set', 'link-70');">set</a></tt><tt class="py-op">(</tt> </tt>
+<a name="L205"></a><tt class="py-lineno">205</tt>  <tt class="py-line">                <tt class="py-string">"HTTP_"</tt> <tt class="py-op">+</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-89" class="py-name"><a title="wtf.impl.http._server.Gateway._NORM_SUB" class="py-name" href="#" onclick="return doclink('link-89', '_NORM_SUB', 'link-66');">_NORM_SUB</a></tt><tt class="py-op">(</tt><tt class="py-string">"_"</tt><tt class="py-op">,</tt> <tt id="link-90" class="py-name"><a title="wtf.opi.listener.InetSocket.key
+wtf.opi.listener.SocketDecorator.key
+wtf.opi.listener.UnixSocket.key" class="py-name" href="#" onclick="return doclink('link-90', 'key', 'link-79');">key</a></tt><tt class="py-op">.</tt><tt class="py-name">strip</tt><tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">)</tt><tt class="py-op">.</tt><tt class="py-name">upper</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L206"></a><tt class="py-lineno">206</tt>  <tt class="py-line">                <tt class="py-keyword">for</tt> <tt id="link-91" class="py-name"><a title="wtf.opi.listener.InetSocket.key
+wtf.opi.listener.SocketDecorator.key
+wtf.opi.listener.UnixSocket.key" class="py-name" href="#" onclick="return doclink('link-91', 'key', 'link-79');">key</a></tt> <tt class="py-keyword">in</tt> <tt class="py-name">environ</tt><tt class="py-op">[</tt><tt class="py-string">'HTTP_CONNECTION'</tt><tt class="py-op">]</tt><tt class="py-op">.</tt><tt class="py-name">split</tt><tt class="py-op">(</tt><tt class="py-string">','</tt><tt class="py-op">)</tt> </tt>
+<a name="L207"></a><tt class="py-lineno">207</tt>  <tt class="py-line">            <tt class="py-op">)</tt> </tt>
+<a name="L208"></a><tt class="py-lineno">208</tt>  <tt class="py-line">        <tt class="py-keyword">else</tt><tt class="py-op">:</tt> </tt>
+<a name="L209"></a><tt class="py-lineno">209</tt>  <tt class="py-line">            <tt class="py-name">connhops</tt> <tt class="py-op">=</tt> <tt id="link-92" class="py-name"><a title="wtf.app.response.HeaderCollection.set
+wtf.app.services.memcache.MemcacheWrapper.set
+wtf.app.services.memcache.NoMemcacheWrapper.set
+wtf.app.services.session.StorageAdapter.set
+wtf.app.services.session.StorageInterface.set
+wtf.app.services.session_storage.sharedance.BoundSharedanceStorage.set
+wtf.ext.memcache.Memcache.set" class="py-name" href="#" onclick="return doclink('link-92', 'set', 'link-70');">set</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L210"></a><tt class="py-lineno">210</tt>  <tt class="py-line">        <tt class="py-keyword">for</tt> <tt id="link-93" class="py-name"><a title="wtf.opi.listener.InetSocket.key
+wtf.opi.listener.SocketDecorator.key
+wtf.opi.listener.UnixSocket.key" class="py-name" href="#" onclick="return doclink('link-93', 'key', 'link-79');">key</a></tt> <tt class="py-keyword">in</tt> <tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-94" class="py-name"><a title="wtf.impl.http._server.Gateway._HOPS" class="py-name" href="#" onclick="return doclink('link-94', '_HOPS', 'link-69');">_HOPS</a></tt> <tt class="py-op">|</tt> <tt class="py-name">connhops</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L211"></a><tt class="py-lineno">211</tt>  <tt class="py-line">            <tt class="py-keyword">if</tt> <tt id="link-95" class="py-name"><a title="wtf.opi.listener.InetSocket.key
+wtf.opi.listener.SocketDecorator.key
+wtf.opi.listener.UnixSocket.key" class="py-name" href="#" onclick="return doclink('link-95', 'key', 'link-79');">key</a></tt> <tt class="py-keyword">in</tt> <tt class="py-name">environ</tt><tt class="py-op">:</tt> </tt>
+<a name="L212"></a><tt class="py-lineno">212</tt>  <tt class="py-line">                <tt class="py-keyword">del</tt> <tt class="py-name">environ</tt><tt class="py-op">[</tt><tt id="link-96" class="py-name"><a title="wtf.opi.listener.InetSocket.key
+wtf.opi.listener.SocketDecorator.key
+wtf.opi.listener.UnixSocket.key" class="py-name" href="#" onclick="return doclink('link-96', 'key', 'link-79');">key</a></tt><tt class="py-op">]</tt> </tt>
+<a name="L213"></a><tt class="py-lineno">213</tt>  <tt class="py-line"> </tt>
+<a name="L214"></a><tt class="py-lineno">214</tt>  <tt class="py-line">        <tt class="py-name">_</tt><tt class="py-op">,</tt> <tt class="py-name">_</tt><tt class="py-op">,</tt> <tt id="link-97" class="py-name" targets="Variable wtf.webutil.URL.path=wtf.webutil.URL-class.html#path"><a title="wtf.webutil.URL.path" class="py-name" href="#" onclick="return doclink('link-97', 'path', 'link-97');">path</a></tt><tt class="py-op">,</tt> <tt id="link-98" class="py-name" targets="Variable wtf.webutil.URL.query=wtf.webutil.URL-class.html#query"><a title="wtf.webutil.URL.query" class="py-name" href="#" onclick="return doclink('link-98', 'query', 'link-98');">query</a></tt><tt class="py-op">,</tt> <tt class="py-name">_</tt> <tt class="py-op">=</tt> <tt class="py-name">_urlparse</tt><tt class="py-op">.</tt><tt class="py-name">urlsplit</tt><tt class="py-op">(</tt><tt id="link-99" class="py-name"><a title="wtf.app.request" class="py-name" href="#" onclick="return doclink('link-99', 'request', 'link-41');">request</a></tt><tt class="py-op">.</tt><tt id="link-100" class="py-name" targets="Variable wtf.impl.http._request.HTTPRequest.url=wtf.impl.http._request.HTTPRequest-class.html#url"><a title="wtf.impl.http._request.HTTPRequest.url" class="py-name" href="#" onclick="return doclink('link-100', 'url', 'link-100');">url</a></tt><tt class="py-op">)</tt> </tt>
+<a name="L215"></a><tt class="py-lineno">215</tt>  <tt class="py-line">        <tt class="py-name">environ</tt><tt class="py-op">.</tt><tt class="py-name">update</tt><tt class="py-op">(</tt><tt class="py-op">{</tt> </tt>
+<a name="L216"></a><tt class="py-lineno">216</tt>  <tt class="py-line">            <tt class="py-string">'REQUEST_METHOD'</tt><tt class="py-op">:</tt>    <tt id="link-101" class="py-name"><a title="wtf.app.request" class="py-name" href="#" onclick="return doclink('link-101', 'request', 'link-41');">request</a></tt><tt class="py-op">.</tt><tt id="link-102" class="py-name" targets="Variable wtf.app.request.Request.method=wtf.app.request.Request-class.html#method,Variable wtf.impl.http._request.HTTPRequest.method=wtf.impl.http._request.HTTPRequest-class.html#method"><a title="wtf.app.request.Request.method
+wtf.impl.http._request.HTTPRequest.method" class="py-name" href="#" onclick="return doclink('link-102', 'method', 'link-102');">method</a></tt><tt class="py-op">,</tt> </tt>
+<a name="L217"></a><tt class="py-lineno">217</tt>  <tt class="py-line">            <tt class="py-string">'SERVER_PROTOCOL'</tt><tt class="py-op">:</tt>   <tt class="py-string">"HTTP/%d.%d"</tt> <tt class="py-op">%</tt> <tt id="link-103" class="py-name"><a title="wtf.app.request" class="py-name" href="#" onclick="return doclink('link-103', 'request', 'link-41');">request</a></tt><tt class="py-op">.</tt><tt id="link-104" class="py-name" targets="Variable wtf.impl.http._request.HTTPRequest.protocol=wtf.impl.http._request.HTTPRequest-class.html#protocol"><a title="wtf.impl.http._request.HTTPRequest.protocol" class="py-name" href="#" onclick="return doclink('link-104', 'protocol', 'link-104');">protocol</a></tt><tt class="py-op">,</tt> </tt>
+<a name="L218"></a><tt class="py-lineno">218</tt>  <tt class="py-line">            <tt class="py-string">'REQUEST_URI'</tt><tt class="py-op">:</tt>       <tt class="py-name">_urlparse</tt><tt class="py-op">.</tt><tt class="py-name">urlunsplit</tt><tt class="py-op">(</tt><tt class="py-op">(</tt> </tt>
+<a name="L219"></a><tt class="py-lineno">219</tt>  <tt class="py-line">                <tt class="py-string">""</tt><tt class="py-op">,</tt> <tt class="py-string">""</tt><tt class="py-op">,</tt> <tt id="link-105" class="py-name"><a title="wtf.webutil.URL.path" class="py-name" href="#" onclick="return doclink('link-105', 'path', 'link-97');">path</a></tt><tt class="py-op">,</tt> <tt id="link-106" class="py-name"><a title="wtf.webutil.URL.query" class="py-name" href="#" onclick="return doclink('link-106', 'query', 'link-98');">query</a></tt><tt class="py-op">,</tt> <tt class="py-string">""</tt><tt class="py-op">)</tt><tt class="py-op">)</tt><tt class="py-op">,</tt> </tt>
+<a name="L220"></a><tt class="py-lineno">220</tt>  <tt class="py-line">            <tt class="py-string">'QUERY_STRING'</tt><tt class="py-op">:</tt>      <tt id="link-107" class="py-name"><a title="wtf.webutil.URL.query" class="py-name" href="#" onclick="return doclink('link-107', 'query', 'link-98');">query</a></tt><tt class="py-op">,</tt> </tt>
+<a name="L221"></a><tt class="py-lineno">221</tt>  <tt class="py-line">            <tt class="py-string">'SERVER_ADDR'</tt><tt class="py-op">:</tt>       <tt id="link-108" class="py-name"><a title="wtf.app.services.memcache.GlobalMemcache.connection
+wtf.app.services.memcache.connection
+wtf.ext.db._decorators.connection
+wtf.ext.db._tagged.connection
+wtf.impl.http._request.HTTPRequest.connection" class="py-name" href="#" onclick="return doclink('link-108', 'connection', 'link-60');">connection</a></tt><tt class="py-op">.</tt><tt class="py-name">server_addr</tt><tt class="py-op">[</tt><tt class="py-number">0</tt><tt class="py-op">]</tt><tt class="py-op">,</tt> </tt>
+<a name="L222"></a><tt class="py-lineno">222</tt>  <tt class="py-line">            <tt class="py-string">'SERVER_PORT'</tt><tt class="py-op">:</tt>       <tt class="py-name">str</tt><tt class="py-op">(</tt><tt id="link-109" class="py-name"><a title="wtf.app.services.memcache.GlobalMemcache.connection
+wtf.app.services.memcache.connection
+wtf.ext.db._decorators.connection
+wtf.ext.db._tagged.connection
+wtf.impl.http._request.HTTPRequest.connection" class="py-name" href="#" onclick="return doclink('link-109', 'connection', 'link-60');">connection</a></tt><tt class="py-op">.</tt><tt class="py-name">server_addr</tt><tt class="py-op">[</tt><tt class="py-number">1</tt><tt class="py-op">]</tt><tt class="py-op">)</tt><tt class="py-op">,</tt> </tt>
+<a name="L223"></a><tt class="py-lineno">223</tt>  <tt class="py-line">            <tt class="py-string">'REMOTE_ADDR'</tt><tt class="py-op">:</tt>       <tt id="link-110" class="py-name"><a title="wtf.app.services.memcache.GlobalMemcache.connection
+wtf.app.services.memcache.connection
+wtf.ext.db._decorators.connection
+wtf.ext.db._tagged.connection
+wtf.impl.http._request.HTTPRequest.connection" class="py-name" href="#" onclick="return doclink('link-110', 'connection', 'link-60');">connection</a></tt><tt class="py-op">.</tt><tt id="link-111" class="py-name" targets="Method wtf.app.request.Request.remote_addr()=wtf.app.request.Request-class.html#remote_addr"><a title="wtf.app.request.Request.remote_addr" class="py-name" href="#" onclick="return doclink('link-111', 'remote_addr', 'link-111');">remote_addr</a></tt><tt class="py-op">[</tt><tt class="py-number">0</tt><tt class="py-op">]</tt><tt class="py-op">,</tt> </tt>
+<a name="L224"></a><tt class="py-lineno">224</tt>  <tt class="py-line">            <tt class="py-string">'REMOTE_PORT'</tt><tt class="py-op">:</tt>       <tt class="py-name">str</tt><tt class="py-op">(</tt><tt id="link-112" class="py-name"><a title="wtf.app.services.memcache.GlobalMemcache.connection
+wtf.app.services.memcache.connection
+wtf.ext.db._decorators.connection
+wtf.ext.db._tagged.connection
+wtf.impl.http._request.HTTPRequest.connection" class="py-name" href="#" onclick="return doclink('link-112', 'connection', 'link-60');">connection</a></tt><tt class="py-op">.</tt><tt id="link-113" class="py-name"><a title="wtf.app.request.Request.remote_addr" class="py-name" href="#" onclick="return doclink('link-113', 'remote_addr', 'link-111');">remote_addr</a></tt><tt class="py-op">[</tt><tt class="py-number">1</tt><tt class="py-op">]</tt><tt class="py-op">)</tt><tt class="py-op">,</tt> </tt>
+<a name="L225"></a><tt class="py-lineno">225</tt>  <tt class="py-line"> </tt>
+<a name="L226"></a><tt class="py-lineno">226</tt>  <tt class="py-line">            <tt class="py-string">'wsgi.multithread'</tt><tt class="py-op">:</tt>  <tt id="link-114" class="py-name"><a title="wtf.app.request" class="py-name" href="#" onclick="return doclink('link-114', 'request', 'link-41');">request</a></tt><tt class="py-op">.</tt><tt class="py-name">flags</tt><tt class="py-op">.</tt><tt id="link-115" class="py-name" targets="Variable wtf.opi.worker.single.Flags.multithread=wtf.opi.worker.single.Flags-class.html#multithread,Variable wtf.opi.worker.threaded.Flags.multithread=wtf.opi.worker.threaded.Flags-class.html#multithread"><a title="wtf.opi.worker.single.Flags.multithread
+wtf.opi.worker.threaded.Flags.multithread" class="py-name" href="#" onclick="return doclink('link-115', 'multithread', 'link-115');">multithread</a></tt><tt class="py-op">,</tt> </tt>
+<a name="L227"></a><tt class="py-lineno">227</tt>  <tt class="py-line">            <tt class="py-string">'wsgi.multiprocess'</tt><tt class="py-op">:</tt> <tt id="link-116" class="py-name"><a title="wtf.app.request" class="py-name" href="#" onclick="return doclink('link-116', 'request', 'link-41');">request</a></tt><tt class="py-op">.</tt><tt class="py-name">flags</tt><tt class="py-op">.</tt><tt id="link-117" class="py-name" targets="Variable wtf.opi.worker.single.Flags.multiprocess=wtf.opi.worker.single.Flags-class.html#multiprocess,Variable wtf.opi.worker.threaded.Flags.multiprocess=wtf.opi.worker.threaded.Flags-class.html#multiprocess"><a title="wtf.opi.worker.single.Flags.multiprocess
+wtf.opi.worker.threaded.Flags.multiprocess" class="py-name" href="#" onclick="return doclink('link-117', 'multiprocess', 'link-117');">multiprocess</a></tt><tt class="py-op">,</tt> </tt>
+<a name="L228"></a><tt class="py-lineno">228</tt>  <tt class="py-line">            <tt class="py-string">'wsgi.run_once'</tt><tt class="py-op">:</tt>     <tt id="link-118" class="py-name"><a title="wtf.app.request" class="py-name" href="#" onclick="return doclink('link-118', 'request', 'link-41');">request</a></tt><tt class="py-op">.</tt><tt class="py-name">flags</tt><tt class="py-op">.</tt><tt id="link-119" class="py-name" targets="Variable wtf.opi.worker.single.Flags.run_once=wtf.opi.worker.single.Flags-class.html#run_once,Variable wtf.opi.worker.threaded.Flags.run_once=wtf.opi.worker.threaded.Flags-class.html#run_once"><a title="wtf.opi.worker.single.Flags.run_once
+wtf.opi.worker.threaded.Flags.run_once" class="py-name" href="#" onclick="return doclink('link-119', 'run_once', 'link-119');">run_once</a></tt><tt class="py-op">,</tt> </tt>
+<a name="L229"></a><tt class="py-lineno">229</tt>  <tt class="py-line">            <tt class="py-string">'wsgi.input'</tt><tt class="py-op">:</tt>        <tt id="link-120" class="py-name"><a title="wtf.app.request" class="py-name" href="#" onclick="return doclink('link-120', 'request', 'link-41');">request</a></tt><tt class="py-op">.</tt><tt id="link-121" class="py-name" targets="Method wtf.impl.http._request.BaseState.request_body_stream()=wtf.impl.http._request.BaseState-class.html#request_body_stream,Method wtf.impl.http._request.RequestHeadersReadyState.request_body_stream()=wtf.impl.http._request.RequestHeadersReadyState-class.html#request_body_stream,Variable wtf.impl.scgi.SCGIRequest.request_body_stream=wtf.impl.scgi.SCGIRequest-class.html#request_body_stream"><a title="wtf.impl.http._request.BaseState.request_body_stream
+wtf.impl.http._request.RequestHeadersReadyState.request_body_stream
+wtf.impl.scgi.SCGIRequest.request_body_stream" class="py-name" href="#" onclick="return doclink('link-121', 'request_body_stream', 'link-121');">request_body_stream</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> <tt class="py-keyword">or</tt> </tt>
+<a name="L230"></a><tt class="py-lineno">230</tt>  <tt class="py-line">                                     <tt id="link-122" class="py-name"><a title="wtf.impl._gateway.ResponseStarter._stream" class="py-name" href="#" onclick="return doclink('link-122', '_stream', 'link-5');">_stream</a></tt><tt class="py-op">.</tt><tt id="link-123" class="py-name" targets="Variable wtf.stream.dev_null=wtf.stream-module.html#dev_null"><a title="wtf.stream.dev_null" class="py-name" href="#" onclick="return doclink('link-123', 'dev_null', 'link-123');">dev_null</a></tt><tt class="py-op">,</tt> </tt>
+<a name="L231"></a><tt class="py-lineno">231</tt>  <tt class="py-line">            <tt class="py-string">'wsgi.url_scheme'</tt><tt class="py-op">:</tt>   <tt class="py-string">'http'</tt><tt class="py-op">,</tt> <tt class="py-comment"># no ssl for now</tt> </tt>
+<a name="L232"></a><tt class="py-lineno">232</tt>  <tt class="py-line">        <tt class="py-op">}</tt><tt class="py-op">)</tt> </tt>
+<a name="L233"></a><tt class="py-lineno">233</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt class="py-string">'%'</tt> <tt class="py-keyword">in</tt> <tt id="link-124" class="py-name"><a title="wtf.webutil.URL.path" class="py-name" href="#" onclick="return doclink('link-124', 'path', 'link-97');">path</a></tt><tt class="py-op">:</tt> </tt>
+<a name="L234"></a><tt class="py-lineno">234</tt>  <tt class="py-line">            <tt id="link-125" class="py-name"><a title="wtf.webutil.URL.path" class="py-name" href="#" onclick="return doclink('link-125', 'path', 'link-97');">path</a></tt> <tt class="py-op">=</tt> <tt class="py-string">'%2F'</tt><tt class="py-op">.</tt><tt class="py-name">join</tt><tt class="py-op">(</tt><tt class="py-name">_webutil</tt><tt class="py-op">.</tt><tt id="link-126" class="py-name" targets="Function wtf._wtf_cutil.unquote()=wtf._wtf_cutil-module.html#unquote,Method wtf.app.cookie.BaseCookieCodec.unquote()=wtf.app.cookie.BaseCookieCodec-class.html#unquote"><a title="wtf._wtf_cutil.unquote
+wtf.app.cookie.BaseCookieCodec.unquote" class="py-name" href="#" onclick="return doclink('link-126', 'unquote', 'link-126');">unquote</a></tt><tt class="py-op">(</tt><tt class="py-name">item</tt><tt class="py-op">)</tt> </tt>
+<a name="L235"></a><tt class="py-lineno">235</tt>  <tt class="py-line">                <tt class="py-keyword">for</tt> <tt class="py-name">item</tt> <tt class="py-keyword">in</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-127" class="py-name"><a title="wtf.impl.http._server.Gateway._SLASH_SPLIT" class="py-name" href="#" onclick="return doclink('link-127', '_SLASH_SPLIT', 'link-67');">_SLASH_SPLIT</a></tt><tt class="py-op">(</tt><tt id="link-128" class="py-name"><a title="wtf.webutil.URL.path" class="py-name" href="#" onclick="return doclink('link-128', 'path', 'link-97');">path</a></tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+<a name="L236"></a><tt class="py-lineno">236</tt>  <tt class="py-line">        <tt class="py-name">environ</tt><tt class="py-op">[</tt><tt class="py-string">'PATH_INFO'</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt id="link-129" class="py-name"><a title="wtf.webutil.URL.path" class="py-name" href="#" onclick="return doclink('link-129', 'path', 'link-97');">path</a></tt> </tt>
+<a name="L237"></a><tt class="py-lineno">237</tt>  <tt class="py-line"> </tt>
+<a name="L238"></a><tt class="py-lineno">238</tt>  <tt class="py-line">        <tt class="py-keyword">def</tt> <tt class="py-def-name">start_response</tt><tt class="py-op">(</tt><tt class="py-param">status</tt><tt class="py-op">,</tt> <tt class="py-param">headers</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L239"></a><tt class="py-lineno">239</tt>  <tt class="py-line">            <tt class="py-docstring">""" HTTP response starter """</tt> </tt>
+<a name="L240"></a><tt class="py-lineno">240</tt>  <tt class="py-line">            <tt id="link-130" class="py-name"><a title="wtf.app.request" class="py-name" href="#" onclick="return doclink('link-130', 'request', 'link-41');">request</a></tt><tt class="py-op">.</tt><tt id="link-131" class="py-name" targets="Method wtf.impl.http._request.BaseState.send_status()=wtf.impl.http._request.BaseState-class.html#send_status,Method wtf.impl.http._request.RequestHeadersReadyState.send_status()=wtf.impl.http._request.RequestHeadersReadyState-class.html#send_status,Method wtf.impl.http._request.ResponseContinueWaitState.send_status()=wtf.impl.http._request.ResponseContinueWaitState-class.html#send_status,Method wtf.impl.http._request.ResponseStatusWaitState.send_status()=wtf.impl.http._request.ResponseStatusWaitState-class.html#send_status"><a title="wtf.impl.http._request.BaseState.send_status
+wtf.impl.http._request.RequestHeadersReadyState.send_status
+wtf.impl.http._request.ResponseContinueWaitState.send_status
+wtf.impl.http._request.ResponseStatusWaitState.send_status" class="py-name" href="#" onclick="return doclink('link-131', 'send_status', 'link-131');">send_status</a></tt><tt class="py-op">(</tt><tt id="link-132" class="py-name"><a title="wtf.app.http_response.Accepted.status
+wtf.app.http_response.AuthorizationRequired.status
+wtf.app.http_response.BadGateway.status
+wtf.app.http_response.BadRequest.status
+wtf.app.http_response.Conflict.status
+wtf.app.http_response.Continue.status
+wtf.app.http_response.Created.status
+wtf.app.http_response.ExpectationFailed.status
+wtf.app.http_response.FailedDependency.status
+wtf.app.http_response.Forbidden.status
+wtf.app.http_response.Found.status
+wtf.app.http_response.GatewayTimeout.status
+wtf.app.http_response.Gone.status
+wtf.app.http_response.HTTPResponse.status
+wtf.app.http_response.HTTPVersionNotSupported.status
+wtf.app.http_response.InsufficientStorage.status
+wtf.app.http_response.InternalServerError.status
+wtf.app.http_response.LengthRequired.status
+wtf.app.http_response.Locked.status
+wtf.app.http_response.MethodNotAllowed.status
+wtf.app.http_response.MovedPermanently.status
+wtf.app.http_response.MultiStatus.status
+wtf.app.http_response.MultipleChoices.status
+wtf.app.http_response.NoContent.status
+wtf.app.http_response.NonAuthoritativeInformation.status
+wtf.app.http_response.NotAcceptable.status
+wtf.app.http_response.NotExtended.status
+wtf.app.http_response.NotFound.status
+wtf.app.http_response.NotImplemented.status
+wtf.app.http_response.NotModified.status
+wtf.app.http_response.OK.status
+wtf.app.http_response.PartialContent.status
+wtf.app.http_response.PaymentRequired.status
+wtf.app.http_response.PreconditionFailed.status
+wtf.app.http_response.Processing.status
+wtf.app.http_response.ProxyAuthenticationRequired.status
+wtf.app.http_response.RequestEntityTooLarge.status
+wtf.app.http_response.RequestRangeNotSatisfiable.status
+wtf.app.http_response.RequestTimeout.status
+wtf.app.http_response.RequestURITooLong.status
+wtf.app.http_response.ResetContent.status
+wtf.app.http_response.SeeOther.status
+wtf.app.http_response.ServiceUnavailable.status
+wtf.app.http_response.SwitchingProtocols.status
+wtf.app.http_response.TemporaryRedirect.status
+wtf.app.http_response.UnprocessableEntity.status
+wtf.app.http_response.UnsupportedMediaType.status
+wtf.app.http_response.Unused306.status
+wtf.app.http_response.UpgradeRequired.status
+wtf.app.http_response.UseProxy.status
+wtf.app.http_response.VariantAlsoNegotiates.status
+wtf.app.response.Response.status
+wtf.app.services.crash.CrashService.status
+wtf.app.services.memcache.GlobalMemcache.status
+wtf.app.services.session.StorageFactoryInterface.status
+wtf.app.services.session_storage.sharedance.SharedanceStorage.status
+wtf.impl._gateway.ResponseStarter.status
+wtf.impl.http._request.ExpectationFailed.status
+wtf.impl.http._request.RequestTimeout.status
+wtf.impl.http._request.UnImplemented.status
+wtf.impl.http._request.UnsupportedHTTPVersion.status
+wtf.impl.http._util.BadRequest.status
+wtf.impl.http._util.ParseError.status" class="py-name" href="#" onclick="return doclink('link-132', 'status', 'link-52');">status</a></tt><tt class="py-op">)</tt> </tt>
+<a name="L241"></a><tt class="py-lineno">241</tt>  <tt class="py-line">            <tt id="link-133" class="py-name"><a title="wtf.app.request" class="py-name" href="#" onclick="return doclink('link-133', 'request', 'link-41');">request</a></tt><tt class="py-op">.</tt><tt id="link-134" class="py-name" targets="Method wtf.impl.http._request.BaseState.send_headers()=wtf.impl.http._request.BaseState-class.html#send_headers,Method wtf.impl.http._request.ResponseHeadersWaitState.send_headers()=wtf.impl.http._request.ResponseHeadersWaitState-class.html#send_headers"><a title="wtf.impl.http._request.BaseState.send_headers
+wtf.impl.http._request.ResponseHeadersWaitState.send_headers" class="py-name" href="#" onclick="return doclink('link-134', 'send_headers', 'link-134');">send_headers</a></tt><tt class="py-op">(</tt><tt id="link-135" class="py-name"><a title="wtf.app.http_response.AuthorizationRequired.headers
+wtf.app.http_response.Created.headers
+wtf.app.http_response.HTTPResponse.headers
+wtf.app.http_response.MethodNotAllowed.headers
+wtf.app.http_response.UpgradeRequired.headers
+wtf.app.http_response._BaseRedirect.headers
+wtf.impl._gateway.ResponseStarter.headers
+wtf.impl.http._request.HTTPRequest.headers" class="py-name" href="#" onclick="return doclink('link-135', 'headers', 'link-82');">headers</a></tt><tt class="py-op">)</tt> </tt>
+<a name="L242"></a><tt class="py-lineno">242</tt>  <tt class="py-line">            <tt id="link-136" class="py-name"><a title="wtf.app.request" class="py-name" href="#" onclick="return doclink('link-136', 'request', 'link-41');">request</a></tt><tt class="py-op">.</tt><tt id="link-137" class="py-name" targets="Method wtf.impl.http._request.BaseState.finish_headers()=wtf.impl.http._request.BaseState-class.html#finish_headers,Method wtf.impl.http._request.ResponseHeadersWaitState.finish_headers()=wtf.impl.http._request.ResponseHeadersWaitState-class.html#finish_headers"><a title="wtf.impl.http._request.BaseState.finish_headers
+wtf.impl.http._request.ResponseHeadersWaitState.finish_headers" class="py-name" href="#" onclick="return doclink('link-137', 'finish_headers', 'link-137');">finish_headers</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L243"></a><tt class="py-lineno">243</tt>  <tt class="py-line">            <tt class="py-keyword">return</tt> <tt id="link-138" class="py-name"><a title="wtf.app.request" class="py-name" href="#" onclick="return doclink('link-138', 'request', 'link-41');">request</a></tt><tt class="py-op">.</tt><tt id="link-139" class="py-name" targets="Method wtf.impl.http._request.BaseState.response_body_stream()=wtf.impl.http._request.BaseState-class.html#response_body_stream,Method wtf.impl.http._request.ResponseBodyWaitState.response_body_stream()=wtf.impl.http._request.ResponseBodyWaitState-class.html#response_body_stream"><a title="wtf.impl.http._request.BaseState.response_body_stream
+wtf.impl.http._request.ResponseBodyWaitState.response_body_stream" class="py-name" href="#" onclick="return doclink('link-139', 'response_body_stream', 'link-139');">response_body_stream</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L244"></a><tt class="py-lineno">244</tt>  <tt class="py-line"> </tt>
+<a name="L245"></a><tt class="py-lineno">245</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-name">environ</tt><tt class="py-op">,</tt> <tt id="link-140" class="py-name" targets="Method wtf.app.services.session.SessionFactory.start_response()=wtf.app.services.session.SessionFactory-class.html#start_response,Method wtf.impl.scgi.SCGIRequest.start_response()=wtf.impl.scgi.SCGIRequest-class.html#start_response"><a title="wtf.app.services.session.SessionFactory.start_response
+wtf.impl.scgi.SCGIRequest.start_response" class="py-name" href="#" onclick="return doclink('link-140', 'start_response', 'link-140');">start_response</a></tt> </tt>
+</div></div><a name="L246"></a><tt class="py-lineno">246</tt>  <tt class="py-line"> </tt>
+<a name="L247"></a><tt class="py-lineno">247</tt>  <tt class="py-line"> </tt>
+<a name="_TimeOuts"></a><div id="_TimeOuts-def"><a name="L248"></a><tt class="py-lineno">248</tt> <a class="py-toggle" href="#" id="_TimeOuts-toggle" onclick="return toggle('_TimeOuts');">-</a><tt class="py-line"><tt class="py-keyword">class</tt> <a class="py-def-name" href="wtf.impl.http._server._TimeOuts-class.html">_TimeOuts</a><tt class="py-op">(</tt><tt class="py-base-class">object</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="_TimeOuts-collapsed" style="display:none;" pad="+++" indent="++++"></div><div id="_TimeOuts-expanded"><a name="L249"></a><tt class="py-lineno">249</tt>  <tt class="py-line">    <tt class="py-docstring">"""</tt> </tt>
+<a name="L250"></a><tt class="py-lineno">250</tt>  <tt class="py-line"><tt class="py-docstring">    Timeout specificiations</tt> </tt>
+<a name="L251"></a><tt class="py-lineno">251</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L252"></a><tt class="py-lineno">252</tt>  <tt class="py-line"><tt class="py-docstring">    :IVariables:</tt> </tt>
+<a name="L253"></a><tt class="py-lineno">253</tt>  <tt class="py-line"><tt class="py-docstring">     - `general`: General timeout, defaults to 300.0 secs</tt> </tt>
+<a name="L254"></a><tt class="py-lineno">254</tt>  <tt class="py-line"><tt class="py-docstring">     - `keep_alive`: Keep-alive timeout, defaults to 5.0 secs</tt> </tt>
+<a name="L255"></a><tt class="py-lineno">255</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L256"></a><tt class="py-lineno">256</tt>  <tt class="py-line"><tt class="py-docstring">    :Types:</tt> </tt>
+<a name="L257"></a><tt class="py-lineno">257</tt>  <tt class="py-line"><tt class="py-docstring">     - `general`: ``float``</tt> </tt>
+<a name="L258"></a><tt class="py-lineno">258</tt>  <tt class="py-line"><tt class="py-docstring">     - `keep_alive`: ``float``</tt> </tt>
+<a name="L259"></a><tt class="py-lineno">259</tt>  <tt class="py-line"><tt class="py-docstring">    """</tt> </tt>
+<a name="L260"></a><tt class="py-lineno">260</tt>  <tt class="py-line"> </tt>
+<a name="_TimeOuts.__init__"></a><div id="_TimeOuts.__init__-def"><a name="L261"></a><tt class="py-lineno">261</tt> <a class="py-toggle" href="#" id="_TimeOuts.__init__-toggle" onclick="return toggle('_TimeOuts.__init__');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="wtf.impl.http._server._TimeOuts-class.html#__init__">__init__</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">config</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="_TimeOuts.__init__-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="_TimeOuts.__init__-expanded"><a name="L262"></a><tt class="py-lineno">262</tt>  <tt class="py-line">        <tt class="py-docstring">"""</tt> </tt>
+<a name="L263"></a><tt class="py-lineno">263</tt>  <tt class="py-line"><tt class="py-docstring">        Initialization</tt> </tt>
+<a name="L264"></a><tt class="py-lineno">264</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L265"></a><tt class="py-lineno">265</tt>  <tt class="py-line"><tt class="py-docstring">        :Parameters:</tt> </tt>
+<a name="L266"></a><tt class="py-lineno">266</tt>  <tt class="py-line"><tt class="py-docstring">         - `config`: Configuration</tt> </tt>
+<a name="L267"></a><tt class="py-lineno">267</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L268"></a><tt class="py-lineno">268</tt>  <tt class="py-line"><tt class="py-docstring">        :Types:</tt> </tt>
+<a name="L269"></a><tt class="py-lineno">269</tt>  <tt class="py-line"><tt class="py-docstring">         - `config`: `wtf.config.Config`</tt> </tt>
+<a name="L270"></a><tt class="py-lineno">270</tt>  <tt class="py-line"><tt class="py-docstring">        """</tt> </tt>
+<a name="L271"></a><tt class="py-lineno">271</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">general</tt> <tt class="py-op">=</tt> <tt class="py-name">float</tt><tt class="py-op">(</tt><tt id="link-141" class="py-name"><a title="wtf.app.services.config
+wtf.config
+wtf.init.config" class="py-name" href="#" onclick="return doclink('link-141', 'config', 'link-20');">config</a></tt><tt class="py-op">.</tt><tt id="link-142" class="py-name"><a title="wtf" class="py-name" href="#" onclick="return doclink('link-142', 'wtf', 'link-1');">wtf</a></tt><tt class="py-op">.</tt><tt class="py-name">timeout</tt><tt class="py-op">(</tt><tt class="py-string">'general'</tt><tt class="py-op">,</tt> <tt class="py-number">300</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+<a name="L272"></a><tt class="py-lineno">272</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">keep_alive</tt> <tt class="py-op">=</tt> <tt class="py-name">float</tt><tt class="py-op">(</tt><tt id="link-143" class="py-name"><a title="wtf.app.services.config
+wtf.config
+wtf.init.config" class="py-name" href="#" onclick="return doclink('link-143', 'config', 'link-20');">config</a></tt><tt class="py-op">.</tt><tt id="link-144" class="py-name"><a title="wtf" class="py-name" href="#" onclick="return doclink('link-144', 'wtf', 'link-1');">wtf</a></tt><tt class="py-op">.</tt><tt class="py-name">timeout</tt><tt class="py-op">(</tt><tt class="py-string">'keep-alive'</tt><tt class="py-op">,</tt> <tt class="py-number">5</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+</div></div><a name="L273"></a><tt class="py-lineno">273</tt>  <tt class="py-line"> </tt><script type="text/javascript">
+<!--
+expandto(location.href);
+// -->
+</script>
+</pre>
+<br />
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+  <!-- Home link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="wtf-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            ><a href="http://opensource.perlig.de/wtf/">Visit WTF Online</a></th>
+          </tr></table></th>
+  </tr>
+</table>
+
+<script type="text/javascript">
+  <!--
+  // Private objects are initially displayed (because if
+  // javascript is turned off then we want them to be
+  // visible); but by default, we want to hide them.  So hide
+  // them unless we have a cookie that says to show them.
+  checkCookie();
+  // -->
+</script>
+</body>
+</html>

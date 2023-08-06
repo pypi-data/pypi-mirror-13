@@ -1,0 +1,549 @@
+<?xml version="1.0" encoding="ascii"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>wtf.cmdline</title>
+  <link rel="stylesheet" href="epydoc.css" type="text/css" />
+  <script type="text/javascript" src="epydoc.js"></script>
+</head>
+
+<body bgcolor="white" text="black" link="blue" vlink="#204080"
+      alink="#204080">
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+  <!-- Home link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="wtf-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            ><a href="http://opensource.perlig.de/wtf/">Visit WTF Online</a></th>
+          </tr></table></th>
+  </tr>
+</table>
+<table width="100%" cellpadding="0" cellspacing="0">
+  <tr valign="top">
+    <td width="100%">
+      <span class="breadcrumbs">
+        <a href="wtf-module.html">Package&nbsp;wtf</a> ::
+        Module&nbsp;cmdline
+      </span>
+    </td>
+    <td>
+      <table cellpadding="0" cellspacing="0">
+        <!-- hide/show private -->
+        <tr><td align="right"><span class="options">[<a href="javascript:void(0);" class="privatelink"
+    onclick="toggle_private();">hide&nbsp;private</a>]</span></td></tr>
+        <tr><td align="right"><span class="options"
+            >[<a href="frames.html" target="_top">frames</a
+            >]&nbsp;|&nbsp;<a href="wtf.cmdline-pysrc.html"
+            target="_top">no&nbsp;frames</a>]</span></td></tr>
+      </table>
+    </td>
+  </tr>
+</table>
+<h1 class="epydoc">Source Code for <a href="wtf.cmdline-module.html">Module wtf.cmdline</a></h1>
+<pre class="py-src">
+<a name="L1"></a><tt class="py-lineno">  1</tt>  <tt class="py-line"><tt class="py-comment"># -*- coding: ascii -*-</tt> </tt>
+<a name="L2"></a><tt class="py-lineno">  2</tt>  <tt class="py-line"><tt class="py-comment">#</tt> </tt>
+<a name="L3"></a><tt class="py-lineno">  3</tt>  <tt class="py-line"><tt class="py-comment"># Copyright 2006-2012 Andr\xe9 Malo or his licensors, as applicable</tt> </tt>
+<a name="L4"></a><tt class="py-lineno">  4</tt>  <tt class="py-line"><tt class="py-comment">#</tt> </tt>
+<a name="L5"></a><tt class="py-lineno">  5</tt>  <tt class="py-line"><tt class="py-comment"># Licensed under the Apache License, Version 2.0 (the "License");</tt> </tt>
+<a name="L6"></a><tt class="py-lineno">  6</tt>  <tt class="py-line"><tt class="py-comment"># you may not use this file except in compliance with the License.</tt> </tt>
+<a name="L7"></a><tt class="py-lineno">  7</tt>  <tt class="py-line"><tt class="py-comment"># You may obtain a copy of the License at</tt> </tt>
+<a name="L8"></a><tt class="py-lineno">  8</tt>  <tt class="py-line"><tt class="py-comment">#</tt> </tt>
+<a name="L9"></a><tt class="py-lineno">  9</tt>  <tt class="py-line"><tt class="py-comment">#     http://www.apache.org/licenses/LICENSE-2.0</tt> </tt>
+<a name="L10"></a><tt class="py-lineno"> 10</tt>  <tt class="py-line"><tt class="py-comment">#</tt> </tt>
+<a name="L11"></a><tt class="py-lineno"> 11</tt>  <tt class="py-line"><tt class="py-comment"># Unless required by applicable law or agreed to in writing, software</tt> </tt>
+<a name="L12"></a><tt class="py-lineno"> 12</tt>  <tt class="py-line"><tt class="py-comment"># distributed under the License is distributed on an "AS IS" BASIS,</tt> </tt>
+<a name="L13"></a><tt class="py-lineno"> 13</tt>  <tt class="py-line"><tt class="py-comment"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</tt> </tt>
+<a name="L14"></a><tt class="py-lineno"> 14</tt>  <tt class="py-line"><tt class="py-comment"># See the License for the specific language governing permissions and</tt> </tt>
+<a name="L15"></a><tt class="py-lineno"> 15</tt>  <tt class="py-line"><tt class="py-comment"># limitations under the License.</tt> </tt>
+<a name="L16"></a><tt class="py-lineno"> 16</tt>  <tt class="py-line"><tt class="py-docstring">"""</tt> </tt>
+<a name="L17"></a><tt class="py-lineno"> 17</tt>  <tt class="py-line"><tt class="py-docstring">Commandline Handling</tt> </tt>
+<a name="L18"></a><tt class="py-lineno"> 18</tt>  <tt class="py-line"><tt class="py-docstring">====================</tt> </tt>
+<a name="L19"></a><tt class="py-lineno"> 19</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L20"></a><tt class="py-lineno"> 20</tt>  <tt class="py-line"><tt class="py-docstring">This modules handles commandline parsing and initial bootstrapping.</tt> </tt>
+<a name="L21"></a><tt class="py-lineno"> 21</tt>  <tt class="py-line"><tt class="py-docstring">"""</tt> </tt>
+<a name="L22"></a><tt class="py-lineno"> 22</tt>  <tt class="py-line"><tt class="py-name">__author__</tt> <tt class="py-op">=</tt> <tt class="py-string">u"Andr\xe9 Malo"</tt> </tt>
+<a name="L23"></a><tt class="py-lineno"> 23</tt>  <tt class="py-line"><tt class="py-name">__docformat__</tt> <tt class="py-op">=</tt> <tt class="py-string">"restructuredtext en"</tt> </tt>
+<a name="L24"></a><tt class="py-lineno"> 24</tt>  <tt class="py-line"> </tt>
+<a name="L25"></a><tt class="py-lineno"> 25</tt>  <tt class="py-line"><tt class="py-keyword">import</tt> <tt class="py-name">optparse</tt> <tt class="py-keyword">as</tt> <tt class="py-name">_optparse</tt> </tt>
+<a name="L26"></a><tt class="py-lineno"> 26</tt>  <tt class="py-line"><tt class="py-keyword">import</tt> <tt class="py-name">os</tt> <tt class="py-keyword">as</tt> <tt class="py-name">_os</tt> </tt>
+<a name="L27"></a><tt class="py-lineno"> 27</tt>  <tt class="py-line"><tt class="py-keyword">import</tt> <tt class="py-name">sys</tt> <tt class="py-keyword">as</tt> <tt class="py-name">_sys</tt> </tt>
+<a name="L28"></a><tt class="py-lineno"> 28</tt>  <tt class="py-line"> </tt>
+<a name="L29"></a><tt class="py-lineno"> 29</tt>  <tt class="py-line"><tt class="py-keyword">from</tt> <tt id="link-0" class="py-name" targets="Package wtf=wtf-module.html"><a title="wtf" class="py-name" href="#" onclick="return doclink('link-0', 'wtf', 'link-0');">wtf</a></tt> <tt class="py-keyword">import</tt> <tt id="link-1" class="py-name" targets="Class wtf.Error=wtf.Error-class.html"><a title="wtf.Error" class="py-name" href="#" onclick="return doclink('link-1', 'Error', 'link-1');">Error</a></tt> </tt>
+<a name="L30"></a><tt class="py-lineno"> 30</tt>  <tt class="py-line"> </tt>
+<a name="CommandlineError"></a><div id="CommandlineError-def"><a name="L31"></a><tt class="py-lineno"> 31</tt> <a class="py-toggle" href="#" id="CommandlineError-toggle" onclick="return toggle('CommandlineError');">-</a><tt class="py-line"><tt class="py-keyword">class</tt> <a class="py-def-name" href="wtf.cmdline.CommandlineError-class.html">CommandlineError</a><tt class="py-op">(</tt><tt class="py-base-class">Error</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="CommandlineError-collapsed" style="display:none;" pad="+++" indent="++++"></div><div id="CommandlineError-expanded"><a name="L32"></a><tt class="py-lineno"> 32</tt>  <tt class="py-line">    <tt class="py-docstring">""" Error on command line """</tt> </tt>
+</div><a name="L33"></a><tt class="py-lineno"> 33</tt>  <tt class="py-line"> </tt>
+<a name="L34"></a><tt class="py-lineno"> 34</tt>  <tt class="py-line"> </tt>
+<a name="terminal_width"></a><div id="terminal_width-def"><a name="L35"></a><tt class="py-lineno"> 35</tt> <a class="py-toggle" href="#" id="terminal_width-toggle" onclick="return toggle('terminal_width');">-</a><tt class="py-line"><tt class="py-keyword">def</tt> <a class="py-def-name" href="wtf.cmdline-module.html#terminal_width">terminal_width</a><tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="terminal_width-collapsed" style="display:none;" pad="+++" indent="++++"></div><div id="terminal_width-expanded"><a name="L36"></a><tt class="py-lineno"> 36</tt>  <tt class="py-line">    <tt class="py-docstring">"""</tt> </tt>
+<a name="L37"></a><tt class="py-lineno"> 37</tt>  <tt class="py-line"><tt class="py-docstring">    Return terminal width if determined, None otherwise</tt> </tt>
+<a name="L38"></a><tt class="py-lineno"> 38</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L39"></a><tt class="py-lineno"> 39</tt>  <tt class="py-line"><tt class="py-docstring">    :return: The width</tt> </tt>
+<a name="L40"></a><tt class="py-lineno"> 40</tt>  <tt class="py-line"><tt class="py-docstring">    :rtype: ``int``</tt> </tt>
+<a name="L41"></a><tt class="py-lineno"> 41</tt>  <tt class="py-line"><tt class="py-docstring">    """</tt> </tt>
+<a name="L42"></a><tt class="py-lineno"> 42</tt>  <tt class="py-line">    <tt class="py-name">fd</tt> <tt class="py-op">=</tt> <tt class="py-name">None</tt> </tt>
+<a name="L43"></a><tt class="py-lineno"> 43</tt>  <tt class="py-line">    <tt class="py-keyword">def</tt> <tt class="py-def-name">isatty</tt><tt class="py-op">(</tt><tt class="py-param">fd</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L44"></a><tt class="py-lineno"> 44</tt>  <tt class="py-line">        <tt class="py-docstring">""" Determine if the fd is a TTY """</tt> </tt>
+<a name="L45"></a><tt class="py-lineno"> 45</tt>  <tt class="py-line">        <tt class="py-keyword">try</tt><tt class="py-op">:</tt> </tt>
+<a name="L46"></a><tt class="py-lineno"> 46</tt>  <tt class="py-line">            <tt class="py-name">_isatty</tt> <tt class="py-op">=</tt> <tt class="py-name">bool</tt><tt class="py-op">(</tt><tt class="py-name">_os</tt><tt class="py-op">.</tt><tt id="link-2" class="py-name" targets="Method wtf._wtf_cstream.GenericStream.isatty()=wtf._wtf_cstream.GenericStream-class.html#isatty,Method wtf.stream.GenericStream.isatty()=wtf.stream.GenericStream-class.html#isatty"><a title="wtf._wtf_cstream.GenericStream.isatty
+wtf.stream.GenericStream.isatty" class="py-name" href="#" onclick="return doclink('link-2', 'isatty', 'link-2');">isatty</a></tt><tt class="py-op">(</tt><tt class="py-name">fd</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+<a name="L47"></a><tt class="py-lineno"> 47</tt>  <tt class="py-line">        <tt class="py-keyword">except</tt> <tt class="py-name">AttributeError</tt><tt class="py-op">:</tt> </tt>
+<a name="L48"></a><tt class="py-lineno"> 48</tt>  <tt class="py-line">            <tt class="py-name">_isatty</tt> <tt class="py-op">=</tt> <tt class="py-name">False</tt> </tt>
+<a name="L49"></a><tt class="py-lineno"> 49</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-name">_isatty</tt> </tt>
+</div><a name="L50"></a><tt class="py-lineno"> 50</tt>  <tt class="py-line"> </tt>
+<a name="L51"></a><tt class="py-lineno"> 51</tt>  <tt class="py-line">    <tt class="py-keyword">for</tt> <tt class="py-name">fp</tt> <tt class="py-keyword">in</tt> <tt class="py-op">(</tt><tt class="py-name">_sys</tt><tt class="py-op">.</tt><tt class="py-name">stdout</tt><tt class="py-op">,</tt> <tt class="py-name">_sys</tt><tt class="py-op">.</tt><tt class="py-name">stdin</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L52"></a><tt class="py-lineno"> 52</tt>  <tt class="py-line">        <tt class="py-keyword">try</tt><tt class="py-op">:</tt> </tt>
+<a name="L53"></a><tt class="py-lineno"> 53</tt>  <tt class="py-line">            <tt class="py-name">_fd</tt> <tt class="py-op">=</tt> <tt class="py-name">fp</tt><tt class="py-op">.</tt><tt id="link-3" class="py-name" targets="Method wtf._wtf_cstream.GenericStream.fileno()=wtf._wtf_cstream.GenericStream-class.html#fileno,Method wtf.stream.GenericStream.fileno()=wtf.stream.GenericStream-class.html#fileno"><a title="wtf._wtf_cstream.GenericStream.fileno
+wtf.stream.GenericStream.fileno" class="py-name" href="#" onclick="return doclink('link-3', 'fileno', 'link-3');">fileno</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L54"></a><tt class="py-lineno"> 54</tt>  <tt class="py-line">        <tt class="py-keyword">except</tt> <tt class="py-op">(</tt><tt class="py-name">AttributeError</tt><tt class="py-op">,</tt> <tt class="py-name">ValueError</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L55"></a><tt class="py-lineno"> 55</tt>  <tt class="py-line">            <tt class="py-keyword">continue</tt> </tt>
+<a name="L56"></a><tt class="py-lineno"> 56</tt>  <tt class="py-line">        <tt class="py-keyword">else</tt><tt class="py-op">:</tt> </tt>
+<a name="L57"></a><tt class="py-lineno"> 57</tt>  <tt class="py-line">            <tt class="py-keyword">if</tt> <tt id="link-4" class="py-name"><a title="wtf._wtf_cstream.GenericStream.isatty
+wtf.stream.GenericStream.isatty" class="py-name" href="#" onclick="return doclink('link-4', 'isatty', 'link-2');">isatty</a></tt><tt class="py-op">(</tt><tt class="py-name">_fd</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L58"></a><tt class="py-lineno"> 58</tt>  <tt class="py-line">                <tt class="py-name">fd</tt> <tt class="py-op">=</tt> <tt class="py-name">_fd</tt> </tt>
+<a name="L59"></a><tt class="py-lineno"> 59</tt>  <tt class="py-line">                <tt class="py-keyword">break</tt> </tt>
+<a name="L60"></a><tt class="py-lineno"> 60</tt>  <tt class="py-line"> </tt>
+<a name="L61"></a><tt class="py-lineno"> 61</tt>  <tt class="py-line">    <tt class="py-keyword">if</tt> <tt class="py-name">fd</tt> <tt class="py-keyword">is</tt> <tt class="py-keyword">not</tt> <tt class="py-name">None</tt><tt class="py-op">:</tt> </tt>
+<a name="L62"></a><tt class="py-lineno"> 62</tt>  <tt class="py-line">        <tt class="py-keyword">try</tt><tt class="py-op">:</tt> </tt>
+<a name="L63"></a><tt class="py-lineno"> 63</tt>  <tt class="py-line">            <tt class="py-keyword">import</tt> <tt class="py-name">fcntl</tt><tt class="py-op">,</tt> <tt class="py-name">struct</tt><tt class="py-op">,</tt> <tt class="py-name">termios</tt> </tt>
+<a name="L64"></a><tt class="py-lineno"> 64</tt>  <tt class="py-line"> </tt>
+<a name="L65"></a><tt class="py-lineno"> 65</tt>  <tt class="py-line">            <tt class="py-comment"># struct winsize { /* on linux in asm/termios.h */</tt> </tt>
+<a name="L66"></a><tt class="py-lineno"> 66</tt>  <tt class="py-line">            <tt class="py-comment">#     unsigned short ws_row;</tt> </tt>
+<a name="L67"></a><tt class="py-lineno"> 67</tt>  <tt class="py-line">            <tt class="py-comment">#     unsigned short ws_col;</tt> </tt>
+<a name="L68"></a><tt class="py-lineno"> 68</tt>  <tt class="py-line">            <tt class="py-comment">#     unsigned short ws_xpixel;</tt> </tt>
+<a name="L69"></a><tt class="py-lineno"> 69</tt>  <tt class="py-line">            <tt class="py-comment">#     unsigned short ws_ypixel;</tt> </tt>
+<a name="L70"></a><tt class="py-lineno"> 70</tt>  <tt class="py-line">            <tt class="py-comment"># }</tt> </tt>
+<a name="L71"></a><tt class="py-lineno"> 71</tt>  <tt class="py-line">            <tt class="py-keyword">return</tt> <tt class="py-name">struct</tt><tt class="py-op">.</tt><tt class="py-name">unpack</tt><tt class="py-op">(</tt><tt class="py-string">"4H"</tt><tt class="py-op">,</tt> <tt class="py-name">fcntl</tt><tt class="py-op">.</tt><tt class="py-name">ioctl</tt><tt class="py-op">(</tt> </tt>
+<a name="L72"></a><tt class="py-lineno"> 72</tt>  <tt class="py-line">                <tt class="py-name">fd</tt><tt class="py-op">,</tt> <tt class="py-name">termios</tt><tt class="py-op">.</tt><tt class="py-name">TIOCGWINSZ</tt><tt class="py-op">,</tt> <tt class="py-name">struct</tt><tt class="py-op">.</tt><tt class="py-name">pack</tt><tt class="py-op">(</tt><tt class="py-string">"4H"</tt><tt class="py-op">,</tt> <tt class="py-number">0</tt><tt class="py-op">,</tt> <tt class="py-number">0</tt><tt class="py-op">,</tt> <tt class="py-number">0</tt><tt class="py-op">,</tt> <tt class="py-number">0</tt><tt class="py-op">)</tt> </tt>
+<a name="L73"></a><tt class="py-lineno"> 73</tt>  <tt class="py-line">            <tt class="py-op">)</tt><tt class="py-op">)</tt><tt class="py-op">[</tt><tt class="py-number">1</tt><tt class="py-op">]</tt> </tt>
+<a name="L74"></a><tt class="py-lineno"> 74</tt>  <tt class="py-line"> </tt>
+<a name="L75"></a><tt class="py-lineno"> 75</tt>  <tt class="py-line">        <tt class="py-keyword">except</tt> <tt class="py-op">(</tt><tt class="py-name">SystemExit</tt><tt class="py-op">,</tt> <tt class="py-name">KeyboardInterrupt</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L76"></a><tt class="py-lineno"> 76</tt>  <tt class="py-line">            <tt class="py-keyword">raise</tt> </tt>
+<a name="L77"></a><tt class="py-lineno"> 77</tt>  <tt class="py-line"> </tt>
+<a name="L78"></a><tt class="py-lineno"> 78</tt>  <tt class="py-line">        <tt class="py-keyword">except</tt><tt class="py-op">:</tt> </tt>
+<a name="L79"></a><tt class="py-lineno"> 79</tt>  <tt class="py-line">            <tt class="py-comment"># don't even ignore</tt> </tt>
+<a name="L80"></a><tt class="py-lineno"> 80</tt>  <tt class="py-line">            <tt class="py-keyword">pass</tt> </tt>
+<a name="L81"></a><tt class="py-lineno"> 81</tt>  <tt class="py-line"> </tt>
+<a name="L82"></a><tt class="py-lineno"> 82</tt>  <tt class="py-line">    <tt class="py-keyword">return</tt> <tt class="py-name">None</tt> </tt>
+</div><a name="L83"></a><tt class="py-lineno"> 83</tt>  <tt class="py-line"> </tt>
+<a name="L84"></a><tt class="py-lineno"> 84</tt>  <tt class="py-line"> </tt>
+<a name="_OptionParser"></a><div id="_OptionParser-def"><a name="L85"></a><tt class="py-lineno"> 85</tt> <a class="py-toggle" href="#" id="_OptionParser-toggle" onclick="return toggle('_OptionParser');">-</a><tt class="py-line"><tt class="py-keyword">class</tt> <a class="py-def-name" href="wtf.cmdline._OptionParser-class.html">_OptionParser</a><tt class="py-op">(</tt><tt class="py-base-class">_optparse</tt><tt class="py-op">.</tt><tt class="py-base-class">OptionParser</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> <tt class="py-comment"># old style class</tt> </tt>
+</div><a name="L86"></a><tt class="py-lineno"> 86</tt>  <tt class="py-line">    <tt class="py-docstring">""" Extended option parser for better behaviour """</tt> </tt>
+<a name="L87"></a><tt class="py-lineno"> 87</tt>  <tt class="py-line"> </tt>
+<a name="_OptionParser.__init__"></a><div id="_OptionParser.__init__-def"><a name="L88"></a><tt class="py-lineno"> 88</tt> <a class="py-toggle" href="#" id="_OptionParser.__init__-toggle" onclick="return toggle('_OptionParser.__init__');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="wtf.cmdline._OptionParser-class.html#__init__">__init__</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-op">**</tt><tt class="py-param">kwargs</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="_OptionParser.__init__-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="_OptionParser.__init__-expanded"><a name="L89"></a><tt class="py-lineno"> 89</tt>  <tt class="py-line">        <tt class="py-docstring">""" Initialization """</tt> </tt>
+<a name="L90"></a><tt class="py-lineno"> 90</tt>  <tt class="py-line">        <tt class="py-name">kwargs</tt><tt class="py-op">.</tt><tt class="py-name">setdefault</tt><tt class="py-op">(</tt><tt class="py-string">'prog'</tt><tt class="py-op">,</tt> <tt class="py-string">"&lt;prog&gt;"</tt><tt class="py-op">)</tt> </tt>
+<a name="L91"></a><tt class="py-lineno"> 91</tt>  <tt class="py-line">        <tt class="py-name">kwargs</tt><tt class="py-op">.</tt><tt class="py-name">setdefault</tt><tt class="py-op">(</tt><tt class="py-string">'usage'</tt><tt class="py-op">,</tt> <tt class="py-string">"1"</tt><tt class="py-op">)</tt> </tt>
+<a name="L92"></a><tt class="py-lineno"> 92</tt>  <tt class="py-line">        <tt class="py-name">kwargs</tt><tt class="py-op">.</tt><tt class="py-name">setdefault</tt><tt class="py-op">(</tt><tt class="py-string">'version'</tt><tt class="py-op">,</tt> <tt class="py-string">"2"</tt><tt class="py-op">)</tt> </tt>
+<a name="L93"></a><tt class="py-lineno"> 93</tt>  <tt class="py-line">        <tt class="py-name">_optparse</tt><tt class="py-op">.</tt><tt class="py-name">OptionParser</tt><tt class="py-op">.</tt><tt id="link-5" class="py-name" targets="Method wtf.app.Application.__init__()=wtf.app.Application-class.html#__init__,Method wtf.app.cookie.BaseCookieCodec.__init__()=wtf.app.cookie.BaseCookieCodec-class.html#__init__,Method wtf.app.cookie.CookieCodecFactoryInterface.__init__()=wtf.app.cookie.CookieCodecFactoryInterface-class.html#__init__,Method wtf.app.decorators.Method.__init__()=wtf.app.decorators.Method-class.html#__init__,Method wtf.app.dispatcher.Dispatcher.__init__()=wtf.app.dispatcher.Dispatcher-class.html#__init__,Method wtf.app.http_response.HTTPResponse.__init__()=wtf.app.http_response.HTTPResponse-class.html#__init__,Method wtf.app.request.CookieCollection.__init__()=wtf.app.request.CookieCollection-class.html#__init__,Method wtf.app.request.ParameterWrapper.__init__()=wtf.app.request.ParameterWrapper-class.html#__init__,Method wtf.app.request.Request.__init__()=wtf.app.request.Request-class.html#__init__,Method wtf.app.request.Uploads.__init__()=wtf.app.request.Uploads-class.html#__init__,Method wtf.app.resolver.MapResolver.__init__()=wtf.app.resolver.MapResolver-class.html#__init__,Method wtf.app.response.HeaderCollection.__init__()=wtf.app.response.HeaderCollection-class.html#__init__,Method wtf.app.response.Response.__init__()=wtf.app.response.Response-class.html#__init__,Method wtf.app.services._crash_tb.DebugRender.__init__()=wtf.app.services._crash_tb.DebugRender-class.html#__init__,Method wtf.app.services._crash_tb.Namespace.__init__()=wtf.app.services._crash_tb.Namespace-class.html#__init__,Method wtf.app.services._crash_tb.PythonParser.__init__()=wtf.app.services._crash_tb.PythonParser-class.html#__init__,Method wtf.app.services.config.ConfigService.__init__()=wtf.app.services.config.ConfigService-class.html#__init__,Method wtf.app.services.crash.CrashService.__init__()=wtf.app.services.crash.CrashService-class.html#__init__,Method wtf.app.services.crash.Iterator.__init__()=wtf.app.services.crash.Iterator-class.html#__init__,Method wtf.app.services.crash.Middleware.__init__()=wtf.app.services.crash.Middleware-class.html#__init__,Method wtf.app.services.log.LogService.__init__()=wtf.app.services.log.LogService-class.html#__init__,Method wtf.app.services.memcache.ExceptionWrapper.__init__()=wtf.app.services.memcache.ExceptionWrapper-class.html#__init__,Method wtf.app.services.memcache.GlobalMemcache.__init__()=wtf.app.services.memcache.GlobalMemcache-class.html#__init__,Method wtf.app.services.memcache.MemcacheDecorator.__init__()=wtf.app.services.memcache.MemcacheDecorator-class.html#__init__,Method wtf.app.services.memcache.MemcacheService.__init__()=wtf.app.services.memcache.MemcacheService-class.html#__init__,Method wtf.app.services.memcache.MemcacheWrapper.__init__()=wtf.app.services.memcache.MemcacheWrapper-class.html#__init__,Method wtf.app.services.memcache.TransparentCacheDecorator.__init__()=wtf.app.services.memcache.TransparentCacheDecorator-class.html#__init__,Method wtf.app.services.resources.FileResource.__init__()=wtf.app.services.resources.FileResource-class.html#__init__,Method wtf.app.services.resources.GlobalResources.__init__()=wtf.app.services.resources.GlobalResources-class.html#__init__,Method wtf.app.services.resources.Locator.__init__()=wtf.app.services.resources.Locator-class.html#__init__,Method wtf.app.services.resources.ResourceService.__init__()=wtf.app.services.resources.ResourceService-class.html#__init__,Method wtf.app.services.session.GlobalSession.__init__()=wtf.app.services.session.GlobalSession-class.html#__init__,Method wtf.app.services.session.Middleware.__init__()=wtf.app.services.session.Middleware-class.html#__init__,Method wtf.app.services.session.Session.__init__()=wtf.app.services.session.Session-class.html#__init__,Method wtf.app.services.session.SessionFactory.__init__()=wtf.app.services.session.SessionFactory-class.html#__init__,Method wtf.app.services.session.SessionService.__init__()=wtf.app.services.session.SessionService-class.html#__init__,Method wtf.app.services.session.StorageAdapter.__init__()=wtf.app.services.session.StorageAdapter-class.html#__init__,Method wtf.app.services.session.StorageFactoryInterface.__init__()=wtf.app.services.session.StorageFactoryInterface-class.html#__init__,Method wtf.app.services.session_storage.sharedance.BoundSharedanceStorage.__init__()=wtf.app.services.session_storage.sharedance.BoundSharedanceStorage-class.html#__init__,Method wtf.app.services.session_storage.sharedance.SessionCookieCodec.__init__()=wtf.app.services.session_storage.sharedance.SessionCookieCodec-class.html#__init__,Method wtf.app.services.session_storage.sharedance.SharedanceStorage.__init__()=wtf.app.services.session_storage.sharedance.SharedanceStorage-class.html#__init__,Method wtf.app.services.static.Controller.__init__()=wtf.app.services.static.Controller-class.html#__init__,Method wtf.app.services.static.GlobalStatic.__init__()=wtf.app.services.static.GlobalStatic-class.html#__init__,Method wtf.app.services.static.Middleware.__init__()=wtf.app.services.static.Middleware-class.html#__init__,Method wtf.app.services.static.MimeTypes.__init__()=wtf.app.services.static.MimeTypes-class.html#__init__,Method wtf.app.services.static.ResponseFactory.__init__()=wtf.app.services.static.ResponseFactory-class.html#__init__,Method wtf.app.services.static.StaticService.__init__()=wtf.app.services.static.StaticService-class.html#__init__,Method wtf.autoreload.Autoreload.__init__()=wtf.autoreload.Autoreload-class.html#__init__,Method wtf.autoreload.ReloadRequested.__init__()=wtf.autoreload.ReloadRequested-class.html#__init__,Method wtf.cmdline._OptionParser.__init__()=wtf.cmdline._OptionParser-class.html#__init__,Method wtf.config.Config.__init__()=wtf.config.Config-class.html#__init__,Method wtf.config.ParseError.__init__()=wtf.config.ParseError-class.html#__init__,Method wtf.config.Parser.__init__()=wtf.config.Parser-class.html#__init__,Method wtf.config.RecursiveIncludeError.__init__()=wtf.config.RecursiveIncludeError-class.html#__init__,Method wtf.config.Section.__init__()=wtf.config.Section-class.html#__init__,Method wtf.ext.db._decorators.WTFConnection.__init__()=wtf.ext.db._decorators.WTFConnection-class.html#__init__,Method wtf.ext.db._service.DBService.__init__()=wtf.ext.db._service.DBService-class.html#__init__,Method wtf.ext.memcache.Memcache.__init__()=wtf.ext.memcache.Memcache-class.html#__init__,Method wtf.ext.memcache.MemcacheConnection.__init__()=wtf.ext.memcache.MemcacheConnection-class.html#__init__,Method wtf.ext.memcache.MemcacheConnectionPool.__init__()=wtf.ext.memcache.MemcacheConnectionPool-class.html#__init__,Method wtf.ext.sharedance.Sharedance.__init__()=wtf.ext.sharedance.Sharedance-class.html#__init__,Method wtf.ext.sharedance.SharedanceConnector.__init__()=wtf.ext.sharedance.SharedanceConnector-class.html#__init__,Method wtf.httputil.CookieMaker.__init__()=wtf.httputil.CookieMaker-class.html#__init__,Method wtf.impl.ServerInterface.__init__()=wtf.impl.ServerInterface-class.html#__init__,Method wtf.impl._connection.Connection.__init__()=wtf.impl._connection.Connection-class.html#__init__,Method wtf.impl._gateway.Gateway.__init__()=wtf.impl._gateway.Gateway-class.html#__init__,Method wtf.impl._gateway.ResponseStarter.__init__()=wtf.impl._gateway.ResponseStarter-class.html#__init__,Method wtf.impl._util.ContentLengthReader.__init__()=wtf.impl._util.ContentLengthReader-class.html#__init__,Method wtf.impl.http._request.BaseState.__init__()=wtf.impl.http._request.BaseState-class.html#__init__,Method wtf.impl.http._request.HTTPRequest.__init__()=wtf.impl.http._request.HTTPRequest-class.html#__init__,Method wtf.impl.http._request.RequestHeadersReadyState.__init__()=wtf.impl.http._request.RequestHeadersReadyState-class.html#__init__,Method wtf.impl.http._request.ResponseHeadersWaitState.__init__()=wtf.impl.http._request.ResponseHeadersWaitState-class.html#__init__,Method wtf.impl.http._server.HTTPServer.__init__()=wtf.impl.http._server.HTTPServer-class.html#__init__,Method wtf.impl.http._server._TimeOuts.__init__()=wtf.impl.http._server._TimeOuts-class.html#__init__,Method wtf.impl.http._util.ChunkedReader.__init__()=wtf.impl.http._util.ChunkedReader-class.html#__init__,Method wtf.impl.http._util.ChunkedWriter.__init__()=wtf.impl.http._util.ChunkedWriter-class.html#__init__,Method wtf.impl.http._util.ExpectationReader.__init__()=wtf.impl.http._util.ExpectationReader-class.html#__init__,Method wtf.impl.http._util.HTTPConnection.__init__()=wtf.impl.http._util.HTTPConnection-class.html#__init__,Method wtf.impl.http._util.ParseError.__init__()=wtf.impl.http._util.ParseError-class.html#__init__,Method wtf.impl.scgi.Gateway.__init__()=wtf.impl.scgi.Gateway-class.html#__init__,Method wtf.impl.scgi.SCGIConnection.__init__()=wtf.impl.scgi.SCGIConnection-class.html#__init__,Method wtf.impl.scgi.SCGIRequest.__init__()=wtf.impl.scgi.SCGIRequest-class.html#__init__,Method wtf.impl.scgi.SCGIServer.__init__()=wtf.impl.scgi.SCGIServer-class.html#__init__,Method wtf.opi.OPIInterface.__init__()=wtf.opi.OPIInterface-class.html#__init__,Method wtf.opi.daemon.DaemonOPI.__init__()=wtf.opi.daemon.DaemonOPI-class.html#__init__,Method wtf.opi.daemon.DetachedRunner.__init__()=wtf.opi.daemon.DetachedRunner-class.html#__init__,Method wtf.opi.daemon.Pidfile.__init__()=wtf.opi.daemon.Pidfile-class.html#__init__,Method wtf.opi.daemon.Runner.__init__()=wtf.opi.daemon.Runner-class.html#__init__,Method wtf.opi.daemon._DeferredStreamSetup.__init__()=wtf.opi.daemon._DeferredStreamSetup-class.html#__init__,Method wtf.opi.listener.Acceptor.__init__()=wtf.opi.listener.Acceptor-class.html#__init__,Method wtf.opi.listener.InetSocket.__init__()=wtf.opi.listener.InetSocket-class.html#__init__,Method wtf.opi.listener.ListenerSocket.__init__()=wtf.opi.listener.ListenerSocket-class.html#__init__,Method wtf.opi.listener.SocketDecorator.__init__()=wtf.opi.listener.SocketDecorator-class.html#__init__,Method wtf.opi.listener.UnixSocket.__init__()=wtf.opi.listener.UnixSocket-class.html#__init__,Method wtf.opi.listener._AdapterInterface.__init__()=wtf.opi.listener._AdapterInterface-class.html#__init__,Method wtf.opi.listener._PollAdapter.__init__()=wtf.opi.listener._PollAdapter-class.html#__init__,Method wtf.opi.listener._SelectAdapter.__init__()=wtf.opi.listener._SelectAdapter-class.html#__init__,Method wtf.opi.worker.WorkerInterface.__init__()=wtf.opi.worker.WorkerInterface-class.html#__init__,Method wtf.opi.worker.single.Flags.__init__()=wtf.opi.worker.single.Flags-class.html#__init__,Method wtf.opi.worker.single.SingleWorker.__init__()=wtf.opi.worker.single.SingleWorker-class.html#__init__,Method wtf.opi.worker.single.Worker.__init__()=wtf.opi.worker.single.Worker-class.html#__init__,Method wtf.opi.worker.threaded.Flags.__init__()=wtf.opi.worker.threaded.Flags-class.html#__init__,Method wtf.opi.worker.threaded.JobWorkerQueue.__init__()=wtf.opi.worker.threaded.JobWorkerQueue-class.html#__init__,Method wtf.opi.worker.threaded.TaskRunner.__init__()=wtf.opi.worker.threaded.TaskRunner-class.html#__init__,Method wtf.opi.worker.threaded.ThreadPool.__init__()=wtf.opi.worker.threaded.ThreadPool-class.html#__init__,Method wtf.opi.worker.threaded.ThreadedWorker.__init__()=wtf.opi.worker.threaded.ThreadedWorker-class.html#__init__,Method wtf.opi.worker.threaded.WorkerChild.__init__()=wtf.opi.worker.threaded.WorkerChild-class.html#__init__,Method wtf.services.ServiceInterface.__init__()=wtf.services.ServiceInterface-class.html#__init__,Method wtf.services.ServiceManager.__init__()=wtf.services.ServiceManager-class.html#__init__,Method wtf.stream.MinimalSocketStream.__init__()=wtf.stream.MinimalSocketStream-class.html#__init__,Method wtf.util.BaseDecorator.__init__()=wtf.util.BaseDecorator-class.html#__init__,Method wtf.util.BasePool.__init__()=wtf.util.BasePool-class.html#__init__,Method wtf.util.Version.__init__()=wtf.util.Version-class.html#__init__,Method wtf.webutil.Query.__init__()=wtf.webutil.Query-class.html#__init__,Method wtf.webutil.URL.__init__()=wtf.webutil.URL-class.html#__init__"><a title="wtf.app.Application.__init__
+wtf.app.cookie.BaseCookieCodec.__init__
+wtf.app.cookie.CookieCodecFactoryInterface.__init__
+wtf.app.decorators.Method.__init__
+wtf.app.dispatcher.Dispatcher.__init__
+wtf.app.http_response.HTTPResponse.__init__
+wtf.app.request.CookieCollection.__init__
+wtf.app.request.ParameterWrapper.__init__
+wtf.app.request.Request.__init__
+wtf.app.request.Uploads.__init__
+wtf.app.resolver.MapResolver.__init__
+wtf.app.response.HeaderCollection.__init__
+wtf.app.response.Response.__init__
+wtf.app.services._crash_tb.DebugRender.__init__
+wtf.app.services._crash_tb.Namespace.__init__
+wtf.app.services._crash_tb.PythonParser.__init__
+wtf.app.services.config.ConfigService.__init__
+wtf.app.services.crash.CrashService.__init__
+wtf.app.services.crash.Iterator.__init__
+wtf.app.services.crash.Middleware.__init__
+wtf.app.services.log.LogService.__init__
+wtf.app.services.memcache.ExceptionWrapper.__init__
+wtf.app.services.memcache.GlobalMemcache.__init__
+wtf.app.services.memcache.MemcacheDecorator.__init__
+wtf.app.services.memcache.MemcacheService.__init__
+wtf.app.services.memcache.MemcacheWrapper.__init__
+wtf.app.services.memcache.TransparentCacheDecorator.__init__
+wtf.app.services.resources.FileResource.__init__
+wtf.app.services.resources.GlobalResources.__init__
+wtf.app.services.resources.Locator.__init__
+wtf.app.services.resources.ResourceService.__init__
+wtf.app.services.session.GlobalSession.__init__
+wtf.app.services.session.Middleware.__init__
+wtf.app.services.session.Session.__init__
+wtf.app.services.session.SessionFactory.__init__
+wtf.app.services.session.SessionService.__init__
+wtf.app.services.session.StorageAdapter.__init__
+wtf.app.services.session.StorageFactoryInterface.__init__
+wtf.app.services.session_storage.sharedance.BoundSharedanceStorage.__init__
+wtf.app.services.session_storage.sharedance.SessionCookieCodec.__init__
+wtf.app.services.session_storage.sharedance.SharedanceStorage.__init__
+wtf.app.services.static.Controller.__init__
+wtf.app.services.static.GlobalStatic.__init__
+wtf.app.services.static.Middleware.__init__
+wtf.app.services.static.MimeTypes.__init__
+wtf.app.services.static.ResponseFactory.__init__
+wtf.app.services.static.StaticService.__init__
+wtf.autoreload.Autoreload.__init__
+wtf.autoreload.ReloadRequested.__init__
+wtf.cmdline._OptionParser.__init__
+wtf.config.Config.__init__
+wtf.config.ParseError.__init__
+wtf.config.Parser.__init__
+wtf.config.RecursiveIncludeError.__init__
+wtf.config.Section.__init__
+wtf.ext.db._decorators.WTFConnection.__init__
+wtf.ext.db._service.DBService.__init__
+wtf.ext.memcache.Memcache.__init__
+wtf.ext.memcache.MemcacheConnection.__init__
+wtf.ext.memcache.MemcacheConnectionPool.__init__
+wtf.ext.sharedance.Sharedance.__init__
+wtf.ext.sharedance.SharedanceConnector.__init__
+wtf.httputil.CookieMaker.__init__
+wtf.impl.ServerInterface.__init__
+wtf.impl._connection.Connection.__init__
+wtf.impl._gateway.Gateway.__init__
+wtf.impl._gateway.ResponseStarter.__init__
+wtf.impl._util.ContentLengthReader.__init__
+wtf.impl.http._request.BaseState.__init__
+wtf.impl.http._request.HTTPRequest.__init__
+wtf.impl.http._request.RequestHeadersReadyState.__init__
+wtf.impl.http._request.ResponseHeadersWaitState.__init__
+wtf.impl.http._server.HTTPServer.__init__
+wtf.impl.http._server._TimeOuts.__init__
+wtf.impl.http._util.ChunkedReader.__init__
+wtf.impl.http._util.ChunkedWriter.__init__
+wtf.impl.http._util.ExpectationReader.__init__
+wtf.impl.http._util.HTTPConnection.__init__
+wtf.impl.http._util.ParseError.__init__
+wtf.impl.scgi.Gateway.__init__
+wtf.impl.scgi.SCGIConnection.__init__
+wtf.impl.scgi.SCGIRequest.__init__
+wtf.impl.scgi.SCGIServer.__init__
+wtf.opi.OPIInterface.__init__
+wtf.opi.daemon.DaemonOPI.__init__
+wtf.opi.daemon.DetachedRunner.__init__
+wtf.opi.daemon.Pidfile.__init__
+wtf.opi.daemon.Runner.__init__
+wtf.opi.daemon._DeferredStreamSetup.__init__
+wtf.opi.listener.Acceptor.__init__
+wtf.opi.listener.InetSocket.__init__
+wtf.opi.listener.ListenerSocket.__init__
+wtf.opi.listener.SocketDecorator.__init__
+wtf.opi.listener.UnixSocket.__init__
+wtf.opi.listener._AdapterInterface.__init__
+wtf.opi.listener._PollAdapter.__init__
+wtf.opi.listener._SelectAdapter.__init__
+wtf.opi.worker.WorkerInterface.__init__
+wtf.opi.worker.single.Flags.__init__
+wtf.opi.worker.single.SingleWorker.__init__
+wtf.opi.worker.single.Worker.__init__
+wtf.opi.worker.threaded.Flags.__init__
+wtf.opi.worker.threaded.JobWorkerQueue.__init__
+wtf.opi.worker.threaded.TaskRunner.__init__
+wtf.opi.worker.threaded.ThreadPool.__init__
+wtf.opi.worker.threaded.ThreadedWorker.__init__
+wtf.opi.worker.threaded.WorkerChild.__init__
+wtf.services.ServiceInterface.__init__
+wtf.services.ServiceManager.__init__
+wtf.stream.MinimalSocketStream.__init__
+wtf.util.BaseDecorator.__init__
+wtf.util.BasePool.__init__
+wtf.util.Version.__init__
+wtf.webutil.Query.__init__
+wtf.webutil.URL.__init__" class="py-name" href="#" onclick="return doclink('link-5', '__init__', 'link-5');">__init__</a></tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">,</tt> <tt class="py-op">**</tt><tt class="py-name">kwargs</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L94"></a><tt class="py-lineno"> 94</tt>  <tt class="py-line"> </tt>
+<a name="_OptionParser.parse_args"></a><div id="_OptionParser.parse_args-def"><a name="L95"></a><tt class="py-lineno"> 95</tt> <a class="py-toggle" href="#" id="_OptionParser.parse_args-toggle" onclick="return toggle('_OptionParser.parse_args');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="wtf.cmdline._OptionParser-class.html#parse_args">parse_args</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-op">*</tt><tt class="py-param">args</tt><tt class="py-op">,</tt> <tt class="py-op">**</tt><tt class="py-param">kwargs</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="_OptionParser.parse_args-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="_OptionParser.parse_args-expanded"><a name="L96"></a><tt class="py-lineno"> 96</tt>  <tt class="py-line">        <tt class="py-docstring">"""</tt> </tt>
+<a name="L97"></a><tt class="py-lineno"> 97</tt>  <tt class="py-line"><tt class="py-docstring">        Parse the argument list provided by ``sys.argv``</tt> </tt>
+<a name="L98"></a><tt class="py-lineno"> 98</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L99"></a><tt class="py-lineno"> 99</tt>  <tt class="py-line"><tt class="py-docstring">        :Parameters:</tt> </tt>
+<a name="L100"></a><tt class="py-lineno">100</tt>  <tt class="py-line"><tt class="py-docstring">         - `args`: Additional arguments for the parser</tt> </tt>
+<a name="L101"></a><tt class="py-lineno">101</tt>  <tt class="py-line"><tt class="py-docstring">         - `kwargs`: Additional arguments for the parser</tt> </tt>
+<a name="L102"></a><tt class="py-lineno">102</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L103"></a><tt class="py-lineno">103</tt>  <tt class="py-line"><tt class="py-docstring">        :Types:</tt> </tt>
+<a name="L104"></a><tt class="py-lineno">104</tt>  <tt class="py-line"><tt class="py-docstring">         - `args`: ``tuple``</tt> </tt>
+<a name="L105"></a><tt class="py-lineno">105</tt>  <tt class="py-line"><tt class="py-docstring">         - `kwargs`: ``dict``</tt> </tt>
+<a name="L106"></a><tt class="py-lineno">106</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L107"></a><tt class="py-lineno">107</tt>  <tt class="py-line"><tt class="py-docstring">        :return: The ``OptionContainer`` instance and the positional args</tt> </tt>
+<a name="L108"></a><tt class="py-lineno">108</tt>  <tt class="py-line"><tt class="py-docstring">                 (``(optparse.OptionContainer, list)``)</tt> </tt>
+<a name="L109"></a><tt class="py-lineno">109</tt>  <tt class="py-line"><tt class="py-docstring">        :rtype: ``tuple``</tt> </tt>
+<a name="L110"></a><tt class="py-lineno">110</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L111"></a><tt class="py-lineno">111</tt>  <tt class="py-line"><tt class="py-docstring">        :Exceptions:</tt> </tt>
+<a name="L112"></a><tt class="py-lineno">112</tt>  <tt class="py-line"><tt class="py-docstring">         - `CommandlineError`: The argument list was invalid</tt> </tt>
+<a name="L113"></a><tt class="py-lineno">113</tt>  <tt class="py-line"><tt class="py-docstring">        """</tt> </tt>
+<a name="L114"></a><tt class="py-lineno">114</tt>  <tt class="py-line">        <tt class="py-comment"># pylint: disable = W0221</tt> </tt>
+<a name="L115"></a><tt class="py-lineno">115</tt>  <tt class="py-line"> </tt>
+<a name="L116"></a><tt class="py-lineno">116</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">prog</tt> <tt class="py-op">=</tt> <tt class="py-name">_os</tt><tt class="py-op">.</tt><tt id="link-6" class="py-name" targets="Variable wtf.webutil.URL.path=wtf.webutil.URL-class.html#path"><a title="wtf.webutil.URL.path" class="py-name" href="#" onclick="return doclink('link-6', 'path', 'link-6');">path</a></tt><tt class="py-op">.</tt><tt class="py-name">basename</tt><tt class="py-op">(</tt><tt class="py-name">_sys</tt><tt class="py-op">.</tt><tt class="py-name">argv</tt><tt class="py-op">[</tt><tt class="py-number">0</tt><tt class="py-op">]</tt><tt class="py-op">)</tt> </tt>
+<a name="L117"></a><tt class="py-lineno">117</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-name">_optparse</tt><tt class="py-op">.</tt><tt class="py-name">OptionParser</tt><tt class="py-op">.</tt><tt id="link-7" class="py-name" targets="Method wtf.cmdline._OptionParser.parse_args()=wtf.cmdline._OptionParser-class.html#parse_args"><a title="wtf.cmdline._OptionParser.parse_args" class="py-name" href="#" onclick="return doclink('link-7', 'parse_args', 'link-7');">parse_args</a></tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">,</tt> </tt>
+<a name="L118"></a><tt class="py-lineno">118</tt>  <tt class="py-line">            <tt class="py-name">_sys</tt><tt class="py-op">.</tt><tt class="py-name">argv</tt><tt class="py-op">[</tt><tt class="py-number">1</tt><tt class="py-op">:</tt><tt class="py-op">]</tt><tt class="py-op">,</tt> <tt class="py-op">*</tt><tt class="py-name">args</tt><tt class="py-op">,</tt> <tt class="py-op">**</tt><tt class="py-name">kwargs</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L119"></a><tt class="py-lineno">119</tt>  <tt class="py-line"> </tt>
+<a name="_OptionParser.error"></a><div id="_OptionParser.error-def"><a name="L120"></a><tt class="py-lineno">120</tt> <a class="py-toggle" href="#" id="_OptionParser.error-toggle" onclick="return toggle('_OptionParser.error');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="wtf.cmdline._OptionParser-class.html#error">error</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">msg</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="_OptionParser.error-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="_OptionParser.error-expanded"><a name="L121"></a><tt class="py-lineno">121</tt>  <tt class="py-line">        <tt class="py-docstring">"""</tt> </tt>
+<a name="L122"></a><tt class="py-lineno">122</tt>  <tt class="py-line"><tt class="py-docstring">        Raise an exception instead of calling ``sys.exit``</tt> </tt>
+<a name="L123"></a><tt class="py-lineno">123</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L124"></a><tt class="py-lineno">124</tt>  <tt class="py-line"><tt class="py-docstring">        :Parameters:</tt> </tt>
+<a name="L125"></a><tt class="py-lineno">125</tt>  <tt class="py-line"><tt class="py-docstring">         - `msg`: The error message</tt> </tt>
+<a name="L126"></a><tt class="py-lineno">126</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L127"></a><tt class="py-lineno">127</tt>  <tt class="py-line"><tt class="py-docstring">        :Types:</tt> </tt>
+<a name="L128"></a><tt class="py-lineno">128</tt>  <tt class="py-line"><tt class="py-docstring">         - `msg`: ``str``</tt> </tt>
+<a name="L129"></a><tt class="py-lineno">129</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L130"></a><tt class="py-lineno">130</tt>  <tt class="py-line"><tt class="py-docstring">        :Exceptions:</tt> </tt>
+<a name="L131"></a><tt class="py-lineno">131</tt>  <tt class="py-line"><tt class="py-docstring">         - `CommandlineError`: command line error</tt> </tt>
+<a name="L132"></a><tt class="py-lineno">132</tt>  <tt class="py-line"><tt class="py-docstring">        """</tt> </tt>
+<a name="L133"></a><tt class="py-lineno">133</tt>  <tt class="py-line">        <tt class="py-keyword">raise</tt> <tt id="link-8" class="py-name" targets="Class wtf.cmdline.CommandlineError=wtf.cmdline.CommandlineError-class.html"><a title="wtf.cmdline.CommandlineError" class="py-name" href="#" onclick="return doclink('link-8', 'CommandlineError', 'link-8');">CommandlineError</a></tt><tt class="py-op">(</tt><tt class="py-name">str</tt><tt class="py-op">(</tt><tt class="py-name">msg</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L134"></a><tt class="py-lineno">134</tt>  <tt class="py-line"> </tt>
+<a name="_OptionParser.get_version"></a><div id="_OptionParser.get_version-def"><a name="L135"></a><tt class="py-lineno">135</tt> <a class="py-toggle" href="#" id="_OptionParser.get_version-toggle" onclick="return toggle('_OptionParser.get_version');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="wtf.cmdline._OptionParser-class.html#get_version">get_version</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="_OptionParser.get_version-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="_OptionParser.get_version-expanded"><a name="L136"></a><tt class="py-lineno">136</tt>  <tt class="py-line">        <tt class="py-docstring">"""</tt> </tt>
+<a name="L137"></a><tt class="py-lineno">137</tt>  <tt class="py-line"><tt class="py-docstring">        Return the version string</tt> </tt>
+<a name="L138"></a><tt class="py-lineno">138</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L139"></a><tt class="py-lineno">139</tt>  <tt class="py-line"><tt class="py-docstring">        :return: The version string</tt> </tt>
+<a name="L140"></a><tt class="py-lineno">140</tt>  <tt class="py-line"><tt class="py-docstring">        :rtype: ``str``</tt> </tt>
+<a name="L141"></a><tt class="py-lineno">141</tt>  <tt class="py-line"><tt class="py-docstring">        """</tt> </tt>
+<a name="L142"></a><tt class="py-lineno">142</tt>  <tt class="py-line">        <tt class="py-keyword">from</tt> <tt id="link-9" class="py-name"><a title="wtf" class="py-name" href="#" onclick="return doclink('link-9', 'wtf', 'link-0');">wtf</a></tt> <tt class="py-keyword">import</tt> <tt id="link-10" class="py-name" targets="Variable wtf.version=wtf-module.html#version"><a title="wtf.version" class="py-name" href="#" onclick="return doclink('link-10', 'version', 'link-10');">version</a></tt> </tt>
+<a name="L143"></a><tt class="py-lineno">143</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-name">str</tt><tt class="py-op">(</tt><tt id="link-11" class="py-name"><a title="wtf.version" class="py-name" href="#" onclick="return doclink('link-11', 'version', 'link-10');">version</a></tt><tt class="py-op">)</tt> </tt>
+</div><a name="L144"></a><tt class="py-lineno">144</tt>  <tt class="py-line"> </tt>
+<a name="_OptionParser.get_usage"></a><div id="_OptionParser.get_usage-def"><a name="L145"></a><tt class="py-lineno">145</tt> <a class="py-toggle" href="#" id="_OptionParser.get_usage-toggle" onclick="return toggle('_OptionParser.get_usage');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="wtf.cmdline._OptionParser-class.html#get_usage">get_usage</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="_OptionParser.get_usage-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="_OptionParser.get_usage-expanded"><a name="L146"></a><tt class="py-lineno">146</tt>  <tt class="py-line">        <tt class="py-docstring">"""</tt> </tt>
+<a name="L147"></a><tt class="py-lineno">147</tt>  <tt class="py-line"><tt class="py-docstring">        Return the usage string</tt> </tt>
+<a name="L148"></a><tt class="py-lineno">148</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L149"></a><tt class="py-lineno">149</tt>  <tt class="py-line"><tt class="py-docstring">        :return: The usage string</tt> </tt>
+<a name="L150"></a><tt class="py-lineno">150</tt>  <tt class="py-line"><tt class="py-docstring">        :rtype: ``str``</tt> </tt>
+<a name="L151"></a><tt class="py-lineno">151</tt>  <tt class="py-line"><tt class="py-docstring">        """</tt> </tt>
+<a name="L152"></a><tt class="py-lineno">152</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-string">"Usage: %s &lt;options&gt; start|stop|logrotate\n"</tt> <tt class="py-op">%</tt> \ </tt>
+<a name="L153"></a><tt class="py-lineno">153</tt>  <tt class="py-line">            <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-12" class="py-name" targets="Method wtf.cmdline._OptionParser.get_prog_name()=wtf.cmdline._OptionParser-class.html#get_prog_name"><a title="wtf.cmdline._OptionParser.get_prog_name" class="py-name" href="#" onclick="return doclink('link-12', 'get_prog_name', 'link-12');">get_prog_name</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L154"></a><tt class="py-lineno">154</tt>  <tt class="py-line"> </tt>
+<a name="_OptionParser.get_prog_name"></a><div id="_OptionParser.get_prog_name-def"><a name="L155"></a><tt class="py-lineno">155</tt> <a class="py-toggle" href="#" id="_OptionParser.get_prog_name-toggle" onclick="return toggle('_OptionParser.get_prog_name');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="wtf.cmdline._OptionParser-class.html#get_prog_name">get_prog_name</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="_OptionParser.get_prog_name-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="_OptionParser.get_prog_name-expanded"><a name="L156"></a><tt class="py-lineno">156</tt>  <tt class="py-line">        <tt class="py-docstring">"""</tt> </tt>
+<a name="L157"></a><tt class="py-lineno">157</tt>  <tt class="py-line"><tt class="py-docstring">        Returns the program name</tt> </tt>
+<a name="L158"></a><tt class="py-lineno">158</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L159"></a><tt class="py-lineno">159</tt>  <tt class="py-line"><tt class="py-docstring">        :return: The program name</tt> </tt>
+<a name="L160"></a><tt class="py-lineno">160</tt>  <tt class="py-line"><tt class="py-docstring">        :rtype: ``str``</tt> </tt>
+<a name="L161"></a><tt class="py-lineno">161</tt>  <tt class="py-line"><tt class="py-docstring">        """</tt> </tt>
+<a name="L162"></a><tt class="py-lineno">162</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">prog</tt> </tt>
+</div><a name="L163"></a><tt class="py-lineno">163</tt>  <tt class="py-line">    <tt class="py-name">_get_prog_name</tt> <tt class="py-op">=</tt> <tt id="link-13" class="py-name"><a title="wtf.cmdline._OptionParser.get_prog_name" class="py-name" href="#" onclick="return doclink('link-13', 'get_prog_name', 'link-12');">get_prog_name</a></tt> <tt class="py-comment"># 2.3.4 &lt;= python &lt; 2.4.0</tt> </tt>
+<a name="L164"></a><tt class="py-lineno">164</tt>  <tt class="py-line"> </tt>
+<a name="_OptionParser.format_help"></a><div id="_OptionParser.format_help-def"><a name="L165"></a><tt class="py-lineno">165</tt> <a class="py-toggle" href="#" id="_OptionParser.format_help-toggle" onclick="return toggle('_OptionParser.format_help');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="wtf.cmdline._OptionParser-class.html#format_help">format_help</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">formatter</tt><tt class="py-op">=</tt><tt class="py-name">None</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="_OptionParser.format_help-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="_OptionParser.format_help-expanded"><a name="L166"></a><tt class="py-lineno">166</tt>  <tt class="py-line">        <tt class="py-docstring">"""</tt> </tt>
+<a name="L167"></a><tt class="py-lineno">167</tt>  <tt class="py-line"><tt class="py-docstring">        Return the formatted help string</tt> </tt>
+<a name="L168"></a><tt class="py-lineno">168</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L169"></a><tt class="py-lineno">169</tt>  <tt class="py-line"><tt class="py-docstring">        The string consists of the normal option help generated by</tt> </tt>
+<a name="L170"></a><tt class="py-lineno">170</tt>  <tt class="py-line"><tt class="py-docstring">        the optparse module and a short description of the old style</tt> </tt>
+<a name="L171"></a><tt class="py-lineno">171</tt>  <tt class="py-line"><tt class="py-docstring">        options. All text is tried to be wrapped to fit into the</tt> </tt>
+<a name="L172"></a><tt class="py-lineno">172</tt>  <tt class="py-line"><tt class="py-docstring">        current terminal width.</tt> </tt>
+<a name="L173"></a><tt class="py-lineno">173</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L174"></a><tt class="py-lineno">174</tt>  <tt class="py-line"><tt class="py-docstring">        :Parameters:</tt> </tt>
+<a name="L175"></a><tt class="py-lineno">175</tt>  <tt class="py-line"><tt class="py-docstring">         - `formatter`: unused</tt> </tt>
+<a name="L176"></a><tt class="py-lineno">176</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L177"></a><tt class="py-lineno">177</tt>  <tt class="py-line"><tt class="py-docstring">        :Types:</tt> </tt>
+<a name="L178"></a><tt class="py-lineno">178</tt>  <tt class="py-line"><tt class="py-docstring">         - `formatter`: any</tt> </tt>
+<a name="L179"></a><tt class="py-lineno">179</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L180"></a><tt class="py-lineno">180</tt>  <tt class="py-line"><tt class="py-docstring">        :return: The formatted help string</tt> </tt>
+<a name="L181"></a><tt class="py-lineno">181</tt>  <tt class="py-line"><tt class="py-docstring">        :rtype: ``str``</tt> </tt>
+<a name="L182"></a><tt class="py-lineno">182</tt>  <tt class="py-line"><tt class="py-docstring">        """</tt> </tt>
+<a name="L183"></a><tt class="py-lineno">183</tt>  <tt class="py-line">        <tt class="py-comment"># determine possible with</tt> </tt>
+<a name="L184"></a><tt class="py-lineno">184</tt>  <tt class="py-line">        <tt class="py-name">width</tt> <tt class="py-op">=</tt> <tt class="py-op">(</tt><tt id="link-14" class="py-name" targets="Function wtf.cmdline.terminal_width()=wtf.cmdline-module.html#terminal_width"><a title="wtf.cmdline.terminal_width" class="py-name" href="#" onclick="return doclink('link-14', 'terminal_width', 'link-14');">terminal_width</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> <tt class="py-keyword">or</tt> <tt class="py-number">80</tt><tt class="py-op">)</tt> <tt class="py-op">-</tt> <tt class="py-number">1</tt> </tt>
+<a name="L185"></a><tt class="py-lineno">185</tt>  <tt class="py-line">        <tt class="py-name">optionhelp</tt> <tt class="py-op">=</tt> <tt class="py-name">None</tt> </tt>
+<a name="L186"></a><tt class="py-lineno">186</tt>  <tt class="py-line">        <tt class="py-keyword">while</tt> <tt class="py-name">optionhelp</tt> <tt class="py-keyword">is</tt> <tt class="py-name">None</tt><tt class="py-op">:</tt> </tt>
+<a name="L187"></a><tt class="py-lineno">187</tt>  <tt class="py-line">            <tt class="py-name">formatter</tt> <tt class="py-op">=</tt> <tt class="py-name">_optparse</tt><tt class="py-op">.</tt><tt class="py-name">IndentedHelpFormatter</tt><tt class="py-op">(</tt><tt class="py-name">width</tt><tt class="py-op">=</tt><tt class="py-name">width</tt><tt class="py-op">)</tt> </tt>
+<a name="L188"></a><tt class="py-lineno">188</tt>  <tt class="py-line">            <tt class="py-keyword">try</tt><tt class="py-op">:</tt> </tt>
+<a name="L189"></a><tt class="py-lineno">189</tt>  <tt class="py-line">                <tt class="py-name">optionhelp</tt> <tt class="py-op">=</tt> \ </tt>
+<a name="L190"></a><tt class="py-lineno">190</tt>  <tt class="py-line">                    <tt class="py-name">_optparse</tt><tt class="py-op">.</tt><tt class="py-name">OptionParser</tt><tt class="py-op">.</tt><tt id="link-15" class="py-name" targets="Method wtf.cmdline._OptionParser.format_help()=wtf.cmdline._OptionParser-class.html#format_help"><a title="wtf.cmdline._OptionParser.format_help" class="py-name" href="#" onclick="return doclink('link-15', 'format_help', 'link-15');">format_help</a></tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">,</tt> <tt class="py-name">formatter</tt><tt class="py-op">)</tt> </tt>
+<a name="L191"></a><tt class="py-lineno">191</tt>  <tt class="py-line">            <tt class="py-keyword">except</tt> <tt class="py-name">ValueError</tt><tt class="py-op">:</tt> </tt>
+<a name="L192"></a><tt class="py-lineno">192</tt>  <tt class="py-line">                <tt class="py-comment"># terminal too small</tt> </tt>
+<a name="L193"></a><tt class="py-lineno">193</tt>  <tt class="py-line">                <tt class="py-keyword">if</tt> <tt class="py-name">width</tt> <tt class="py-op">&lt;</tt> <tt class="py-number">79</tt><tt class="py-op">:</tt> </tt>
+<a name="L194"></a><tt class="py-lineno">194</tt>  <tt class="py-line">                    <tt class="py-name">width</tt> <tt class="py-op">=</tt> <tt class="py-number">79</tt> </tt>
+<a name="L195"></a><tt class="py-lineno">195</tt>  <tt class="py-line">                <tt class="py-keyword">else</tt><tt class="py-op">:</tt> </tt>
+<a name="L196"></a><tt class="py-lineno">196</tt>  <tt class="py-line">                    <tt class="py-name">width</tt> <tt class="py-op">+=</tt> <tt class="py-number">10</tt> </tt>
+<a name="L197"></a><tt class="py-lineno">197</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-name">optionhelp</tt> </tt>
+</div></div><a name="L198"></a><tt class="py-lineno">198</tt>  <tt class="py-line"> </tt>
+<a name="L199"></a><tt class="py-lineno">199</tt>  <tt class="py-line"> </tt>
+<a name="parse"></a><div id="parse-def"><a name="L200"></a><tt class="py-lineno">200</tt> <a class="py-toggle" href="#" id="parse-toggle" onclick="return toggle('parse');">-</a><tt class="py-line"><tt class="py-keyword">def</tt> <a class="py-def-name" href="wtf.cmdline-module.html#parse">parse</a><tt class="py-op">(</tt><tt class="py-op">*</tt><tt class="py-param">opts</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="parse-collapsed" style="display:none;" pad="+++" indent="++++"></div><div id="parse-expanded"><a name="L201"></a><tt class="py-lineno">201</tt>  <tt class="py-line">    <tt class="py-docstring">"""</tt> </tt>
+<a name="L202"></a><tt class="py-lineno">202</tt>  <tt class="py-line"><tt class="py-docstring">    Parse command line</tt> </tt>
+<a name="L203"></a><tt class="py-lineno">203</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L204"></a><tt class="py-lineno">204</tt>  <tt class="py-line"><tt class="py-docstring">    :Parameters:</tt> </tt>
+<a name="L205"></a><tt class="py-lineno">205</tt>  <tt class="py-line"><tt class="py-docstring">     - `opts`: Option spec (WRITEME: need more info here :-)</tt> </tt>
+<a name="L206"></a><tt class="py-lineno">206</tt>  <tt class="py-line"><tt class="py-docstring">       (``({key: value, ...}, ...)``)</tt> </tt>
+<a name="L207"></a><tt class="py-lineno">207</tt>  <tt class="py-line"><tt class="py-docstring">       Special keys are '' and 'ENV'.</tt> </tt>
+<a name="L208"></a><tt class="py-lineno">208</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L209"></a><tt class="py-lineno">209</tt>  <tt class="py-line"><tt class="py-docstring">    :Types:</tt> </tt>
+<a name="L210"></a><tt class="py-lineno">210</tt>  <tt class="py-line"><tt class="py-docstring">     - `opts`: ``tuple``</tt> </tt>
+<a name="L211"></a><tt class="py-lineno">211</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L212"></a><tt class="py-lineno">212</tt>  <tt class="py-line"><tt class="py-docstring">    :return: The option container and the fixed args</tt> </tt>
+<a name="L213"></a><tt class="py-lineno">213</tt>  <tt class="py-line"><tt class="py-docstring">             (``(optparse.OptionContainer, list)``)</tt> </tt>
+<a name="L214"></a><tt class="py-lineno">214</tt>  <tt class="py-line"><tt class="py-docstring">    :rtype: ``tuple``</tt> </tt>
+<a name="L215"></a><tt class="py-lineno">215</tt>  <tt class="py-line"><tt class="py-docstring">    """</tt> </tt>
+<a name="L216"></a><tt class="py-lineno">216</tt>  <tt class="py-line">    <tt class="py-name">optlist</tt> <tt class="py-op">=</tt> <tt class="py-op">[</tt><tt class="py-op">]</tt> </tt>
+<a name="L217"></a><tt class="py-lineno">217</tt>  <tt class="py-line">    <tt class="py-keyword">for</tt> <tt class="py-name">opt</tt> <tt class="py-keyword">in</tt> <tt class="py-name">opts</tt><tt class="py-op">:</tt> </tt>
+<a name="L218"></a><tt class="py-lineno">218</tt>  <tt class="py-line">        <tt class="py-name">opt</tt> <tt class="py-op">=</tt> <tt class="py-name">opt</tt><tt class="py-op">.</tt><tt id="link-16" class="py-name" targets="Method wtf.webutil.URL.copy()=wtf.webutil.URL-class.html#copy"><a title="wtf.webutil.URL.copy" class="py-name" href="#" onclick="return doclink('link-16', 'copy', 'link-16');">copy</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L219"></a><tt class="py-lineno">219</tt>  <tt class="py-line">        <tt class="py-name">names</tt> <tt class="py-op">=</tt> <tt class="py-name">opt</tt><tt class="py-op">.</tt><tt class="py-name">pop</tt><tt class="py-op">(</tt><tt class="py-string">''</tt><tt class="py-op">)</tt> </tt>
+<a name="L220"></a><tt class="py-lineno">220</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt class="py-string">'ENV'</tt> <tt class="py-keyword">in</tt> <tt class="py-name">opt</tt><tt class="py-op">:</tt> </tt>
+<a name="L221"></a><tt class="py-lineno">221</tt>  <tt class="py-line">            <tt class="py-name">defaultval</tt> <tt class="py-op">=</tt> <tt class="py-name">_os</tt><tt class="py-op">.</tt><tt class="py-name">environ</tt><tt class="py-op">.</tt><tt id="link-17" class="py-name" targets="Method wtf.app.response.HeaderCollection.get()=wtf.app.response.HeaderCollection-class.html#get,Method wtf.app.services.memcache.ExceptionWrapper.get()=wtf.app.services.memcache.ExceptionWrapper-class.html#get,Method wtf.app.services.memcache.NoMemcacheWrapper.get()=wtf.app.services.memcache.NoMemcacheWrapper-class.html#get,Method wtf.app.services.session.Session.get()=wtf.app.services.session.Session-class.html#get,Method wtf.app.services.session.StorageAdapter.get()=wtf.app.services.session.StorageAdapter-class.html#get,Method wtf.app.services.session.StorageInterface.get()=wtf.app.services.session.StorageInterface-class.html#get,Method wtf.app.services.session_storage.sharedance.BoundSharedanceStorage.get()=wtf.app.services.session_storage.sharedance.BoundSharedanceStorage-class.html#get,Method wtf.ext.memcache.Memcache.get()=wtf.ext.memcache.Memcache-class.html#get"><a title="wtf.app.response.HeaderCollection.get
+wtf.app.services.memcache.ExceptionWrapper.get
+wtf.app.services.memcache.NoMemcacheWrapper.get
+wtf.app.services.session.Session.get
+wtf.app.services.session.StorageAdapter.get
+wtf.app.services.session.StorageInterface.get
+wtf.app.services.session_storage.sharedance.BoundSharedanceStorage.get
+wtf.ext.memcache.Memcache.get" class="py-name" href="#" onclick="return doclink('link-17', 'get', 'link-17');">get</a></tt><tt class="py-op">(</tt><tt class="py-name">opt</tt><tt class="py-op">.</tt><tt class="py-name">pop</tt><tt class="py-op">(</tt><tt class="py-string">'ENV'</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+<a name="L222"></a><tt class="py-lineno">222</tt>  <tt class="py-line">            <tt class="py-keyword">if</tt> <tt class="py-name">defaultval</tt> <tt class="py-keyword">is</tt> <tt class="py-keyword">not</tt> <tt class="py-name">None</tt><tt class="py-op">:</tt> </tt>
+<a name="L223"></a><tt class="py-lineno">223</tt>  <tt class="py-line">                <tt class="py-name">opt</tt><tt class="py-op">[</tt><tt class="py-string">'default'</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-name">defaultval</tt> </tt>
+<a name="L224"></a><tt class="py-lineno">224</tt>  <tt class="py-line">        <tt class="py-name">optlist</tt><tt class="py-op">.</tt><tt class="py-name">append</tt><tt class="py-op">(</tt><tt class="py-name">_optparse</tt><tt class="py-op">.</tt><tt class="py-name">make_option</tt><tt class="py-op">(</tt><tt class="py-op">*</tt><tt class="py-name">names</tt><tt class="py-op">,</tt> <tt class="py-op">**</tt><tt class="py-name">opt</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+<a name="L225"></a><tt class="py-lineno">225</tt>  <tt class="py-line">    <tt class="py-name">parser</tt> <tt class="py-op">=</tt> <tt id="link-18" class="py-name" targets="Class wtf.cmdline._OptionParser=wtf.cmdline._OptionParser-class.html"><a title="wtf.cmdline._OptionParser" class="py-name" href="#" onclick="return doclink('link-18', '_OptionParser', 'link-18');">_OptionParser</a></tt><tt class="py-op">(</tt><tt class="py-name">option_list</tt><tt class="py-op">=</tt><tt class="py-name">optlist</tt><tt class="py-op">)</tt> </tt>
+<a name="L226"></a><tt class="py-lineno">226</tt>  <tt class="py-line">    <tt class="py-keyword">return</tt> <tt class="py-name">parser</tt><tt class="py-op">.</tt><tt id="link-19" class="py-name"><a title="wtf.cmdline._OptionParser.parse_args" class="py-name" href="#" onclick="return doclink('link-19', 'parse_args', 'link-7');">parse_args</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L227"></a><tt class="py-lineno">227</tt>  <tt class="py-line"> </tt>
+<a name="L228"></a><tt class="py-lineno">228</tt>  <tt class="py-line"> </tt>
+<a name="run"></a><div id="run-def"><a name="L229"></a><tt class="py-lineno">229</tt> <a class="py-toggle" href="#" id="run-toggle" onclick="return toggle('run');">-</a><tt class="py-line"><tt class="py-keyword">def</tt> <a class="py-def-name" href="wtf.cmdline-module.html#run">run</a><tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="run-collapsed" style="display:none;" pad="+++" indent="++++"></div><div id="run-expanded"><a name="L230"></a><tt class="py-lineno">230</tt>  <tt class="py-line">    <tt class="py-docstring">""" Main command line runner """</tt> </tt>
+<a name="L231"></a><tt class="py-lineno">231</tt>  <tt class="py-line">    <tt class="py-name">opts</tt><tt class="py-op">,</tt> <tt class="py-name">args</tt> <tt class="py-op">=</tt> <tt id="link-20" class="py-name" targets="Method wtf.app.services._crash_tb.PythonParser.parse()=wtf.app.services._crash_tb.PythonParser-class.html#parse,Function wtf.cmdline.parse()=wtf.cmdline-module.html#parse,Method wtf.config.Parser.parse()=wtf.config.Parser-class.html#parse,Method wtf.impl.http._request.HTTPRequest.parse()=wtf.impl.http._request.HTTPRequest-class.html#parse"><a title="wtf.app.services._crash_tb.PythonParser.parse
+wtf.cmdline.parse
+wtf.config.Parser.parse
+wtf.impl.http._request.HTTPRequest.parse" class="py-name" href="#" onclick="return doclink('link-20', 'parse', 'link-20');">parse</a></tt><tt class="py-op">(</tt> </tt>
+<a name="L232"></a><tt class="py-lineno">232</tt>  <tt class="py-line">        <tt class="py-op">{</tt><tt class="py-string">''</tt><tt class="py-op">:</tt> <tt class="py-op">[</tt><tt class="py-string">'-c'</tt><tt class="py-op">,</tt> <tt class="py-string">'--config'</tt><tt class="py-op">]</tt><tt class="py-op">,</tt> <tt class="py-string">'action'</tt><tt class="py-op">:</tt> <tt class="py-string">'store'</tt><tt class="py-op">,</tt> <tt class="py-string">'type'</tt><tt class="py-op">:</tt> <tt class="py-string">'string'</tt><tt class="py-op">,</tt> </tt>
+<a name="L233"></a><tt class="py-lineno">233</tt>  <tt class="py-line">            <tt class="py-string">'ENV'</tt><tt class="py-op">:</tt> <tt class="py-string">'WTFRC'</tt><tt class="py-op">,</tt> </tt>
+<a name="L234"></a><tt class="py-lineno">234</tt>  <tt class="py-line">            <tt class="py-string">'help'</tt><tt class="py-op">:</tt> <tt class="py-string">'Configuration file, overrides the WTFRC variable'</tt><tt class="py-op">}</tt><tt class="py-op">,</tt> </tt>
+<a name="L235"></a><tt class="py-lineno">235</tt>  <tt class="py-line">        <tt class="py-op">{</tt><tt class="py-string">''</tt><tt class="py-op">:</tt> <tt class="py-op">[</tt><tt class="py-string">'--dump-config'</tt><tt class="py-op">]</tt><tt class="py-op">,</tt> <tt class="py-string">'action'</tt><tt class="py-op">:</tt> <tt class="py-string">'store_true'</tt><tt class="py-op">,</tt> </tt>
+<a name="L236"></a><tt class="py-lineno">236</tt>  <tt class="py-line">            <tt class="py-string">'help'</tt><tt class="py-op">:</tt> <tt class="py-string">'Load config, dump it to STDOUT and exit'</tt><tt class="py-op">}</tt><tt class="py-op">,</tt> </tt>
+<a name="L237"></a><tt class="py-lineno">237</tt>  <tt class="py-line">        <tt class="py-op">{</tt><tt class="py-string">''</tt><tt class="py-op">:</tt> <tt class="py-op">[</tt><tt class="py-string">'--profile'</tt><tt class="py-op">]</tt><tt class="py-op">,</tt> <tt class="py-string">'action'</tt><tt class="py-op">:</tt> <tt class="py-string">'store'</tt><tt class="py-op">,</tt> <tt class="py-string">'type'</tt><tt class="py-op">:</tt> <tt class="py-string">'string'</tt><tt class="py-op">,</tt> </tt>
+<a name="L238"></a><tt class="py-lineno">238</tt>  <tt class="py-line">            <tt class="py-string">'metavar'</tt><tt class="py-op">:</tt> <tt class="py-string">'FILENAME'</tt><tt class="py-op">,</tt> </tt>
+<a name="L239"></a><tt class="py-lineno">239</tt>  <tt class="py-line">            <tt class="py-string">'help'</tt><tt class="py-op">:</tt> <tt class="py-string">'Run with (c)profiler, output to FILENAME'</tt><tt class="py-op">}</tt><tt class="py-op">,</tt> </tt>
+<a name="L240"></a><tt class="py-lineno">240</tt>  <tt class="py-line">        <tt class="py-op">{</tt><tt class="py-string">''</tt><tt class="py-op">:</tt> <tt class="py-op">[</tt><tt class="py-string">'--keep-descriptors'</tt><tt class="py-op">]</tt><tt class="py-op">,</tt> <tt class="py-string">'action'</tt><tt class="py-op">:</tt> <tt class="py-string">'store_true'</tt><tt class="py-op">,</tt> </tt>
+<a name="L241"></a><tt class="py-lineno">241</tt>  <tt class="py-line">            <tt class="py-string">'help'</tt><tt class="py-op">:</tt> <tt class="py-string">"Don't close all file descriptors during startup "</tt> </tt>
+<a name="L242"></a><tt class="py-lineno">242</tt>  <tt class="py-line">                    <tt class="py-string">"(useful for debugging)"</tt><tt class="py-op">}</tt><tt class="py-op">,</tt> </tt>
+<a name="L243"></a><tt class="py-lineno">243</tt>  <tt class="py-line">        <tt class="py-op">{</tt><tt class="py-string">''</tt><tt class="py-op">:</tt> <tt class="py-op">[</tt><tt class="py-string">'-l'</tt><tt class="py-op">,</tt> <tt class="py-string">'--listen'</tt><tt class="py-op">]</tt><tt class="py-op">,</tt> <tt class="py-string">'action'</tt><tt class="py-op">:</tt> <tt class="py-string">'append'</tt><tt class="py-op">,</tt> </tt>
+<a name="L244"></a><tt class="py-lineno">244</tt>  <tt class="py-line">            <tt class="py-string">'help'</tt><tt class="py-op">:</tt> <tt class="py-string">'Override the listen configuration in config file '</tt> </tt>
+<a name="L245"></a><tt class="py-lineno">245</tt>  <tt class="py-line">                    <tt class="py-string">'(Can be used more than once)'</tt><tt class="py-op">}</tt><tt class="py-op">,</tt> </tt>
+<a name="L246"></a><tt class="py-lineno">246</tt>  <tt class="py-line">        <tt class="py-op">{</tt><tt class="py-string">''</tt><tt class="py-op">:</tt> <tt class="py-op">[</tt><tt class="py-string">'--checkinterval'</tt><tt class="py-op">]</tt><tt class="py-op">,</tt> <tt class="py-string">'action'</tt><tt class="py-op">:</tt> <tt class="py-string">'store'</tt><tt class="py-op">,</tt> <tt class="py-string">'type'</tt><tt class="py-op">:</tt> <tt class="py-string">'int'</tt><tt class="py-op">,</tt> </tt>
+<a name="L247"></a><tt class="py-lineno">247</tt>  <tt class="py-line">            <tt class="py-string">'help'</tt><tt class="py-op">:</tt> <tt class="py-string">'Set the number of byte code instructions between thread '</tt> </tt>
+<a name="L248"></a><tt class="py-lineno">248</tt>  <tt class="py-line">                    <tt class="py-string">'switches (sys.setcheckinterval())'</tt><tt class="py-op">}</tt><tt class="py-op">,</tt> </tt>
+<a name="L249"></a><tt class="py-lineno">249</tt>  <tt class="py-line">        <tt class="py-op">{</tt><tt class="py-string">''</tt><tt class="py-op">:</tt> <tt class="py-op">[</tt><tt class="py-string">'--max-descriptors'</tt><tt class="py-op">]</tt><tt class="py-op">,</tt> <tt class="py-string">'action'</tt><tt class="py-op">:</tt> <tt class="py-string">'store'</tt><tt class="py-op">,</tt> <tt class="py-string">'type'</tt><tt class="py-op">:</tt> <tt class="py-string">'int'</tt><tt class="py-op">,</tt> </tt>
+<a name="L250"></a><tt class="py-lineno">250</tt>  <tt class="py-line">            <tt class="py-string">'help'</tt><tt class="py-op">:</tt> <tt class="py-string">'Set the maximum number of file descriptors '</tt> </tt>
+<a name="L251"></a><tt class="py-lineno">251</tt>  <tt class="py-line">                    <tt class="py-string">'(ulimit -n)'</tt><tt class="py-op">}</tt><tt class="py-op">,</tt> </tt>
+<a name="L252"></a><tt class="py-lineno">252</tt>  <tt class="py-line">        <tt class="py-op">{</tt><tt class="py-string">''</tt><tt class="py-op">:</tt> <tt class="py-op">[</tt><tt class="py-string">'-m'</tt><tt class="py-op">,</tt> <tt class="py-string">'--workermodel'</tt><tt class="py-op">]</tt><tt class="py-op">,</tt> <tt class="py-string">'action'</tt><tt class="py-op">:</tt> <tt class="py-string">'store'</tt><tt class="py-op">,</tt> </tt>
+<a name="L253"></a><tt class="py-lineno">253</tt>  <tt class="py-line">            <tt class="py-string">'help'</tt><tt class="py-op">:</tt> <tt class="py-string">'Override the workermodel configuration in config file '</tt><tt class="py-op">}</tt><tt class="py-op">,</tt> </tt>
+<a name="L254"></a><tt class="py-lineno">254</tt>  <tt class="py-line">    <tt class="py-op">)</tt> </tt>
+<a name="L255"></a><tt class="py-lineno">255</tt>  <tt class="py-line">    <tt class="py-name">args</tt> <tt class="py-op">=</tt> <tt class="py-op">[</tt><tt class="py-name">_sys</tt><tt class="py-op">.</tt><tt class="py-name">argv</tt><tt class="py-op">[</tt><tt class="py-number">0</tt><tt class="py-op">]</tt><tt class="py-op">]</tt> <tt class="py-op">+</tt> <tt id="link-21" class="py-name" targets="Method wtf.app.services.resources.Resource.list()=wtf.app.services.resources.Resource-class.html#list"><a title="wtf.app.services.resources.Resource.list" class="py-name" href="#" onclick="return doclink('link-21', 'list', 'link-21');">list</a></tt><tt class="py-op">(</tt><tt class="py-name">args</tt><tt class="py-op">)</tt> </tt>
+<a name="L256"></a><tt class="py-lineno">256</tt>  <tt class="py-line">    <tt class="py-keyword">if</tt> <tt class="py-keyword">not</tt> <tt class="py-name">opts</tt><tt class="py-op">.</tt><tt id="link-22" class="py-name" targets="Module wtf.app.services.config=wtf.app.services.config-module.html,Module wtf.config=wtf.config-module.html,Function wtf.init.config()=wtf.init-module.html#config"><a title="wtf.app.services.config
+wtf.config
+wtf.init.config" class="py-name" href="#" onclick="return doclink('link-22', 'config', 'link-22');">config</a></tt><tt class="py-op">:</tt> </tt>
+<a name="L257"></a><tt class="py-lineno">257</tt>  <tt class="py-line">        <tt class="py-keyword">raise</tt> <tt id="link-23" class="py-name"><a title="wtf.cmdline.CommandlineError" class="py-name" href="#" onclick="return doclink('link-23', 'CommandlineError', 'link-8');">CommandlineError</a></tt><tt class="py-op">(</tt><tt class="py-string">"No configuration file given"</tt><tt class="py-op">)</tt> </tt>
+<a name="L258"></a><tt class="py-lineno">258</tt>  <tt class="py-line"> </tt>
+<a name="L259"></a><tt class="py-lineno">259</tt>  <tt class="py-line">    <tt class="py-keyword">from</tt> <tt id="link-24" class="py-name"><a title="wtf" class="py-name" href="#" onclick="return doclink('link-24', 'wtf', 'link-0');">wtf</a></tt> <tt class="py-keyword">import</tt> <tt id="link-25" class="py-name" targets="Method wtf.app.http_response.AuthorizationRequired.init()=wtf.app.http_response.AuthorizationRequired-class.html#init,Method wtf.app.http_response.BadGateway.init()=wtf.app.http_response.BadGateway-class.html#init,Method wtf.app.http_response.BadRequest.init()=wtf.app.http_response.BadRequest-class.html#init,Method wtf.app.http_response.Conflict.init()=wtf.app.http_response.Conflict-class.html#init,Method wtf.app.http_response.Created.init()=wtf.app.http_response.Created-class.html#init,Method wtf.app.http_response.HTTPResponse.init()=wtf.app.http_response.HTTPResponse-class.html#init,Method wtf.app.http_response.InternalServerError.init()=wtf.app.http_response.InternalServerError-class.html#init,Method wtf.app.http_response.LengthRequired.init()=wtf.app.http_response.LengthRequired-class.html#init,Method wtf.app.http_response.MethodNotAllowed.init()=wtf.app.http_response.MethodNotAllowed-class.html#init,Method wtf.app.http_response.MultipleChoices.init()=wtf.app.http_response.MultipleChoices-class.html#init,Method wtf.app.http_response.NotAcceptable.init()=wtf.app.http_response.NotAcceptable-class.html#init,Method wtf.app.http_response.NotImplemented.init()=wtf.app.http_response.NotImplemented-class.html#init,Method wtf.app.http_response.RequestURITooLong.init()=wtf.app.http_response.RequestURITooLong-class.html#init,Method wtf.app.http_response.UpgradeRequired.init()=wtf.app.http_response.UpgradeRequired-class.html#init,Method wtf.app.http_response._BaseRedirect.init()=wtf.app.http_response._BaseRedirect-class.html#init,Module wtf.init=wtf.init-module.html,Function wtf.services.init()=wtf.services-module.html#init"><a title="wtf.app.http_response.AuthorizationRequired.init
+wtf.app.http_response.BadGateway.init
+wtf.app.http_response.BadRequest.init
+wtf.app.http_response.Conflict.init
+wtf.app.http_response.Created.init
+wtf.app.http_response.HTTPResponse.init
+wtf.app.http_response.InternalServerError.init
+wtf.app.http_response.LengthRequired.init
+wtf.app.http_response.MethodNotAllowed.init
+wtf.app.http_response.MultipleChoices.init
+wtf.app.http_response.NotAcceptable.init
+wtf.app.http_response.NotImplemented.init
+wtf.app.http_response.RequestURITooLong.init
+wtf.app.http_response.UpgradeRequired.init
+wtf.app.http_response._BaseRedirect.init
+wtf.init
+wtf.services.init" class="py-name" href="#" onclick="return doclink('link-25', 'init', 'link-25');">init</a></tt> <tt class="py-keyword">as</tt> <tt class="py-name">_init</tt> </tt>
+<a name="L260"></a><tt class="py-lineno">260</tt>  <tt class="py-line">    <tt id="link-26" class="py-name"><a title="wtf.app.services.config
+wtf.config
+wtf.init.config" class="py-name" href="#" onclick="return doclink('link-26', 'config', 'link-22');">config</a></tt> <tt class="py-op">=</tt> <tt class="py-name">_init</tt><tt class="py-op">.</tt><tt id="link-27" class="py-name"><a title="wtf.app.services.config
+wtf.config
+wtf.init.config" class="py-name" href="#" onclick="return doclink('link-27', 'config', 'link-22');">config</a></tt><tt class="py-op">(</tt><tt class="py-name">opts</tt><tt class="py-op">.</tt><tt id="link-28" class="py-name"><a title="wtf.app.services.config
+wtf.config
+wtf.init.config" class="py-name" href="#" onclick="return doclink('link-28', 'config', 'link-22');">config</a></tt><tt class="py-op">,</tt> <tt class="py-name">opts</tt><tt class="py-op">=</tt><tt class="py-name">opts</tt><tt class="py-op">,</tt> <tt id="link-29" class="py-name" targets="Function wtf.config.dump()=wtf.config-module.html#dump"><a title="wtf.config.dump" class="py-name" href="#" onclick="return doclink('link-29', 'dump', 'link-29');">dump</a></tt><tt class="py-op">=</tt><tt class="py-name">opts</tt><tt class="py-op">.</tt><tt class="py-name">dump_config</tt><tt class="py-op">)</tt> </tt>
+<a name="L261"></a><tt class="py-lineno">261</tt>  <tt class="py-line"> </tt>
+<a name="L262"></a><tt class="py-lineno">262</tt>  <tt class="py-line">    <tt class="py-keyword">def</tt> <tt class="py-def-name">start</tt><tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L263"></a><tt class="py-lineno">263</tt>  <tt class="py-line">        <tt class="py-docstring">""" Starter """</tt> </tt>
+<a name="L264"></a><tt class="py-lineno">264</tt>  <tt class="py-line">        <tt class="py-keyword">from</tt> <tt id="link-30" class="py-name"><a title="wtf" class="py-name" href="#" onclick="return doclink('link-30', 'wtf', 'link-0');">wtf</a></tt> <tt class="py-keyword">import</tt> <tt id="link-31" class="py-name" targets="Package wtf.opi=wtf.opi-module.html"><a title="wtf.opi" class="py-name" href="#" onclick="return doclink('link-31', 'opi', 'link-31');">opi</a></tt> <tt class="py-keyword">as</tt> <tt class="py-name">_opi</tt> </tt>
+<a name="L265"></a><tt class="py-lineno">265</tt>  <tt class="py-line">        <tt class="py-keyword">try</tt><tt class="py-op">:</tt> </tt>
+<a name="L266"></a><tt class="py-lineno">266</tt>  <tt class="py-line">            <tt class="py-name">_opi</tt><tt class="py-op">.</tt><tt id="link-32" class="py-name" targets="Class Method wtf.app.Application.factory()=wtf.app.Application-class.html#factory,Function wtf.impl.factory()=wtf.impl-module.html#factory,Function wtf.opi.factory()=wtf.opi-module.html#factory,Function wtf.opi.worker.factory()=wtf.opi.worker-module.html#factory"><a title="wtf.app.Application.factory
+wtf.impl.factory
+wtf.opi.factory
+wtf.opi.worker.factory" class="py-name" href="#" onclick="return doclink('link-32', 'factory', 'link-32');">factory</a></tt><tt class="py-op">(</tt><tt id="link-33" class="py-name"><a title="wtf.app.services.config
+wtf.config
+wtf.init.config" class="py-name" href="#" onclick="return doclink('link-33', 'config', 'link-22');">config</a></tt><tt class="py-op">,</tt> <tt class="py-name">opts</tt><tt class="py-op">,</tt> <tt class="py-name">args</tt><tt class="py-op">)</tt><tt class="py-op">.</tt><tt id="link-34" class="py-name" targets="Method wtf.opi.OPIInterface.work()=wtf.opi.OPIInterface-class.html#work,Method wtf.opi.daemon.DaemonOPI.work()=wtf.opi.daemon.DaemonOPI-class.html#work"><a title="wtf.opi.OPIInterface.work
+wtf.opi.daemon.DaemonOPI.work" class="py-name" href="#" onclick="return doclink('link-34', 'work', 'link-34');">work</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L267"></a><tt class="py-lineno">267</tt>  <tt class="py-line">        <tt class="py-keyword">except</tt> <tt class="py-name">_opi</tt><tt class="py-op">.</tt><tt id="link-35" class="py-name" targets="Class wtf.opi.OPIError=wtf.opi.OPIError-class.html"><a title="wtf.opi.OPIError" class="py-name" href="#" onclick="return doclink('link-35', 'OPIError', 'link-35');">OPIError</a></tt><tt class="py-op">,</tt> <tt class="py-name">e</tt><tt class="py-op">:</tt> </tt>
+<a name="L268"></a><tt class="py-lineno">268</tt>  <tt class="py-line">            <tt class="py-name">msg</tt> <tt class="py-op">=</tt> <tt class="py-name">str</tt><tt class="py-op">(</tt><tt class="py-name">e</tt><tt class="py-op">)</tt> </tt>
+<a name="L269"></a><tt class="py-lineno">269</tt>  <tt class="py-line">            <tt class="py-keyword">if</tt> <tt class="py-name">msg</tt><tt class="py-op">:</tt> </tt>
+<a name="L270"></a><tt class="py-lineno">270</tt>  <tt class="py-line">                <tt class="py-keyword">print</tt> <tt class="py-op">&gt;&gt;</tt> <tt class="py-name">_sys</tt><tt class="py-op">.</tt><tt class="py-name">stderr</tt><tt class="py-op">,</tt> <tt class="py-name">msg</tt> </tt>
+<a name="L271"></a><tt class="py-lineno">271</tt>  <tt class="py-line">            <tt class="py-name">_sys</tt><tt class="py-op">.</tt><tt class="py-name">exit</tt><tt class="py-op">(</tt><tt class="py-name">e</tt><tt class="py-op">.</tt><tt id="link-36" class="py-name" targets="Variable wtf.opi.OPIDone.exit_code=wtf.opi.OPIDone-class.html#exit_code,Variable wtf.opi.OPIError.exit_code=wtf.opi.OPIError-class.html#exit_code"><a title="wtf.opi.OPIDone.exit_code
+wtf.opi.OPIError.exit_code" class="py-name" href="#" onclick="return doclink('link-36', 'exit_code', 'link-36');">exit_code</a></tt><tt class="py-op">)</tt> </tt>
+</div><a name="L272"></a><tt class="py-lineno">272</tt>  <tt class="py-line"> </tt>
+<a name="L273"></a><tt class="py-lineno">273</tt>  <tt class="py-line">    <tt class="py-keyword">if</tt> <tt class="py-name">opts</tt><tt class="py-op">.</tt><tt class="py-name">profile</tt><tt class="py-op">:</tt> </tt>
+<a name="L274"></a><tt class="py-lineno">274</tt>  <tt class="py-line">        <tt class="py-keyword">try</tt><tt class="py-op">:</tt> </tt>
+<a name="L275"></a><tt class="py-lineno">275</tt>  <tt class="py-line">            <tt class="py-keyword">import</tt> <tt class="py-name">cProfile</tt> <tt class="py-keyword">as</tt> <tt class="py-name">_profile</tt> </tt>
+<a name="L276"></a><tt class="py-lineno">276</tt>  <tt class="py-line">        <tt class="py-keyword">except</tt> <tt class="py-name">ImportError</tt><tt class="py-op">:</tt> </tt>
+<a name="L277"></a><tt class="py-lineno">277</tt>  <tt class="py-line">            <tt class="py-keyword">import</tt> <tt class="py-name">profile</tt> <tt class="py-keyword">as</tt> <tt class="py-name">_profile</tt> </tt>
+<a name="L278"></a><tt class="py-lineno">278</tt>  <tt class="py-line">        <tt class="py-name">_profile</tt><tt class="py-op">.</tt><tt class="py-name">runctx</tt><tt class="py-op">(</tt><tt class="py-string">"start()"</tt><tt class="py-op">,</tt> <tt class="py-name">globals</tt><tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">,</tt> <tt class="py-name">locals</tt><tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">,</tt> <tt class="py-name">opts</tt><tt class="py-op">.</tt><tt class="py-name">profile</tt><tt class="py-op">)</tt> </tt>
+<a name="L279"></a><tt class="py-lineno">279</tt>  <tt class="py-line"> </tt>
+<a name="L280"></a><tt class="py-lineno">280</tt>  <tt class="py-line">    <tt class="py-keyword">else</tt><tt class="py-op">:</tt> </tt>
+<a name="L281"></a><tt class="py-lineno">281</tt>  <tt class="py-line">        <tt id="link-37" class="py-name" targets="Method wtf.opi.worker.threaded.TaskRunner.start()=wtf.opi.worker.threaded.TaskRunner-class.html#start"><a title="wtf.opi.worker.threaded.TaskRunner.start" class="py-name" href="#" onclick="return doclink('link-37', 'start', 'link-37');">start</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L282"></a><tt class="py-lineno">282</tt>  <tt class="py-line"> </tt><script type="text/javascript">
+<!--
+expandto(location.href);
+// -->
+</script>
+</pre>
+<br />
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+  <!-- Home link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="wtf-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            ><a href="http://opensource.perlig.de/wtf/">Visit WTF Online</a></th>
+          </tr></table></th>
+  </tr>
+</table>
+
+<script type="text/javascript">
+  <!--
+  // Private objects are initially displayed (because if
+  // javascript is turned off then we want them to be
+  // visible); but by default, we want to hide them.  So hide
+  // them unless we have a cookie that says to show them.
+  checkCookie();
+  // -->
+</script>
+</body>
+</html>
