@@ -1,0 +1,123 @@
+<html tal:replace="structure context/manage_page_header"/>
+
+    <span tal:replace="structure context/manage_tabs"/>
+
+    <div width="100%" align="right">
+       <a href="manage_catalogView">View</a>&nbsp;|&nbsp;
+       <a href="manage_catalogSchema">Schema</a>&nbsp;|&nbsp;
+       <a href="manage_catalogIndexes">Indexes</a>&nbsp;|&nbsp;
+       <a href="manage_catalogAdvanced">Advanced</a>
+    </div>
+
+    <form action="" method="post" tal:attributes="action request/URL1"
+          tal:define="Batch python:modules['ZTUtils'].Batch;
+                      mq python:modules['ZTUtils'].make_query;
+                      batch_size request/batch_size | python: 100;
+                      batch_start request/batch_start | python: 0;
+                      sort_on request/sort_on | string:accno;
+                      catalog python: context.bastionLedger();
+                      batch python: Batch(catalog.searchResults(REQUEST=request), batch_size, batch_start, orphan=2);">
+
+          <table tal:define="indexes catalog/indexes;
+                             indexlen python: len(indexes)" 
+                 cellpadding="2" cellspacing="0">
+             <tal:rows repeat="cols python: (indexes[:indexlen / 2], indexes[indexlen / 2:])">
+                <tr class="list-header">
+                   <td tal:repeat="col cols">
+                      <span class="form-label" tal:content="python: col.capitalize()"/>
+                   </td>
+		</tr>
+                <tr class="list-header">
+                    <td tal:repeat="col cols" class="form-element">
+                      <input type="text" name="" 
+                             tal:attributes="name string:${col}:ignore_empty; 
+                                             value python: request.get(col, '')"/>
+                    </td>
+                </tr>   
+             </tal:rows>
+             <tr class="list-header">
+                <td colspan="" tal:attributes="colspan python: indexlen / 2">
+                    <input type="submit" name="manage_search:method" value=" Search "/>
+                </td>
+             </tr>
+          </table>
+
+         <br>
+
+         <table border="0" cellpadding="2" cellspacing="0" width="100%" tal:condition="batch">
+           <tr class="list-header">
+               <td colspan="2" class="list-item" tal:define="p batch/previous" nowrap>
+                   <div tal:omit-tag="" tal:condition="p">
+                      <a href=""
+                         tal:define="qs python: mq(request.form, batch_start=p.first)"
+                         tal:attributes="href python: 'manage_search?%s' %  qs">
+                      &larr;
+                      </a>
+                   </div>
+                   <div tal:condition="not: p" tal:omit-tag="">&nbsp;</div>
+               </td>
+               <td class="list-item">
+                   <strong tal:condition="python: sort_on=='id'">Id</strong>
+                   <a tal:condition="python: sort_on != 'id'"
+                      tal:define="qs python: mq(request.form, sort_on='id')"
+                      href="" tal:attributes="href string:manage_search?${qs}">Id</a>
+               </td>
+               <td class="list-item"><strong>Created</strong></td>
+               <td class="list-item">
+                   <strong tal:condition="python: sort_on=='title'">Title</strong>
+                   <a tal:condition="python: sort_on != 'title'"
+                      tal:define="qs python: mq(request.form, sort_on='title')"
+                      href="" tal:attributes="href string:manage_search?${qs}">Title</a>
+               </td>
+               <td class="list-item">
+                   <strong tal:condition="python: sort_on=='meta_type'">Meta Type</strong>
+                   <a tal:condition="python: sort_on != 'meta_type'"
+                      tal:define="qs python: mq(request.form, sort_on='meta_type')"
+                      href="" tal:attributes="href string:manage_search?${qs}">Meta Type</a>
+               </td>
+               <td class="list-item">
+                   <strong tal:condition="python: sort_on=='status'">Status</strong>
+                   <a tal:condition="python: sort_on != 'status'"
+                      tal:define="qs python: mq(request.form, sort_on='status')"
+                      href="" tal:attributes="href string:manage_search?${qs}">Status</a>
+               </td>
+     	       <td class="list-item" tal:define="n batch/next" align="right" nowrap>
+                   <div tal:omit-tag="" tal:condition="n">
+                      <a href=""
+                         tal:define="qs python: mq(request.form, batch_start=n.first)"
+                         tal:attributes="href python: 'manage_search?%s' % qs">
+                        &rarr;
+                      </a>
+                   </div>
+                   <div tal:condition="not: n" tal:omit-tag="">&nbsp;</div>
+               </td>
+           </tr>
+           <tr tal:repeat="item python: map(lambda x: x.getObject(), batch)" class=""
+               tal:attributes="class python: repeat['item'].index % 2 and 'row-hilite' or 'row-normal'">
+               <td class="list-item">
+                  <input type="checkbox" name="ids:list" value="" tal:attributes="value item/getId">
+               </td>
+               <td class="list-item">
+                   <img src="" tal:attributes="src item/icon"/>
+               </td>
+               <td class="list-item">
+                   <a href="" tal:attributes="href string:${item/absolute_url}/manage_workspace"  
+                              tal:content="item/getId"/>
+               </td>
+               <td class="list-item" tal:content="python: item.created().strftime('%Y/%m/%d')"/>
+               <td class="list-item" nowrap>
+                   <a href="" tal:attributes="href string:${item/absolute_url}/manage_workspace"  
+                              tal:content="item/title"/>
+               </td>
+               <td class="list-item" tal:content="item/meta_type"/>
+               <td class="list-item" tal:content="item/status"/>
+           </tr>
+        </table>
+     </form>
+
+<html tal:replace="structure context/manage_page_footer"/>
+
+
+
+
+

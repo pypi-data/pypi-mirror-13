@@ -1,0 +1,250 @@
+<html tal:replace="structure context/manage_page_header"/>
+
+    <span tal:replace="structure context/manage_tabs"/>
+
+    <tal:globals tal:define="now  python: DateTime();
+                             effective_dates python: request.get('effective', (now,));
+			     foo python: request.set('effective', []);
+                             date python: len(effective_dates) == 1 and effective_dates[0] or min(effective_dates);
+                             date2 python: len(effective_dates) > 1 and max(effective_dates) or None;
+                             currency context/defaultCurrency;">
+                         
+       <table border="0" width="100%" cellspacing="0" cellpadding="0"
+              tal:define="products context/filtered_meta_types">
+          <tr>
+              <td align="left">
+                 <p class="help-text"><i><span tal:replace="context/getId"/> contains 
+                    <span tal:replace="context/numberAccounts"/> Accounts</i>.  
+                    <i>Default currency is <span tal:replace="currency"/></i></p>
+              </td>
+              <td align="right" valign="top" class="form-element">
+                 <form method="get" action="" tal:attributes="action request/URL1">
+                     <tal:block tal:condition="python: len(products) > 1">
+                         <select class="form-element" name=":action"
+                                 onchange="" tal:attributes="onchange string:location.href='${request/URL1}/'+this.options[this.selectedIndex].value">
+                             <option value="manage_workspace" disabled>Select type to add...</option>
+                             <option tal:repeat="product products"
+                                     value="" tal:attributes="value product/action"
+                                     tal:content="product/name"/>
+                          </select>
+                          <input class="form-element" type="submit" value=" Add ">
+                      </tal:block>
+                      <tal:block tal:condition="python: len(products) == 1">
+                        <tal:block tal:define="product python:products[0]">
+                          <input type="hidden" name=":method" value="" tal:attributes="value product/action"/>
+                          <input class="form-element" type="submit" name="submit" value=""
+                                 tal:attributes="value string: Add ${product/name}" />
+                        </tal:block>
+                      </tal:block>
+                 </form>
+              </td>
+          </tr>
+       </table>
+       <form action="" method="post" tal:attributes="action request/URL1"
+             tal:define="Batch python:modules['ZTUtils'].Batch;
+                         mq python:modules['ZTUtils'].make_query;
+                         batch_size request/batch_size | python: 100;
+                         sort_on request/sort_on | string:accno;
+                         catalog python: context.bastionLedger();
+                         global total python: context.zeroAmount(currency);
+                         global total2 python: context.zeroAmount(currency);
+                         accounts_start request/accounts_start | python:0;
+                         accounts python: context.accountValues(REQUEST=request, sort_on=sort_on);
+                         accounts_batch python:Batch(accounts, batch_size, accounts_start, orphan=2);">
+          <table cellpadding="2" cellspacing="0">
+             <tr>
+                <td class="form-label">Effective</td>
+                <td class="form-label">Number</td>
+                <td class="form-label">Text</td>
+                <td class="form-label">Type</td>
+                <td class="form-label">SubType</td>
+                <td class="form-label">Tags</td>
+                <td class="form-label">Batch Size</td>
+             </tr>
+             <tr>
+                <td valign="top">
+                    <input class="form-element" type="text" name="effective:date:list:ignore_empty" value="" size="10"
+                           tal:attributes="value python:date.strftime('%Y/%m/%d')"/><br/>
+                    <input class="form-element" type="text" name="effective:date:list:ignore_empty" value="" size="10"
+                           tal:attributes="value python: date2 and date2.strftime('%Y/%m/%d') or ''"/>
+                </td>
+                <td valign="top">
+                    <input class="form-element" type="text" name="accno:tokens:ignore_empty" value="" size="20"
+                           tal:attributes="value python: ' '.join(request.get('accno',[]))"/>
+                </td>
+                <td valign="top">
+                    <input class="form-element" type="text" name="SearchableText:tokens:ignore_empty" value="" size="20"
+                           tal:attributes="value python: ' '.join(request.get('SearchableText',[]))"/>
+                </td>
+                <td valign="top" tal:define="type request/type | python:[]">
+                    <select class="form-element" name="type:tokens:ignore_empty" multiple size="2">
+                         <option tal:repeat="v python:catalog.uniqueValuesFor('type')"
+                                 tal:content="v"
+                                 tal:attributes="selected python: v in type and 1 or 0"/>
+                    </select>
+                </td>
+                <td valign="top" tal:define="subtype request/subtype | python: []">
+                    <select class="form-element" name="subtype:tokens:ignore_empty" multiple size="2">
+                        <option tal:repeat="v python:catalog.uniqueValuesFor('subtype')"
+                                tal:content="v"
+                                tal:attributes="selected python: v in subtype and 1 or 0"/>
+                    </select>
+                </td>
+                <td valign="top" tal:define="tags request/tags | python: []">
+                    <textarea class="form-element" name="tags:tokens:ignore_empty" cols="20" rows="2" 
+                              tal:content="python: ' '.join(tags)"/>
+                </td>
+                <td valign="top">
+                    <input class="form-element" type="text" name="batch_size:int" value="" size="5" maxlength="5"
+                           tal:attributes="value batch_size"/>
+                </td>
+             </tr>
+             <tr>
+                <td colspan="8">
+                   <input class="form-element" type="submit" name="manage_accounts:method" value=" Search Accounts "/>
+                   <input class="form-element" type="submit" name="manage_transactions:method" value=" Search Transactions "/>
+                </td>
+             </tr>
+       </table>
+       <table border="0" cellpadding="2" cellspacing="0" width="100%" tal:condition="accounts">
+           <tr class="list-header">
+               <td colspan="2" class="list-item" tal:define="p accounts_batch/previous" nowrap>
+                   <div tal:omit-tag="" tal:condition="p">
+                      <a href=""
+                         tal:define="qs python: mq(request.form, accounts_start=p.first)"
+                         tal:attributes="href python: 'manage_main?%s' %  qs">
+                      &larr;
+                      </a>
+                   </div>
+                   <div tal:condition="not: p" tal:omit-tag="">&nbsp;</div>
+               </td>
+               <td class="list-item">
+                   <strong tal:condition="python: sort_on=='accno'">No.</strong>
+                   <a tal:condition="python: sort_on != 'accno'"
+                      tal:define="qs python: mq(request.form, sort_on='accno')"
+                      href="" tal:attributes="href string:manage_main?${qs}">No.</a>
+               </td>
+               <td class="list-item"><strong>Created</strong></td>
+               <td class="list-item"><strong>Cur.</strong></td>
+               <td class="list-item">
+                   <strong tal:condition="python: sort_on=='title'">Title</strong>
+                   <a tal:condition="python: sort_on != 'title'"
+                      tal:define="qs python: mq(request.form, sort_on='title')"
+                      href="" tal:attributes="href string:manage_main?${qs}">Title</a>
+               </td>
+               <td class="list-item">
+                   <strong tal:condition="python: sort_on=='type'">Type</strong>
+                   <a tal:condition="python: sort_on != 'type'"
+                      tal:define="qs python: mq(request.form, sort_on='type')"
+                      href="" tal:attributes="href string:manage_main?${qs}">Type</a>
+               </td>
+               <td class="list-item">
+                   <strong tal:condition="python: sort_on=='subtype'">Sub-Type</strong>
+                   <a tal:condition="python: sort_on != 'subtype'"
+                      tal:define="qs python: mq(request.form, sort_on='subtype')"
+                      href="" tal:attributes="href string:manage_main?${qs}">Sub-Type</a>
+               </td>
+               <td class="list-item" align="right">
+                   <strong tal:condition="date2" tal:content="python: date.strftime('%Y/%m/%d')"/>
+                   <strong tal:condition="not: date2">Balance</strong>
+               </td>
+               <td class="list-item" align="right" tal:condition="date2">
+                   <strong tal:content="python: date2.strftime('%Y/%m/%d')"/>
+               </td>
+               <td colspan="2" class="list-item" align="right"><i><strong>Cache Totals</strong></i></td>
+               <td class="list-item">&nbsp;</td>
+               <td class="list-item">
+                   <strong tal:condition="python: sort_on=='status'">Status</strong>
+                   <a tal:condition="python: sort_on != 'status'"
+                      tal:define="qs python: mq(request.form, sort_on='status')"
+                      href="" tal:attributes="href string:manage_main?${qs}">Status</a>
+               </td>
+     	       <td class="list-item" tal:define="n accounts_batch/next" align="right" nowrap>
+                   <div tal:omit-tag="" tal:condition="n">
+                      <a href=""
+                         tal:define="qs python: mq(request.form, accounts_start=n.first)"
+                         tal:attributes="href python: 'manage_main?%s' % qs">
+                        &rarr;
+                      </a>
+                   </div>
+                   <div tal:condition="not: n" tal:omit-tag="">&nbsp;</div>
+               </td>
+           </tr>
+           <tr tal:repeat="account accounts_batch" class=""
+               tal:attributes="class python: repeat['account'].index % 2 and 'row-hilite' or 'row-normal'">
+               <td class="list-item">
+                  <input type="checkbox" name="ids:list" value="" tal:attributes="value account/getId">
+               </td>
+               <td class="list-item" nowrap tal:define="control account/isControl">
+                   <img src="" tal:condition="not: control" tal:attributes="src account/icon"/>
+                   <img src="/misc_/BastionLedger/blcontrolaccount" tal:condition="control"/>
+               </td>
+               <td class="list-item">
+                   <a href="" tal:attributes="href string:${account/getId}/manage_workspace"  
+                              tal:content="account/accno"/>
+               </td>
+               <td class="list-item" tal:content="python: account.created().strftime('%Y/%m/%d')"/>
+               <td class="list-item" tal:content="account/base_currency"/>
+               <td class="list-item" nowrap>
+                   <a href="" tal:attributes="href string:${account/getId}/manage_workspace"  
+                              tal:content="account/title"/>
+               </td>
+               <td class="list-item" tal:content="account/type"/>
+               <td class="list-item" tal:content="account/subtype" nowrap/>
+               <tal:balances define="bal1 python: account.balance(effective=date)">
+                   <tal:compute define="global total python: total + account.balance(effective=date, currency=currency)"/>
+
+                   <td class="list-item" align="right" nowrap tal:content="bal1"/> 
+                   <td tal:condition="date2" tal:define="bal2 python: account.balance(effective=date2)"
+                       class="list-item" align="right" nowrap>
+                       <tal:compute define="global total2 python: total2 + account.balance(effective=date2, currency=currency)"/>
+                       <i tal:attributes="style python: bal1 != bal2 and 'color: red' or ''" tal:content="bal2"/> 
+                   </td>
+	       </tal:balances>
+               <td>&nbsp;</td>
+               <td class="list-item" align="right" nowrap>
+                   <i tal:content="account/totBalance"/>
+               </td>
+               <td class="list-item" nowrap>
+                   <i tal:content="python:account.totDate().strftime('%Y/%m/%d')"/>
+               </td>
+               <td class="list-item" tal:content="account/status"/>
+           </tr>
+           <tal:subsidiary tal:condition="python: context.meta_type != 'BLLedger'">
+              <tr class="list-header" 
+                  tal:repeat="control context/controlEntries">
+                 <td class="form-element" colspan="8" align="right">
+                     <a href="" 
+                        tal:define="account python: control.aq_parent"
+                        tal:attributes="href string:${account/absolute_url}/manage_workspace" 
+                        tal:content="control/prettyTitle"/>
+                 </td>
+                 <td class="form-element" align="right"
+                     tal:content="python: control.balance(effective=date, currency=currency)"/>
+                 <td colspan="5" class="form-element" tal:attributes="colspan python: date2 and 5 or 4">
+                         <input type="hidden" name="effective:date" value="" tal:attributes="value date"/>
+                         <input type="hidden" name="controlid" value="" tal:attributes="value control/accountId"/>
+                         <input type="submit" name="manage_recalculateControl:method" value=" Recalculate "/>
+                 </td>
+              </tr>
+           </tal:subsidiary>    
+           <tr class="list-header" tal:condition="nocall: accounts">
+               <td class="form-label" colspan="8" align="right">Total</td>
+               <td class="form-label" align="right" nowrap tal:content="total"/>
+               <td tal:condition="date2" class="form-label" align="right" nowrap tal:content="total2"/>
+               <td colspan="4">&nbsp;</td>
+           </tr>
+           <tr tal:condition="nocall: accounts">
+               <td  colspan="11" class="form-element">
+                   <input class="form-element" type="submit"  value=" Delete " name="manage_delObjects:method"/>
+               </td>
+           </tr>
+       </table>
+     </form>
+   </tal:globals>
+<html tal:replace="structure context/manage_page_footer"/>
+
+
+
+
+

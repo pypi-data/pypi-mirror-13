@@ -1,0 +1,169 @@
+<?xml version="1.0"?>
+<dc-workflow xmlns:i18n="http://xml.zope.org/namespaces/i18n"
+             workflow_id="blasset_workflow"
+             i18n:domain="bastionledger"
+             title="BLAsset Workflow"
+             state_variable="review_state"
+             initial_state="depreciable">
+
+ <permission>BastionLedger: Manage</permission>
+ <permission>BastionLedger: Oversee</permission>
+ <permission>BastionLedger: Operate</permission>
+ <permission>Access contents information</permission>
+ <permission>View</permission>
+ <permission>Modify portal content</permission>
+ <permission>List folder contents</permission>
+
+ <state state_id="depreciable" title="Depreciable">
+  <exit-transition transition_id="dispose"/>
+  <exit-transition transition_id="ignore"/>
+  <exit-transition transition_id="depreciate"/>
+  <permission-map name="BastionLedger: Operate" acquired="True">
+     <permission-role>Manager</permission-role>
+     <permission-role>Owner</permission-role>
+  </permission-map>
+  <permission-map name="Access contents information" acquired="True"/>
+  <permission-map name="List portal content" acquired="True"/>
+  <permission-map name="Modify portal content" acquired="True"/>
+  <permission-map name="View" acquired="True"/>
+ </state>
+
+ <state state_id="depreciated" title="Depreciated">
+  <permission-map name="BastionLedger: Operate" acquired="True">
+     <permission-role>Manager</permission-role>
+     <permission-role>Owner</permission-role>
+  </permission-map>
+  <permission-map name="Access contents information" acquired="True"/>
+  <permission-map name="List portal content" acquired="True"/>
+  <permission-map name="Modify portal content" acquired="True"/>
+  <permission-map name="View" acquired="True"/>
+ </state>
+
+ <state state_id="disposed" title="Disposed">
+  <permission-map name="BastionLedger: Manage" acquired="True">
+     <permission-role>Manager</permission-role>
+     <permission-role>Owner</permission-role>
+  </permission-map>
+  <permission-map name="Access contents information" acquired="True"/>
+  <permission-map name="List portal content" acquired="True"/>
+  <permission-map name="Modify portal content" acquired="True"/>
+  <permission-map name="View" acquired="True"/>
+ </state>
+
+ <state state_id="ignored" title="Don't Depreciate">
+  <exit-transition transition_id="dispose"/>
+  <exit-transition transition_id="depreciate"/>
+  <exit-transition transition_id="depreciable"/>
+  <permission-map name="BastionLedger: Manage" acquired="True">
+     <permission-role>Manager</permission-role>
+     <permission-role>Owner</permission-role>
+  </permission-map>
+  <permission-map name="Access contents information" acquired="True"/>
+  <permission-map name="List portal content" acquired="True"/>
+  <permission-map name="Modify portal content" acquired="True"/>
+  <permission-map name="View" acquired="True"/>
+ </state>
+
+<transition transition_id="depreciable"
+             title="Depreciable Asset"
+             new_state="depreciable" trigger="USER"
+             before_script="" after_script="">
+  <action  url="%(content_url)s/content_status_modify?workflow_action=close" category="workflow">depreciable</action>
+  <guard>
+   <guard-permission>BastionLedger: Manage</guard-permission>
+  </guard>
+ </transition>
+
+<transition transition_id="dispose"
+             title="Dispose Asset"
+             new_state="disposed" trigger="USER"
+             before_script="" after_script="">
+  <action  url="%(content_url)s/content_status_modify?workflow_action=close" category="workflow">dispose</action>
+  <guard>
+   <guard-permission>BastionLedger: Manage</guard-permission>
+  </guard>
+ </transition>
+
+<transition transition_id="ignore"
+             title="Ignore Asset"
+             new_state="ignored" trigger="USER"
+             before_script="" after_script="">
+  <action  url="%(content_url)s/content_status_modify?workflow_action=close" category="workflow">ignore</action>
+  <guard>
+   <guard-permission>BastionLedger: Manage</guard-permission>
+  </guard>
+ </transition>
+
+<transition transition_id="writedown"
+             title="Write Down"
+             new_state="depreciated" trigger="USER"
+             before_script="" after_script="">
+  <action  url="%(content_url)s/content_status_modify?workflow_action=reopen" category="workflow">writedown</action>
+  <guard>
+   <guard-permission>BastionLedger: Operate</guard-permission>
+  </guard>
+ </transition>
+
+<variable variable_id="action"         for_catalog="False"
+           for_status="True" update_always="True">
+  <description i18n:translate="">
+    Previous transition
+  </description>
+  <default>
+   <expression>transition/getId|nothing</expression>
+  </default>
+  <guard>
+  </guard>
+ </variable>
+
+ <variable variable_id="actor"          for_catalog="False"
+           for_status="True" update_always="True">
+  <description i18n:translate="">
+    The ID of the user who performed the last transition
+  </description>
+  <default>
+   <expression>user/getId</expression>
+  </default>
+  <guard>
+  </guard>
+ </variable>
+
+ <variable variable_id="comments"       for_catalog="False"
+           for_status="True" update_always="True">
+  <description i18n:translate="">
+    Comment about the last transition
+  </description>
+  <default>
+   <expression>python:state_change.kwargs.get('comment', '')</expression>
+  </default>
+  <guard>
+  </guard>
+ </variable>
+
+ <variable variable_id="review_history" for_catalog="False"
+           for_status="False" update_always="False">
+  <description i18n:translate="">
+    Provides access to workflow history
+  </description>
+  <default>
+   <expression>state_change/getHistory</expression>
+  </default>
+  <guard>
+   <guard-permission>Request review</guard-permission>
+   <guard-permission>Review portal content</guard-permission>
+  </guard>
+ </variable>
+
+ <variable variable_id="time"           for_catalog="False"
+           for_status="True" update_always="True">
+  <description i18n:translate="">
+    When the previous transition was performed
+  </description>
+  <default>
+   <expression>state_change/getDateTime</expression>
+  </default>
+  <guard>
+  </guard>
+ </variable>
+
+</dc-workflow>

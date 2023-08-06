@@ -1,0 +1,32 @@
+<html tal:replace="structure context/manage_page_header"/>
+
+    <span tal:replace="structure context/manage_tabs"/>
+
+       <table border="0" cellpadding="2" cellspacing="0" width="100%" 
+              tal:define="reports context/reportValues"
+              tal:condition="reports">
+           <tr class="list-header">
+               <td class="list-item"></td>
+               <td class="list-item">Name</td>
+               <td class="list-item">Title</td>
+               <td class="list-item">Type</td>
+               <td class="list-item">Effective</td>
+           </tr>
+           <tr tal:repeat="report reports" class=""
+                   tal:attributes="class python: repeat['report'].index % 2 and 'row-hilite' or 'row-normal'">
+               <td class="list-item">
+                    <img src="" tal:attributes="src report/icon"/></td>
+               <td class="list-item">
+                   <a href="" tal:attributes="href string:${report/absolute_url}/manage_workspace"  
+                              tal:content="report/getId"/>
+               </td>
+               <td class="list-item">
+                   <a href="" tal:attributes="href string:${report/absolute_url}/manage_workspace"  
+                              tal:content="report/Title"/>
+               </td>
+               <td class="list-item" tal:content="report/meta_type"/>
+               <td class="list-item" tal:content="report/effective"/>
+           </tr>
+       </table>
+
+<html tal:replace="structure context/manage_page_footer"/>
