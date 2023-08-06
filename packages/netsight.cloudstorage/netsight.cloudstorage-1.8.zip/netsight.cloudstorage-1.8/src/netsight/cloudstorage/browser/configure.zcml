@@ -1,0 +1,65 @@
+<configure
+    xmlns="http://namespaces.zope.org/zope"
+    xmlns:browser="http://namespaces.zope.org/browser"
+    i18n_domain="netsight.cloudstorage">
+
+  <include package="Products.CMFCore" file="permissions.zcml"/>
+
+  <browser:page
+      name="download"
+      for="*"
+      class=".download.Download"
+      permission="zope2.View"
+      layer="..interfaces.IProductLayer"
+      />
+
+  <browser:page
+      name="cloudstorage-retrieve"
+      for="Products.CMFCore.interfaces.IContentish"
+      class=".views.CloudStorageProcessing"
+      attribute="retrieve"
+      permission="zope.Public"
+      />
+
+  <browser:page
+      name="cloudstorage-callback"
+      for="Products.CMFCore.interfaces.IContentish"
+      class=".views.CloudStorageProcessing"
+      attribute="callback"
+      permission="zope.Public"
+      />
+
+  <browser:page
+      name="cloudstorage-error"
+      for="Products.CMFCore.interfaces.IContentish"
+      class=".views.CloudStorageProcessing"
+      attribute="error_callback"
+      permission="zope.Public"
+      />
+
+  <browser:page
+      name="manual-processing"
+      for="Products.CMFCore.interfaces.IContentish"
+      class=".views.ProcessCloudStorage"
+      attribute="manual_processing"
+      permission="zope2.View"
+      />
+
+  <browser:page
+      name="has-cloudstorage"
+      for="Products.CMFCore.interfaces.IContentish"
+      class=".views.ProcessCloudStorage"
+      attribute="has_cloudstorage"
+      permission="zope2.View"
+      />
+
+  <browser:viewlet
+      name="netsight.cloudstorage.status_viewlet"
+      for="Products.CMFCore.interfaces.IContentish"
+      class=".viewlets.StatusViewlet"
+      view="plone.app.layout.globals.interfaces.IViewView"
+      manager="plone.app.layout.viewlets.interfaces.IBelowContentTitle"
+      permission="cmf.ModifyPortalContent"
+      />
+
+</configure>
