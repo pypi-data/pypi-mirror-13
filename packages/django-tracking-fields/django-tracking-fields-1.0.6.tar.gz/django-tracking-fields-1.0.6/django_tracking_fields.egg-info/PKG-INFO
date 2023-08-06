@@ -1,0 +1,135 @@
+Metadata-Version: 1.1
+Name: django-tracking-fields
+Version: 1.0.6
+Summary: A Django app allowing the tracking of objects field in the admin site.
+Home-page: https://github.com/makinacorpus/django-tracking-fields
+Author: Yann Fouillat (alias Gagaro)
+Author-email: yann.fouillat@makina-corpus.com
+License: GPLv3+
+Description: ===============
+        Tracking Fields
+        ===============
+        
+        .. image:: https://travis-ci.org/makinacorpus/django-tracking-fields.png
+            :target: https://travis-ci.org/makinacorpus/django-tracking-fields
+        
+        .. image:: https://coveralls.io/repos/makinacorpus/django-tracking-fields/badge.png?branch=master
+            :target: https://coveralls.io/r/makinacorpus/django-tracking-fields?branch=master
+        
+        
+        A Django app allowing the tracking of objects field in the admin site.
+        
+        Requirements
+        ------------
+        
+        * Django 1.8: See version 0.1 for earlier version of Django.
+        * django-cuser: Only if you want to track which user made the modifications.
+        
+        Quick start
+        -----------
+        
+        1. Add "tracking_fields" to your INSTALLED_APPS settings.
+        
+        2. Add the ``tracking_fields.decorators.track`` decorator to your models with the fields you want to track as parameters::
+        
+             @track('test', 'm2m')
+             class MyModel(models.Model):
+                 test = models.BooleanField('Test', default=True)
+                 m2m = models.ManyToManyField(SubModelTest, null=True)
+        
+        3. Your objects are now tracked. See the admin site for the tracking information.
+        
+        4. If you want to track who does the changes, please install the ``django-cuser`` app.
+        
+        5. You can also track fields of related objects::
+        
+             class MyModel(models.Model):
+                 test = models.BooleanField('Test', default=True)
+        
+             @track('related__test')
+             class MyOtherModel(models.Model):
+                 related = models.ForeignKey(MyModel)
+        
+        
+        6. You can run the tests by doing ``make test`` (make sure to have ``django-cuser`` installed).
+        
+        Upgrades from 0.1 or 1.0.1
+        ==========================
+        
+        The change to UUID is a mess to do in a migration. The migrations have thus been squashed. You can either alter your fields by hand and do a fake migration afterward or remove your tracking fields tables and run migrations again::
+        
+            ./manage.py migrate --fake tracking_fields zero
+            ./manage.py migrate tracking_fields
+        
+        FAQ
+        ===
+        
+        * Why does my relationship change create two events ?
+        
+          Please see https://docs.djangoproject.com/en/1.7/ref/models/relations/#direct-assignment
+        
+        
+        AUTHORS
+        =======
+        
+        * Yann FOUILLAT (alias Gagaro) <yann.fouillat@makina-corpus.com>
+        
+        |makinacom|_
+        
+        .. |makinacom| image:: http://depot.makina-corpus.org/public/logo.gif
+        .. _makinacom:  http://www.makina-corpus.com
+        
+        
+        =======
+        LICENSE
+        =======
+        
+        * GPLv3+
+        
+        
+        Changelog
+        ---------
+        
+        1.0.6
+        ~~~~~
+        
+        * Fix unicode error in admin with Python 3.4 and django_cuser
+        
+        1.0.5
+        ~~~~~
+        
+        * Fix MANIFEST
+        
+        1.0.4
+        ~~~~~
+        
+        * Order TrackingEvent by -date
+        
+        1.0.3
+        ~~~~~
+        
+        * Fix MANIFEST
+        
+        1.0.2
+        ~~~~~
+        
+        * Include migrations in MANIFEST
+        
+        1.0.0
+        ~~~~~
+        
+        * Initial release
+        
+Platform: UNKNOWN
+Classifier: Environment :: Web Environment
+Classifier: Framework :: Django
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.3
+Classifier: Programming Language :: Python :: 3.4
+Classifier: Topic :: Internet :: WWW/HTTP
+Classifier: Topic :: Internet :: WWW/HTTP :: Dynamic Content
