@@ -1,0 +1,5 @@
+__author__ = 'Alexander'
+
+
+def important_method():
+    print "Foo Fucking Bar"
