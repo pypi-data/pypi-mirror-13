@@ -1,0 +1,114 @@
+#!/usr/bin/env python
+"""
+Gets VPC Flow Logs.
+
+Usage:get_vpc_logs --profile aws_profile_name
+"""
+import sys
+import traceback
+import atexit
+import boto3
+import argparse
+import logging
+import os
+from botocore.exceptions import ProfileNotFound, NoCredentialsError
+from multiprocessing import Process
+from getawslogs.get_logs import FetchLogs
+from getawslogs.cloud_watch_logs import CloudwatchLogs
+
+__author__ = "Melchi Salins"
+
+
+if __name__ == '__main__':
+    try:
+        PARSER = argparse.ArgumentParser(prog="get_vpc_logs",
+                                         description="Non-interactive application to get VPC Flow Logs.",
+                                         epilog="-Melchi Salins")
+        PARSER.add_argument("-p", "--profile",
+                            nargs="?",
+                            default="default",
+                            help="AWS profile name, if not specified 'default' profile is used",
+                            type=str)
+        PARSER.add_argument("-a", '--assume-role', action='store_true',
+                            help="Assume IAM role assisnged to EC2 instance and ignore --profile param.",
+                            default=False)
+        ARGS = PARSER.parse_args()
+
+        APP_LOG_FILE_HANDLE = "get_vpc_logs.log"
+        if sys.platform == "linux" or sys.platform == "linux2" or sys.platform == "darwin":
+            try:
+                if os.path.isdir("/var/log/getawslogs") and os.access("/var/log/getawslogs", os.W_OK):
+                    APP_LOG_FILE_HANDLE = "/var/log/getawslogs/get_vpc_logs.log"
+                elif not os.path.isdir("/var/log/getawslogs"):
+                    os.makedirs("/var/log/getawslogs", mode=00755)
+                    APP_LOG_FILE_HANDLE = "/var/log/getawslogs/get_vpc_logs.log"
+                else:
+                    APP_LOG_FILE_HANDLE = "get_vpc_logs.log"
+            except Exception, error:
+                logging.warning(error)
+                logging.info("Application logs will be written to current directory")
+
+        logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+                            datefmt='%d/%m/%Y %I:%M:%S %p',
+                            filename=APP_LOG_FILE_HANDLE,
+                            level=logging.INFO)
+        logging.info("###VPC log collector Started.###")
+
+        lg_process_list = []
+
+        @atexit.register
+        def cleanup():
+            """
+            Clean up function to kill all child processes on interrupt.
+            """
+            logging.info("Terminating processes")
+            for p in lg_process_list:
+                p.terminate()
+
+        AWS_PROFILE = ARGS.profile
+        ASSUME_ROLE = ARGS.assume_role
+        if ASSUME_ROLE:
+            logging.info("Assuming instance IAM Role")
+            conn = boto3.session.Session()
+            conn = conn.client(service_name="logs",
+                               region_name="ap-southeast-2")
+        elif AWS_PROFILE:
+            logging.info("Using AWS_PROFILE: " + str(AWS_PROFILE))
+            conn = boto3.session.Session(profile_name=AWS_PROFILE)
+            conn = conn.client(service_name="logs")
+        else:
+            print PARSER.print_usage()
+            sys.exit(1)
+
+        cwlogs = CloudwatchLogs(conn)
+        cwlogs.populate_log_groups_and_streams()
+
+        # Spawn a different process for each logGroup
+        for lg in cwlogs.log_group_names:
+            process = FetchLogs(conn, lg)  # Build the object with the right logGroup.
+            process = Process(target=process.run)  # Create a Process object from the above object.
+            lg_process_list.append(process)
+            process.start()
+
+        for process in lg_process_list:
+            process.join()
+
+    except ProfileNotFound, error:
+        # logging.exception(traceback.print_exc())
+        logging.exception(error)
+        sys.exit(1)
+    except NoCredentialsError, error:
+        # logging.exception(traceback.print_exc())
+        logging.exception(error)
+        sys.exit(1)
+    except KeyError, error:
+        logging.exception(traceback.print_exc())
+        logging.exception(error)
+        sys.exit(1)
+    except KeyboardInterrupt, error:
+        logging.exception(error)
+        sys.exit()
+    except Exception, error:
+        logging.exception(traceback.print_exc())
+        logging.exception(error)
+        sys.exit(1)
