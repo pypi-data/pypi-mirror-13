@@ -1,0 +1,66 @@
+<configure
+    xmlns="http://namespaces.zope.org/zope"
+    xmlns:cmf="http://namespaces.zope.org/cmf"
+    xmlns:five="http://namespaces.zope.org/five"
+    xmlns:genericsetup="http://namespaces.zope.org/genericsetup"
+    xmlns:plone="http://namespaces.plone.org/plone"
+    xmlns:zcml="http://namespaces.zope.org/zcml"
+    xmlns:browser="http://namespaces.zope.org/browser"
+    i18n_domain="plone">
+
+  <include package="plone.app.theming" />
+  <genericsetup:registerProfile
+      name="default"
+      title="Bergensiana Theme"
+      directory="profiles/default"
+      description='A theme for Plone 5.'
+      provides="Products.GenericSetup.interfaces.EXTENSION"
+      />
+
+  <genericsetup:importStep
+      name="bergensiana-postInstall"
+      title="bergensiana post_install import step"
+      description="Post install import step from bergensiana theme"
+      handler=".setuphandlers.post_install">
+  </genericsetup:importStep>
+
+  <!-- Diazo themes -->
+  <plone:static directory="theme" name="bergensiana" type="theme"/>
+  
+  <!-- Globalnav as a provider -->
+  <adapter
+    name="globalnav"
+    for="*
+         zope.publisher.interfaces.browser.IDefaultBrowserLayer
+         *"
+    factory=".dropdown.DropdownMenuViewlet"
+    provides="zope.contentprovider.interfaces.IContentProvider"
+    />
+    
+  <!-- Viewletmanager for top -->
+	<browser:viewletManager
+        name="plone.portaltopper"
+        provides=".interfaces.IPortalTopper"
+        permission="zope2.View"
+        class="plone.app.viewletmanager.manager.OrderedViewletManager"
+        />
+
+    <!-- The site actions -->
+    <browser:viewlet
+        name="plone.site_actions"
+        manager=".interfaces.IPortalTopper"
+        class="plone.app.layout.viewlets.common.SiteActionsViewlet"
+        permission="zope2.View"
+        />
+        
+    <!-- Topper -->
+    <browser:viewlet
+        name="plone.topperportlets"
+        for="*"
+        manager=".interfaces.IPortalTopper"
+        class=".viewlets.TopperViewlet"
+        permission="zope.Public"
+        />
+
+</configure>
+
