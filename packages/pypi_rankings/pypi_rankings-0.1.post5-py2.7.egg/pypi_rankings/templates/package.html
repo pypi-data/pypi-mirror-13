@@ -1,0 +1,85 @@
+<html>
+<head>
+<title>PyPI Package Information</title>
+<script src="{{url_for('static', filename='jquery.js') }}"></script>
+<link rel="shortcut icon" href="http://pypi-ranking.info/static//img/python_logo.png">
+<link rel="stylesheet" type="text/css" href="{{url_for('static', filename='main.css') }}" />
+<link rel="stylesheet" type="text/css" href="{{url_for('static', filename='solarized.css') }}" />
+</head>
+<body class="subpage">
+<div class="banner">
+    <a href="/">
+    <img src="{{url_for('static', filename='logo.png') }}">
+    <h1>PYPI RANKINGS</h1>
+    </a>
+</div>
+<table class="package">
+<tr><td>
+<b>Package Name</b>:<br><blockquote>{{ name }} (<a href="http://pypi.python.org/pypi/{{ name }}">Show in PyPI</a>)</blockquote>
+</td></tr><tr><td>
+<b>Description</b>:<br><blockquote>{{ summary }}</blockquote>
+</td></tr><tr><td>
+<b>Downlods Total</b>:<br><blockquote>{{ "{:,d}".format(downloads_total) }}</blockquote>
+</td></tr><tr><td>
+<b>Rank</b>:<br><blockquote>{{ rank }}</blockquote>
+</td></tr><tr><td>
+<b>Author</b>:<br><blockquote><a href="/author/{{author}}">{{ author }}</a></blockquote>
+</td></tr><tr><td>
+<b>Packages {{ name }} depends on</b>:<br><blockquote>
+{% if not has_dependency_data %}
+N/A
+{% elif len(dependencies) == 0 %}
+None
+{% else %}
+<table class="subtable">
+{% for dependency in dependencies %}
+<tr><td><a href="/package/{{ dependency[0] }}">{{ dependency[0] }}</a>
+<br><div class="package-description">{{ dependency[1] }}</div></td></tr>
+{% endfor %}
+</table></blockquote>
+{% endif %}
+</td></tr><tr><td>
+<b>Packages that depend on {{ name }}</b>:<br><blockquote>
+{% if len(dependent_packages) == 0 %}
+None
+{% else %}
+<table class="subtable">
+{% for dependency in dependent_packages %}
+<tr><td>
+{% if not dependency[0].startswith("...") %}
+<a href="/package/{{ dependency[0] }}">{{ dependency[0] }}</a>
+<br><div class="package-description">{{ dependency[1] }}</div>
+{% else %}<a href="/package/{{name}}?show_all=True">{{ dependency[0] }}</a>{% endif %}
+</td></tr>
+{% endfor %}
+</table>
+{% endif %}</blockquote>
+</td></tr><tr><td>
+{% if len(scm) > 0 %}
+<b>SCM Data</b>:<br><blockquote>
+<table class="subtable scm-table">
+<tr><td>type</td><td>{{ scm[0][1].capitalize() }} (<a href={{scm[0][2]}}>link</a>)</td></tr>
+<tr><td># of open issues</td><td>{{ scm[0][3] }}</td></tr>
+<tr><td>last update</td><td>{{ scm[0][4].split("T")[0] }} ({{ get_days_since(scm[0][4].split("T")[0]) }} days ago)</td></tr>
+</tr>
+</table></blockquote>
+</td></tr><tr><td>
+{% endif %}
+<b>Release History</b>:<br><blockquote>
+<table class="subtable release-table">
+<thead>
+<th>Release</th>
+<th>Upload Time</th>
+<th>Downloads</th>
+</thead>
+{% for release in release_history %}
+<tr>
+<td>{{ release[1] }}</td><td>{{ format_time(release[2]) }}</td><td>{{ "{:,d}".format(release[3]) }}</td>
+</tr>
+{% endfor %}
+</table></blockquote>
+</td></tr><tr><td>
+<br><b>Last Crawled</b>:<br><blockquote>{{ last_update }}</blockquote>
+</td></tr></table>
+</body>
+</html>
