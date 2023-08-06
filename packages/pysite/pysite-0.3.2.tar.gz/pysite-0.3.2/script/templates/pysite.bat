@@ -1,0 +1,1 @@
+"<INTERPRETER>" "%~dp0\pysite-<VERSION_MAJOR>.<VERSION_MINOR>.py"
