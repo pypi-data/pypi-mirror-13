@@ -1,0 +1,43 @@
+{% extends 'simple_forums/base.html' %}
+
+{% block page_title %}{{ topic.title }}{% endblock %}
+
+{% block content %}
+
+	{% if thread_list or sticky_thread_list %}
+
+		<table>
+
+			<thead>
+				<tr>
+					<th colspan="8">Title</th>
+					<th colspan="2">Replies</th>
+					<th colspan="2">Last Activity</th>
+				</tr>
+			</thead>
+
+			<tbody>
+
+				{% for thread in sticky_thread_list %}
+
+					{% include 'simple_forums/snippets/render_thread_listing.html' %}
+
+				{% endfor %}
+
+				{% for thread in thread_list %}
+
+					{% include 'simple_forums/snippets/render_thread_listing.html' %}
+
+				{% endfor %}
+
+			</tbody>
+
+		</table>
+
+	{% else %}
+
+		<p>No threads found.</p>
+		
+	{% endif %}
+
+{% endblock %}
