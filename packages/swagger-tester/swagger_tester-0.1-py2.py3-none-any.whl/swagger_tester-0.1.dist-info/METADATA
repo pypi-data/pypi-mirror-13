@@ -1,0 +1,76 @@
+Metadata-Version: 2.0
+Name: swagger-tester
+Version: 0.1
+Summary: Automatically test your swagger API
+Home-page: https://github.com/Trax-air/swagger-tester
+Author: Cyprien Guillemot
+Author-email: cyprien.guillemot@gmail.com
+License: GPL
+Keywords: swagger,tester,API,REST,swagger-tester
+Platform: UNKNOWN
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: GNU General Public License v3 (GPLv3)
+Classifier: Natural Language :: English
+Classifier: Programming Language :: Python :: 2
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.4
+Requires-Dist: swagger-parser (==0.1)
+Requires-Dist: connexion (==1.0.37)
+
+.. image:: https://travis-ci.org/Trax-air/swagger-tester.svg?branch=master
+   :alt: Travis status
+   :target: https://travis-ci.org/Trax-air/swagger-tester
+
+swagger-tester
+==============
+
+Swagger-tester will test automatically your swagger API. Currently only swagger API made with connexion are supported.
+
+Example Usage
+-------------
+
+.. code:: python
+
+ from swagger_tester import swagger_test
+
+  # Define the error you authorize in your API
+  # By default, every status_code over other than 1xx, 2xx or 3xx
+  # will be considered as an error.
+  authorize_error = {
+    'get': {
+      '/pet/': ['400', '404']
+    }
+  }
+
+  # Run the test
+  # An AssertionError will be raise in case of error.
+  swagger_test('path_to_your_swagger.yaml', authorize_error=authorize_error)
+
+Documentation
+-------------
+
+More documentation is available at https://swagger-tester.readthedocs.org/en/latest/.
+
+Setup
+-----
+
+`make install` or `pip install swagger-tester`
+
+License
+-------
+
+swagger-tester is licensed under http://opensource.org/licenses/GPL-3.0.
+
+
+=======
+History
+=======
+
+0.1 (2016-1-29)
+------------------
+
+* First release on PyPI.
+
+
