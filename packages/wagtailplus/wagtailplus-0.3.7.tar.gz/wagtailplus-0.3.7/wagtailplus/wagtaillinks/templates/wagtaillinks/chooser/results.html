@@ -1,0 +1,17 @@
+{% load i18n %}
+
+{% if object_list.count %}
+    {% if is_searching %}
+        <h2>
+        {% blocktrans count counter=object_list.count %}
+            There is one match
+        {% plural %}
+            There are {{ counter }} matches
+        {% endblocktrans %}
+        </h2>
+    {% else %}
+        <h2>{% trans 'Latest Links' %}</h2>
+    {% endif %}
+    {% include 'wagtaillinks/links/list.html' with choosing=1 %}
+    {% include 'wagtailadmin/shared/pagination_nav.html' with items=page_obj is_ajax=1 %}
+{% endif %}

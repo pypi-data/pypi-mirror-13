@@ -1,0 +1,26 @@
+{% load i18n wagtailrelations_tags %}
+
+<h2><label>{% trans 'Related Content' %}</label></h2>
+<fieldset>
+    <legend>{% trans 'Related Content' %}</legend>
+    {% if self.instance.related_with_scores %}
+        <table class="listing">
+            <thead>
+                <tr class="table-headers">
+                    <th>{% trans 'Title' %}</th>
+                    <th style="text-align: right;">{% trans 'Score' %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for content in self.instance.related_with_scores|slice:":20" %}
+                    <tr>
+                        <td><a href="{% get_related_entry_admin_url content.0 %}">{% blocktrans with title_str=content.0.title %}{{ title_str }}{% endblocktrans %}</a></td>
+                        <td style="text-align: right;">{{ content.1|floatformat:"7" }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>{% trans 'This page does not yet have any related content.' %}</p>
+    {% endif %}
+</fieldset>

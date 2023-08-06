@@ -1,0 +1,16 @@
+{% load i18n %}
+
+{% if categories %}
+    <ul class="categories">
+        {% for category in categories %}
+            <li class="category">
+                {% blocktrans with title_str=category.name.title %}{{ title_str }}{% endblocktrans %}
+                {% if category.get_children_count %}
+                    {% with categories=category.get_children template_name='wagtailrelations/site_map/categories.html' %}
+                        {% include template_name %}
+                    {% endwith %}
+                {% endif %}
+            </li>
+        {% endfor %}
+    </ul>
+{% endif %}

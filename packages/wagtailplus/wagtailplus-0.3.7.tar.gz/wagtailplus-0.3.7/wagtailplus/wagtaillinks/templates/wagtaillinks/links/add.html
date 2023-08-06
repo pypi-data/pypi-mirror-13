@@ -1,0 +1,61 @@
+{% extends 'wagtailadmin/base.html' %}
+{% load i18n %}
+{% block titletag %}{% trans 'Add a Link' %}{% endblock %}
+{% block bodyclass %}menu-links{% endblock %}
+
+{% block extra_css %}
+    {% include "wagtailadmin/shared/tag_field_css.html" %}
+{% endblock %}
+
+{% block extra_js %}
+    {% include "wagtailadmin/shared/tag_field_js.html" %}
+{% endblock %}
+
+{% block content %}
+    {% trans 'Add a Link' as add_str %}
+    {% include 'wagtailadmin/shared/header.html' with title=add_str icon='link' tabbed=1 merged=1 %}
+
+    <ul class="tab-nav merged">
+        <li class="{% if not email_form.errors %}active {% endif %}"><a href="#external">{% trans "External" %}</a></li>
+        <li class="{% if email_form.errors %}active {% endif %}"><a href="#email">{% trans "Email" %}</a></li>
+    </ul>
+
+<div class="tab-content">
+    <section id="external" class="{% if not email_form.errors %}active {% endif %}nice-padding">
+        <form action="{% url 'wagtaillinks:add' %}" method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            {% for field in external_form.hidden_fields %}
+                <input type="hidden" name="{{ field.html_name }}" value="{{ field.value }}" />
+            {% endfor %}
+            <ul class="fields">
+                {% for field in external_form.visible_fields %}
+                    {% include "wagtailadmin/shared/field_as_li.html" with field=field %}
+                {% endfor %}
+                <li>
+                    <button type="submit">
+                        {% trans 'Save External Link' %}
+                    </button>
+                </li>
+            </ul>
+        </form>
+    </section>
+    <section id="email" class="{% if email_form.errors %}active {% endif %}nice-padding">
+        <form action="{% url 'wagtaillinks:add' %}" method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            {% for field in email_form.hidden_fields %}
+                <input type="hidden" name="{{ field.html_name }}" value="{{ field.value }}" />
+            {% endfor %}
+            <ul class="fields">
+                {% for field in email_form.visible_fields %}
+                    {% include "wagtailadmin/shared/field_as_li.html" with field=field %}
+                {% endfor %}
+                <li>
+                    <button type="submit">
+                        {% trans 'Save Email Link' %}
+                    </button>
+                </li>
+            </ul>
+        </form>
+    </section>
+</div>
+{% endblock %}
