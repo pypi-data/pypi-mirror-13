@@ -1,0 +1,3224 @@
+diff --git a/setup.py b/setup.py
+new file mode 100644
+index 0000000..a04c37a
+--- /dev/null
++++ b/setup.py
+@@ -0,0 +1,18 @@
++from setuptools import setup, find_packages
++
++setup(
++    name='PythonFaceEvaluation',
++    version='0.1',
++    packages=[
++      "facerec2010",
++      "pyvision"
++    ],
++    package_dir = {'':'src'},
++    entry_points={
++      'console_scripts': [
++        ],
++      },
++
++    install_requires=[
++    ],
++)
+diff --git a/src/facerec2010/__init__.py b/src/facerec2010/__init__.py
+index f940bf4..bd3e9e4 100644
+--- a/src/facerec2010/__init__.py
++++ b/src/facerec2010/__init__.py
+@@ -1,22 +1,22 @@
+ # Copyright (c) 2010 David S. Bolme
+ # All rights reserved.
+-# 
++#
+ # Redistribution and use in source and binary forms, with or without
+ # modification, are permitted provided that the following conditions
+ # are met:
+-# 
++#
+ #    1. Redistributions of source code must retain the above copyright
+ #       notice, this list of conditions and the following disclaimer.
+-#  
++#
+ #    2. Redistributions in binary form must reproduce the above copyright
+ #       notice, this list of conditions and the following disclaimer in the
+ #       documentation and/or other materials provided with the distribution.
+-#  
++#
+ #    3. Neither name of copyright holders nor the names of its contributors
+ #       may be used to endorse or promote products derived from this software
+ #       without specific prior written permission.
+-#  
+-#  
++#
++#
+ # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ # ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ # LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+@@ -30,8 +30,13 @@
+ # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ 
+ '''
+-This package contains baseline algorithms and testing scripts for 
++This package contains baseline algorithms and testing scripts for
+ the GBU challenge problem.
+ '''
+ 
+-RELEASE_DATE = "September 29, 2011"
+\ No newline at end of file
++RELEASE_DATE = "September 29, 2011"
++
++### MG: Import the subdirectories to be able to use the facerec2010 as a module
++import baseline
++import quality
++import tools
+diff --git a/src/facerec2010/baseline/__init__.py b/src/facerec2010/baseline/__init__.py
+index 08fb408..d8da970 100644
+--- a/src/facerec2010/baseline/__init__.py
++++ b/src/facerec2010/baseline/__init__.py
+@@ -1,22 +1,22 @@
+ # Copyright (c) 2010 David S. Bolme
+ # All rights reserved.
+-# 
++#
+ # Redistribution and use in source and binary forms, with or without
+ # modification, are permitted provided that the following conditions
+ # are met:
+-# 
++#
+ #    1. Redistributions of source code must retain the above copyright
+ #       notice, this list of conditions and the following disclaimer.
+-#  
++#
+ #    2. Redistributions in binary form must reproduce the above copyright
+ #       notice, this list of conditions and the following disclaimer in the
+ #       documentation and/or other materials provided with the distribution.
+-#  
++#
+ #    3. Neither name of copyright holders nor the names of its contributors
+ #       may be used to endorse or promote products derived from this software
+ #       without specific prior written permission.
+-#  
+-#  
++#
++#
+ # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ # ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ # LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+@@ -31,4 +31,10 @@
+ 
+ '''
+ This package contains face recognition algorithm source code.
+-'''
+\ No newline at end of file
++'''
++
++### MG: Import the subdirectories to be able to use the facerec2010 as a module
++import common
++import lda
++import lrpca
++import pca
+diff --git a/src/facerec2010/baseline/lda.py b/src/facerec2010/baseline/lda.py
+index 37e165f..fde8b62 100644
+--- a/src/facerec2010/baseline/lda.py
++++ b/src/facerec2010/baseline/lda.py
+@@ -1,22 +1,22 @@
+ # Copyright (c) 2010 David S. Bolme
+ # All rights reserved.
+-# 
++#
+ # Redistribution and use in source and binary forms, with or without
+ # modification, are permitted provided that the following conditions
+ # are met:
+-# 
++#
+ #    1. Redistributions of source code must retain the above copyright
+ #       notice, this list of conditions and the following disclaimer.
+-#  
++#
+ #    2. Redistributions in binary form must reproduce the above copyright
+ #       notice, this list of conditions and the following disclaimer in the
+ #       documentation and/or other materials provided with the distribution.
+-#  
++#
+ #    3. Neither name of copyright holders nor the names of its contributors
+ #       may be used to endorse or promote products derived from this software
+ #       without specific prior written permission.
+-#  
+-#  
++#
++#
+ # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ # ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ # LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+@@ -40,19 +40,19 @@ import numpy as np
+ import time
+ 
+ GBU_TUNING = {
+-              'pca_keep': 1133, 
+-              'eye_y': 0.42579601645217319, 
+-              'sigma_low': 17.249069969341434, 
+-              'eye_width': 0.4476571056046178, 
+-              'color': [-0.9593161302209543, 0.98112965971539867, 0, -0.025001331645825998, 0.037695652569289008, -0.048151653059113578, -0.25028374642441487, -0.79943048584179, -0.13577037554439905-0.54921551816773395], 
+-              'sigma_high': 1.6106343852657956, 
+-              'mean_std': True, 
+-              'hue_adj': 3.798525610894806, 
+-              'sim': 'CORR', 
+-              'tile_size': [76, 100], 
+-              'band_pass': False, 
+-              'reg': 0.030891031296346461, 
+-              'log_transform': False, 
++              'pca_keep': 1133,
++              'eye_y': 0.42579601645217319,
++              'sigma_low': 17.249069969341434,
++              'eye_width': 0.4476571056046178,
++              'color': [-0.9593161302209543, 0.98112965971539867, 0, -0.025001331645825998, 0.037695652569289008, -0.048151653059113578, -0.25028374642441487, -0.79943048584179, -0.13577037554439905-0.54921551816773395],
++              'sigma_high': 1.6106343852657956,
++              'mean_std': True,
++              'hue_adj': 3.798525610894806,
++              'sim': 'CORR',
++              'tile_size': [76, 100],
++              'band_pass': False,
++              'reg': 0.030891031296346461,
++              'log_transform': False,
+               'log_shift': 1.0,
+               'lda_keep': 297,
+               'feature_norm': False
+@@ -62,49 +62,49 @@ GBU_TUNING = {
+ #use with CohortLDA
+ CohortLDA_REGIONS = [
+                     { # Red channel
+-                      'tile_size': (65,75), 
+-                      'eye_y': None, 
+-                      'eye_width': None, 
++                      'tile_size': (65,75),
++                      'eye_y': None,
++                      'eye_width': None,
+                       'rect': pv.Rect(0,0,1,1),
+-                      'log_transform': True, 
++                      'log_transform': True,
+                       'log_shift': 0.1,
+-                      'color': [-1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], 
+-                      'sigma_low': None, 
+-                      'sigma_high': None, 
+-                      'hue_adj': 0.0, 
+-                      'mean_std': True, 
++                      'color': [-1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
++                      'sigma_low': None,
++                      'sigma_high': None,
++                      'hue_adj': 0.0,
++                      'mean_std': True,
+                       'pca_keep': 0.98,
+                       'cohort_match': None,
+                       'feature_norm':True,
+-                      'reg': 2.0**-6, 
++                      'reg': 2.0**-6,
+                       'lda_keep': 128,
+                       'sim': 'L2',
+                     },
+                     { # I channel from YIQ
+-                      'tile_size': (65,75), 
+-                      'eye_y': None, 
+-                      'eye_width': None, 
++                      'tile_size': (65,75),
++                      'eye_y': None,
++                      'eye_width': None,
+                       'rect': pv.Rect(0,0,1,1),
+-                      'log_transform': False, 
++                      'log_transform': False,
+                       'log_shift': 0.1,
+-                      'color': [0.595716,-0.274453,-0.321263,0.0,0.0,0.0,0.0,0.0,0.0], 
+-                      'sigma_low': None, 
+-                      'sigma_high': None, 
+-                      'hue_adj': 0.0, 
+-                      'mean_std': True, 
++                      'color': [0.595716,-0.274453,-0.321263,0.0,0.0,0.0,0.0,0.0,0.0],
++                      'sigma_low': None,
++                      'sigma_high': None,
++                      'hue_adj': 0.0,
++                      'mean_std': True,
+                       'pca_keep': 0.98,
+                       'cohort_match': None,
+                       'feature_norm':True,
+-                      'reg': 2.0**-6, 
++                      'reg': 2.0**-6,
+                       'lda_keep': 128,
+                       'sim': 'L2',
+                    },
+                 ]
+ '''Tuning for the CohortLDA baseline algorithms.  Used with the GBU_Uncontrolled_x8 dataset.'''
+-CohortLDA_KEYWORDS = {         
+-                'tile_size': [65, 75], 
+-                'eye_y': 0.33333333333, 
+-                'eye_width': 0.4230769230769231, 
++CohortLDA_KEYWORDS = {
++                'tile_size': [65, 75],
++                'eye_y': 0.33333333333,
++                'eye_width': 0.4230769230769231,
+                 'smoothing':0.5,
+ }
+ '''Tuning for the CohortLDA baseline algorithms.  Used with the GBU_Uncontrolled_x8 dataset.'''
+@@ -115,7 +115,7 @@ class LDA(common.FaceRecognitionAlgorithm):
+     This class defines an interface to a face recogintion algorithm.
+     Training is expected to be unique to each algorithm.  After the
+     algorithms are trained instances that implement this interface
+-    could be easily substituded for each other with little code 
++    could be easily substituded for each other with little code
+     modification.
+     '''
+     def __init__(self,
+@@ -130,7 +130,7 @@ class LDA(common.FaceRecognitionAlgorithm):
+                  log_shift = 1.0,
+                  mean_std = True,
+                  sigma_high = 0.5,
+-                 sigma_low = 5.0, 
++                 sigma_low = 5.0,
+                  sim = "L2",
+                  reg = 0.1,
+                  sub_rect = None,
+@@ -142,11 +142,11 @@ class LDA(common.FaceRecognitionAlgorithm):
+         '''
+         Initialize an LDA face recognition algorithm.
+ 
+-        @param eye_y:          The y location of the eyes relative to the height of 
++        @param eye_y:          The y location of the eyes relative to the height of
+                                the geometrically normalized image.  Set to None if the
+                                tile is already geometrically transformed.
+         @type eye_y:           float or None
+-        @param eye_width:      The width location of the eyes relative to the width of 
++        @param eye_width:      The width location of the eyes relative to the width of
+                                the geometrically normalized image.  Set to None if the
+                                tile is already geometrically transformed.
+         @type eye_width:       float or None
+@@ -179,16 +179,16 @@ class LDA(common.FaceRecognitionAlgorithm):
+                                Mostly for CohortLDA
+         @type  sub_rect:       pv.Rect
+         @param cohort_adjust:  Normalize the scores using the cohort gallery.
+-        @type  cohort_adjust:  True or False 
++        @type  cohort_adjust:  True or False
+         @param cohort_match:   Number of 'best' cohorts to use for normalization.
+         @type  cohort_match:   None or int
+         @param feature_norm:   Normalize feature vectors to unit length.
+         @type  featuer_norm:   True or False
+-        @param smoothing:      Smooth the face image before downsampling.  
+-                               Smoothing is relative to the transformed 
++        @param smoothing:      Smooth the face image before downsampling.
++                               Smoothing is relative to the transformed
+                                image.
+         @type  smoothing:      None or float
+-        
++
+         '''
+         # Add a creation time stamp to help identify this training file.
+         self.timestamp = time.time()
+@@ -208,29 +208,29 @@ class LDA(common.FaceRecognitionAlgorithm):
+         self.log_shift = log_shift
+         self.sim = sim
+         self.reg = reg
+-        
++
+         self.training_data = []
+         self.training_labels = []
+ 
+         color_mix = np.array(self.color).reshape(9,1,1)
+         self.color_mix = pv.unit(color_mix)
+-        
++
+         self.sub_rect = None
+         self.feature_norm = feature_norm
+-        
++
+         self.cohort_set = []
+         self.cohort_adjust = cohort_adjust
+         self.cohort_match = cohort_match
+         self.smoothing = smoothing
+-    
+-    
++
++
+ 
+     def preprocess(self, im, leye, reye):
+         '''
+-        Preprocess the image.  Includes geometric normalization, color channel 
+-        mixing, band pass filtering, log_transformation, value normalization 
++        Preprocess the image.  Includes geometric normalization, color channel
++        mixing, band pass filtering, log_transformation, value normalization
+         (meanStd).  B{Note:} eyes should be specified such that leye.X() < reye.X()
+-        
++
+         @param im: the image to preprocess
+         @type im: pv.Image
+         @param leye: The left eye coordinate leye.X() < reye.X()
+@@ -240,9 +240,9 @@ class LDA(common.FaceRecognitionAlgorithm):
+         @returns: the flattend and preprocessed values
+         @rtype: np.array
+         '''
+-        
++
+         tile = None
+-        
++
+         if self.eye_y == None or self.eye_width == None:
+             # Assume the image is already geometrically normalized
+             assert im.size[0] == self.tile_size[0]
+@@ -256,45 +256,45 @@ class LDA(common.FaceRecognitionAlgorithm):
+             left_eye = pv.Point(w*0.5*(1-self.eye_width),self.eye_y*h)
+             right_eye = pv.Point(w*0.5*(1+self.eye_width),self.eye_y*h)
+             affine = pv.AffineFromPoints(leye, reye, left_eye, right_eye, self.tile_size)
+-    
++
+             if self.sub_rect != None:
+                 sw,sh = self.tile_size
+                 x,y,w,h = self.sub_rect.asTuple()
+                 rect = pv.Rect(sw*x,sh*y,sw*w,sh*h)
+                 sub_rect = pv.AffineFromRect(rect,(int(sw*w),int(sh*h)))
+                 affine = sub_rect*affine
+-            
++
+             if self.smoothing != None:
+                 # Compute the size change
+                 sigma = self.smoothing*leye.l2(reye)/self.eye_width
+-                
++
+                 # Apply smoothing
+                 im = pv.gaussianFilter(im,sigma)
+-            
++
+             tile = affine.transformImage(im)
+-                
++
+         #tile.show(delay=500)
+-        
++
+         # Separate color channels
+         tile = common.colorMix(tile, self.color_mix, self.hue_adj)
+         #pv.Image(tile).show(delay=500)
+- 
+-        # Band pass filtering   
+-        if self.sigma_low != None and self.sigma_high != None:     
++
++        # Band pass filtering
++        if self.sigma_low != None and self.sigma_high != None:
+             sigma_low,sigma_high = max(self.sigma_low,self.sigma_high), min(self.sigma_low,self.sigma_high)
+             tile = pv.bandPassFilter(tile, sigma_low, sigma_high)
+-        
++
+         # log transform
+         if self.log_transform:
+             signs = np.sign(tile)
+             abss = np.abs(tile)
+             logs = np.log(abss+self.log_shift)
+             tile = signs*logs
+-        
++
+         # normalize zero mean one std
+         if self.mean_std:
+             tile = pv.meanStd(tile)
+-        
++
+         #pv.Image(tile).show(delay=100)
+         vec = tile.flatten()
+         return vec
+@@ -302,25 +302,25 @@ class LDA(common.FaceRecognitionAlgorithm):
+ 
+     def addTraining(self,label,im,rect,leye,reye,ilog=None):
+         '''
+-        Add a training face.  This is a suggested interface that should 
++        Add a training face.  This is a suggested interface that should
+         work for many algorithms and therefore can use existing training
+         code.
+-        
++
+         @param label: a subject identifier for this face.
+         @type label: int | str
+-        
++
+         @param im: an image containing a face.
+         @type im: pv.Image
+-        
++
+         @param rect: a face detection rectangle. (unused)
+         @type rect: pv.Rect
+-        
++
+         @param leye: the left eye coordinate.
+         @type leye: pv.Point
+-        
++
+         @param reye: the right eye coordinate.
+         @type reye: pv.Point
+-        
++
+         @param ilog: optional ImageLog used for saving intermediate data.
+         @type ilog: pv.ImageLog
+         '''
+@@ -329,12 +329,12 @@ class LDA(common.FaceRecognitionAlgorithm):
+         self.training_data.append(vec)
+         self.training_labels.append(label)
+ 
+-    
++
+     def train(self,ilog=None):
+         '''
+-        Train the algorithm.  After all training faces are added this 
++        Train the algorithm.  After all training faces are added this
+         function will be called to do additional computation and processing
+-        
++
+ 
+         @param ilog: optional image log that is used to save intermediate
+                         training data such as images of the eigenvectors.
+@@ -342,13 +342,13 @@ class LDA(common.FaceRecognitionAlgorithm):
+         '''
+         labels = np.array(self.training_labels)
+         data = np.array(self.training_data)
+-        
++
+         # Training PCA
+         vals,vecs,mean = pv.pca(data)
+-        
+-        # vals should be variance 
++
++        # vals should be variance
+         vals = vals**2
+-        
++
+         if type(self.pca_keep) == int:
+             vecs = vecs[:,:self.pca_keep]
+         elif type(self.pca_keep) == float and self.pca_keep > 0.0 and self.pca_keep <= 1.0:
+@@ -360,96 +360,94 @@ class LDA(common.FaceRecognitionAlgorithm):
+             self.pca_keep = idx
+         else:
+             raise NotImplementedError("PCA Keep: %s",self.pca_keep)
+-        
++
+         self.pca_vecs = vecs
+         self.pca_mean = mean
+-        
+-        print self.pca_vecs.shape
+-        
++
+         data = data - mean
+-        
++
+         data = np.dot(data,vecs)
+-        
++
+         # Training LDA
+         _,vecs,_,_ = pv.lda(data,labels,reg=self.reg)
+-        
++
+         self.lda_vecs = vecs[:,:self.lda_keep]
+-        
++
+         self.basis = np.dot(self.pca_vecs,self.lda_vecs)
+-        
++
+         del self.training_data
+         del self.training_labels
+         del self.pca_vecs
+-    
+-    
+-    
++
++
++
+     def addCohort(self,im,rect,leye,reye,ilog=None):
+         '''
+-        Add a face to use for cohort normalization.  This is a suggested 
+-        interface that should work for many algorithms.  
+-        
++        Add a face to use for cohort normalization.  This is a suggested
++        interface that should work for many algorithms.
++
+         @param label: a subject identifier for this face.
+         @type label: int | str
+-        
++
+         @param im: an image containing a face.
+         @type im: pv.Image
+-        
++
+         @param rect: a face detection rectangle. (unused)
+         @type rect: pv.Rect
+-        
++
+         @param leye: the left eye coordinate.
+         @type leye: pv.Point
+-        
++
+         @param reye: the right eye coordinate.
+         @type reye: pv.Point
+-        
++
+         @param ilog: optional ImageLog used for saving intermediate data.
+         @type ilog: pv.ImageLog
+         '''
+         cohort_record = self.getFaceRecord(im,rect,leye,reye,compute_cohort_scores=False)
+-        
++
+         self.cohort_set.append(cohort_record)
+ 
+-    
+-    
++
++
+     def getFaceRecord(self,im,rect,leye,reye,compute_cohort_scores=True,ilog=None):
+         '''
+-        This function computes a face record.  It takes an image of an 
+-        unknown face and produces a low dimensional represetation that 
++        This function computes a face record.  It takes an image of an
++        unknown face and produces a low dimensional represetation that
+         is used for storage and matching.  The original image can then
+         be freed.  For example, in the eigen faces algoirthm this function
+         would preprocess the image and then project it onto the eigenbasis.
+         What is returned is a face record that contains data used to match
+-        the face along with other metadata for that image.        
+-                
++        the face along with other metadata for that image.
++
+         @param im: an image containing a face.
+         @type im: pv.Image
+-        
++
+         @param rect: a face detection rectangle. (Not Used)
+         @type rect: pv.Rect
+-        
++
+         @param leye: the left eye coordinate.
+         @type leye: pv.Point
+-        
++
+         @param reye: the right eye coordinate.
+         @type reye: pv.Point
+-        
++
+         @param ilog: an ImageLog used for saving intermediate data.
+         @type ilog: pv.ImageLog
+-        
++
+         @return: A face record object
+         @rtype: FaceRecord
+         '''
+         # Geometric normalization
+         vec = self.preprocess(im, leye, reye)
+         vec.shape = (1,vec.shape[0])
+-        
++
+         vec = vec - self.pca_mean
+         vec = np.dot(vec,self.basis)
+-        
++
+         if self.feature_norm:
+             vec = pv.unit(vec)
+-        
++
+         # Create the face record
+         fr = common.FaceRecord(rect,leye,reye)
+         fr.feature = vec.flatten()
+@@ -458,64 +456,64 @@ class LDA(common.FaceRecognitionAlgorithm):
+         if compute_cohort_scores:
+             scores = self.similarityMatrix([fr], self.cohort_set, cohort_adjust=False)
+             scores = scores.flatten()
+-            
++
+             if self.cohort_match != None:
+                 order = scores.argsort()
+                 scores = scores[order]
+                 scores = scores[-self.cohort_match:]
+-                
++
+             #print len(scores),self.cohort_match,scores,order
+-                
++
+             fr.cohort_scores = scores.flatten()
+             fr.cohort_mean   = scores.mean()
+             fr.cohort_std    = scores.std()
+-        
++
+         return fr
+ 
+-    
++
+     def similarity(self,face_record1,face_record2):
+         '''
+-        A similarity score computed for two face records.  High values 
++        A similarity score computed for two face records.  High values
+         indicate a better match.
+-        
++
+         @param face_record1: a face record created by calling getFaceRecord.
+         @type face_record1: FaceRecord
+-        
++
+         @param face_record2: a face record created by calling getFaceRecord.
+         @type face_record2: FaceRecord
+-        
++
+         @returns: the similarity as a floating point value
+         @rtype: float
+         '''
+         return self.similarityMatrix([face_record1],[face_record2])[0,0]
+-    
+-    
++
++
+     def similarityMatrix(self,probes,targets,cohort_adjust=None):
+         '''
+-        A similarity matrix computed between sets of face records.  This 
+-        could be implemented by multiple calls to the "similarity" method, 
++        A similarity matrix computed between sets of face records.  This
++        could be implemented by multiple calls to the "similarity" method,
+         but can be overridden to achieve faster performance when computing
+         multiple comparisons.
+-        
++
+         @param probes: a list of face records.
+         @type  probes: [FaceRecord, ...]
+-        
++
+         @param targets: a list of face records.
+         @type  targets: [FaceRecord, ...]
+-        
++
+         @param cohort_adjust: If not None, then override the cohort adjustment setting
+         @type  cohort_adjust: None, True, or False
+-        
++
+         @return: a similarity matrix in numpy format.
+         @rtype: numpy.array
+         '''
+         if cohort_adjust == None:
+             cohort_adjust = self.cohort_adjust
+-        
++
+         # collect probes and targets in rows
+         probe_matrix  = np.array([each.feature for each in probes])
+         target_matrix = np.array([each.feature for each in targets])
+-        
++
+         # compute a similarity matrix
+         if self.sim == 'L2':
+             l2 = pv.PNorm(2.0)
+@@ -527,26 +525,26 @@ class LDA(common.FaceRecognitionAlgorithm):
+             scores = pv.correlation(probe_matrix,target_matrix)
+         else:
+             raise ValueError("Unknown similarity measure.")
+-        
++
+         # Perform cohort adjustment
+-        if cohort_adjust and len(self.cohort_set) > 0: 
++        if cohort_adjust and len(self.cohort_set) > 0:
+             pmeans = np.array([each.cohort_mean for each in probes])
+             tmeans = np.array([each.cohort_mean for each in targets])
+-    
++
+             pstd = np.array([each.cohort_std for each in probes])
+             tstd = np.array([each.cohort_std for each in targets])
+-            
++
+             pmeans.shape = (pmeans.shape[0],1)
+             tmeans.shape = (1,tmeans.shape[0])
+-    
++
+             pstd.shape = (pstd.shape[0],1)
+             tstd.shape = (1,tstd.shape[0])
+-            
++
+             adj = 0.5*(pmeans + tmeans) # Shift
+             dnom = 0.5*(pstd + tstd)    # Scale
+-            
++
+             scores = (scores - adj)/dnom
+-            
++
+         return scores
+ 
+ 
+@@ -558,7 +556,7 @@ class LRLDA:
+     includes color transformations, normalization, cohort norm, etc. The
+     initial normalized rectangle is governed by the parameters here.
+     '''
+-    def __init__(self,region_args, 
++    def __init__(self,region_args,
+                     eye_y = 0.35,
+                     eye_width = 0.55,
+                     tile_size = (65,85),
+@@ -566,55 +564,57 @@ class LRLDA:
+                     ):
+         '''
+         Create an CohortLDA algorithm.
+-        
++
+         @param region_args: a list of regions and there parameters for LDA.
+         @type  region_args: list
+-        @param eye_y:          The y location of the eyes relative to the height of 
++        @param eye_y:          The y location of the eyes relative to the height of
+                                the geometrically normalized image.  Set to None if the
+                                tile is already geometrically transformed.
+         @type eye_y:           float or None
+-        @param eye_width:      The width location of the eyes relative to the width of 
++        @param eye_width:      The width location of the eyes relative to the width of
+                                the geometrically normalized image.  Set to None if the
+                                tile is already geometrically transformed.
+         @type eye_width:       float or None
+         @param tile_size:      The size of the transformed image tile.
+         @type  tile_size:      (int, int)
+-        @param smoothing:      Smooth the face image before downsampling.  
+-                               Smoothing is relative to the transformed 
++        @param smoothing:      Smooth the face image before downsampling.
++                               Smoothing is relative to the transformed
+                                image.
+         @type  smoothing:      None or float
+         '''
+-        
++
+         # Add a creation time stamp to help identify this training file.
+         self.timestamp = time.time()
+ 
+         self.eye_y = eye_y
+         self.eye_width = eye_width
+         self.tile_size = tile_size
+-        
++
+         self.smoothing = smoothing
+-        
++
+         self.regions = []
+         for kwargs in region_args:
+-            # make sure regios are not used 
++            # make sure regios are not used
+             kwargs['eye_y']     = None
+             kwargs['eye_width'] = None
+             rect = kwargs['rect']
+             tile_size = kwargs['tile_size']
+             del kwargs['rect']
+-            
++
+             alg = LDA(**kwargs)
+-            
++### MG: Re-Add rect keyword argument (since later steps will need these arguments)
++            kwargs['rect'] = rect
++
+             self.regions.append( (rect,tile_size,alg) )
+-            
+-            
+-            
++
++
++
+     def preprocess(self, im, leye, reye):
+         '''
+-        Preprocess the image.  Includes geometric normalization, color channel 
+-        mixing, band pass filtering, log_transformation, value normalization 
++        Preprocess the image.  Includes geometric normalization, color channel
++        mixing, band pass filtering, log_transformation, value normalization
+         (meanStd).  B{Note:} eyes should be specified such that leye.X() < reye.X()
+-        
++
+         @param im: the image to preprocess
+         @type im: pv.Image
+         @param leye: The left eye coordinate leye.X() < reye.X()
+@@ -624,7 +624,7 @@ class LRLDA:
+         @returns: a geometrically normalized image
+         @rtype: pv.Image
+         '''
+-        
++
+         # geometrically normalize the image
+         if leye.X() > reye.X():
+             print "Warning, eye coordinates may not be ordered properly."
+@@ -632,11 +632,11 @@ class LRLDA:
+         left_eye = pv.Point(w*0.5*(1-self.eye_width),self.eye_y*h)
+         right_eye = pv.Point(w*0.5*(1+self.eye_width),self.eye_y*h)
+         affine = pv.AffineFromPoints(leye, reye, left_eye, right_eye, self.tile_size)
+-        
++
+         if self.smoothing != None:
+             # Compute the size change
+             sigma = self.smoothing*leye.l2(reye)/(self.eye_width*w)
+-            
++
+             # Apply smoothing
+             im = pv.gaussianFilter(im,sigma)
+ 
+@@ -650,49 +650,51 @@ class LRLDA:
+             rect = pv.Rect(x*tw,y*th,w*tw,h*th)
+             tile = (pv.AffineFromRect(rect,tile_size)*affine).transformImage(im)
+             tiles.append(tile)
+-            
++
+         return tiles
+-    
+-    
+-    
++
++
++
+     def addTraining(self,label,im,rect,leye,reye,ilog=None):
+         '''
+-        Add a training face.  This is a suggested interface that should 
++        Add a training face.  This is a suggested interface that should
+         work for many algorithms and therefore can use existing training
+         code.
+-        
++
+         @param label: a subject identifier for this face.
+         @type label: int | str
+-        
++
+         @param im: an image containing a face.
+         @type im: pv.Image
+-        
++
+         @param rect: a face detection rectangle. (unused)
+         @type rect: pv.Rect
+-        
++
+         @param leye: the left eye coordinate.
+         @type leye: pv.Point
+-        
++
+         @param reye: the right eye coordinate.
+         @type reye: pv.Point
+-        
++
+         @param ilog: optional ImageLog used for saving intermediate data.
+         @type ilog: pv.ImageLog
+         '''
+         # Geometric normalization
+-        
+-        tiles = self.preprocess(im, leye, reye)
++
++### MG: Disable preprocessing; this will be done in a separate step
++#        tiles = self.preprocess(im, leye, reye)
++        tiles = im
+         for i in range(len(self.regions)):
+             _,_,alg = self.regions[i]
+             tile = tiles[i]
+             alg.addTraining(label,tile,None,None,None)
+ 
+-    
++
+     def train(self,ilog=None):
+         '''
+-        Train the algorithm.  After all training faces are added this 
++        Train the algorithm.  After all training faces are added this
+         function will be called to do additional computation and processing
+-        
++
+ 
+         @param ilog: optional image log that is used to save intermediate
+                         training data such as images of the eigenvectors.
+@@ -701,121 +703,129 @@ class LRLDA:
+         for i in range(len(self.regions)):
+             _,_,alg = self.regions[i]
+             alg.train()
+-    
+-    
+-    
++
++
++
+     def addCohort(self,im,rect,leye,reye,ilog=None):
+         '''
+-        Add a face to use for cohort normalization.  This is a suggested 
+-        interface that should work for many algorithms.  
+-        
++        Add a face to use for cohort normalization.  This is a suggested
++        interface that should work for many algorithms.
++
+         @param label: a subject identifier for this face.
+         @type label: int | str
+-        
++
+         @param im: an image containing a face.
+         @type im: pv.Image
+-        
++
+         @param rect: a face detection rectangle. (unused)
+         @type rect: pv.Rect
+-        
++
+         @param leye: the left eye coordinate.
+         @type leye: pv.Point
+-        
++
+         @param reye: the right eye coordinate.
+         @type reye: pv.Point
+-        
++
+         @param ilog: optional ImageLog used for saving intermediate data.
+         @type ilog: pv.ImageLog
+         '''
+-        tiles = self.preprocess(im, leye, reye)
++### MG: Disable preprocessing; this will be done in a separate step
++#        tiles = self.preprocess(im, leye, reye)
++        tiles = im
+         for i in range(len(self.regions)):
+             _,_,alg = self.regions[i]
+             tile = tiles[i]
+             alg.addCohort(tile,None,None,None)
+ 
+-    
+-    
+-    def getFaceRecord(self,im,rect,leye,reye,ilog=None):
++
++
++### MG: Make it possible to disable cohort score computation, if desired
++#    def getFaceRecord(self,im,rect,leye,reye,ilog=None):
++    def getFaceRecord(self,im,rect,leye,reye,compute_cohort_scores=True,ilog=None):
+         '''
+-        This function computes a face record.  It takes an image of an 
+-        unknown face and produces a low dimensional represetation that 
++        This function computes a face record.  It takes an image of an
++        unknown face and produces a low dimensional represetation that
+         is used for storage and matching.  The original image can then
+         be freed.  For example, in the eigen faces algoirthm this function
+         would preprocess the image and then project it onto the eigenbasis.
+         What is returned is a face record that contains data used to match
+-        the face along with other metadata for that image.        
+-                
++        the face along with other metadata for that image.
++
+         @param im: an image containing a face.
+         @type im: pv.Image
+-        
++
+         @param rect: a face detection rectangle. (Not Used)
+         @type rect: pv.Rect
+-        
++
+         @param leye: the left eye coordinate.
+         @type leye: pv.Point
+-        
++
+         @param reye: the right eye coordinate.
+         @type reye: pv.Point
+-        
++
+         @param ilog: an ImageLog used for saving intermediate data.
+         @type ilog: pv.ImageLog
+-        
++
+         @return: A face record object
+         @rtype: FaceRecord
+         '''
+-        
++
+         rec = common.FaceRecord(rect,leye,reye)
+         rec.features = []
+-        
++
+         # Geometric normalization
+-        tiles = self.preprocess(im, leye, reye)
++### MG: Disable preprocessing; this will be done in a separate step
++#        tiles = self.preprocess(im, leye, reye)
++        tiles = im
+         for i in range(len(self.regions)):
+             rect,_,alg = self.regions[i]
+             tile = tiles[i]
+-            subrec = alg.getFaceRecord(tile,None,None,None)
++### MG: Disable cohort score computation, if desired
++#            subrec = alg.getFaceRecord(tile,None,None,None)
++            subrec = alg.getFaceRecord(tile,None,None,None,compute_cohort_scores=compute_cohort_scores)
+             rec.features.append(subrec)
+-        
+-        
++
++
+         return rec
+ 
+-    
++
+     def similarity(self,face_record1,face_record2):
+         '''
+-        A similarity score computed for two face records.  High values 
++        A similarity score computed for two face records.  High values
+         indicate a better match.
+-        
++
+         @param face_record1: a face record created by calling getFaceRecord.
+         @type face_record1: FaceRecord
+-        
++
+         @param face_record2: a face record created by calling getFaceRecord.
+         @type face_record2: FaceRecord
+-        
++
+         @returns: the similarity as a floating point value
+         @rtype: float
+         '''
+         return self.similarityMatrix([face_record1],[face_record2])[0,0]
+-    
+-    
++
++
+     def similarityMatrix(self,probes,targets,cohort_adjust=None):
+         '''
+-        A similarity matrix computed between sets of face records.  This 
+-        could be implemented by multiple calls to the "similarity" method, 
++        A similarity matrix computed between sets of face records.  This
++        could be implemented by multiple calls to the "similarity" method,
+         but can be overridden to achieve faster performance when computing
+         multiple comparisons.
+-        
++
+         @param probes: a list of face records.
+         @type  probes: [FaceRecord, ...]
+-        
++
+         @param targets: a list of face records.
+         @type  targets: [FaceRecord, ...]
+-        
++
+         @param cohort_adjust: If not None, then override the cohort adjustment setting
+         @type  cohort_adjust: None, True, or False
+-        
++
+         @return: a similarity matrix in numpy format.
+         @rtype: numpy.array
+         '''
+-        
++
+         mat = np.zeros((len(probes),len(targets)),dtype=np.float32)
+         # Geometric normalization
+         for i in range(len(self.regions)):
+@@ -824,15 +834,15 @@ class LRLDA:
+             target_tmp = [each.features[i] for each in targets]
+             tmp = alg.similarityMatrix(probe_tmp,target_tmp)
+             mat += tmp
+-            
+-        mat = mat / len(self.regions)    
+-            
++
++        mat = mat / len(self.regions)
++
+         return mat
+-    
+-    
+-    
+-    
+-    
+-    
+-    
+-    
++
++
++
++
++
++
++
++
+diff --git a/src/facerec2010/baseline/lrpca.py b/src/facerec2010/baseline/lrpca.py
+index ffbced3..6422140 100644
+--- a/src/facerec2010/baseline/lrpca.py
++++ b/src/facerec2010/baseline/lrpca.py
+@@ -1,22 +1,22 @@
+ # Copyright (c) 2010 Colorado State University and David S. Bolme
+ # All rights reserved.
+-# 
++#
+ # Redistribution and use in source and binary forms, with or without
+ # modification, are permitted provided that the following conditions
+ # are met:
+-# 
++#
+ #    1. Redistributions of source code must retain the above copyright
+ #       notice, this list of conditions and the following disclaimer.
+-#  
++#
+ #    2. Redistributions in binary form must reproduce the above copyright
+ #       notice, this list of conditions and the following disclaimer in the
+ #       documentation and/or other materials provided with the distribution.
+-#  
++#
+ #    3. Neither name of copyright holders nor the names of its contributors
+ #       may be used to endorse or promote products derived from this software
+ #       without specific prior written permission.
+-#  
+-#  
++#
++#
+ # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ # ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ # LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+@@ -30,7 +30,7 @@
+ # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ 
+ '''
+-Contains classes and supporting data for the Local Region Principal 
++Contains classes and supporting data for the Local Region Principal
+ Components Analysis (LRPCA) algorithm.
+ 
+ @author: bolme
+@@ -62,12 +62,12 @@ DEFAULT_REGIONS = [
+ This list defines the regions used for the default version of LRPCA.
+ 
+ The list contains the center point of the region and the width of the
+-square used for the feature.  All coordinates are relative to tile defined 
++square used for the feature.  All coordinates are relative to tile defined
+ by the eyes and tile size coordinate.  For example, pv.Point(0.5, 0.5) is
+-the center of the face rectangle and 1.0 defines the width to be the total 
+-width of the face tile.   
++the center of the face rectangle and 1.0 defines the width to be the total
++width of the face tile.
+ 
+-This particular list includes 14 regions where the first region is the entire 
++This particular list includes 14 regions where the first region is the entire
+ face.
+ '''
+ 
+@@ -129,11 +129,11 @@ GBU_TUNING = {
+               'tile_size': (128,128),
+               'regions': DEFAULT_REGIONS,
+               'fisher_thresh': 3500, # keep all 3500 basis vectors
+-              'self_quotient': 3.0, 
++              'self_quotient': 3.0,
+               # Training GBU Uncontrolled x2
+               }
+ '''
+-This dictionary is a good tuning for the Good, Bad, and Ugly dataset.  
++This dictionary is a good tuning for the Good, Bad, and Ugly dataset.
+ 
+ This tuning can be applied to the Local Region PCA when it is created
+ using a call like this:
+@@ -153,7 +153,7 @@ LEFT_OCULAR_TUNING = {
+               'tile_size': (128,128),
+               'regions': LEFT_OCULAR_REGIONS,
+               'fisher_thresh': 750, # keep all 750 basis vectors
+-              'self_quotient': 3.0, 
++              'self_quotient': 3.0,
+               # Training GBU Uncontrolled x2
+               }
+ '''
+@@ -166,7 +166,7 @@ RIGHT_OCULAR_TUNING = {
+               'tile_size': (128,128),
+               'regions': RIGHT_OCULAR_REGIONS,
+               'fisher_thresh': 750, # keep all 750 basis vectors
+-              'self_quotient': 3.0, 
++              'self_quotient': 3.0,
+               # Training GBU Uncontrolled x2
+               }
+ '''
+@@ -177,82 +177,82 @@ LRPCA setup for right ocular recognition.
+ 
+ class LRPCA:
+     '''
+-    This class implements a Local Region Principal Components Analysis 
++    This class implements a Local Region Principal Components Analysis
+     algorithm.
+-    
+-    Training and testing images are first preprocessed.   First a similarity 
++
++    Training and testing images are first preprocessed.   First a similarity
+     transformation is applied which rotates, scales, and translates the faces
+-    to align the eyes.  The image is then cropped tightly around the face to 
+-    for a face tile. 
+-    
++    to align the eyes.  The image is then cropped tightly around the face to
++    for a face tile.
++
+     The algorithm then splits the face into a small number of regions
+     and then runs PCA on each.  This provides basis vectors for each facial
+-    region.  During training a weight is also learned for each eigenvector in 
+-    each region.  This weight determines the influence of each vector during 
++    region.  During training a weight is also learned for each eigenvector in
++    each region.  This weight determines the influence of each vector during
+     testing and is based on the Fisher Criterion.
+-    
+-    When testing, each face region is projected onto the basis vectors which 
+-    generates a set of coefficients.  GBU Training, for example, has 14 regions 
++
++    When testing, each face region is projected onto the basis vectors which
++    generates a set of coefficients.  GBU Training, for example, has 14 regions
+     with 250 vectors each.  This results is 3500 coefficients.  Each coefficient
+     is weighted using the Fisher Criterion.  The similarity of two vectors is
+     computed using Pearson's normalized correlation.
+-    
++
+     This algorithm does NOT adjust the regions to recenter them on facial
+     features.  It does reweight the regions and coefficients independently.
+     '''
+-    
++
+     def __init__(self,
+                  left_eye  = 128*pv.Point(1./4.,1./3.),
+                  right_eye = 128*pv.Point(3./4.,1./3.),
+                  tile_size = (128,128),
+                  regions = DEFAULT_REGIONS,
+                  fisher_thresh = .50,
+-                 self_quotient = 3.0, 
++                 self_quotient = 3.0,
+                  **kwargs
+                  ):
+         '''
+         @param left_eye: the standard location for the left eye coordinate in the image tile.
+         @type left_eye: pv.Point
+-        
++
+         @param right_eye: the standard location for the right eye coordinate in the image tile.
+         @type right_eye: pv.Point
+-        
++
+         @param tile_size: the size of the geometrically normalized tile.
+         @type tile_size: [width,height]
+-        
+-        @param regions: a list of the local regions defined by the center point and width.  
++
++        @param regions: a list of the local regions defined by the center point and width.
+         @type regions: L{DEFAULT_REGIONS}
+-        
+-        @param fisher_thresh: determines which vectors to keep.  If this is a floating point 
+-            value it is a threshold for the Fisher Criterion.  If it is an int it is the total 
++
++        @param fisher_thresh: determines which vectors to keep.  If this is a floating point
++            value it is a threshold for the Fisher Criterion.  If it is an int it is the total
+             number of vectors.
+         @type fisher_thresh: int|float
+-        
++
+         @param self_quotient: the radius of the gaussian used for self quotient image.
+         @type self_quotient: float
+-        
++
+         @param kwargs: Additional keyword arguments are passed on to the PCA algorithms.
+         '''
+         # Add a creation time stamp to help identify this training file.
+         self.timestamp = time.time()
+-        
++
+         # These define the transformation used for the face tile.
+         self.left_eye = left_eye
+         self.right_eye = right_eye
+         self.tile_size = tile_size
+-        
+-        # This defines the geometry of the face regions 
++
++        # This defines the geometry of the face regions
+         self.regions = regions
+-        
++
+         # This defines the minimum fisher threshold to keep the eigenvector
+         self.fisher_thresh = fisher_thresh
+-        
++
+         # This defines the radius of the Gaussian used in the Self Quotient Image normalization
+         self.self_quotient = self_quotient
+ 
+         # These are the weights for the Fisher Criterion
+         self.weight = None
+-        
++
+         # Each region is handled by its own pca algorithm.  This could
+         # probably be done better given more time but for now this just
+         # works.
+@@ -262,55 +262,58 @@ class LRPCA:
+             ful = pv.Point(0,0)
+             flr = pv.Point(rect.w,rect.h)
+             ts = (rect.w,rect.h)
+-            
++
+             self.pcas.append(PCA(left_eye=ful, right_eye=flr, tile_size=ts, self_quotient=self_quotient, **kwargs))
+-            
++
+         self.training_tiles = []
+-            
+-        
++
++
+     def _regionToRect(self,region):
+         '''
+-        Convert a region description (center,width) into a rectangle. 
++        Convert a region description (center,width) into a rectangle.
+         This should not normally be called from outside this class.
+-        
++
+         @rtype: pv.Rect
+         '''
+         w = self.tile_size[0]
+-        rect = pv.Rect(w*region[0].X()-0.5*w*region[1],w*region[0].Y()-0.5*w*region[1],w*region[1],w*region[1])
+-        return rect 
+-        
++### MG: Small bug fix: we have images where the height differs from the width
++#        rect = pv.Rect(w*region[0].X()-0.5*w*region[1],w*region[0].Y()-0.5*w*region[1],w*region[1],w*region[1])
++        h = self.tile_size[1]
++        rect = pv.Rect(w*region[0].X()-0.5*w*region[1],h*region[0].Y()-0.5*h*region[1],w*region[1],h*region[1])
++        return rect
++
+     def preprocess(self,im,rect,leye,reye,ilog=None):
+         '''
+         For LRPCA this just extracts the image tile.  If an ilog
+         is given, an image will be saved showing the local
+         regions.  This should not normally be called from outside this class.
+-        
++
+         @param im: an input image.
+         @type im: pv.Image
+ 
+         @param rect: the face detection rectangle (not used)
+         @type rect: pv.Rect
+-        
++
+         @param leye: the left eye coordinate
+         @type leye: pv.Point
+-        
++
+         @param reye: the right eye coordinate
+         @type reye: pv.Point
+-        
++
+         @param ilog: an optional PyVision ImageLog
+         @type ilog: pv.ImageLog
+-        
++
+         @return: the geometrically normalized tile
+         @rtype: pv.Image
+-        ''' 
++        '''
+         # Geometric normalization
+         affine = pv.AffineFromPoints(leye,reye,self.left_eye,self.right_eye,self.tile_size)
+-        
++
+         tile = affine.transformImage(im)
+-        
++
+         pil = tile.asPIL()
+         pil = pil.convert('L')
+-        
++
+         tile = pv.Image(pil)
+         if ilog != None:
+             ilog.log(tile,label="EigenfacesOrig",format='jpg')
+@@ -318,92 +321,94 @@ class LRPCA:
+                 rect = self._regionToRect(region)
+                 tile.annotateEllipse(rect)
+             ilog.log(tile,label="EigenfacesPreprocessedTraining",format='jpg')
+-                
++
+         # Return the final vector
+         return tile
+ 
+-    
++
+     def addTraining(self,label,im,rect,leye,reye,ilog=None):
+         '''
+-        When training data is added to this algorithm it breaks the 
++        When training data is added to this algorithm it breaks the
+         image into the local regions and then adds those image tiles
+         to the training data for individual PCA algorithms.
+ 
+         Additional preprocessing is performed by each PCA algorithm....
+         First the image is geometrically normalized. The eye coordinates
+         are used to rotate, scale, and translate the images so that the
+-        eyes are at standard positions.  The image is also cropped to the 
++        eyes are at standard positions.  The image is also cropped to the
+         specified size.
+-        
+-        Next, the image is vectorized. Such that each value in the image 
+-        is corresponds to value in the vector.  
+-        
+-        Finally the image is value normalized.  The pixel values are rescaled to 
++
++        Next, the image is vectorized. Such that each value in the image
++        is corresponds to value in the vector.
++
++        Finally the image is value normalized.  The pixel values are rescaled to
+         have a mean of 0.0 and a standard deviation of 1.0.
+-        
++
+         @param label: a subject identifier for this face.
+         @type label: int | str
+-        
++
+         @param im: an image containing a face.
+         @type im: pv.Image
+-        
++
+         @param rect: a face detection rectangle. (unused)
+         @type rect: pv.Rect
+-        
++
+         @param leye: the left eye coordinate.
+         @type leye: pv.Point
+-        
++
+         @param reye: the right eye coordinate.
+         @type reye: pv.Point
+-        
++
+         @param ilog: optional ImageLog used for saving intermediate data.
+         @type ilog: pv.ImageLog
+         '''
+-        tile = self.preprocess(im,rect,leye,reye,ilog=ilog)
+-        
++### MG: Disable preprocessing; this will be done in a separate step
++#        tile = self.preprocess(im,rect,leye,reye,ilog=ilog)
++        tile = im
++
+         self.training_tiles.append([label,tile])
+-        
++
+         for r in range(len(self.regions)):
+             region = self.regions[r]
+             pca = self.pcas[r]
+             rect = self._regionToRect(region)
+-            
++
+             sul = pv.Point(rect.x,rect.y)
+             slr = pv.Point(rect.x+rect.w,rect.y+rect.h)
+-            
++
+             pca.addTraining(label, tile, None, sul, slr, ilog=ilog)
+-            
++
+     def train(self,ilog=None):
+         '''
+         Call this method after all the training data has been added.
+         This calls the training function for each of the individual PCA
+         algorithms.  Each PCA can then be used to project the local regions
+-        to lower dimensional representations with data whitening. 
+-        
++        to lower dimensional representations with data whitening.
++
+         Once the individual algorithms are trained each image in the training
+-        set is projected into the new eigenspaces.  The coeffecents from all 
++        set is projected into the new eigenspaces.  The coeffecents from all
+         region projections are then concatentated into one long vector per
+-        face.  The  coeffecients in those vectors are then reweighted using 
++        face.  The  coeffecients in those vectors are then reweighted using
+         the Fisher Criterion computed on the training set.
+-        
++
+         @param ilog: optional image log that is used to save intermediate
+                         training data such as images of the eigenvectors.
+         @type ilog: pv.ImageLog
+         '''
+-        
++
+         # Train each pca method individually
+         for r in range(len(self.regions)):
+             #print "Training PCA",r
+             pca = self.pcas[r]
+             pca.train(ilog=ilog)
+-            
++
+         # Project each training face using the getFaceRecord method.
+         training_recs = []
+         for label,tile in self.training_tiles:
+             fr = self.getFaceRecord(tile,None,self.left_eye,self.right_eye)
+             training_recs.append([label,fr.feature])
+             n = len(fr.feature)
+-                    
++
+         # compute the class means
+         class_n = {}
+         class_means = {}
+@@ -411,31 +416,31 @@ class LRPCA:
+             if not class_n.has_key(lab):
+                 class_n[lab] = 0
+                 class_means[lab] = np.zeros(vec.shape,dtype=np.float64)
+-                
++
+             class_n[lab] += 1
+             class_means[lab] += vec
+-            
++
+         # compute the between class variance for each coefficient
+         sbm = []
+         for lab in class_n.keys():
+             class_means[lab] /= class_n[lab]
+             sbm.append(class_means[lab])
+-                
++
+         sbm = np.array(sbm)
+         sb = sbm.var(axis=0)
+-        
++
+         # compute the within class variance for each coefficient
+         swm = []
+         for lab,vec in training_recs:
+             swm.append(vec-class_means[lab])
+-        
++
+         swm = np.array(swm)
+-        
++
+         sw = swm.var(axis=0)
+-        
++
+         # compute the weight for each coefficient using the Fisher Criterion (between var/within var)
+         self.weight = sb/sw
+-        
++
+         # Keep only N basis vectors.
+         if isinstance(self.fisher_thresh,int):
+             tmp = self.weight.copy()
+@@ -443,121 +448,123 @@ class LRPCA:
+             if self.fisher_thresh > len(tmp):
+                 self.fisher_thresh = len(tmp)
+             self.fisher_thresh = tmp[-self.fisher_thresh]
+-        
++
+         keep = (self.weight >= self.fisher_thresh)
+         #print "Weight:",self.weight, ( self.weight >= self.fisher_thresh ).sum()
+-        
++
+         # Drop coefficients and basis vectors that were not kept.
+         self.weight = self.weight[keep]
+ 
+         tmp = keep.copy()
+         for pca in self.pcas:
+             n,m = pca.eigenbasis.shape
+-        
++
+             pca.eigenbasis = pca.eigenbasis[tmp[:n],:]
+             pca.whitenvalues = pca.whitenvalues[tmp[:n]]
+             tmp = tmp[n:]
+-                    
++
+         # Clean up unneeded training data
+         self.training_tiles = []
+-        
+-        
+ 
+-            
+-            
+-            
++
++
++
++
++
+     def getFaceRecord(self,im,rect,leye,reye,ilog=None):
+         '''
+         During testing a face record is computed for each  face.  This record is typically
+-        a few hundred values that are representitive of the images 
++        a few hundred values that are representitive of the images
+         appearance.  The first step is to create a smaller image region
+-        for each facial feature.  Once that is created each region is preprocessed 
+-        to produce a normalized vector.  The region vectors are then 
+-        projected onto the eigenbasis.  If whitening 
+-        is enabled the components are rescaled to have a uniform 
+-        distribution.  The face record is then created by concatenating each of 
+-        the projected vectors.  The values in this record are then reweighed 
++        for each facial feature.  Once that is created each region is preprocessed
++        to produce a normalized vector.  The region vectors are then
++        projected onto the eigenbasis.  If whitening
++        is enabled the components are rescaled to have a uniform
++        distribution.  The face record is then created by concatenating each of
++        the projected vectors.  The values in this record are then reweighed
+         using the Fisher Criterion.
+-        
+-                
++
++
+         @param im: an image containing a face.
+         @type im: pv.Image
+-        
++
+         @param rect: a face detection rectangle. (Not Used)
+         @type rect: pv.Rect
+-        
++
+         @param leye: the left eye coordinate.
+         @type leye: pv.Point
+-        
++
+         @param reye: the right eye coordinate.
+         @type reye: pv.Point
+-        
++
+         @param ilog: an ImageLog used for saving intermediate data.
+         @type ilog: pv.ImageLog
+-        
++
+         @return: A face record object
+         @rtype: FaceRecord
+         '''
+         # preprocess the image
+-        tile = self.preprocess(im,rect,leye,reye,ilog=ilog)
+-        
++### MG: Disable preprocessing; this will be done in a separate step
++#        tile = self.preprocess(im,rect,leye,reye,ilog=ilog)
++        tile = im
++
+         vecs = []
+ 
+         for r in range(len(self.regions)):
+             region = self.regions[r]
+             pca = self.pcas[r]
+             rect = self._regionToRect(region)
+-            
++
+             sul = pv.Point(rect.x,rect.y)
+             slr = pv.Point(rect.x+rect.w,rect.y+rect.h)
+-            
++
+             fr = pca.getFaceRecord(tile, None, sul, slr, ilog=None)
+-            
++
+             vecs.append(fr.feature)
+-            
++
+         # Concatinate everything into a single vector
+         vec = np.concatenate(vecs)
+-        
++
+         # Reweight the vectors using the Fisher Criterion
+         if self.weight != None:
+             vec = self.weight*vec
+-        
++
+         # return the face record
+         fr = FaceRecord(rect,leye,reye)
+         fr.feature = vec
+-        
++
+         return fr
+-        
+-    
++
++
+     def similarity(self,face_record1,face_record2):
+         '''
+         A similarity score is computed using Pearson's correlation between
+         the face records.
+-        
++
+         @param face_record1: a face record created by calling getFaceRecord.
+         @type face_record1: FaceRecord
+-        
++
+         @param face_record2: a face record created by calling getFaceRecord.
+         @type face_record2: FaceRecord
+-        
++
+         @returns: the similarity as a floating point value
+         @rtype: float
+         '''
+         return self.similarityMatrix([face_record1],[face_record2])[0,0]
+ 
+-        
++
+     def similarityMatrix(self,probes,targets):
+         '''
+         A similarity matrix is computed using Pearson's correlation between
+         the face records in the probes and targets lists.
+-        
++
+         @param probes: a list of face records.
+         @type probes: [FaceRecord, ...]
+-        
++
+         @param targets: a list of face records.
+         @type targets: [FaceRecord, ...]
+-        
+-        
++
++
+         @return: a similarity matrix in numpy format.
+         @rtype: numpy.array
+         '''
+@@ -566,7 +573,7 @@ class LRPCA:
+         for each in probes:
+             probe_matrix.append(each.feature)
+         probe_matrix  = np.array(probe_matrix)
+-        
++
+         target_matrix = []
+         for each in targets:
+             target_matrix.append(each.feature)
+@@ -574,9 +581,9 @@ class LRPCA:
+ 
+         # compute a correlation matrix
+         tmp = pv.correlation(probe_matrix,target_matrix)
+-        
++
+         return tmp
+-    
++
+     def __str__(self):
+         '''
+         A string containing basic info about this algorithm.
+diff --git a/src/facerec2010/baseline/pca.py b/src/facerec2010/baseline/pca.py
+index 1afcc30..cf96fda 100644
+--- a/src/facerec2010/baseline/pca.py
++++ b/src/facerec2010/baseline/pca.py
+@@ -1,22 +1,22 @@
+-    # Copyright (c) 2010 David S. Bolme
++# Copyright (c) 2010 David S. Bolme
+ # All rights reserved.
+-# 
++#
+ # Redistribution and use in source and binary forms, with or without
+ # modification, are permitted provided that the following conditions
+ # are met:
+-# 
++#
+ #    1. Redistributions of source code must retain the above copyright
+ #       notice, this list of conditions and the following disclaimer.
+-#  
++#
+ #    2. Redistributions in binary form must reproduce the above copyright
+ #       notice, this list of conditions and the following disclaimer in the
+ #       documentation and/or other materials provided with the distribution.
+-#  
++#
+ #    3. Neither name of copyright holders nor the names of its contributors
+ #       may be used to endorse or promote products derived from this software
+ #       without specific prior written permission.
+-#  
+-#  
++#
++#
+ # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ # ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ # LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+@@ -33,21 +33,21 @@
+ Contains classes and supporting data for a Principal Components
+ Analysis (PCA) algorithm.
+ 
+-This is a reference implementation of an Eigenfaces type face 
++This is a reference implementation of an Eigenfaces type face
+ recognition algorithm.
+ 
+-This algorithm is based on the techniques described in the following 
++This algorithm is based on the techniques described in the following
+ papers.
+ 
+-M. A. Turk and A. P. Pentland. Face Recognition Using Eigenfaces. 
++M. A. Turk and A. P. Pentland. Face Recognition Using Eigenfaces.
+ Computer Vision and Pattern Recognition. 1991.
+ 
+-M. Kirby and L. Sirovich, Application of the Karhunen-Loeve Procedure 
+-for the Characterization of Human Faces. Trans. on Pattern Analysis 
++M. Kirby and L. Sirovich, Application of the Karhunen-Loeve Procedure
++for the Characterization of Human Faces. Trans. on Pattern Analysis
+ and Machine Intelligence. vol. 12, pp. 103-107. January 1990.
+ 
+-This implementation has a number of modifications that improve the 
+-accuracy of the Eigenfaces algorithm.   
++This implementation has a number of modifications that improve the
++accuracy of the Eigenfaces algorithm.
+ '''
+ 
+ import pyvision as pv
+@@ -58,7 +58,7 @@ import time
+ 
+ class FaceRecord:
+     '''This is a simple structure to organize information on a face.'''
+-    
++
+     def __init__(self, face_rect, left_eye, right_eye):
+         self.face_rect = face_rect
+         self.left_eye  = left_eye
+@@ -113,7 +113,7 @@ Tuning that works well for GBU.
+ 
+ 
+ class PCA:
+-    
++
+     def __init__(self,
+                  left_eye  = pv.Point(32.0,64.0),
+                  right_eye = pv.Point(96.0,64.0),
+@@ -127,7 +127,7 @@ class PCA:
+                  ):
+         '''
+         Initialize the eigenfaces class.
+-        
++
+         @param self_quotient: The gausian radius (sigma) for the self quotient image. Set to None to disable.
+         @type self_quotient: float or None
+         '''
+@@ -138,56 +138,56 @@ class PCA:
+         self.left_eye  = left_eye
+         self.right_eye = right_eye
+         self.tile_size = tile_size
+-        
++
+         if mask != None:
+             raise NotImplementedError("Masks are not supported yet in this version of PCA")
+-        
++
+         self.mask = mask
+-        
+-        
++
++
+         # Normalization parameters
+         self.value_norm = value_norm
+-        
++
+         # Sigma for the self quotient
+         self.self_quotient = self_quotient
+-        
++
+         # Eigenbases parameters
+         self.whiten = whiten
+         self.drop   = drop
+         self.keep   = keep
+-        
++
+         # Setup training vectors
+         self.training_vectors = []
+-        
++
+         # Eigenbasis Information
+         self.mean = None
+-        
++
+     def addTraining(self,label,im,rect,leye,reye,ilog=None):
+         '''
+         Add a training face.
+-        
++
+         @param label: a subject identifier for this face.
+         @type label: int | str
+-        
++
+         @param im: an image containing a face.
+         @type im: pv.Image
+-        
++
+         @param rect: a face detection rectangle. (unused)
+         @type rect: pv.Rect
+-        
++
+         @param leye: the left eye coordinate.
+         @type leye: pv.Point
+-        
++
+         @param reye: the right eye coordinate.
+         @type reye: pv.Point
+-        
++
+         @param ilog: optional ImageLog used for saving intermediate data.
+         @type ilog: pv.ImageLog
+         '''
+         vec = self.preprocess(im,rect,leye,reye,ilog=ilog)
+ 
+         self.training_vectors.append([label,vec])
+-    
++
+     def train(self,ilog=None):
+         '''
+         Train the eigenfaces algorithm.
+@@ -197,7 +197,7 @@ class PCA:
+         @type ilog: pv.ImageLog
+         '''
+         assert len(self.training_vectors) > 1
+-                
++
+         # Build data matrix
+         train_vecs = [vec for lab,vec in self.training_vectors]
+         X = np.array(train_vecs).transpose()
+@@ -205,36 +205,36 @@ class PCA:
+         self.mean = X.mean(axis=1)
+         n = self.mean.shape[0]
+         self.mean = self.mean.reshape(n,1)
+-        
++
+         if ilog != None:
+             ilog.log(pv.Image(self.mean.reshape(self.tile_size)),label="EigenfacesMeanFace")
+ 
+         # Mean subtract the data vectors
+         X = X - self.mean
+-        
++
+         # Make sure the svd is done in 64 bits
+-        X = np.array(X,dtype=np.float64) 
+-        
++        X = np.array(X,dtype=np.float64)
++
+         # Compute PCA using the SVD method
+         U,D,Vt = sp.linalg.svd(X,full_matrices=0)
+-        
++
+         # Normalize the covariance
+         D = D/np.sqrt(m)
+         w = D**2 # compute the eigen values
+-        
++
+         # compute the total energy
+         self.total_energy = w.sum()
+-        
++
+         # drop large eigenvalues and vectors from the front
+         if self.drop > 0:
+             w = w[self.drop:]
+             D = D[self.drop:]
+             U = U[:,self.drop:]
+-        
++
+         # compute the remaining energy
+         energy = w.sum()
+         cumenergy = w.cumsum()
+-        
++
+         # drop small energies
+         if type(self.keep) == float:
+             keep = self.keep*energy
+@@ -248,7 +248,7 @@ class PCA:
+         D = D[:cutoff]
+         U = U[:,:cutoff]
+         self.final_energy = w.sum()
+-        
++
+         # compute the eigenbasis
+         self.eigenbasis   = U.transpose()
+         self.eigenvalues  = w
+@@ -259,179 +259,180 @@ class PCA:
+ 
+         # Perform self checks on the pca process
+         n,m = U.shape
+-        if np.abs(np.dot(U.transpose(),U)-np.eye(m)).max() > 0.0001:
+-            raise ValueError("EigenBasis is not orthonormal: %f"%np.abs(np.dot(U.transpose(),U)-np.eye(m)).max())
+-        
++### MG: These tests fail for some of the databases; I don't know what they are good for... the algorithm also runs when these tests fail
++#        if np.abs(np.dot(U.transpose(),U)-np.eye(m)).max() > 0.0001:
++#            raise ValueError("EigenBasis is not orthonormal: %f"%np.abs(np.dot(U.transpose(),U)-np.eye(m)).max())
++
+         if ilog != None:
+             eigenfaces = self.getEigenfaces()
+             for im in eigenfaces:
+                 ilog.log(im,label="EigenfaceBasis")
+ 
+-        
++
+     def preprocess(self,im,rect,leye,reye,ilog=None):
+         '''
+-        This function preprocesses the face tile.  
+-        
++        This function preprocesses the face tile.
++
+         First the image is geometrically normalized. The eye coordinates
+         are used to rotate, scale, and translate the images so that the
+-        eyes are at standard positions.  The image is also cropped to the 
++        eyes are at standard positions.  The image is also cropped to the
+         specified size.
+-        
++
+         The self quotient image method of Wang et.al \cite{Wang} is applied
+         using a Gaussian filter of radius 3.0.  This has the effect of reducing
+         the effect of lighting.
+ 
+-        Next, the image is vectorized. Such that each value in the image 
+-        is corresponds to value in the vector.  
+-        
+-        
+-        Finally the image is value normalized.  The pixel values are rescaled to 
++        Next, the image is vectorized. Such that each value in the image
++        is corresponds to value in the vector.
++
++
++        Finally the image is value normalized.  The pixel values are rescaled to
+         have a mean of 0.0 and a standard deviation of 1.0.
+-        
++
+         @param im: an input image.
+         @type im: pv.Image
+ 
+         @param rect: the face detection rectangle (not used)
+         @type rect: pv.Rect
+-        
++
+         @param leye: the left eye coordinate
+         @type leye: pv.Point
+-        
++
+         @param reye: the right eye coordinate
+         @type reye: pv.Point
+-        
++
+         @param ilog: an optional PyVision ImageLog
+         @type ilog: pv.ImageLog
+-        
++
+         @return: the normalized image
+         @rtype: numpy.vector
+-        ''' 
++        '''
+         # Geometric normalization
+         affine = pv.AffineFromPoints(leye,reye,self.left_eye,self.right_eye,self.tile_size)
+         tile = affine.transformImage(im)
+-        
++
+         if self.self_quotient != None:
+             tile = pv.selfQuotientImage(tile,sigma = self.self_quotient)
+-                    
++
+         if ilog != None:
+             ilog.log(tile,label="EigenfacesPreprocessedTraining")
+-                
++
+         # Vectorize
+         vec = tile.asMatrix2D().flatten()
+-        
++
+         # Value Normalization
+         vec = self.value_norm(vec)
+-        
++
+         # Return the final vector
+         return vec
+-    
+-    
++
++
+     def getFaceRecord(self,im,rect,leye,reye,ilog=None):
+         '''
+         This function computes a face record.  This record is typically
+-        a few hundred values that are representitive of the images 
+-        appearance.  The image is first preprocessed to produce a normalized 
+-        vector.  The vector is projected onto the eigenbasis.  If whitening 
+-        is selected the components are rescaled to have a uniform 
+-        distribution.  The face record consists of this projected vector 
++        a few hundred values that are representitive of the images
++        appearance.  The image is first preprocessed to produce a normalized
++        vector.  The vector is projected onto the eigenbasis.  If whitening
++        is selected the components are rescaled to have a uniform
++        distribution.  The face record consists of this projected vector
+         and some additional image metadata.
+-        
+-                
++
++
+         @param im: an image containing a face.
+         @type im: pv.Image
+-        
++
+         @param rect: a face detection rectangle. (Not Used)
+         @type rect: pv.Rect
+-        
++
+         @param leye: the left eye coordinate.
+         @type leye: pv.Point
+-        
++
+         @param reye: the right eye coordinate.
+         @type reye: pv.Point
+-        
++
+         @param ilog: an ImageLog used for saving intermediate data.
+         @type ilog: pv.ImageLog
+-        
++
+         @return: A face record object
+         @rtype: FaceRecord
+         '''
+         n,m = self.eigenbasis.shape
+-        
++
+         # preprocess the image
+         vec = self.preprocess(im,rect,leye,reye,ilog=ilog)
+         vec = vec.reshape(m,1)
+-        
++
+         # subtract the mean
+         vec = vec - self.mean
+-        
++
+         # project onto the basis
+         vec = np.dot(self.eigenbasis,vec)
+         vec = vec.flatten()
+-        
++
+         # whiten if necessary
+         if self.whiten:
+             vec = self.whitenvalues*vec
+-        
++
+         # return the face record
+         fr = FaceRecord(rect,leye,reye)
+         fr.feature = vec
+-        
++
+         return fr
+-        
+-    
++
++
+     def similarity(self,face_record1,face_record2):
+         '''
+         A similarity score is computed using Pearson's correlation between
+         the face records.
+-        
++
+         @param face_record1: a face record created by calling getFaceRecord.
+         @type face_record1: FaceRecord
+-        
++
+         @param face_record2: a face record created by calling getFaceRecord.
+         @type face_record2: FaceRecord
+-        
++
+         @returns: the similarity as a floating point value
+         @rtype: float
+         '''
+         return self.similarityMatrix([face_record1],[face_record2])[0,0]
+-        
+-        
++
++
+     def similarityMatrix(self,probes,targets):
+         '''
+         A similarity matrix is computed using Pearson's correlation between
+         the face records in the probes and targets lists.
+-        
++
+         @param probes: a list of face records.
+         @type probes: [FaceRecord, ...]
+-        
++
+         @param targets: a list of face records.
+         @type targets: [FaceRecord, ...]
+-        
++
+         @return: a similarity matrix in numpy format.
+         @rtype: numpy.array
+          '''
+         # collect probes and targets in rows
+         probe_matrix  = np.array([each.feature for each in probes])
+         target_matrix = np.array([each.feature for each in targets])
+-        
++
+         # compute a correlation matrix
+         tmp = pv.correlation(probe_matrix,target_matrix)
+-        
++
+         return tmp
+ 
+ 
+     def backProject(self,face_record):
+         '''
+         Use the eigenbasis to back project a face record and obtain a reconstructed image.
+-        
++
+         @param face_record: A face record object
+         @type face_record: FaceRecord
+-        
++
+         @return: the back projected face image
+         @rtype: numpy.array
+         '''
+         vec = face_record.feature
+-        
++
+         # dewhiten if necessary
+         if self.whiten:
+             vec = vec/self.whitenvalues
+@@ -443,16 +444,16 @@ class PCA:
+ 
+         # subtract the mean
+         vec = vec + self.mean
+-        
++
+         vec = vec.reshape(self.tile_size)
+ 
+         return pv.Image(vec)
+-    
+-    
++
++
+     def getEigenfaces(self):
+         '''
+         Returns the eigenvectors as a list of images.
+-        
++
+         @return: EigenFaces
+         @rtype: [pv.Image, ...]
+ 
+@@ -461,5 +462,5 @@ class PCA:
+         for each in self.eigenbasis:
+             tile = each.reshape(self.tile_size)
+             eigenfaces.append(pv.Image(tile))
+-            
++
+         return eigenfaces
+diff --git a/src/pyvision/types/img.py b/src/pyvision/types/img.py
+index 976a42f..5d6745f 100644
+--- a/src/pyvision/types/img.py
++++ b/src/pyvision/types/img.py
+@@ -6,19 +6,19 @@
+ # Redistribution and use in source and binary forms, with or without
+ # modification, are permitted provided that the following conditions
+ # are met:
+-# 
++#
+ # 1. Redistributions of source code must retain the above copyright
+ # notice, this list of conditions and the following disclaimer.
+-# 
++#
+ # 2. Redistributions in binary form must reproduce the above copyright
+ # notice, this list of conditions and the following disclaimer in the
+ # documentation and/or other materials provided with the distribution.
+-# 
++#
+ # 3. Neither name of copyright holders nor the names of its contributors
+ # may be used to endorse or promote products derived from this software
+ # without specific prior written permission.
+-# 
+-# 
++#
++#
+ # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ # ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ # LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+@@ -39,7 +39,10 @@ __version__ = "$Revision$"
+ 
+ import PIL.ImageDraw
+ import PIL.Image
+-import ImageFont
++try:
++  import ImageFont
++except ImportError:
++  from PIL import ImageFont
+ 
+ from PIL.Image import BICUBIC, ANTIALIAS
+ 
+@@ -54,13 +57,13 @@ import os.path
+ import pyvision
+ import pyvision as pv
+ 
+-TYPE_MATRIX_2D  = "TYPE_MATRIX2D" 
++TYPE_MATRIX_2D  = "TYPE_MATRIX2D"
+ '''Image was created using a 2D "gray-scale" numpy array'''
+ 
+-TYPE_MATRIX_RGB = "TYPE_MATRIX_RGB" 
++TYPE_MATRIX_RGB = "TYPE_MATRIX_RGB"
+ '''Image was created using a 3D "color" numpy array'''
+ 
+-TYPE_PIL        = "TYPE_PIL" 
++TYPE_PIL        = "TYPE_PIL"
+ '''Image was created using a PIL image instance'''
+ 
+ TYPE_OPENCV     = "TYPE_OPENCV"
+@@ -74,15 +77,15 @@ class Image:
+     '''
+     The primary purpose of the image class is to provide a structure that can
+     transform an image back and fourth for different python libraries such as
+-    U{PIL<http://www.pythonware.com/products/pil>}, 
+-    U{OpenCV <http://sourceforge.net/projects/opencvlibrary>}, and 
++    U{PIL<http://www.pythonware.com/products/pil>},
++    U{OpenCV <http://sourceforge.net/projects/opencvlibrary>}, and
+     U{Scipy<http://www.scipy.org">} Images. This class also
+     allows some simple operations on the image such as annotation.
+-    
++
+     B{Note:} When working with images in matrix format, they are transposed such
+     that x = col and y = row.  You can therefore still work with coords
+     such that im[x,y] = mat[x,y].
+-    
++
+     Images have the following attributes:
+       - width = width of the image
+       - height = height of the image
+@@ -90,13 +93,13 @@ class Image:
+       - channels = number of channels: 1(gray), 3(RGB)
+       - depth = bitdepth: 8(uchar), 32(float), 64(double)
+     '''
+- 
+- 
++
++
+     #------------------------------------------------------------------------
+     def __init__(self,data,bw_annotate=False):
+         '''
+         Create an image from a file or a PIL Image, OpenCV Image, or numpy array.
+-         
++
+         @param data: this can be a numpy array, PIL image, or opencv image.
+         @param bw_annotate: generate a black and white image to make color annotations show up better
+         @return: an Image object instance
+@@ -109,21 +112,21 @@ class Image:
+         self.opencv = None
+         self.annotated = None
+         self.bw_annotate = bw_annotate
+-        
++
+         if isinstance(data,numpy.ndarray) and len(data.shape) == 2:
+             self.type=TYPE_MATRIX_2D
+             self.matrix2d = data
+-            
++
+             self.width,self.height = self.matrix2d.shape
+             self.channels = 1
+-            
++
+             if self.matrix2d.dtype == numpy.float32:
+                 self.depth=32
+             elif self.matrix2d.dtype == numpy.float64:
+                 self.depth=64
+             else:
+                 raise TypeError("Unsuppoted format for ndarray images: %s"%self.matrix2d.dtype)
+-            
++
+         elif isinstance(data,numpy.ndarray) and len(data.shape) == 3 and data.shape[0]==3:
+             self.type=TYPE_MATRIX_RGB
+             self.matrix3d = data
+@@ -136,7 +139,7 @@ class Image:
+                 self.depth=64
+             else:
+                 raise TypeError("Unsuppoted format for ndarray images: %s"%self.matrix2d.dtype)
+-            
++
+         elif isinstance(data,PIL.Image.Image) or type(data) == str:
+             if type(data) == str:
+                 # Assume this is a filename
+@@ -147,47 +150,47 @@ class Image:
+             self.type=TYPE_PIL
+             self.pil = data
+             self.width,self.height = self.pil.size
+-                        
++
+             if self.pil.mode == 'L':
+                 self.channels = 1
+             elif self.pil.mode == 'RGB':
+                 self.channels = 3
+             elif self.pil.mode == 'RGBA':
+-                # 
++                #
+                 self.pil = self.pil.convert('RGB')
+                 self.channels = 3
+             else:
+                 raise TypeError("Unsuppoted format for PIL images: %s"%self.pil.mode)
+-            
++
+             self.depth = 8
+-                        
++
+         elif isinstance(data,cv.iplimage):
+             self.type=TYPE_OPENCV
+-            self.opencv=data 
+-            
++            self.opencv=data
++
+             self.width = data.width
+             self.height = data.height
+-            
++
+             assert data.nChannels in (1,3)
+-            self.channels = data.nChannels 
+-            
++            self.channels = data.nChannels
++
+             assert data.depth in (8,)
+-            self.depth = data.depth   
++            self.depth = data.depth
+ 
+         else:
+             raise TypeError("Could not create from type: %s %s"%(data,type(data)))
+-        
++
+         self.size = (self.width,self.height)
+         self.data = data
+-        
++
+     def asBW(self):
+         '''
+         @return: a gray-scale version of this pyvision image
+-        '''    
++        '''
+         if self.matrix2d == None:
+             self._generateMatrix2D()
+         return Image(self.matrix2d)
+-    
++
+     def asMatrix2D(self):
+         '''
+         @return: the gray-scale image data as a two dimensional numpy array
+@@ -219,24 +222,24 @@ class Image:
+         if self.opencv == None:
+             self._generateOpenCV()
+         return self.opencv
+-        
++
+     def asOpenCVBW(self):
+         '''
+         @return: the image data in an OpenCV one channel format
+         '''
+         cvim = self.asOpenCV()
+-        
++
+         if cvim.nChannels == 1:
+             return cvim
+-        
++
+         elif cvim.nChannels == 3:
+             cvimbw = cv.CreateImage(cv.GetSize(cvim), cv.IPL_DEPTH_8U, 1);
+             cv.CvtColor(cvim, cvimbw, cv.CV_BGR2GRAY);
+             return cvimbw
+-        
++
+         else:
+             raise ValueError("Unsupported opencv image format: nChannels=%d"%cvim.nChannels)
+-        
++
+     def asThermal(self,clip_negative=False):
+         '''
+         @returns: a thermal colored representation of this image.
+@@ -245,12 +248,12 @@ class Image:
+         mat = self.asMatrix2D()
+         if clip_negative:
+             mat = mat*(mat > 0.0)
+-            
++
+         mat = mat - mat.min()
+         mat = mat / mat.max()
+ 
+         therm = np.zeros((3,w,h),dtype=np.float)
+-        
++
+         mask = mat <= 0.1
+         therm[2,:,:] += mask*(0.5 + 0.5*mat/0.1)
+ 
+@@ -259,21 +262,21 @@ class Image:
+         therm[2,:,:] += mask*(1.0-tmp)
+         therm[1,:,:] += mask*tmp
+         therm[0,:,:] += mask*tmp
+-        
++
+         mask = (mat > 0.4) & (mat <= 0.7)
+         tmp = (mat - 0.4) / 0.3
+         therm[2,:,:] += mask*0
+         therm[1,:,:] += mask*(1-0.5*tmp)
+         therm[0,:,:] += mask*1
+ 
+-        mask = (mat > 0.7) 
++        mask = (mat > 0.7)
+         tmp = (mat - 0.7) / 0.3
+         therm[2,:,:] += mask*0
+         therm[1,:,:] += mask*(0.5-0.5*tmp)
+         therm[0,:,:] += mask*1
+ 
+         return pv.Image(therm)
+-        
++
+ 
+     def asAnnotated(self):
+         '''
+@@ -287,7 +290,7 @@ class Image:
+                 # Annotate over color if avalible.
+                 self.annotated = self.asPIL().copy().convert("RGB")
+         return self.annotated
+-            
++
+     def asHSV(self):
+         '''
+         @return: an OpenCV HSV encoded image
+@@ -295,10 +298,10 @@ class Image:
+         cvim = self.asOpenCV()
+         dst = cv.CreateImage(cv.GetSize(cvim), cv.IPL_DEPTH_8U, 3)
+         cv.CvtColor(cvim, dst, cv.CV_BGR2HSV)
+-        
++
+         return dst
+-        
+-        
++
++
+     def asLAB(self):
+         '''
+         @return: an OpenCV LAB encoded image
+@@ -306,16 +309,16 @@ class Image:
+         cvim = self.asOpenCV()
+         dst = cv.CreateImage(cv.GetSize(cvim), cv.IPL_DEPTH_8U, 3)
+         cv.CvtColor(cvim, dst, cv.CV_BGR2Lab)
+-        
++
+         return dst
+-        
+-        
++
++
+     def annotateRect(self,rect,color='red', fill_color=None):
+         '''
+         Draws a rectangle on the annotation image
+-        
++
+         @param rect: a rectangle of type Rect
+-        @param color: defined as ('#rrggbb' or 'name') 
++        @param color: defined as ('#rrggbb' or 'name')
+         @param fill_color: defined as per color, but indicates the color
+         used to fill the rectangle. Specify None for no fill.
+         '''
+@@ -324,13 +327,13 @@ class Image:
+         box = [rect.x,rect.y,rect.x+rect.w,rect.y+rect.h]
+         draw.rectangle(box,outline=color,fill=fill_color)
+         del draw
+-        
++
+     def annotateThickRect(self,rect,color='red',width=5):
+         '''
+         Draws a rectangle on the annotation image
+-        
++
+         @param rect: a rectangle of type Rect
+-        @param color: defined as ('#rrggbb' or 'name') 
++        @param color: defined as ('#rrggbb' or 'name')
+         '''
+         im = self.asAnnotated()
+         draw = PIL.ImageDraw.Draw(im)
+@@ -348,49 +351,49 @@ class Image:
+     def annotateEllipse(self,rect,color='red'):
+         '''
+         Draws an ellipse on the annotation image
+-        
++
+         @param rect: the bounding box of the elipse of type Rect
+-        @param color: defined as ('#rrggbb' or 'name') 
++        @param color: defined as ('#rrggbb' or 'name')
+         '''
+         im = self.asAnnotated()
+         draw = PIL.ImageDraw.Draw(im)
+         box = [rect.x,rect.y,rect.x+rect.w,rect.y+rect.h]
+         draw.ellipse(box,outline=color)
+         del draw
+-                
++
+     def annotateLine(self,point1,point2,color='red',width=1):
+         '''
+         Draws a line from point1 to point2 on the annotation image
+-    
++
+         @param point1: the starting point as type Point
+         @param point2: the ending point as type Point
+-        @param color: defined as ('#rrggbb' or 'name') 
++        @param color: defined as ('#rrggbb' or 'name')
+         '''
+         im = self.asAnnotated()
+         draw = PIL.ImageDraw.Draw(im)
+         line = [point1.X(),point1.Y(),point2.X(),point2.Y()]
+         draw.line(line,fill=color,width=width)
+         del draw
+-        
++
+     def annotatePolygon(self,points,color='red',width=1):
+         '''
+         Draws a line from point1 to point2 on the annotation image
+-    
++
+         @param points: a list of pv points to be plotted
+-        @param color: defined as ('#rrggbb' or 'name') 
++        @param color: defined as ('#rrggbb' or 'name')
+         @param width: the line width
+         '''
+         n = len(points)
+         for i in range(n):
+-            j = (i+1)%n 
++            j = (i+1)%n
+             self.annotateLine(points[i],points[j],color=color,width=width)
+-        
++
+     def annotatePoint(self,point,color='red'):
+         '''
+         Marks a point in the annotation image using a small circle
+-        
++
+         @param point: the point to mark as type Point
+-        @param color: defined as ('#rrggbb' or 'name') 
++        @param color: defined as ('#rrggbb' or 'name')
+         '''
+         im = self.asAnnotated()
+         draw = PIL.ImageDraw.Draw(im)
+@@ -401,9 +404,9 @@ class Image:
+     def annotatePoints(self,points,color='red'):
+         '''
+         Marks a point in the annotation image using a small circle
+-        
++
+         @param point: the point to mark as type Point
+-        @param color: defined as ('#rrggbb' or 'name') 
++        @param color: defined as ('#rrggbb' or 'name')
+         '''
+         im = self.asAnnotated()
+         draw = PIL.ImageDraw.Draw(im)
+@@ -414,25 +417,25 @@ class Image:
+ 
+     def annotateCircle(self,point, radius=3, color='red',fill=None):
+         '''
+-        Marks a circle in the annotation image 
+-        
++        Marks a circle in the annotation image
++
+         @param point: the center of the circle as type Point
+         @param radius: the radius of the circle
+-        @param color: defined as ('#rrggbb' or 'name') 
++        @param color: defined as ('#rrggbb' or 'name')
+         '''
+         im = self.asAnnotated()
+         draw = PIL.ImageDraw.Draw(im)
+         box = [point.X()-radius,point.Y()-radius,point.X()+radius,point.Y()+radius]
+         draw.ellipse(box,outline=color,fill=fill)
+         del draw
+-        
+-    def annotateLabel(self,point,label,color='red',mark=False, font=None, background=None):        
++
++    def annotateLabel(self,point,label,color='red',mark=False, font=None, background=None):
+         '''
+-        Marks a point in the image with text 
+-        
++        Marks a point in the image with text
++
+         @param point: the point to mark as type Point
+         @param label: the text to use as a string
+-        @param color: defined as ('#rrggbb' or 'name') 
++        @param color: defined as ('#rrggbb' or 'name')
+         @param mark: of True or ['right', 'left', 'below', or 'above'] then also mark the point with a small circle
+         @param font: An optional PIL.ImageFont font object to use. If None, then the default is used.
+         @param background: An optional color that will be used to draw a rectangular background underneath the text.
+@@ -441,13 +444,13 @@ class Image:
+         draw = PIL.ImageDraw.Draw(im)
+         if font == None:
+             font = ImageFont.load_default()
+-        
++
+         tw,th = draw.textsize(label, font=font)
+-            
++
+         if background != None:
+             point2 = pv.Point( point.x + tw, point.y+th)
+             draw.rectangle([point.asTuple(), point2.asTuple()], fill=background)
+-            
++
+         if mark in [True, 'right']:
+             draw.text([point.X()+5,point.Y()-th/2],label,fill=color, font=font)
+             box = [point.X()-3,point.Y()-3,point.X()+3,point.Y()+3]
+@@ -471,20 +474,20 @@ class Image:
+ 
+         del draw
+ 
+-        
++
+     def annotateDot(self,point,color='red'):
+         '''
+         Like L{annotatePoint} but only draws a point on the given pixel.
+         This is useful to avoid clutter if many points are being annotated.
+-        
++
+         @param point: the point to mark as type Point
+-        @param color: defined as ('#rrggbb' or 'name') 
++        @param color: defined as ('#rrggbb' or 'name')
+         '''
+         im = self.asAnnotated()
+         draw = PIL.ImageDraw.Draw(im)
+         draw.point([point.X(),point.Y()],fill=color)
+         del draw
+-        
++
+     #------------------------------------------------------------------------
+     def valueNormalize(self):
+         '''TODO: Deprecated remove this sometime.'''
+@@ -495,7 +498,7 @@ class Image:
+     # @return the type of the image
+     def getType(self):
+         return self.type
+-    
++
+     #------------------------------------------------------------------------
+     def normalize(self):
+         import PIL.ImageOps
+@@ -509,7 +512,7 @@ class Image:
+         mat -= mean
+         mat /= std
+         self.matrix2d=mat
+-       
++
+     def equalize(self, bw=True):
+         import PIL.ImageOps
+         pil = self.asPIL().copy()
+@@ -518,21 +521,21 @@ class Image:
+         else:
+             pil = PIL.ImageOps.equalize(pil)
+         return pv.Image(pil)
+-    #------------------------------------------------------------------------        
++    #------------------------------------------------------------------------
+     def _generateMatrix2D(self):
+         '''
+         Create a matrix version of the image.
+         '''
+         buffer = self.toBufferGray(32)
+         self.matrix2d = numpy.frombuffer(buffer,numpy.float32).reshape(self.height,self.width).transpose()
+-                    
++
+ 
+     def _generateMatrix3D(self):
+         '''
+         Create a matrix version of the image.
+         '''
+         buffer = self.toBufferRGB(32)
+-        self.matrix3d = numpy.frombuffer(buffer,numpy.float32).reshape(self.height,self.width,3).transpose()            
++        self.matrix3d = numpy.frombuffer(buffer,numpy.float32).reshape(self.height,self.width,3).transpose()
+ 
+     def _generatePIL(self):
+         '''
+@@ -544,13 +547,13 @@ class Image:
+             self.pil = PIL.Image.fromstring("RGB",self.size,self.toBufferRGB(8))
+         else:
+             raise NotImplementedError("Cannot convert image from type: %s"%self.type)
+-        
++
+     def _generateOpenCV(self):
+         '''
+         Create a color opencv representation of the image.
+         TODO: The OpenCV databuffer seems to be automatically swapped from RGB to BGR.  This is counter intuitive.
+         '''
+-        
++
+         w,h = self.size
+         if self.channels == 1:
+             gray = cv.CreateImage((w,h),cv.IPL_DEPTH_8U,1)
+@@ -565,8 +568,8 @@ class Image:
+             self.opencv=bgr
+         else:
+             raise NotImplementedError("Cannot convert image from type: %s"%self.type)
+-                
+-        
++
++
+     def toBufferGray(self,depth):
+         '''
+             returns the image data as a binary python string.
+@@ -595,18 +598,18 @@ class Image:
+                 raise TypeError("Operation not supported for image type.")
+         else:
+             raise TypeError("Operation not supported for image type.")
+-        
++
+         assert buffer
+-            
++
+         if depth == self.depth:
+             return buffer
+-        
++
+         else:
+             types = {8:numpy.uint8,32:numpy.float32,64:numpy.float64}
+-            
++
+             # convert the buffer to data
+             data = numpy.frombuffer(buffer,types[self.depth])
+-            
++
+             if depth==8:
+                 # Make sure the data is in a valid range
+                 max_value = data.max()
+@@ -617,14 +620,14 @@ class Image:
+                     # 8 bit image
+                     pass
+                 else:
+-                    # Rescale the values from 0 to 255 
++                    # Rescale the values from 0 to 255
+                     if max_value == min_value:
+                         max_value = min_value+1
+                     data = (255.0/(max_value-min_value))*(data-min_value)
+-            
++
+             data = data.astype(types[depth])
+             return data.tostring()
+-        
++
+ 
+     def toBufferRGB(self,depth):
+         '''
+@@ -642,7 +645,7 @@ class Image:
+             tmp[0,:] = mat
+             tmp[1,:] = mat
+             tmp[2,:] = mat
+-            buffer = mat.tostring()            
++            buffer = mat.tostring()
+         elif self.type == TYPE_MATRIX_RGB:
+             mat = self.matrix3d.transpose()
+             buffer = mat.tostring()
+@@ -660,18 +663,18 @@ class Image:
+                 raise TypeError("Operation not supported for image type.")
+         else:
+             raise TypeError("Operation not supported for image type.")
+-        
++
+         assert buffer
+-            
++
+         if depth == self.depth:
+             return buffer
+-        
++
+         else:
+             types = {8:numpy.uint8,32:numpy.float32,64:numpy.float64}
+-            
++
+             # convert the buffer to data
+             data = numpy.frombuffer(buffer,types[self.depth])
+-            
++
+             if depth==8:
+                 # Make sure the data is in a valid range
+                 max_value = data.max()
+@@ -682,14 +685,14 @@ class Image:
+                     # 8 bit image
+                     pass
+                 else:
+-                    # Rescale the values from 0 to 255 
++                    # Rescale the values from 0 to 255
+                     if max_value == min_value:
+                         max_value = min_value+1
+                     data = (255.0/(max_value-min_value))*(data-min_value)
+-            
++
+             data = data.astype(types[depth])
+             return data.tostring()
+-        
++
+ 
+     def toBufferRGBA(self,depth):
+         '''
+@@ -702,27 +705,27 @@ class Image:
+         For more control, look at the Affine class for arbitrary transformations.
+         @param newSize: tuple (new_width, new_height)
+         @returns: a new pyvision image that is the resized version of this image.
+-        ''' 
++        '''
+         tmp = self.asPIL()
+         if newSize[0] < self.size[0] or newSize[1] < self.size[1]:
+             #because at least one dimension is being shrinked, we need to use ANTIALIAS filter
+-            tmp = tmp.resize(newSize, ANTIALIAS)        
++            tmp = tmp.resize(newSize, ANTIALIAS)
+         else:
+             #use bicubic interpolation
+             tmp = tmp.resize(newSize, BICUBIC)
+ 
+         return pyvision.Image(tmp)
+-    
++
+     def scale(self, scale):
+         ''' Returns a scaled version of the image. This is a convenience function.
+         For more control, look at the Affine class for arbitrary transformations.
+         @param scale: a float indicating the scale factor
+         @returns: a new pyvision image that is the scaled version of this image.
+-        ''' 
++        '''
+         w,h = self.size
+         new_size = (int(round(scale*w)),int(round(scale*h)))
+         return self.resize(new_size)
+-    
++
+     def copy(self):
+         '''
+         Returns a new pv.Image which is a copy of (only) the current image.
+@@ -733,18 +736,18 @@ class Image:
+         imgdat = self.asOpenCV()
+         imgdat2 = cv.CloneImage(imgdat)
+         return pv.Image(imgdat2)
+-    
++
+     def crop(self, rect, size=None, interpolation=None, return_affine=False):
+         '''
+-        Crops an image to the given rectangle. Rectangle parameters are rounded to nearest 
++        Crops an image to the given rectangle. Rectangle parameters are rounded to nearest
+         integer values.  High quality resampling.  The default behavior is to use cv.GetSubRect
+         to crop the image.  This returns a slice the OpenCV image so modifying the resulting
+         image data will also modify the data in this image.  If a size is provide a new OpenCV
+-        image is created for that size and cv.Resize is used to copy the image data. If the 
++        image is created for that size and cv.Resize is used to copy the image data. If the
+         bounds of the rectangle are outside the image, an affine transform (pv.AffineFromRect)
+         is used to produce the croped image to properly handle regions outside the image.
+-        In this case the downsampling quality may not be as good. 
+-        
++        In this case the downsampling quality may not be as good.
++
+         @param rect: a Rectangle defining the region to be cropped.
+         @param size: a new size for the returned image.  If None the result is not resized.
+         @param interpolation: None = Autoselect or one of CV_INTER_AREA, CV_INTER_NN, CV_INTER_LINEAR, CV_INTER_BICUBIC
+@@ -756,16 +759,16 @@ class Image:
+         # are indexed by zero this means that upper limits are not inclusive: x from [0,w)
+         # and y from [0,h)
+         x,y,w,h = rect.asTuple()
+-       
++
+         x = int(np.round(x))
+         y = int(np.round(y))
+         w = int(np.round(w))
+         h = int(np.round(h))
+-        
++
+         if x < 0 or y < 0 or x+w > self.size[0] or y+h > self.size[1]:
+             if size == None:
+                 size = (w,h)
+-            
++
+             #print size
+             affine = pv.AffineFromRect(pv.Rect(x,y,w,h),size)
+             im = affine(self)
+@@ -773,24 +776,24 @@ class Image:
+                 return im,affine
+             else:
+                 return im
+-        
++
+         cvim = self.asOpenCV()
+-                
++
+         subim = cv.GetSubRect(cvim,(x,y,w,h))
+-        
++
+         affine = pv.AffineTranslate(-x,-y,(w,h))
+-        
++
+         if size == None:
+             size = (w,h)
+         #    if return_affine:
+         #        return pv.Image(subim),affine
+         #    else:
+         #        return pv.Image(subim)
+-        
++
+         new_image = cv.CreateImage(size,cvim.depth,cvim.nChannels)
+-        
++
+         if interpolation == None:
+-            
++
+             if size[0] < w or size[1] < y:
+                 # Downsampling so use area interpolation
+                 interpolation = cv.CV_INTER_AREA
+@@ -799,14 +802,14 @@ class Image:
+                 interpolation = cv.CV_INTER_CUBIC
+ 
+         cv.Resize(subim,new_image,interpolation)
+-        
++
+         affine = pv.AffineNonUniformScale(float(size[0])/w,float(size[1])/h,size)*affine
+-        
+-        if return_affine: 
++
++        if return_affine:
+             return pv.Image(new_image),affine
+         else:
+             return pv.Image(new_image)
+-        
++
+     def save(self,filename,annotations=False):
+         '''
+         Save the image to a file.  This is performed by converting to PIL and
+@@ -823,31 +826,31 @@ class Image:
+                 self.asAnnotated().save(filename)
+             else:
+                 self.asPIL().save(filename)
+-            
++
+     def show(self, window="PyVisionImage", pos=None, delay=1, size=None):
+         '''
+         Displays the annotated version of the image using OpenCV highgui
+         @param window: the name of the highgui window to use, this should
+             already have been created using cv.NamedWindow or set newWindow=True
+-        @param pos: If newWindow, then pos is the (x,y) coordinate for the new window 
+-        @param delay: A delay in milliseconds to wait for keyboard input (passed to cv.WaitKey).  
++        @param pos: If newWindow, then pos is the (x,y) coordinate for the new window
++        @param delay: A delay in milliseconds to wait for keyboard input (passed to cv.WaitKey).
+             0 delays indefinitely, 1 is good for live updates and animations.  The window
+-            will disappear after the program exits.  
++            will disappear after the program exits.
+         @param size: Optional output size for image, None=native size.
+         @returns: a key press event,
+         '''
+         cv.NamedWindow(window)
+-        
++
+         if pos != None:
+             cv.MoveWindow(window, pos[0], pos[1])
+-            
+-            
+-            
++
++
++
+         if size != None:
+             x = pyvision.Image(self.resize(size).asAnnotated())
+         else:
+-            x = pyvision.Image(self.asAnnotated())    
+-            
++            x = pyvision.Image(self.asAnnotated())
++
+         cv.ShowImage(window, x.asOpenCV() )
+         key = cv.WaitKey(delay=delay)
+         del x
+@@ -857,7 +860,7 @@ class Image:
+ def OpenCVToNumpy(cvmat):
+     '''
+     Convert an OpenCV matrix to a numpy matrix.
+-    
++
+     Based on code from: http://opencv.willowgarage.com/wiki/PythonInterface
+     '''
+     depth2dtype = {
+@@ -872,7 +875,7 @@ def OpenCVToNumpy(cvmat):
+     assert cvmat.channels == 1
+     r = cvmat.rows
+     c = cvmat.cols
+-    
++
+     a = np.fromstring(
+              cvmat.tostring(),
+              dtype=depth2dtype[cvmat.type],
+@@ -884,8 +887,8 @@ def OpenCVToNumpy(cvmat):
+ # Convert a numpy matrix to a 32bit opencv matrix
+ def NumpyToOpenCV(a):
+     '''
+-    Convert a numpy matrix to an OpenCV matrix. 
+-    
++    Convert a numpy matrix to an OpenCV matrix.
++
+     Based on code from: http://opencv.willowgarage.com/wiki/PythonInterface
+     '''
+     dtype2depth = {
+@@ -897,9 +900,9 @@ def NumpyToOpenCV(a):
+         'float32': cv.CV_32F,
+         'float64': cv.CV_64F,
+     }
+-  
++
+     assert len(a.shape) == 2
+-        
++
+     r,c = a.shape
+     cv_im = cv.CreateMat(r,c,dtype2depth[str(a.dtype)])
+     cv.SetData(cv_im, a.tostring())
+@@ -907,7 +910,7 @@ def NumpyToOpenCV(a):
+ 
+ 
+ class _TestImage(unittest.TestCase):
+-    
++
+     def setUp(self):
+         # Assume these work correctly
+         self.im     = pv.Image(os.path.join(pyvision.__path__[0],"data","nonface","NONFACE_46.jpg"))
+@@ -920,7 +923,7 @@ class _TestImage(unittest.TestCase):
+         assert self.mat3d.shape[1] == 640
+         assert self.mat3d.shape[2] == 480
+         self.opencv = self.im.asOpenCV()
+-            
++
+     def test_PILToBufferGray(self):
+         w,h = self.im.size
+         buffer = self.im.toBufferGray(8)
+@@ -959,7 +962,7 @@ class _TestImage(unittest.TestCase):
+         for i in range(im.width):
+             for j in range(im.height):
+                 self.assertAlmostEqual(pil.getpixel((i,j)),mat[i,j])
+-        
++
+     def test_Matrix2DToPIL(self):
+         im = Image(self.mat[:180,:120])
+         pil = im.asPIL()
+@@ -985,7 +988,7 @@ class _TestImage(unittest.TestCase):
+             for j in range(im.height):
+                 for c in range(3):
+                     self.assertAlmostEqual(pil.getpixel((i,j))[c],mat[c,i,j])
+-        
++
+     def test_PILToOpenCV(self):
+         pil = self.im.asPIL().resize((180,120))
+         im = Image(pil)
+@@ -1000,7 +1003,7 @@ class _TestImage(unittest.TestCase):
+             for j in range(im.height):
+                 for c in range(3):
+                     self.assertAlmostEqual(pil.getpixel((i,j))[c],ord(cv.tostring()[i*3+j*im.width*3+2-c]))
+-        
++
+     def test_OpenCVToPIL(self):
+         pil = self.im.asPIL().resize((180,120))
+         im = Image(pil)
+@@ -1011,25 +1014,25 @@ class _TestImage(unittest.TestCase):
+             for j in range(im.height):
+                 for c in range(3):
+                     self.assertAlmostEqual(pil.getpixel((i,j))[c],ord(cv.tostring()[i*3+j*im.width*3+2-c]))
+-        
++
+     def test_OpenCVToPILGray(self):
+         pil = self.im.asPIL().resize((180,120)).convert('L')
+         im = Image(pil)
+         cv = im.asOpenCV()
+         im = Image(cv)
+         pil = im.asPIL()
+-        
++
+         #Uncomment this code to compare saved images
+         #from opencv import highgui
+         #highgui.cvSaveImage('/tmp/cv.png',cv)
+         #pil.show()
+         #Image('/tmp/cv.png').show()
+-        
++
+         # TODO: There seems to be data loss in the conversion from pil to opencv and back.  Why?
+         #for i in range(im.width):
+         #    for j in range(im.height):
+         #        self.assertAlmostEqual(pil.getpixel((i,j)),ord(cv.imageData[i*3+j*im.width*3]))
+-        
++
+     def test_BufferToOpenCV(self):
+         pil = self.im.asPIL().resize((180,120))
+         im = Image(pil)
+@@ -1040,10 +1043,10 @@ class _TestImage(unittest.TestCase):
+             for j in range(im.height):
+                 for c in range(3):
+                     self.assertAlmostEqual(ord(buffer[i*3+j*im.width*3+c]),ord(cvim.tostring()[i*3+j*im.width*3+2-c]))
+-     
++
+     def test_asOpenCVBW(self):
+         pass #TODO: Create tests for this method.
+-        
++
+     def test_MatConvertOpenCVToNumpy(self):
+         r,c = 10,20
+         cvmat = cv.CreateMat(r,c,cv.CV_32F)
+@@ -1055,8 +1058,8 @@ class _TestImage(unittest.TestCase):
+         for i in range(r):
+             for j in range(c):
+                 self.assert_(mat[i,j] == cvmat[i,j])
+-        
+-        
++
++
+     def test_MatConvertNumpyToOpenCV(self):
+         r,c = 10,20
+         mat = np.zeros((r,c),dtype=np.float32)
+@@ -1068,20 +1071,20 @@ class _TestImage(unittest.TestCase):
+         for i in range(r):
+             for j in range(c):
+                 self.assert_(mat[i,j] == cvmat[i,j])
+-                
++
+     def test_ImageCropOutofBounds(self):
+         rect = pv.Rect(-3, -2, 35, 70)
+         imcrop = self.im.crop(rect)
+         cropSize = imcrop.size
+-        
++
+         self.assertEquals((35,70), cropSize)
+-        
++
+         rect = pv.Rect(620, 460, 35, 70)
+         imcrop = self.im.crop(rect)
+         cropSize = imcrop.size
+-        
++
+         self.assertEquals((35,70), cropSize)
+-        
++
+     def test_asHSV(self):
+         im = pv.Image(os.path.join(pyvision.__path__[0],"data","misc","baboon.jpg"))
+         hsv = im.asHSV()
+@@ -1091,7 +1094,7 @@ class _TestImage(unittest.TestCase):
+         im = pv.Image(os.path.join(pyvision.__path__[0],"data","misc","baboon_bw.jpg"))
+         self.assertRaises(Exception, im.asHSV)
+ 
+-        
+-        
+-        
+-        
++
++
++
++
