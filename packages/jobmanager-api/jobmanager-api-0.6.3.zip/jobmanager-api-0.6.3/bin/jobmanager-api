@@ -1,0 +1,59 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+# vim: ai ts=4 sts=4 et sw=4 nu
+"""
+(c) 2014 Ronan Delacroix
+Job Manager Utility - Main File
+:author: Ronan Delacroix
+"""
+import os
+import sys
+import six
+import time
+import logging
+import argparse
+import jobmanager.api
+import mongoengine
+import tbx
+import tbx.log
+import tbx.settings
+
+
+settings = tbx.settings.from_file('api', application_name='jobmanager')
+tbx.log.configure_logging("jobmanager-api", application_name='jobmanager', settings=settings.LOG)
+
+
+def import_from_name(module_name):
+    globals()[module_name] = __import__(module_name)
+
+
+def main():
+    log = logging.getLogger('werkzeug')
+    log.setLevel(logging.ERROR)
+
+    while True:
+        try:
+            mongoengine.connect(host=settings.DATABASE.HOST, port=settings.DATABASE.PORT, db=settings.DATABASE.NAME)
+
+            for mod in settings.JOBS.MODULES:
+                try:
+                    import_from_name(mod)
+                except ImportError:
+                    logging.error("Can't import Job module '%s' as defined in settings. Exiting." % mod)
+                    exit(1)
+            jobmanager.api.run_api(host=settings.WEB.HOST, port=settings.WEB.PORT, debug=settings.WEB.DEBUG)
+            exit(0)
+        except KeyboardInterrupt:
+            logging.error("Received Keyboard Interrupt. Exiting.")
+            exit(1)
+        except mongoengine.ConnectionError:
+            logging.exception("Database connection error to %s. Waiting 10 seconds for retry..." % settings.DATABASE.HOST)
+            time.sleep(10)
+        except Exception as e:
+            logging.exception("Unknown Error (%s). Waiting 10 seconds for retry..." % str(e))
+            time.sleep(10)
+
+    exit(0)
+
+if __name__ == "__main__":
+    main()
