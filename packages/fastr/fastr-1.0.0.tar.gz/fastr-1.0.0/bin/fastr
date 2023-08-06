@@ -1,0 +1,80 @@
+#!/usr/bin/env python
+
+import argparse
+import imp
+import os
+import sys
+
+
+# Do not get info about fastr on start
+FASTR_LOG_TYPE = 'none'
+import fastr
+
+# Set log to console
+fastr.config.logtype = 'console'
+fastr.config._update_logging()
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    subparsers = parser.add_subparsers(title='subcommand', dest='command', description='The fastr command to use, can be one of the following:')
+    help_parser = subparsers.add_parser('help', help='show help for given subcommand or the overview')
+    help_parser.add_argument('subcommand', nargs='?', help='Subcommand to show the help for')
+
+    # Get all files in utils following the bin_*.py name convention
+    files = os.listdir(os.path.join(fastr.config.systemdir, 'utils', 'cmd'))
+    files = [x for x in files if x.endswith('.py')]
+
+    if '__init__.py' in files:
+        files.remove('__init__.py')
+
+    subfunctions = {}
+
+    # Scan all files for a valid script with argument parser
+    for filename in files:
+        # Get the full path and base
+        filepath = os.path.join(fastr.config.systemdir, 'utils', 'cmd', filename)
+        filebase = os.path.splitext(filename)[0]
+
+        # Load module to inspect
+        temp_module = imp.load_source(filebase, filepath)
+
+        # Attempt to get the parser and main function
+        try:
+            sub_parser = temp_module.get_parser()
+            entry_func = temp_module.main
+            func_name = filename[:-3]  # Get the command name and strip bin_ and .py
+
+            sub_parser.prog = '{} {}'.format(parser.prog, func_name)
+            subparsers._name_parser_map[func_name] = sub_parser
+            subfunctions[func_name] = entry_func
+
+            doc = entry_func.__doc__.strip() if entry_func.__doc__ is not None else ''
+            choice_action = subparsers._ChoicesPseudoAction(func_name, help=doc)
+            subparsers._choices_actions.append(choice_action)
+        except BaseException as error:
+            print('Error loading subcommand {}: {}'.format(filebase, error))
+
+    # Make sure script is an abs path
+    sys.argv[0] = os.path.abspath(sys.argv[0])
+
+    # Parse the arguments
+    args, unknown_args = parser.parse_known_args()
+
+    # Get special case for the help subcommand
+    if args.command == 'help':
+        subcommand = args.subcommand
+        if subcommand is None:
+            print parser.format_help()
+        elif subcommand in subparsers._name_parser_map:
+            print subparsers._name_parser_map[subcommand].format_help()
+        else:
+            print('ERROR: Unknown subcommand "{}"'.format(subcommand))
+            print parser.format_help()
+    else:
+         # Call the specified sub command
+        subfunctions[args.command](args, unknown_args)
+    
+
+if __name__ == '__main__':
+    main()

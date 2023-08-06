@@ -1,0 +1,266 @@
+{
+    "type":"object",
+    "class": "fastr.core.fastrinterface.FastrInterface",
+    "$schema": "http://json-schema.org/draft-04/schema",
+    "description": "Definition of the data structure of a FastrInterface object",
+    "definitions": {
+        "datatype": {
+            "properties":{
+                "datatype": {
+                    "description": "The ID of the DataType of the Input",
+                    "type":"string"
+                }
+            },
+            "required": ["datatype"]
+        },
+        "enum": {
+            "properties":{
+                "enum": {
+                    "type":"array",
+                    "uniqueItems": true,
+                    "minItems": 1,
+                    "items": {
+                        "title": "option",
+                        "type": "string"
+                    }
+                }
+            },
+            "required": ["enum"]
+        },
+        "datatypespec": {
+            "oneOf": [
+                {"$ref": "#/definitions/datatype"},
+                {"$ref": "#/definitions/enum"}
+            ]
+        },
+        "automatic": {
+            "properties": {
+                "automatic": {
+                    "description": "Indicate that output does not require commandline argument, but is created automatically by a Tool",
+                    "type": "boolean",
+                    "enum": [true]
+                },
+                "method": {
+                    "type": "string",
+                    "default": "path"
+                },
+                "location": {
+                    "type": "string"
+                },
+                "separator": {
+                    "type": ["string", "null"]
+                }
+            },
+            "required": ["location"]
+        }
+    },
+    "properties":{
+        "inputs": {
+            "description": "List of Inputs that are accepted by the Tool",
+            "type": "array",
+            "class": "collections.OrderedDict",
+            "items": {
+                "type": "object",
+                "class": "fastr.core.tool.ParameterDescription",
+                "required": [
+                    "id",
+                    "name"
+                ],
+                "properties": {
+                    "cardinality": {
+                        "default": "1",
+                        "type": "string",
+                        "description": "Cardinality of the Input",
+                        "pattern": "^((\\*|[0-9]+)(\\-(\\*|[0-9]+))?|as:.*|val:.*)$"
+                    },
+                    "default": {
+                        "default": null,
+                        "description": "Default value for the Input",
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "description": {
+                        "description": "Long description for an input",
+                        "default": "",
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string",
+                        "description": "ID of the Input"
+                    },
+                    "class_": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "description": "class of the Input to use",
+                        "default": null
+                    },
+                    "parent": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "description": "Longer name of the Input (more human readable)",
+                        "type": "string"
+                    },
+                    "nospace": {
+                        "type": "boolean",
+                        "description": "Flag indicating if there is no space between prefix and value (e.g. --in=val)",
+                        "default": false
+                    },
+                    "prefix": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "description": "Commandline prefix of the Input (e.g. --in, -i)",
+                        "default": null
+                    },
+                    "repeat_prefix": {
+                        "type": "boolean",
+                        "description": "Flag indicating if for every value of the Input the prefix is repeated",
+                        "default": false
+                    },
+                    "format": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "description": "For DataTypes that have multiple representations, indicate which one to use",
+                        "default": null
+                    },
+                    "required": {
+                        "type": "boolean",
+                        "description": "Flag indicating if the input is required",
+                        "default": true
+                    },
+                    "order": {
+                        "description": "The order of this Input in the commandline argument",
+                        "type": "integer"
+                    }
+                },
+                "allOf": [
+                    {
+                        "$ref": "#/definitions/datatypespec"
+                    }
+                ]
+            }
+        },
+        "outputs": {
+            "description": "List of Outputs that are generated by the Tool (and accessible to fastr)",
+            "type": "array",
+            "class": "collections.OrderedDict",
+            "items": {
+                "type": "object",
+                "class": "fastr.core.tool.ParameterDescription",
+                "required": [
+                    "id"
+                ],
+                "properties": {
+                    "action": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "description": "Special action (defined per DataType) that needs to be performed before creating output value (e.g. 'ensure' will make sure an output directory exists)",
+                        "default": null
+                    },
+                    "cardinality": {
+                        "default": "1",
+                        "description": "Cardinality of the Output",
+                        "type": "string"
+                    },
+                    "format": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "description": "For DataTypes that have multiple representations, indicate which one to use",
+                        "default": null
+                    },
+                    "default": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "description": "",
+                        "default": null
+                    },
+                    "description": {
+                        "description": "Long description for the Output",
+                        "type": "string"
+                    },
+                    "id": {
+                        "description": "ID of the Output",
+                        "type": "string"
+                    },
+                    "class_": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "description": "class of the Output to use"
+                    },
+                    "parent": {
+                        "description": "",
+                        "type": "string"
+                    },
+                    "name": {
+                        "description": "Longer name of the Output (more human readable)",
+                        "type": "string"
+                    },
+                    "nospace": {
+                        "description": "Flag indicating if there is no space between prefix and value (e.g. --out=val)",
+                        "type": "boolean",
+                        "default": false
+                    },
+                    "prefix": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "description": "Commandline prefix of the Output (e.g. --out, -o)",
+                        "default": null
+                    },
+                    "repeat_prefix": {
+                        "type": "boolean",
+                        "description": "Flag indicating if for every value of the Output the prefix is repeated",
+                        "default": false
+                    },
+                    "required": {
+                        "type": "boolean",
+                        "description": "Flag indicating if the output is required",
+                        "default": false
+                    },
+                    "order": {
+                        "description": "The order of this Output in the commandline argument",
+                        "type": "integer"
+                    }
+                },
+                "allOf": [
+                    {
+                        "$ref": "#/definitions/datatypespec"
+                    }
+                ],
+                "oneOf": [
+                    {
+                        "properties": {
+                            "automatic": {
+                                "description": "Indicate that output doesn’t require commandline argument, but is created automatically by a Tool",
+                                "type": "boolean",
+                                "enum": [
+                                    false
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "$ref": "#/definitions/automatic"
+                    }
+                ]
+            }
+        }
+    }
+}
