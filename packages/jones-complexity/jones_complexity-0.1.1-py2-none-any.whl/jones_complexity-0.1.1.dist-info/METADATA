@@ -1,0 +1,116 @@
+Metadata-Version: 2.0
+Name: jones-complexity
+Version: 0.1.1
+Summary: Jones Complexity checker, plugin for flake8
+Home-page: https://github.com/Miserlou/JonesComplexity
+Author: Rich Jones
+Author-email: rich@openwatch.net
+License: Expat license
+Keywords: flake8
+Platform: UNKNOWN
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: Environment :: Console
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 2
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.3
+Classifier: Programming Language :: Python :: 3.4
+Classifier: Programming Language :: Python :: 3.5
+Classifier: Topic :: Software Development :: Libraries :: Python Modules
+Classifier: Topic :: Software Development :: Quality Assurance
+
+JonesComplexity |Build Status|
+==============================
+
+Flake8 extension to calculate per-line complexity and total code
+density.
+
+Installation
+------------
+
+::
+
+    $ pip install jones-complexity
+
+Usage (Standalone)
+------------------
+
+::
+
+    $ python -m jones_complexity --min 5 your_file.py
+
+Usage (flake8)
+--------------
+
+::
+
+    $ flake8 --max-line-complexity 15 --max-jones-score 8 yourproject
+
+What is this?
+-------------
+
+Because
+
+.. code:: python
+
+    if user.get_full_name().toUpper().split(' ')[0] == 'ALICE':
+        return True
+
+is harder to read and maintain than
+
+.. code:: python
+
+    if first_name == 'Alice':
+       return True
+
+Shamelessly named after myself, in the tradition of McCabe and Halstead.
+
+Examples
+~~~~~~~~
+
+Itself:
+
+::
+
+    $ python jones_complexity.py jones_complexity.py
+    Line counts:
+    {
+        "39": 19, 
+        "46": 15, 
+        "137": 12, 
+        "115": 12, 
+        [...]
+        "18": 1, 
+        "9": 1, 
+        "148": 1
+    }
+    Jones Score:
+    4.0
+
+`PyEsprima <https://raw.githubusercontent.com/PiotrDabkowski/Js2Py/master/examples/pyesprima.py>`__:
+
+::
+
+    $ p jones_complexity.py pyesprima.py 
+    Line counts:
+    {
+        "4182": 265, 
+        "3688": 190, 
+        "4186": 189, 
+        "48": 189, 
+        "4181": 164, 
+        [...]
+        "1201": 1, 
+        "3728": 1
+    }
+    Jones Score:
+    9.0
+
+.. |Build Status| image:: https://travis-ci.org/Miserlou/JonesComplexity.svg
+   :target: https://travis-ci.org/Miserlou/JonesComplexity
+
+
