@@ -1,0 +1,150 @@
+{%extends "rolodex/base.html" %}
+{%load staticfiles%}
+{%block head%}
+
+
+<link rel="stylesheet" type="text/css" href="{% static 'rolodex/css/home.css'%}">
+
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/typeahead.js/0.11.1/typeahead.bundle.min.js"></script>
+
+{%endblock%}
+
+{%block content%}
+
+<style type="text/css">
+    .bolder{
+        font-weight: bold;
+    }
+    h2{
+        font-size: 40px;
+        text-align: center;
+    }
+</style>
+
+<div id="midrail">
+
+<h1>Rolodex</h1>
+
+<div class="outside freetext">
+    <p>Rolodex is a directory of people and the organizations they belong to. It's also a space where you can model relationships.</p>
+    <p></p>
+</div>
+
+<div id="bigSearch">
+<input class="typeahead" type="text" placeholder="Search Rolodex"> 
+
+</div>
+
+<script type="text/javascript">
+
+</script>
+
+
+
+<h2>or</h2>
+
+
+<div id="selectors">
+
+
+
+    <div id="addPerson" class="clickable"><i class="fa fa-plus-square"></i> Add a Person</div>
+        <div id="orgDiv2" class="searchbox">
+         <div class="instruct">First choose the primary organization the person belongs to.</div>
+        <select id="orgSelect2">
+             <option value=""></option>
+        </select>
+        <div class="buttonDiv">
+        <a class="goLink" href=""><i class="fa fa-user-plus"></i></a>
+        <a class="addLink" href="{%url 'rolodex_new_org'%}">Not listed? Add a new Org</a> <br> <a class="addLink" href="{%url 'rolodex_new_person_no_org'%}">Or add org-less Person</a>
+        </div>
+        </div>
+
+    <a class="noUnderline"href="{%url 'rolodex_new_org'%}"><div id="addPerson" class="clickable"><i class="fa fa-plus-square"></i> Add an Org</div></a> 
+
+</div>
+
+
+</div>
+
+<div class="creditText">Rolodex was developed at</div>
+<img class="dmnLogo" src="{%static 'rolodex/images/dmnlogo.jpg'%}">
+
+<script>
+$(function(){
+ 
+    // Big search box
+    var engine = new Bloodhound({
+      identify: function(obj) { return obj.url; },
+      datumTokenizer: Bloodhound.tokenizers.obj.whitespace('name'),
+      queryTokenizer: Bloodhound.tokenizers.whitespace,
+      remote: {
+        url:"{%url 'rolodex_entity_remote_search'%}?q=%QUERY", 
+        wildcard: '%QUERY',
+        filter: function(response) {
+          return response;
+        }
+      }
+    });
+
+    $('#bigSearch .typeahead').typeahead({
+        hint: true,
+        highlight: true,
+        minLength: 3,
+    },
+    {
+      name: 'engine',
+      source: engine,
+      display: 'name',
+    }).on('typeahead:selected', function($e, datum){
+        window.location.href=datum["url"];
+        }
+    );
+
+    // New person org select
+    var $orgSelect2 = $('#orgSelect2').selectize({
+        placeholder: 'Search organizations...',
+        valueField: 'new-p-url',
+        labelField: 'name',
+        searchField: ['name'],
+        maxOptions:10,
+        selectOnTab:true,
+        onChange: function(value){
+            $("#orgDiv2 .goLink").attr("href",$("#orgSelect2").val());
+        },
+        create: false,
+        load: function(query, callback) {
+            if (query.length < 3) return callback();
+            $.ajax({
+                url: "{%url 'rolodex_org_remote_search'%}?q=" + encodeURIComponent(query),
+                type: 'GET',
+                error: function() {
+                    callback();
+                },
+                success: function(response) {
+                    callback(response);
+                }
+            });
+        }
+    });
+    var orgSelect2 = $orgSelect2[0].selectize;
+
+
+    $(".searchbox").hide();
+
+    $("#addPerson").click(function(){
+        $(".searchbox").hide("slow");
+        $("#orgDiv2").slideToggle("slow");
+    });
+    $("#orgSelect2").change(function(){});
+
+});
+
+</script>
+
+<div class="breadcrumb-container">
+<ul class="breadcrumb">
+	<li><a href="{% url 'rolodex_home' %}">Home</a></li>
+</ul>
+</div>
+{%endblock%}

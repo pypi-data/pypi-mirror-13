@@ -1,0 +1,218 @@
+{%extends "rolodex/base.html" %}
+{%load staticfiles%}
+{%block head%}
+
+<script src="{% static 'rolodex/js/selectize.min.js' %}"></script>
+<link rel="stylesheet" type="text/css" href="{% static 'rolodex/css/selectize.css'% }">
+<link rel="stylesheet" type="text/css" href="{% static 'rolodex/css/new_entity.css' %}">
+
+{%endblock%}
+
+{%block content%}
+
+{% if edit %}
+    <h1>{{personNode.firstName}} {{personNode.lastName}}</h1>
+{% else %}
+    <h1>New Person</h1>
+{% endif %}
+
+
+
+
+<div id="midrail">
+{%if success%}
+<div class="instruction">Person added! Add another?</div>
+{%endif%}
+<div class="formDiv">
+
+<h2>ID</h2>
+
+{% if edit %}
+<form action="/rolodex/edit-person/{{personNode.slug}}/" method="Post">
+{% elif orgNode %}
+<form action="/rolodex/add-person/{{orgNode}}/" method="Post">
+{%else%}
+<form action="/rolodex/add-person/" method="Post">
+{% endif %}
+
+{%csrf_token%}
+{% if form.errors or formset.errors %}
+<div id="form-error">
+    <p>Whoops, there was a mistake... Correct it below and try again.</p>
+</div>
+{%endif%}
+
+<div class="personal addform">
+{% if form.errors %}
+<div id="form-error">
+    <ul>
+    <li>{{ form.non_field_errors|striptags }}</li>
+    {% for field in form %}
+    {%if field.errors%}
+    <li>{{field.label}}: {{ field.errors|striptags }}</li>
+    {%endif%}
+    {% endfor %}
+    </ul>
+</div>
+{% endif %}
+<ul>
+    <li class="title">Personal</li>
+    <div>
+    <div class="floatLeft">
+    <li><label>First Name</label></li>
+    <li class="required">{{form.firstName}} </li>
+    </div>
+    <div>
+    <li><label>Last name</label></li>
+    <li class="required">{{form.lastName}}</li>
+    </div>
+    </div>
+    <div class="floatLeft">
+    <li><label>Gender</label></li>
+    <li>{{form.gender}}</li>
+    </div>
+    <li><label>Birth date</label></li>
+    <li>{{form.birthdate}}</li>
+    <li><label>Race</label></li>
+    <li>{{form.race}}</li>
+    <li><label>Ethnicity</label></li>
+    <li>{{form.ethnicity}}</li>
+</ul>
+</div>
+<div class="professional addform">
+    <ul>
+        <li class="title">Professional</li>
+        {%if primary%}<li class="primary">@ {{primary.orgName}}</li>{%endif%}
+        <li><label>Role</label> {{form.role}}</li>
+
+        <div>
+        <div class="floatLeft">
+        <li><label>Position</label> {{form.position}}</li>
+        </div>
+        <div>
+        <li><label>Department*</label> {{form.department}}</li>
+        </div>
+        </div>
+        <li class="instruction">Pro-tip: Consider whether a department should be its own org, linked to a parent org.</li>
+        <li class="title"><label>Notes</label></li>
+        <li class="entity_notes">{{form.notes}}</li>
+    </ul>
+</div>
+
+
+
+<h2>Contacts</h2>
+<div class="outside freetext">
+    <p class="instruction">Contacts include links to a homepage and social media sites, phone and fax numbers, as well as email and physical addresses. 
+</div>
+{% load formset_tags %}
+
+<div id="formset" data-formset-prefix="{{ formset.prefix }}">
+{{formset.management_form}}
+
+    <div data-formset-body>
+        {% for form in formset %}
+            <div data-formset-form class="contactsForm addform">
+                {% if form.errors %}
+                <div id="form-error">
+                    <ul>
+                    <li>{{ form.non_field_errors|striptags }}</li>
+                    {% for field in form %}
+                    {%if field.errors%}
+                    <li>{{field.label}}: {{ field.errors|striptags }}</li>
+                    {%endif%}
+                    {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+
+                {{ form.id }}
+                {{ form.person }}
+                {{ form.org }}
+                <ul class="contact">
+                    <li class="required">Type{{ form.type }}</li>
+                    <li class="required">Contact{{ form.contact }}</li>
+                    <li class="notes">{{ form.notes }}</li>
+                    <li class="delete clearfix"><label>{{form.DELETE}}Delete <i class="fa fa-times"></i></label></li>
+                </ul>
+
+            </div>
+        {% endfor %}
+    </div>
+
+<!--FORM TEMPLATE-->
+    <script type="form-template" data-formset-empty-form>
+        {% escapescript %}
+
+            <div data-formset-form class="contactsForm addform">
+                {% if form.errors %}
+                <div id="form-error">
+                    <ul>
+                    <li>{{ form.non_field_errors|striptags }}</li>
+                    {% for field in form %}
+                    {%if field.errors%}
+                    <li>{{field.label}}: {{ field.errors|striptags }}</li>
+                    {%endif%}
+                    {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+
+                {{ formset.empty_form.id }}
+                {{ formset.empty_form.person }}
+                {{ formset.empty_form.org }}
+                <ul class="contact">
+                    <li class="required">Type{{ formset.empty_form.type }}</li>
+                    <li class="required">Contact{{ formset.empty_form.contact }}</li>
+                    <li class="notes">{{ formset.empty_form.notes }}</li>
+                    <li class="delete clearfix"><label>{{formset.empty_form.DELETE}}Delete <i class="fa fa-times"></i></label></li>
+
+                </ul>
+
+            </div>
+
+        {% endescapescript %}
+    </script>
+
+    <div id="addContact">
+    <a data-formset-add><i class="fa fa-plus" ></i> Contact</a>
+    </div>
+
+
+<script>jQuery(function($) {
+    $("#formset").formset({
+        animateForms: true
+    });
+});</script>
+
+
+</div>
+
+
+
+<div class="form-actions">
+{% if edit %}
+    <button type="submit" class="btn btn-primary add-btn"><i class="fa fa-check"></i> Update {{personNode.firstName}}</button>
+{% else %}
+    <button type="submit" class="btn btn-primary add-btn"><i class="fa fa-plus"></i> Add Person</button>
+{% endif %}
+</div>
+
+</form>
+
+</div>
+</div>
+
+
+<div class="breadcrumb-container">
+<ul class="breadcrumb">
+	<li><a href="{% url 'rolodex_home' %}">Home</a></li>
+    {%if edit%}
+    <li><a href="{%url 'rolodex_person' personNode.slug%}">{{personNode.lastName|truncatechars:9}}</a></li>
+    <li><a>Edit</a></li>
+    {%else%}
+	<li><a>Add Person</a></li>
+    {%endif%}
+</ul>
+</div>
+{%endblock%}
