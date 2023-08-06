@@ -1,0 +1,44 @@
+0.2.9 (2016-01-22)
+------------------
+* Simple quiver field view
+* Read vector fields from CSV-like files
+
+0.2.8 (2015-12-13)
+------------------
+* Various bug fixes
+* Simple bokeh plot
+* Better CSV import
+
+0.2.7 (2015-09-20)
+------------------
+* Python 3 support (though many file readings are broken)
+
+0.2.6 (2014-11-22)
+------------------
+* HTML representation for IPython
+
+0.2.5 (2014-11-14)
+------------------
+* Open files from command line
+
+0.2.4 (2014-10-30)
+------------------
+* Make less dependent on optional packages
+
+0.2.3 (2014-10-29)
+------------------
+* Various bug fixes
+
+0.2.2 (2014-10-26)
+------------------
+* Basic CSV support
+
+0.2.1 (2014-10-23)
+------------------
+* Fix: required packages
+
+0.2 (2014-10-22)
+----------------
+* Blinker dependency
+* More detailed children add / remove process
+* Selectable item list view
