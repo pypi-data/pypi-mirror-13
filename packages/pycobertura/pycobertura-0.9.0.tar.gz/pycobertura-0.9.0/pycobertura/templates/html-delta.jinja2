@@ -1,0 +1,85 @@
+<html>
+  <head>
+    <title>pycobertura report</title>
+    <meta charset="UTF-8">
+    <style>
+{% include 'normalize.css' %}
+{% include 'skeleton.css' %}
+.red {color: red}
+.green {color: green}
+.hit {background-color: #EAFFEA}
+.miss {background-color: #FFECEC}
+pre {line-height: 1.2}
+table.code pre {margin: 0;}
+table.code td {padding: 0; border: 0;}
+table.code td.lineno {text-align: right;}
+table.code td.lineno pre {margin-right: 1rem;}
+.legend dd {margin-left: 70px;}
+.legend dt {float: left; width: 60px; text-align: center;}
+.legend dt code {line-height: initial; border: none; background: none;}
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <table class="u-full-width">
+        <thead>
+          <tr>
+            <th>Filename</th>
+            <th>Stmts</th>
+            <th>Miss</th>
+            <th>Cover</th>
+{%- if show_source %}
+            <th>Missing</th>
+{%- endif %}
+          </tr>
+        </thead>
+        <tbody>
+{%- for line in lines %}
+          <tr>
+            <td><a href="#{{ line.filename }}">{{ line.filename }}</a></td>
+            <td>{{ line.total_statements }}</td>
+            <td><span{% if line.total_misses != '-' %} class="{% if line.total_misses[0] == '+' %}red{% else %}green{% endif%}"{% endif %}>{{ line.total_misses }}</span></td>
+            <td>{{ line.line_rate }}</td>
+{%- if show_source %}
+            <td>
+{%- for missed_line in line.missed_lines %}
+            {%- if not loop.first %}, {% endif %}<span class="{% if missed_line[0] == '+' %}red{% else %}green{% endif %}">{{ missed_line }}</span>
+{%- endfor %}
+            </td>
+{%- endif %}
+          </tr>
+{%- endfor %}
+        </tbody>
+        <tfoot>
+          <tr>
+            <td>{{ footer.filename }}</td>
+            <td>{{ footer.total_statements }}</td>
+            <td><span{% if footer.total_misses != '-' %} class="{% if footer.total_misses[0] == '+' %}red{% else %}green{% endif%}"{% endif %}>{{ footer.total_misses }}</span></td>
+            <td>{{ footer.line_rate }}</td>
+{%- if show_source %}
+            <td></td>
+{%- endif %}
+          </tr>
+        </tfoot>
+      </table>
+{%- if show_source %}
+{%- from 'macro.source.jinja2' import render_source -%}
+<div class="legend">
+  <dl>
+    <dt><code>code</code></dt><dd>coverage unchanged</dd>
+    <dt class="hit"><code>code</code></dt><dd>coverage increased</dd>
+    <dt class="miss"><code>code</code></dt><dd>coverage decreased</dd>
+    <dt><code>+</code></dt><dd>line added or modified</dd>
+  </dl>
+</div>
+
+{%- for filename, source_hunks in sources %}
+<h4 id="{{ filename }}">{{ filename }}</h4>
+{%- for hunk in source_hunks %}
+{{ render_source(hunk) }}
+{%- endfor %}
+{%- endfor %}
+{%- endif %}
+    </div>
+  </body>
+</html>
