@@ -1,0 +1,16 @@
+{%- from "__nginx.jinja2" import upstream, server, listen, server_name, location, proxy_pass, alias, root, include -%}
+{% for ups in upstreams -%}
+{{ upstream(ups.name, *ups.servers) }}
+{%- endfor %}
+
+{% for ser in servers -%}
+{%- call server() -%}
+{% for l in ser.listens -%}
+{{ listen(l.port, True, l.is_ssl) }}
+{% endfor %}
+{{ server_name(*ser.server_names) }}
+{% call location(pattern=ser.pattern) -%}
+{{ proxy_pass(ser.proxy_pass) }}
+{%- endcall %}
+{%- endcall %}
+{% endfor %}
