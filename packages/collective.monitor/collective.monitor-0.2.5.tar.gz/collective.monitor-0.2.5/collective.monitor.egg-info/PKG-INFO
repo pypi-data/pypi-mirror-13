@@ -1,0 +1,193 @@
+Metadata-Version: 1.1
+Name: collective.monitor
+Version: 0.2.5
+Summary: Monitoring meta package for Zope/Plone installs
+Home-page: https://github.com/collective/collective.monitor
+Author: Benoît Suttor
+Author-email: bsuttor@imio.be
+License: gpl
+Description: .. contents::
+        
+        Introduction
+        ============
+        
+        See the doc of http://pypi.python.org/pypi/five.z2monitor
+        
+        
+        Use zc.monitor and additional plugins to fetch probes via another thread than the one defined in Zope.
+        
+        Once the instance is running zc.monitor thread listen to another port (127.0.0.1:8888 in this buildout). You can query values using simple python script or nc.
+        
+        Example::
+        
+            echo 'uptime' | nc -i 1 localhost 8888
+        
+        
+        Or (when instance is up)::
+        
+            bin/instance monitor stats
+        
+        Or::
+        
+            telnet 127.0.0.1 8888
+        
+            dbsize
+        
+        
+        
+        Probes
+        ======
+        
+        Currently supported probes:
+        
+        - cache_size -- cache sizes informations
+        - check_smtp -- Check if SMTP is initialize, return number of errors found. 
+        - check_upgrade_steps -- Check if all upgrade steps are ran.
+        - conflictcount -- number of all conflict errors since startup
+        - count_users -- the total amount of users in your plone site
+        - count_valid_users -- Count all users connected since 90 days
+        - cpu_times -- ?
+        - creation_date_plonesite -- Get creation date of plonesite object. Default return unix_time (defaut=True) if you want ISO time call 'False' attr.
+        - dates -- Return all date probes
+        - dbactivity -- number of load, store and connections on database (default=main) for the last x minutes (default=5)
+        - dbinfo -- Get database statistics
+        - dbsize -- size of the database (default=main) in bytes
+        - errorcount -- number of error present in error_log (default in the root).
+        - help -- Get help about server commands
+        - interactive -- Turn on monitor's interactive mode
+        - last_login_time -- Get last login time user. Default return unix_time (defaut=True) if you want ISO time call 'False' attr.
+        - last_modified_plone_object_time -- Get last modified plone object time. Default return unix_time (defaut=True) if you want ISO time call 'False' attr.
+        - last_modified_zope_object_time -- Get last modified zope object time. Default return unix_time (defaut=True) if you want ISO time call 'False' attr.
+        - logstats -- ?
+        - memory_percent -- ?
+        - monitor -- Get general process info
+        - objectcount -- number of object in the database (default=main)
+        - quit -- Quit the monitor
+        - refcount -- the total amount of object reference counts
+        - requestqueue_size -- number of requests waiting in the queue to be handled by zope threads
+        - stats -- Stats of all information Products.ZNagios know
+        - threads -- Dump current threads execution stack
+        - unresolved_conflictcount -- number of all unresolved conflict errors since startup
+        - uptime -- uptime of the zope instance in seconds
+        - zeocache -- Get ZEO client cache statistics
+        - zeostatus -- Get ZEO client status information
+        
+        How it works
+        ============
+        
+        This package use differents package
+        
+        - five.z2monitor
+        - Products.ZNagios 
+        - munin.zope
+        - zc.z3monitor
+        - zc.monitorcache
+        - zc.monitorlogstats
+        
+        Add lines on your buildout::
+        
+            [instance]
+            ...
+            zope-conf-additional =
+              <product-config five.z2monitor>
+                bind 127.0.0.1:8888
+              </product-config>
+        
+        
+        Contributors
+        ============
+        
+        Note:  place names and roles of the people who contribute to this package
+               in this file, one to a line, like so:
+        
+        - Benoît Suttor <bsuttor@imio.be>, Original Author
+        
+        Changelog
+        =========
+        
+        0.2.5 (2016-02-25)
+        ------------------
+        
+        - Remove old threadframe dependency package.
+          [bsuttor]
+        
+        
+        0.2.4 (2015-09-03)
+        ------------------
+        
+        - Add eggs probe.
+          [bsuttor]
+        
+        
+        0.2.3 (2015-08-25)
+        ------------------
+        
+        - Return unix_time by default, you can still get ISO time with call parameters False.
+          [bsuttor]
+        
+        
+        0.2.2 (2015-08-18)
+        ------------------
+        
+        - Fix error if last_login is empty.
+          [bsuttor]
+        
+        
+        0.2.1 (2015-08-13)
+        ------------------
+        
+        - Return date in ISO format
+          [bsuttor]
+        
+        
+        0.2.0 (2015-08-11)
+        ------------------
+        
+        - Add a probe (dates) which return all probes date.
+          [bsuttor]
+        
+        - Add last_login_time porbe.
+          [bsuttor]
+        
+        - Add last_modified_plone_object_time probe.
+          [bsuttor]
+        
+        - Add last_modified_zope_object_time probe.
+          [bsuttor]
+        
+        
+        0.1.2 (2015-07-24)
+        ------------------
+        
+        - Date probe are not more in stats probe (from Products.ZNagios).
+          [bsuttor]
+        
+        - Add creation_date_plonesite probe
+          [bsuttor]
+        
+        
+        0.1.1 (2015-07-22)
+        ------------------
+        
+        - Return number of smtp errors found.
+          [bsuttor]
+        
+        
+        0.1 (2015-07-17)
+        ----------------
+        
+        - Add count_users probe
+          [bsuttor]
+        
+        - Initial package
+          [bsuttor]
+        
+        
+Keywords: Probe Plone Zope
+Platform: UNKNOWN
+Classifier: Environment :: Web Environment
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Framework :: Plone
+Classifier: Framework :: Plone :: 4.2
+Classifier: Framework :: Plone :: 4.3
