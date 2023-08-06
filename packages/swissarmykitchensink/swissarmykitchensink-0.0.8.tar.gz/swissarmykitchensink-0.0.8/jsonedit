@@ -1,0 +1,166 @@
+#!/home/redhog/Projects/skytruth/pelagos/deps/bin/python
+# -*- coding: utf-8 -*-
+# vim: set fileencoding=utf-8 :
+# SETUPTOOLS_DO_NOT_WRAP
+
+# jsonedit json editing script
+#
+#  - Copyright (C) 2014 SkyTruth
+#    Author: Egil Moeller <egil.moller@skytruth.org>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+import json
+import jsonpath
+import sys
+
+class ToDelete(object): pass
+
+def main(query, replacement = None, delete=False, first=False, scalar=False, insert=False, input=None, output=None):
+    if scalar: first=True
+
+    replace = not not replacement
+    if replacement:
+        replacement = json.loads(replacement)
+
+    if input is None:
+        data = sys.stdin.read()
+    else:
+        with open(input) as f:
+            data = f.read()
+    data = json.loads(data)
+
+    if insert is not False:
+        insert = int(insert)
+
+    if replace or delete:
+        for path in jsonpath.jsonpath(data, query, "path"):
+            path, item = path.rsplit("[", 1)
+            item = item[:-1] # remove ]
+            if item.startswith("'"):
+                item = item[1:-1] # remove '' around strings
+            else:
+                item = int(item)
+            if path == '$':
+                obj = data
+            else:
+                obj = jsonpath.jsonpath(data, path)[0]
+            if delete:
+                obj[item] = ToDelete
+            elif insert is not False:
+                obj[item + insert:item + insert] = replacement
+            else:
+                obj[item] = replacement
+        if delete:
+            def recursive_delete(obj):
+                if isinstance(obj, (list, tuple)):
+                    return [recursive_delete(item)
+                            for item in obj
+                            if item is not ToDelete]
+                elif isinstance(obj, dict):
+                    return {key: recursive_delete(value)
+                            for key, value in obj.iteritems()
+                            if value is not ToDelete}
+                elif obj is ToDelete:
+                    return None
+                else:
+                    return obj
+            data = recursive_delete(data)
+    else:
+        data = jsonpath.jsonpath(data, query)
+
+    if scalar and isinstance(data, (str, unicode, int, float)):
+        data = "%s" % (data,)
+    else:
+        data = json.dumps(data)
+
+    if output is None:
+        sys.stdout.write(data)
+    else:
+        with open(output, "w") as f:
+            f.write(data)
+
+
+args = []
+options = {}
+for arg in sys.argv[1:]:
+    if arg.startswith("--"):
+        arg = arg[2:]
+        if "=" in arg:
+            key, value = arg.split("=", 1)
+            options[key] = value
+        else:
+            options[arg] = True
+    else:
+        args.append(arg)
+
+if 'help' in options or len(args) < 1:
+    print """Edits json files using jsonpaths
+
+For more information on jsonpaths see http://goessner.net/articles/JsonPath/
+
+Usage: jsonedit.py [OPTIONS] QUERY [REPLACEMENT] < input.json > output.json
+
+QUERY is a JSONPath query
+REPLACEMENT is any JSON object
+
+If a replacement is suplied, the original document is returned, with
+any match replaced by the replacement object.
+
+OPTIONS:
+
+    --delete
+      Delete the matched value instead of raplacing it.
+
+    --insert=position
+      Inserts a list (the replacement value) at a position relative to the
+      selected path, which should be an item in a list. Usefull
+      values are 0 (before) and 1 (after).
+
+    --first
+      Extract the first matched value, instead of a list of all
+      matched values.
+
+    --scalar
+      Do not encode a single returned string value as JSON, but rather
+      just print its value. Other types are not affected.
+
+    --input=filename
+      Read input from filename instead of stdin
+
+    --output=filename
+      Write output to filename instead of to stdout
+
+Examples:
+
+jsonedit.py '$..bbox' < infile.json > outfile.json 
+    This will compile a list of all bbox attribute values
+
+jsonedit.py --first '$..bbox' < infile.json > outfile.json 
+    This will extract the first bbox attribute value
+
+jsonedit.py --first --scalar '$..name' < infile.json > outfile.json 
+    This will extract the first name attribute value and print its (string) content
+
+jsonedit.py '$..options' '{"layer": "47-11"}' < infile.json > outfile.json
+   This will replace all options attribute values with the json object {"layer": "47-11"}
+
+jsonedit.py --delete '$..bbox' < infile.json > outfile.json
+   This will delete all bbox attributes
+"""
+    sys.exit(0)
+
+else:
+    main(*args, **options)
