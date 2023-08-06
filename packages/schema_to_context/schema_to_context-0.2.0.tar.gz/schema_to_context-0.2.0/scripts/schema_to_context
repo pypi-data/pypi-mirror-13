@@ -1,0 +1,316 @@
+#!/usr/bin/env python
+
+# Copyright (c) 2016, Mayo Clinic
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without modification,
+# are permitted provided that the following conditions are met:
+#
+# Redistributions of source code must retain the above copyright notice, this
+#     list of conditions and the following disclaimer.
+#
+#     Redistributions in binary form must reproduce the above copyright notice,
+#     this list of conditions and the following disclaimer in the documentation
+#     and/or other materials provided with the distribution.
+#
+#     Neither the name of the <ORGANIZATION> nor the names of its contributors
+#     may be used to endorse or promote products derived from this software
+#     without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+# ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+# WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+# IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+# INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+# BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
+# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+# LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
+# OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
+# OF THE POSSIBILITY OF SUCH DAMAGE.
+""" Transform a subset of the JSON-Schema language (http://json-schema.org) into json-ld equivalent.
+
+Note that json-ld does not establish structural requirements, just the possible identifiers and values, so we only
+extract the elements in the JSON-Schema definition that describe elements in the RDF subspace
+"""
+import argparse
+from dirlistproc import DirectoryListProcessor
+import logging
+import os
+import sys
+import jsonasobj
+from urllib.parse import urlsplit, urlunsplit
+from typing import List, Union, Optional
+
+
+# Type aliases
+JS_schema = jsonasobj.JsonObj                # JSON Schema
+JS_array_schema = List[JS_schema]            # array of schemas
+JS_object = jsonasobj.JsonObj                # A map from a set of keys to corresponding json schemas
+JSON_ld = dict
+
+
+logNames = [logging.getLevelName(l) for l in [logging.DEBUG, logging.INFO, logging.WARNING, logging.ERROR]]
+
+
+def setup_logging(opts: argparse.Namespace) -> None:
+    """ Set up the logging file
+    :param opts: input options
+    """
+    if not opts.logfile:
+        logging.basicConfig(stream=sys.stdout, level=opts.loglevel, format='%(asctime)s  %(levelname)s - %(message)s')
+    else:
+        logging.basicConfig(filename=opts.logfile, filemode='w', level=opts.loglevel,
+                            format='%(asctime)s  %(levelname)s - %(message)s')
+
+
+class LDSchema:
+    def __init__(self, namespace: str) -> None:
+        """ Create a json schema to json ld converter
+        :param namespace: namespace identifier
+        """
+        self.jsonld = JSON_ld()
+        self.namespace = namespace
+        self.addl_contexts = set()
+
+    def proc_schema(self, defn: JS_schema, jsonld: Optional[JSON_ld]=None) -> JSON_ld:
+        """
+        Process a schema definition
+        :param defn: schema definition
+        :param jsonld: jsonld to fill out instead of base
+        """
+        if jsonld is not None:
+            save_jsonld = self.jsonld
+            self.jsonld = jsonld
+        else:
+            save_jsonld = None
+        for k in defn._as_dict.keys():
+            if k in self.keyword_type_map:
+                self.keyword_type_map[k](self, defn[k])
+            else:
+                logging.error("Unimplemented schema function keyword: %s" % k)
+        rval = self.jsonld
+        if save_jsonld is not None:
+            self.jsonld = save_jsonld
+        return rval
+
+    def proc_object(self, obj: JS_object) -> None:
+        """ Process a json object consisting of zero or more schemas
+        :param obj: json object
+        """
+        for k in obj._as_dict.keys():
+            if k in self.jsonld:
+                logging.warning("Redefinition of element: %s" % k)
+            elif k == '$ref':
+                self.ref_type(obj[k])
+            else:
+                self.jsonld[k] = self.proc_schema(obj[k], JSON_ld())
+                self.jsonld[k]['@id'] = self.namespace + ':' + k
+
+    def empty_type(self, _) -> None:
+        """ Type that has no impact on the outcome.  Identity function.
+        Type: Any
+
+        :param _: container that includes the type definition
+        """
+        pass
+
+    def items_type(self, schema: Union[JS_schema, JS_array_schema]) -> None:
+        """ Process the set of items in an array, which define the possible values
+
+        :param schema: a schema or array of schemas
+        """
+        if isinstance(schema, list):
+            logging.warning("items as list of schemas is not implemented")
+        else:
+            self.proc_schema(schema)
+
+    def addl_items_type(self, schema: Union[bool, JS_schema]) -> None:
+        """ Process an additional items entry
+
+        :param schema: either a boolean of a schema
+        """
+        if isinstance(schema, JS_schema):
+            self.proc_schema(schema)
+
+    def properties_type(self, obj: JS_object) -> None:
+        """ A list of properties in a schema
+        Type: object containing a set of JSON Schemas
+
+        :param obj: object that contains the properties declaration
+        """
+        return self.proc_object(obj)
+
+    def addl_properties_type(self, schema: Union[bool, JS_schema]) -> None:
+        """ Additional properties.  Wierd and rather incomprehensible, but we just take the schema part
+        Type: boolean or schema
+
+        :param schema: object that contains the additionalProperties declaration
+        """
+        if isinstance(schema, JS_schema):
+            self.proc_schema(schema)
+
+    def type_type(self, typ: Union[str, List[str]]) -> None:
+        """ Define the type of the container.
+        Type: primitive_type or array[primitive_type]
+
+        :param typ: defined type
+        """
+        if not isinstance(typ, str):
+            logging.warning("Type array can't be mapped %s" % typ)
+        elif typ == 'array':
+            self.jsonld['@container'] = '@list'
+        elif typ == 'boolean':
+            self.jsonld['@type'] = 'xsd:boolean'
+        elif typ == 'integer':
+            self.jsonld['@type'] = 'xsd:integer'
+        elif typ == 'number':
+            self.jsonld['@type'] = 'xsd:double'
+        elif typ in ['null', 'object', 'string']:
+            pass
+        else:
+            logging.error("Unrecognized type: %s" % typ)
+
+    def allof_type(self, schemas: List[JS_schema]) -> None:
+        """ All schemas within this definition.
+
+        :param schemas: an array of schemas
+        """
+        [self.proc_schema(s) for s in schemas]
+
+    anyof_type = allof_type
+    oneof_type = allof_type
+
+    def ref_type(self, uri: str) -> None:
+        """ Dereference a URI that pulls in another bit of JSON Schema in the appropriate context.  This is actually a
+        rather complex operation as it can potentially involve pulling an entire document or a fragment thereof, and is
+        coupled with an RDF-like namespace resolution structure.  For the time being, we just add the base URI without
+        any fragment identifier.
+
+        :param uri: URI of schema to be dereferenced
+        """
+        baseurl = urlsplit(uri)
+        self.addl_contexts.add(urlunsplit((baseurl.scheme, baseurl.netloc, baseurl.path, '', '')))
+
+    def format_type(self, fmt: str) -> None:
+        if '@type' in self.jsonld:
+            logging.warning("Format is already described for target. Current: %s Proposed: %s" % (
+                self.jsonld['@type'], fmt))
+        if fmt == 'date-time':
+            self.jsonld['@type'] = 'xsd:dateTime'
+        elif fmt == 'uri':
+            self.jsonld['@type'] = '@id'
+        elif fmt in ['email', 'hostname', 'ipv4', 'ipv6']:
+            pass
+        else:
+            logging.warning("Unknown format: %s" % fmt)
+
+    keyword_type_map = {'multipleOf': empty_type,               # number. Type: integer. Not relevant
+                        'maximum': empty_type,                  # number. Type: integer. Not relevant
+                        'exclusiveMaximum': empty_type,         # number. Type: integer. Not relevant
+                        'minimum': empty_type,                  # number. Type: integer. Not relevant
+                        'exclusiveMinimum': empty_type,         # number. Type: integer. Not relevant
+
+                        'maxLength': empty_type,                # string. Type: integer. Not relevant
+                        'minLength': empty_type,                # string. Type: integer. Not relevant
+                        'pattern': empty_type,                  # string. Type: string.  Not relevant
+
+                        'items': items_type,                    # array. Type: Schema or array[Schema]
+                        'additionalItems': addl_items_type,     # array. Type: boolean or Schema.
+                        'maxItems': empty_type,                 # array. Type: integer. Not relevant
+                        'minItems': empty_type,                 # array. Type: integer. Not relevant
+                        'uniqueitems': empty_type,              # array. Type: boolean. Not relevant
+
+                        'maxProperties': empty_type,            # object. Type: Integer. Not relevant
+                        'minProperties': empty_type,            # object. Type: Integer. Not relevant
+                        'required': empty_type,                 # object. Type: Array[string].  Not relevant
+                        'additionalProperties': addl_properties_type,     # object. Type: boolean or Schema
+                        'properties': properties_type,          # object. Type: object[Schema].
+                        # 'patternProperties': empty_type,   # object. Type: object[re->object[Schema]]. Not implemented
+                        'dependencies': empty_type,             # object. Type object, or array[string]
+
+                        'enum': empty_type,                    # instance. Type array[Any].  Not relevant
+                        'type': type_type,                      # instance. Type: string or array[string]
+                        'allOf': allof_type,                    # instance. Type: array[Schema]
+                        'anyOf': anyof_type,                    # instance. Type: array[Schema]
+                        'oneOf': oneof_type,                    # instance. Type: array[Schema]
+                        'not': empty_type,                      # object. Type: Schema.  Not relevant
+                        # 'definitions': empty_type,            # object. Type: object[Schema].  Not implemented
+
+                        'format': format_type,                  # object. Type: (see: format_map) + custom types
+
+                        'title': empty_type,                    # metadata. Type: string.  Not relevant
+                        'description': empty_type,              # metadata. Type: string.  Not relevant
+                        'default': empty_type,                  # metadata. Type: Any. Not relevant
+
+                        '$schema': empty_type,                  # root: Type: uri. Not relevant
+                        '$ref': ref_type,                       # root: Type: uri.
+                        'id': empty_type,                       # root: URI dereferencing
+                        }
+
+
+def write_context(opts: argparse.Namespace) -> None:
+    """ Write the main context file out
+    :param opts: input options
+    """
+    context = jsonasobj.JsonObj()
+    context['@context'] = list(opts.context)
+    if opts.addlfiles:
+        context['@context'] += opts.addlfiles
+    ctxt_file_name = os.path.join(opts.outdir, 'context.json') if opts.outdir else 'context.json'
+    logging.info("Writing %s" % ctxt_file_name)
+    open(ctxt_file_name, 'w').write(context._as_json_dumps())
+
+
+def process_schema(infile: str, outfile: str, opts: argparse.Namespace) -> bool:
+    """
+    Process a json schema file and emit a corresponding json ld file
+    :param infile: json schema file
+    :param outfile: json ld file
+    :param opts: parameters
+    :return: True if successful
+    """
+    logging.info("PROCESSING: %s" % infile)
+    json_obj = jsonasobj.loads('{"@context":[]}')
+    with open(infile) as inf:
+        schema_parser = LDSchema(opts.namespace)
+        jsonld = schema_parser.proc_schema(jsonasobj.load(inf))
+        jsonld[opts.namespace] = opts.nsuri
+        json_obj['@context'].append(jsonld)
+        # json-ld can't cope with recursive context includes, so we have to build one big context
+        # json_obj['@context'] += list(schema_parser.addl_contexts)
+        # opts.context.add(schema_uri + os.path.basename(outfile))
+        opts.context.add(os.path.basename(outfile))
+        open(outfile, 'w').write(json_obj._as_json_dumps())
+    return True
+
+
+def addargs(parser: argparse.ArgumentParser) -> None:
+    """ Add the application specific arguments to the basic directory list processor inputs
+    :param parser: parser to add additional arguments to
+    """
+    parser.add_argument("-n", "--namespace", help="Default namespace identifier", required=True)
+    parser.add_argument("-u", "--nsuri", help="URI for default namespace", required=True)
+    parser.add_argument("-a", "--addlfiles", help="Additional context file(s) to add to context.json", nargs='*')
+    parser.add_argument("--logfile", help="Log file. Default is stdout")
+    parser.add_argument("--loglevel", help="Logging level. Default is %s" % logging.getLevelName(logging.INFO),
+                        default=logging.getLevelName(logging.INFO), choices=logNames)
+
+
+def main(argv: List[str]) -> None:
+    """
+    Process a dbgap dataset and convert it to RDF
+    :param argv: input options (see addargs + dirlistproc documentation)
+    """
+    dlp = DirectoryListProcessor(argv, "Convert json schema(s) to jsonld context(s) ", 'json', 'json', addargs=addargs)
+    setup_logging(dlp.opts)
+    if dlp.opts.outdir:
+        os.makedirs(dlp.opts.outdir, exist_ok=True)
+    dlp.opts.context = set()
+    nfiles, nsuccess = dlp.run(process_schema)
+    if dlp.opts.outdir:
+        write_context(dlp.opts)
+    logging.info("Total files processed=%d Errors=%d" % (nfiles, nfiles - nsuccess))
+
+
+if __name__ == '__main__':
+    main(sys.argv[1:])
