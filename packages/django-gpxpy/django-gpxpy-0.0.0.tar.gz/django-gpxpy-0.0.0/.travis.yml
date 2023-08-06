@@ -1,0 +1,26 @@
+language: python
+install:
+  - pip install coveralls coverage
+  - pip install -q "$DJANGO"
+before_script:
+  - python setup.py install
+script:
+  - coverage run manage.py test
+
+python:
+  - "2.7"
+  - "3.4"
+  - "3.5"
+
+env:
+  - DJANGO="Django>=1.8,<1.9"
+  - DJANGO="Django>=1.9,<1.10"
+  - DJANGO='https://github.com/django/django/archive/master.tar.gz'
+
+matrix:
+  allow_failures:
+     - env: DJANGO='https://github.com/django/django/archive/master.tar.gz'
+
+after_script:
+  - cd test_denorm_project/
+  - coveralls
