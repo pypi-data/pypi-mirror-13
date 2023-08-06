@@ -1,0 +1,65 @@
+<configure
+    xmlns="http://namespaces.zope.org/zope"
+    xmlns:five="http://namespaces.zope.org/five"
+    xmlns:genericsetup="http://namespaces.zope.org/genericsetup"
+    xmlns:browser="http://namespaces.zope.org/browser"
+    xmlns:i18n="http://namespaces.zope.org/i18n"
+    xmlns:pp="http://namespaces.zopyx.com/pp"
+    xmlns:plone="http://namespaces.plone.org/plone"
+    >
+
+    <browser:page
+        name="xmldirector-test"
+        for="*"
+        class=".queue.Queue"
+        attribute="queue"
+        permission="cmf.ManagePortal"
+    />
+
+    <!-- demo --> 
+    <browser:page
+        name="xmldirector-crex-form"
+        for="Products.CMFPlone.interfaces.IPloneSiteRoot"
+        template="demo_form.pt"
+        permission="cmf.ManagePortal"
+    />
+
+    <browser:page
+        name="xmldirector-crex-convert"
+        for="Products.CMFPlone.interfaces.IPloneSiteRoot"
+        class=".converter.Converter"
+        attribute="convert"
+        permission="cmf.ManagePortal"
+    />
+
+    <browser:page
+        name="xmldirector-crex-settings"
+        for="Products.CMFPlone.interfaces.IPloneSiteRoot"
+        class=".controlpanel.CRexSettingsControlPanel"
+        permission="cmf.ManagePortal"
+    />
+
+    <include package="plone.rest" file="configure.zcml" />
+
+    <plone:service
+      method="POST"
+        for="xmldirector.plonecore.connector.IConnector"
+        factory=".restapi.api_convert"
+        name="xmldirector-convert"
+    />
+
+    <plone:service
+      method="POST"
+        for="xmldirector.plonecore.connector.IConnector"
+        factory=".restapi.api_convert_async"
+        name="xmldirector-convert-async"
+    />
+
+    <plone:service
+      method="GET"
+        for="xmldirector.plonecore.connector.IConnector"
+        factory=".restapi.api_convert_status"
+        name="xmldirector-convert-status"
+    />
+
+</configure>
