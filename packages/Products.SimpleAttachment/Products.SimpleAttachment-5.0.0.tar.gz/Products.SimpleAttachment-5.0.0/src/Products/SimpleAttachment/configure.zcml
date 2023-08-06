@@ -1,0 +1,47 @@
+<configure
+   xmlns="http://namespaces.zope.org/zope"
+   xmlns:gs="http://namespaces.zope.org/genericsetup"
+   xmlns:five="http://namespaces.zope.org/five"
+   xmlns:i18n="http://namespaces.zope.org/i18n"
+   xmlns:browser="http://namespaces.zope.org/browser"
+   i18n_domain="simpleattachment">
+
+  <five:registerPackage package="." initialize=".initialize" />
+  <i18n:registerTranslations directory="locales" />
+
+  <include package="archetypes.schemaextender" />
+  <adapter factory=".extenders.FileBlobAttachment" />
+  <adapter factory=".extenders.ImageBlobAttachment" />
+
+  <browser:page
+      for="*"
+      name="filename_normalizer"
+      class=".filename_normalizer.FilenameNormalizer"
+      permission="zope.Public"
+      />
+
+  <browser:page
+      for="*"
+      name="attachment_helper"
+      class=".browser.Helper"
+      allowed_attributes="is_cropping_supported"
+      permission="zope.Public"
+      />
+
+  <include package=".migration" />
+
+  <gs:registerProfile
+     name="default"
+     title="Attachment support"
+     directory="profiles/default"
+     description="Simple attachment content types and widget"
+     provides="Products.GenericSetup.interfaces.EXTENSION" />
+
+  <gs:upgradeDepends
+      title="Update typeinfo"
+      source="4400"
+      destination="4401"
+      profile="Products.SimpleAttachment:default"
+      import_steps="typeinfo" />
+
+</configure>
