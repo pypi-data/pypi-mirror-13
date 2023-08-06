@@ -1,0 +1,260 @@
+"""
+    pyexcel.ext.ods3
+    ~~~~~~~~~~~~~~~~~~~
+
+    ODS format plugin for pyexcel
+
+    :copyright: (c)  2015-2016 by Onni Software Ltd. & its contributors
+    :license: New BSD License
+"""
+import sys
+import datetime
+import ezodf
+from pyexcel_io import (
+    SheetReaderBase,
+    BookReader,
+    SheetWriter,
+    BookWriter,
+    READERS,
+    WRITERS,
+    isstream,
+    get_data as read_data,
+    store_data as write_data
+)
+PY2 = sys.version_info[0] == 2
+
+
+def float_value(value):
+    ret = float(value)
+    return ret
+
+
+def date_value(value):
+    ret = "invalid"
+    try:
+        # catch strptime exceptions only
+        if len(value) == 10:
+            ret = datetime.datetime.strptime(
+                value,
+                "%Y-%m-%d")
+            ret = ret.date()
+        elif len(value) == 19:
+            ret = datetime.datetime.strptime(
+                value,
+                "%Y-%m-%dT%H:%M:%S")
+        elif len(value) > 19:
+            ret = datetime.datetime.strptime(
+                value[0:26],
+                "%Y-%m-%dT%H:%M:%S.%f")
+    except:
+        pass
+    if ret == "invalid":
+        raise Exception("Bad date value %s" % value)
+    return ret
+
+
+def time_value(value):
+    hour = int(value[2:4])
+    minute = int(value[5:7])
+    second = int(value[8:10])
+    if hour < 24:
+        return datetime.time(hour, minute, second)
+    else:
+        return datetime.timedelta(hours=hour, minutes=minute, seconds=second)
+
+
+
+def boolean_value(value):
+    return value
+
+
+ODS_FORMAT_CONVERSION = {
+    "float": float,
+    "date": datetime.date,
+    "time": datetime.time,
+    "boolean": bool,
+    "percentage": float,
+    "currency": float
+}
+
+
+ODS_WRITE_FORMAT_COVERSION = {
+    float: "float",
+    int: "float",
+    str: "string",
+    datetime.date: "date",
+    datetime.time: "time",
+    datetime.timedelta: "timedelta",
+    bool: "boolean"
+}
+
+
+VALUE_CONVERTERS = {
+    "float": float_value,
+    "date": date_value,
+    "time": time_value,
+    "boolean": boolean_value,
+    "percentage": float_value,
+    "currency": float_value
+}
+
+
+VALUE_TOKEN = {
+    "float": "value",
+    "date": "date-value",
+    "time": "time-value",
+    "boolean": "boolean-value",
+    "percentage": "value",
+    "currency": "value"
+}
+
+
+if sys.version_info[0] < 3:
+    ODS_WRITE_FORMAT_COVERSION[unicode] = "string"
+
+
+def _read_cell(cell):
+    cell_type = cell.value_type
+    ret = None
+    if cell_type in ODS_FORMAT_CONVERSION:
+        value = cell.value
+        n_value = VALUE_CONVERTERS[cell_type](value)
+        ret = n_value
+    else:
+        if cell.value is None:
+            ret = ""
+        else:
+            ret = cell.value
+    return ret
+
+
+class ODSSheet(SheetReaderBase):
+    @property
+    def name(self):
+        return self.native_sheet.name
+
+    def to_array(self):
+        """reads a sheet in the sheet dictionary, storing each sheet
+        as an array (rows) of arrays (columns)"""
+        for row in range(self.native_sheet.nrows()):
+            row_data = []
+            tmp_row = []
+            for cell in self.native_sheet.row(row):
+                cell_value = _read_cell(cell)
+                tmp_row.append(cell_value)
+                if cell_value is not None and cell_value != '':
+                    row_data += tmp_row
+                    tmp_row = []
+            if len(row_data) > 0:
+                yield row_data
+
+
+class ODSBook(BookReader):
+
+    def get_sheet(self, native_sheet):
+        return ODSSheet(native_sheet)
+
+    def load_from_file(self, filename, **keywords):
+        return ezodf.opendoc(filename)
+
+    def load_from_memory(self, file_content, **keywords):
+        return ezodf.opendoc(file_content)
+
+    def sheet_iterator(self):
+        if self.sheet_name is not None:
+            rets = [sheet for sheet in self.native_book.sheets if sheet.name == self.sheet_name]
+            if len(rets) == 0:
+                raise ValueError("%s cannot be found" % self.sheet_name)
+            else:
+                return rets
+        elif self.sheet_index is not None:
+            sheets = self.native_book.sheets
+            length = len(sheets)
+            if self.sheet_index < length:
+                return [sheets[self.sheet_index]]
+            else:
+                raise IndexError("Index %d of out bound %d." % (self.sheet_index,
+                                                                length))
+        else:
+            return self.native_book.sheets
+
+
+class ODSSheetWriter(SheetWriter):
+    """
+    ODS sheet writer
+    """
+    def set_sheet_name(self, name):
+        self.native_sheet = ezodf.Sheet(name)
+        self.current_row = 0
+
+    def set_size(self, size):
+        self.native_sheet.reset(size=size)
+
+    def write_row(self, array):
+        """
+        write a row into the file
+        """
+        count = 0
+        for cell in array:
+            value_type = ODS_WRITE_FORMAT_COVERSION[type(cell)]
+            if value_type == "time":
+                cell = cell.strftime("PT%HH%MM%SS")
+            elif value_type == "timedelta":
+                hours = cell.days * 24 + cell.seconds // 3600
+                minutes = (cell.seconds // 60) % 60
+                seconds = cell.seconds % 60
+                cell = "PT%02dH%02dM%02dS" % (hours, minutes, seconds)
+                value_type = "time"
+            self.native_sheet[self.current_row, count].set_value(
+                cell,
+                value_type=value_type)
+            count += 1
+        self.current_row += 1
+
+    def close(self):
+        """
+        This call writes file
+
+        """
+        self.native_book.sheets += self.native_sheet
+
+
+class ODSWriter(BookWriter):
+    """
+    open document spreadsheet writer
+
+    """
+    def __init__(self, filename, **keywords):
+        BookWriter.__init__(self, filename)  # in case something will be done
+        self.native_book = ezodf.newdoc(doctype="ods", filename=filename)
+
+    def create_sheet(self, name):
+        """
+        write a row into the file
+        """
+        return ODSSheetWriter(self.native_book, None, name)
+
+    def close(self):
+        """
+        This call writes file
+
+        """
+        self.native_book.save()
+
+READERS["ods"] = ODSBook
+WRITERS["ods"] = ODSWriter
+
+
+def save_data(afile, data, file_type=None, **keywords):
+    if isstream(afile) and file_type is None:
+        file_type = 'ods'
+    write_data(afile, data, file_type=file_type, **keywords)
+
+
+def get_data(afile, file_type=None, **keywords):
+    if isstream(afile) and file_type is None:
+        file_type = 'ods'
+    return read_data(afile, file_type=file_type, **keywords)
+
+
+__VERSION__ = "0.0.8"
