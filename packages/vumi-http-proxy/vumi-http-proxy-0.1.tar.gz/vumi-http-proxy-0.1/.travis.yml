@@ -1,0 +1,24 @@
+language: python
+python:
+  - "2.7"
+
+cache:
+  directories:
+    - $HOME/.cache/pip
+    - $HOME/downloads
+
+before_install:
+  # Default values for our build envvars.
+  - export TWISTED_VERSION="${TWISTED_VERSION-Twisted}"
+
+install:
+  - "pip install ${TWISTED_VERSION}"
+  - "pip install -e ."
+  - "pip install coveralls"
+
+script:
+  - if [ -z "$NO_COVERAGE" ]; then COVERAGE_CMD="coverage run --source=vumi_http_proxy"; else COVERAGE_CMD=""; fi
+  - $COVERAGE_CMD `which trial` vumi_http_proxy 
+
+after_success:
+  - if [ -z "$NO_COVERAGE" ]; then coveralls; fi
