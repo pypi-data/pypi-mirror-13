@@ -1,0 +1,158 @@
+#!/usr/bin/env python
+'''
+Copyright (c) 2015, John Emmons
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+* Redistributions of source code must retain the above copyright notice, this
+  list of conditions and the following disclaimer.
+
+* Redistributions in binary form must reproduce the above copyright notice,
+  this list of conditions and the following disclaimer in the documentation
+  and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+'''
+
+import fd
+import getopt
+import sys
+import os
+
+def parse_execute():
+    try:
+        util = getattr(fd_cli, sys.argv[1])
+    except:
+        fd_cli.help()
+        return 
+
+    util()
+
+class fd_cli:
+    @staticmethod
+    def help():
+        help_text = """Usage: %s <command>
+
+Available commands:
+    init    Initialize an empty database
+    put     Moves data file into database
+    rm      Removes files from database
+    get     Access files inside database
+    ls      List the entries in the database (perform queries)
+    help    Display this help message
+"""
+        print help_text % ( os.path.basename(sys.argv[0]) )
+
+    @staticmethod
+    def init():
+        ''' define the helper functions '''
+        def usage():
+            print "usage: fsdb init [-h] [-f] db_name"
+            exit(0)
+
+        def parse_CLI():
+            if(len(sys.argv) < 3):
+                usage()
+
+            opts, args = getopt.gnu_getopt(sys.argv[2:], 'hf', ['help', 'force'])
+            
+            if(len(args) > 1):
+                usage()
+                return
+
+            force = False
+            for o, a in opts:
+                if o in ('-h', '--help'):
+                    usage()
+
+                elif o in ('-f', '--force'):
+                    force = True
+                else:
+                    pass
+            
+            return args[0], force
+            
+        ''' begin the the intialization'''
+        db_path, force = parse_CLI()
+        fd.init(db_path, force)
+
+    @staticmethod
+    def ls():
+        ''' define the helper functions '''
+        def usage():
+            print "usage: fsdb ls [-h] db_name"
+            exit(0)
+
+        def parse_CLI():
+            if(len(sys.argv) < 3):
+                usage()
+
+            opts, args = getopt.gnu_getopt(sys.argv[2:], 'h', ['help'])
+            
+            if(len(args) > 1):
+                usage()
+                return
+
+            force = False
+            for o, a in opts:
+                if o in ('-h', '--help'):
+                    usage()
+                else:
+                    pass
+            
+            return args[0]
+
+        ''' begin the ls command utility '''
+        db_path = parse_CLI()
+        fd.ls(db_path)
+
+    @staticmethod
+    def put():
+        ''' define the helper functions '''
+        def usage():
+            print "usage: fsdb put [-h] db_name file_name"
+            exit(0)
+
+        def parse_CLI():
+            nargs = len(sys.argv)
+            if(nargs < 4):
+                usage()
+
+            opts, args = getopt.gnu_getopt(sys.argv[2:], 'h', ['help'])
+            
+            force = False
+            for o, a in opts:
+                if o in ('-h', '--help'):
+                    usage()
+                else:
+                    pass
+            
+            return args[0], args[1], (sys.argv[4:] if nargs > 4 else None)
+
+        ''' begin the put command utility '''
+        db_path, file_name, tags = parse_CLI()
+        fd.put(db_path, file_name, tags)
+
+    @staticmethod
+    def get():
+        pass
+
+    @staticmethod
+    def rm():
+        pass
+
+if __name__ == "__main__":
+    print "version 0.6"
+    parse_execute()
+    
