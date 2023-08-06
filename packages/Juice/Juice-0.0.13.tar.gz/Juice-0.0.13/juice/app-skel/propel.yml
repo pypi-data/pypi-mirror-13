@@ -1,0 +1,88 @@
+###############################################################################
+# Propel Juice
+#
+# A deploy config file to deploy Juice apps
+#
+# https://github.com/mardix/propel
+#
+# - On the server where the app will be deployed at, you can run the following:
+#
+#   'propel -w' on the hosting server to launch a web application
+#   'propel -k' on the hosting server to launch a worker application
+#   'propel -s $script-name' on the hosting server to execute a
+#                                 script by name
+#
+###############################################################################
+
+
+# Virtualenv
+virtualenv:
+  name: ""  # The name of the virtualenv. Required for python applications
+
+# WEB: list of dict of web sites/application to deploy
+web:
+  -
+    name: "" # The site name
+    application: "{project_name}:app"
+    environment: env=production
+
+    # Nginx related config
+    nginx:
+      aliases:
+        "/static": "application/{project_name}/static"
+        "/files": "application/data/uploads"
+
+# SCRIPTS: A dict of all scripts to execute
+scripts:
+
+  # Run before all
+  before_all:
+    -
+      command: "juicy setup"
+      environment: env=production
+
+  # Run after all
+  after_all:
+    - command: ""
+
+  # run before web deployment
+  before_web:
+    - command: ""
+
+  # run after web deployment
+  after_web:
+    - command: ""
+
+  # run before web deployment
+  before_workers:
+    - command: ""
+
+  # run after web deployment
+  after_workers:
+    - command: ""
+
+  # run this script when UNDEPLOYING
+  undeploy:
+    - command: ""
+
+# WORKERS: Run custom script or app in the background using supervisor
+workers:
+  -
+    name: "myworker1"
+    command: ""
+    environment: env=production
+
+
+# ------------------------------------------------------------------------------
+# Git Push
+# If GIT is available in your environment, you can quickly push directly
+# to your remotes.
+# git-remotes: dict of remote name and git repos
+# To deploy on the 'web' remote:
+# > juice push -r web
+#
+git-remotes:
+  web:
+    - ssh://user@host/path.git
+
+
