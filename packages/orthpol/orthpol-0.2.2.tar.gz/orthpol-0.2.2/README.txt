@@ -1,0 +1,44 @@
+============
+orthpol
+============
+
+This is the *orthpol* package. It is a frontend to the Fortran package orthpol written by W Gautschi [1].
+
+[1] Gautschi, W. (1994). Algorithm 726: ORTHPOL–a package of routines for generating orthogonal polynomials and Gauss-type quadrature rules. ACM Transactions on Mathematical Software (TOMS), 20(1), 21–62. doi:10.1145/174603.174605
+
+
+Installation
+============
+
+The package depends on the library orthpol, which needs to be precompiled. This process is automated through the pip command:
+
+    $ pip install --install-option="install" orthpol
+
+If this doesn't work, the package needs to be manually downloaded and installed through the following procedure:
+
+   $ cd <download_dir>
+
+   $ pip install --download-cache="./" orthpol
+
+   $ tar xzf orthpol-X.X.X.tar.gz
+
+   $ cd orthpol-X.X.X
+
+   $ python setup.py install
+
+Change Log
+==========
+
+0.1.0:
+  * Initial python porting (working only for python 2.x)
+
+0.2.0:
+  * Modified interface to account for changes in the `SpectralToolbox <https://pypi.python.org/pypi/SpectralToolbox/>`_
+  * Complete integration of orthpol into `SpectralToolbox <https://pypi.python.org/pypi/SpectralToolbox/>`_
+
+0.2.1:
+  * Porting to python 3.x and back compatibility with python 2.x
+  * Automated installation through pip
+
+0.2.2:
+  * Bug fix
