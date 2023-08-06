@@ -1,0 +1,57 @@
+<configure
+    xmlns="http://namespaces.zope.org/zope"
+    xmlns:browser="http://namespaces.zope.org/browser"
+    i18n_domain="ps.plone.mls">
+
+  <!-- Featured Listings. -->
+  <!-- ================== -->
+
+  <!-- Viewlet. -->
+  <browser:viewlet
+      class=".featured.FeaturedListingsViewlet"
+      for=".featured.IFeaturedListings"
+      layer="ps.plone.mls.browser.interfaces.IPloneMLSLayer"
+      manager="plone.app.layout.viewlets.interfaces.IBelowContentBody"
+      name="ps.plone.mls.listings.featured"
+      permission="zope2.View"
+      template="templates/listing_results.pt"
+      />
+
+  <!-- Viewlet configuration form. -->
+  <browser:page
+      class=".featured.FeaturedListingsConfiguration"
+      for=".featured.IFeaturedListings"
+      layer="ps.plone.mls.browser.interfaces.IPloneMLSLayer"
+      name="featured-listings-config"
+      permission="cmf.ModifyPortalContent"
+      />
+
+  <!-- Viewlet status page. -->
+  <browser:page
+      class=".featured.FeaturedListingsStatus"
+      for="*"
+      layer="ps.plone.mls.browser.interfaces.IPloneMLSLayer"
+      name="featured-listings-status"
+      permission="cmf.ModifyPortalContent"
+      />
+
+  <!-- Toggle current viewlet status. -->
+  <browser:page
+      class=".featured.FeaturedListingsToggle"
+      for="*"
+      layer="ps.plone.mls.browser.interfaces.IPloneMLSLayer"
+      name="featured-listings-toggle"
+      permission="cmf.ModifyPortalContent"
+      />
+
+  <!-- Standalone view for content type. -->
+  <browser:page
+      class=".featured.FeaturedListings"
+      for="ps.plone.mls.content.featured.IFeaturedListings"
+      layer="ps.plone.mls.browser.interfaces.IPloneMLSLayer"
+      name="view"
+      permission="zope2.View"
+      template="templates/featured.pt"
+      />
+
+</configure>
