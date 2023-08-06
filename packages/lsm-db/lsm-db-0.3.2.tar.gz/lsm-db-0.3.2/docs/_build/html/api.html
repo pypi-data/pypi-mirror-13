@@ -1,0 +1,1116 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>API Documentation &mdash; lsm-db 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="lsm-db 0.1.0 documentation" href="index.html" />
+    <link rel="prev" title="Quick-start" href="quickstart.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="quickstart.html" title="Quick-start"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">lsm-db 0.1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-lsm">
+<span id="api-documentation"></span><span id="api"></span><h1>API Documentation<a class="headerlink" href="#module-lsm" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="lsm.LSM">
+<em class="property">class </em><code class="descclassname">lsm.</code><code class="descname">LSM</code><a class="headerlink" href="#lsm.LSM" title="Permalink to this definition">¶</a></dt>
+<dd><p>Python wrapper for SQLite4&#8217;s LSM implementation.</p>
+<p><a class="reference external" href="http://www.sqlite.org/src4/doc/trunk/www/lsmapi.wiki">http://www.sqlite.org/src4/doc/trunk/www/lsmapi.wiki</a></p>
+<dl class="attribute">
+<dt id="lsm.LSM.__contains__">
+<code class="descname">__contains__</code><a class="headerlink" href="#lsm.LSM.__contains__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a boolean indicating whether the given key exists.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="lsm.LSM.__delitem__">
+<code class="descname">__delitem__</code><a class="headerlink" href="#lsm.LSM.__delitem__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Dictionary API wrapper for the <a class="reference internal" href="#lsm.LSM.delete" title="lsm.LSM.delete"><code class="xref py py-meth docutils literal"><span class="pre">delete()</span></code></a> and
+<a class="reference internal" href="#lsm.LSM.delete_range" title="lsm.LSM.delete_range"><code class="xref py py-meth docutils literal"><span class="pre">delete_range()</span></code></a> methods.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>key</strong> &#8211; Either a string or a slice. Additionally, a second
+parameter can be supplied indicating what seek method to use.</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">When deleting a range of keys, the start and end keys themselves
+are <strong>not</strong> deleted, only the intervening keys.</p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="lsm.LSM.__enter__">
+<code class="descname">__enter__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#lsm.LSM.__enter__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Use the database as a context manager. The database will be closed
+when the wrapped block exits.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="lsm.LSM.__getitem__">
+<code class="descname">__getitem__</code><a class="headerlink" href="#lsm.LSM.__getitem__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Dictionary API wrapper for the <a class="reference internal" href="#lsm.LSM.fetch" title="lsm.LSM.fetch"><code class="xref py py-meth docutils literal"><span class="pre">fetch()</span></code></a> and
+<a class="reference internal" href="#lsm.LSM.fetch_range" title="lsm.LSM.fetch_range"><code class="xref py py-meth docutils literal"><span class="pre">fetch_range()</span></code></a> methods.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>key</strong> &#8211; Either a string or a slice. Additionally, a second
+parameter can be supplied indicating what seek method to use.</td>
+</tr>
+</tbody>
+</table>
+<p>Examples using single keys:</p>
+<ul class="simple">
+<li><code class="docutils literal"><span class="pre">['charlie']</span></code>, search for the key <em>charlie</em>.</li>
+<li><code class="docutils literal"><span class="pre">['2014.XXX',</span> <span class="pre">SEEK_LE]</span></code>, return the key whose value is
+equal to <em>2014.XXX</em>. If no such key exists, return the lowest
+key that <strong>does not exceed</strong> <em>2014.XXX</em>. If there is no lower key,
+then a <code class="docutils literal"><span class="pre">KeyError</span></code> will be raised.</li>
+<li><code class="docutils literal"><span class="pre">['2014.XXX',</span> <span class="pre">SEEK_GE]</span></code>, return the key whose value is
+equal to <em>2014.XXX</em>. If no such key exists, return the greatest
+key that <strong>does not precede</strong> <em>2014.XXX</em>. If there is no higher key,
+then a <code class="docutils literal"><span class="pre">KeyError</span></code> will be raised.</li>
+</ul>
+<p>Examples using slices (SEEK_LE and SEEK_GE cannot be used with slices):</p>
+<ul class="simple">
+<li><code class="docutils literal"><span class="pre">['a':'z']</span></code>, return all keys from <em>a</em> to <em>z</em> in ascending order.</li>
+<li><code class="docutils literal"><span class="pre">['z':'a']</span></code>, return all keys from <em>z</em> to <em>a</em> in reverse order.</li>
+<li><code class="docutils literal"><span class="pre">['a':]</span></code>, return all key/value pairs from <code class="docutils literal"><span class="pre">a</span></code> on up.</li>
+<li><code class="docutils literal"><span class="pre">[:'z']</span></code>, return all key/value pairs up to and including <code class="docutils literal"><span class="pre">z</span></code>.</li>
+<li><code class="docutils literal"><span class="pre">['a'::True]</span></code>, return all key/value pairs from <code class="docutils literal"><span class="pre">a</span></code> on up in
+reverse order.</li>
+</ul>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">When fetching slices, a <code class="docutils literal"><span class="pre">KeyError</span></code> will not be raised under
+any circumstances.</p>
+</div>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="lsm.LSM.__init__">
+<code class="descname">__init__</code><a class="headerlink" href="#lsm.LSM.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>filename</strong> (<em>str</em>) &#8211; Path to database file.</li>
+<li><strong>open_database</strong> (<em>bool</em>) &#8211; Whether to open the database automatically
+when the class is instantiated.</li>
+<li><strong>page_size</strong> (<em>int</em>) &#8211; Page size in bytes. Default is 4096.</li>
+<li><strong>block_size</strong> (<em>int</em>) &#8211; Block size in kb. Default is 1024 (1MB).</li>
+<li><strong>safety_level</strong> (<em>int</em>) &#8211; Safety level in face of crash.</li>
+<li><strong>readonly</strong> (<em>bool</em>) &#8211; Open database for read-only access.</li>
+<li><strong>enable_multiple_processes</strong> (<em>bool</em>) &#8211; Allow multiple processes to
+access the database. Default is <cite>True</cite>.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="lsm.LSM.__iter__">
+<code class="descname">__iter__</code><a class="headerlink" href="#lsm.LSM.__iter__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Efficiently iterate through the items in the database. This method
+yields successive key/value pairs.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The return value is a generator.</p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="lsm.LSM.__reversed__">
+<code class="descname">__reversed__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#lsm.LSM.__reversed__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Efficiently iterate through the items in the database in reverse
+order. This method yields successive key/value pairs.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="lsm.LSM.__setitem__">
+<code class="descname">__setitem__</code><a class="headerlink" href="#lsm.LSM.__setitem__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Dictionary API wrapper for the <a class="reference internal" href="#lsm.LSM.insert" title="lsm.LSM.insert"><code class="xref py py-meth docutils literal"><span class="pre">insert()</span></code></a> method.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="lsm.LSM.autoflush">
+<code class="descname">autoflush</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#lsm.LSM.autoflush" title="Permalink to this definition">¶</a></dt>
+<dd><p>This value determines the amount of data allowed to accumulate in a
+live in-memory tree before it is marked as old. After committing a
+transaction, a connection checks if the size of the live in-memory
+tree, including data structure overhead, is greater than the value of
+this option in KB. If it is, and there is not already an old in-memory
+tree, the live in-memory tree is marked as old.</p>
+<p>The maximum allowable value is 1048576 (1GB). There is no minimum
+value. If this parameter is set to zero, then an attempt is made to
+mark the live in-memory tree as old after each transaction is
+committed.</p>
+<p>The default value is 1024 (1MB).</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="lsm.LSM.begin">
+<code class="descname">begin</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#lsm.LSM.begin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Begin a transaction. Transactions can be nested.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">In most cases it is preferable to use the <a class="reference internal" href="#lsm.LSM.transaction" title="lsm.LSM.transaction"><code class="xref py py-meth docutils literal"><span class="pre">transaction()</span></code></a>
+context manager/decorator.</p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="lsm.LSM.checkpoint">
+<code class="descname">checkpoint</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#lsm.LSM.checkpoint" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write to the database file header.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="lsm.LSM.checkpoint_size">
+<code class="descname">checkpoint_size</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#lsm.LSM.checkpoint_size" title="Permalink to this definition">¶</a></dt>
+<dd><p>The number of KB written to the database file since the most recent
+checkpoint.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="lsm.LSM.close">
+<code class="descname">close</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#lsm.LSM.close" title="Permalink to this definition">¶</a></dt>
+<dd><p>Close the database. If the database was already closed, this will
+return False, otherwise returns True on success.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">You must close all cursors before attempting to close the db,
+otherwise an <code class="docutils literal"><span class="pre">IOError</span></code> will be raised.</p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="lsm.LSM.commit">
+<code class="descname">commit</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#lsm.LSM.commit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Commit the inner-most transaction.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Boolean indicating whether the changes were commited.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="lsm.LSM.config_mmap">
+<code class="descname">config_mmap</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#lsm.LSM.config_mmap" title="Permalink to this definition">¶</a></dt>
+<dd><p>If this value is set to 0, then the database file is accessed using
+ordinary read/write IO functions. Or, if it is set to 1, then the
+database file is memory mapped and accessed that way. If this parameter
+is set to any value N greater than 1, then up to the first N KB of the
+file are memory mapped, and any remainder accessed using read/write IO.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="lsm.LSM.cursor">
+<code class="descname">cursor</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#lsm.LSM.cursor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a cursor and return it as a context manager. After the wrapped
+block, the cursor is closed.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>reverse</strong> (<em>bool</em>) &#8211; Whether the cursor will iterate over keys in
+descending order.</td>
+</tr>
+</tbody>
+</table>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">with</span> <span class="n">lsm_db</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span> <span class="k">as</span> <span class="n">cursor</span><span class="p">:</span>
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">fetch_range</span><span class="p">(</span><span class="s">&#39;a&#39;</span><span class="p">,</span> <span class="s">&#39;z&#39;</span><span class="p">):</span>
+        <span class="c"># do something with data...</span>
+
+<span class="k">with</span> <span class="n">lsm_db</span><span class="o">.</span><span class="n">cursor</span><span class="p">(</span><span class="n">reverse</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span> <span class="k">as</span> <span class="n">cursor</span><span class="p">:</span>
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">fetch_range</span><span class="p">(</span><span class="s">&#39;z&#39;</span><span class="p">,</span> <span class="s">&#39;a&#39;</span><span class="p">):</span>
+        <span class="c"># data is now ordered descending order.</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>In general the <a class="reference internal" href="#lsm.LSM.cursor" title="lsm.LSM.cursor"><code class="xref py py-meth docutils literal"><span class="pre">cursor()</span></code></a> context manager should be used as
+it ensures cursors are properly cleaned up when you are done using
+them.</p>
+<p class="last">LSM databases cannot be closed as long as there are any open
+cursors, so it is very important to close them when finished.</p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="lsm.LSM.delete">
+<code class="descname">delete</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#lsm.LSM.delete" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove the specified key and value from the database. If the key does
+not exist, no exception is raised.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>You can delete keys using Python&#8217;s dictionary API:</p>
+<div class="last highlight-python"><div class="highlight"><pre><span class="c"># These are equivalent:</span>
+<span class="n">lsm_db</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="s">&#39;some-key&#39;</span><span class="p">)</span>
+<span class="k">del</span> <span class="n">lsm_db</span><span class="p">[</span><span class="s">&#39;some-key&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="lsm.LSM.delete_range">
+<code class="descname">delete_range</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#lsm.LSM.delete_range" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delete a range of keys, though the start and end keys themselves
+are not deleted.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>start</strong> (<em>str</em>) &#8211; Beginning of range. This key is <strong>not</strong> removed.</li>
+<li><strong>end</strong> (<em>str</em>) &#8211; End of range. This key is <strong>not</strong> removed.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Rather than using <a class="reference internal" href="#lsm.LSM.delete_range" title="lsm.LSM.delete_range"><code class="xref py py-meth docutils literal"><span class="pre">delete_range()</span></code></a>, you can use Python&#8217;s
+<code class="docutils literal"><span class="pre">del</span></code> keyword, specifying a slice of keys.</p>
+<p>Example:</p>
+<div class="highlight-pycon"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="s">&#39;abcdef&#39;</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="n">db</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">key</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="k">del</span> <span class="n">db</span><span class="p">[</span><span class="s">&#39;a&#39;</span><span class="p">:</span><span class="s">&#39;c&#39;</span><span class="p">]</span>  <span class="c"># This will only delete &#39;b&#39;.</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="s">&#39;a&#39;</span> <span class="ow">in</span> <span class="n">db</span><span class="p">,</span> <span class="s">&#39;b&#39;</span> <span class="ow">in</span> <span class="n">db</span><span class="p">,</span> <span class="s">&#39;c&#39;</span> <span class="ow">in</span> <span class="n">db</span>
+<span class="go">(True, False, True)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="k">del</span> <span class="n">db</span><span class="p">[</span><span class="s">&#39;0&#39;</span><span class="p">:</span><span class="s">&#39;d&#39;</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="nb">list</span><span class="p">(</span><span class="n">db</span><span class="p">)</span>
+<span class="go">[(&#39;d&#39;, &#39;D&#39;), (&#39;e&#39;, &#39;E&#39;), (&#39;f&#39;, &#39;F&#39;)]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="lsm.LSM.fetch">
+<code class="descname">fetch</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#lsm.LSM.fetch" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieve a value from the database.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>key</strong> (<em>str</em>) &#8211; The key to retrieve.</li>
+<li><strong>seek_method</strong> (<em>int</em>) &#8211; Instruct the database how to match the key.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="docutils literal"><span class="pre">KeyError</span></code> if a matching key cannot be found. See below
+for more details.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>The following seek methods can be specified.</p>
+<ul>
+<li><dl class="first docutils">
+<dt><code class="docutils literal"><span class="pre">SEEK_EQ</span></code> (default): match key based on equality. If no match is</dt>
+<dd><p class="first last">found, then a <code class="docutils literal"><span class="pre">KeyError</span></code> is raised.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><code class="docutils literal"><span class="pre">SEEK_LE</span></code>: if the key does not exist, return the largest key in the</dt>
+<dd><p class="first last">database that is <em>smaller</em> than the given key. If no smaller key
+exists, then a <code class="docutils literal"><span class="pre">KeyError</span></code> will be raised.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><code class="docutils literal"><span class="pre">SEEK_GE</span></code>: if the key does not exist, return the smallest key in</dt>
+<dd><p class="first last">the database that is <em>larger</em> than the given key. If no larger key
+exists, then a <code class="docutils literal"><span class="pre">KeyError</span></code> will be raised.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>Instead of calling <a class="reference internal" href="#lsm.LSM.fetch" title="lsm.LSM.fetch"><code class="xref py py-meth docutils literal"><span class="pre">fetch()</span></code></a>, you can simply treat your
+database like a dictionary.</p>
+<p>Example:</p>
+<div class="last highlight-python"><div class="highlight"><pre><span class="c"># These are equivalent:</span>
+<span class="n">val</span> <span class="o">=</span> <span class="n">lsm_db</span><span class="o">.</span><span class="n">fetch</span><span class="p">(</span><span class="s">&#39;key&#39;</span><span class="p">)</span>
+<span class="n">val</span> <span class="o">=</span> <span class="n">lsm_db</span><span class="p">[</span><span class="s">&#39;key&#39;</span><span class="p">]</span>
+
+<span class="c"># You can specify the `seek_method` by passing a tuple:</span>
+<span class="n">val</span> <span class="o">=</span> <span class="n">lsm_db</span><span class="o">.</span><span class="n">fetch</span><span class="p">(</span><span class="s">&#39;other-key&#39;</span><span class="p">,</span> <span class="n">SEEK_LE</span><span class="p">)</span>
+<span class="n">val</span> <span class="o">=</span> <span class="n">lsm_db</span><span class="p">[</span><span class="s">&#39;other-key&#39;</span><span class="p">,</span> <span class="n">SEEK_LE</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="lsm.LSM.fetch_range">
+<code class="descname">fetch_range</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#lsm.LSM.fetch_range" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fetch a range of keys, inclusive of both the start and end keys. If
+the start key is not specified, then the first key in the database will
+be used. If the end key is not specified, then all succeeding keys will
+be fetched.</p>
+<p>If the start key is less than the end key, then the keys will be
+returned in ascending order. The logic for selecting the first and last
+key in the event either key is missing is such that:</p>
+<ul class="simple">
+<li>The start key will be the smallest key in the database that is
+larger than the given key (same as <code class="docutils literal"><span class="pre">SEEK_GE</span></code>).</li>
+<li>The end key will be the largest key in the database that is smaller
+than the given key (same as <code class="docutils literal"><span class="pre">SEEK_LE</span></code>).</li>
+</ul>
+<p>If the start key is greater than the end key, then the keys will be
+returned in descending order. The logic for selecting the first and
+last key in the event either key is missing is such that:</p>
+<ul class="simple">
+<li>The start key will be the largest key in the database that is
+smaller than the given key (same as <code class="docutils literal"><span class="pre">SEEK_LE</span></code>).</li>
+<li>The end key will be the smallest key in the database that is larger
+than the given key (same as <code class="docutils literal"><span class="pre">SEEK_GE</span></code>).</li>
+</ul>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">If one or both keys is <code class="docutils literal"><span class="pre">None</span></code> and you wish to fetch in reverse,
+you need to specify a third parameter, <code class="docutils literal"><span class="pre">reverse=True</span></code>.</p>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Rather than using <a class="reference internal" href="#lsm.LSM.fetch_range" title="lsm.LSM.fetch_range"><code class="xref py py-meth docutils literal"><span class="pre">fetch_range()</span></code></a>, you can use
+the <a class="reference internal" href="#lsm.LSM.__setitem__" title="lsm.LSM.__setitem__"><code class="xref py py-meth docutils literal"><span class="pre">__setitem__()</span></code></a> API and pass in a slice. The
+examples below will use the slice API.</p>
+</div>
+<p>Say we have the following data:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">db</span><span class="o">.</span><span class="n">update</span><span class="p">({</span>
+  <span class="s">&#39;a&#39;</span><span class="p">:</span> <span class="s">&#39;A&#39;</span><span class="p">,</span>
+  <span class="s">&#39;c&#39;</span><span class="p">:</span> <span class="s">&#39;C&#39;</span><span class="p">,</span>
+  <span class="s">&#39;d&#39;</span><span class="p">:</span> <span class="s">&#39;D&#39;</span><span class="p">,</span>
+  <span class="s">&#39;f&#39;</span><span class="p">:</span> <span class="s">&#39;F&#39;</span><span class="p">,</span>
+<span class="p">})</span>
+</pre></div>
+</div>
+<p>Here are some example calls using ascending order:</p>
+<div class="highlight-pycon"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">db</span><span class="p">[</span><span class="s">&#39;a&#39;</span><span class="p">:</span><span class="s">&#39;d&#39;</span><span class="p">]</span>
+<span class="go">[(&#39;a&#39;, &#39;A&#39;), (&#39;c&#39;, &#39;C&#39;), (&#39;d&#39;, &#39;D&#39;)]</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">db</span><span class="p">[</span><span class="s">&#39;a&#39;</span><span class="p">:</span><span class="s">&#39;e&#39;</span><span class="p">]</span>
+<span class="go">[(&#39;a&#39;, &#39;A&#39;), (&#39;c&#39;, &#39;C&#39;), (&#39;d&#39;, &#39;D&#39;)]</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">db</span><span class="p">[</span><span class="s">&#39;b&#39;</span><span class="p">:</span><span class="s">&#39;e&#39;</span><span class="p">]</span>
+<span class="go">[(&#39;c&#39;, &#39;C&#39;), (&#39;d&#39;, &#39;D&#39;)]</span>
+</pre></div>
+</div>
+<p>If one of the boundaries is not specified (<code class="docutils literal"><span class="pre">None</span></code>), then it will
+start at the lowest or highest key, respectively.</p>
+<div class="highlight-pycon"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">db</span><span class="p">[:</span><span class="s">&#39;ccc&#39;</span><span class="p">]</span>
+<span class="go">[(&#39;a&#39;, &#39;A&#39;), (&#39;c&#39;, &#39;C&#39;)]</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">db</span><span class="p">[</span><span class="s">&#39;ccc&#39;</span><span class="p">:]</span>
+<span class="go">[(&#39;d&#39;, &#39;D&#39;), (&#39;f&#39;, &#39;F&#39;)]</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">db</span><span class="p">[:</span><span class="s">&#39;x&#39;</span><span class="p">]</span>
+<span class="go">[(&#39;a&#39;, &#39;A&#39;), (&#39;c&#39;, &#39;C&#39;), (&#39;d&#39;, &#39;D&#39;), (&#39;f&#39;, &#39;F&#39;)]</span>
+</pre></div>
+</div>
+<p>If the start key is higher than the highest key, no results are
+returned.</p>
+<div class="highlight-pycon"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">db</span><span class="p">[</span><span class="s">&#39;x&#39;</span><span class="p">:]</span>
+<span class="go">[]</span>
+</pre></div>
+</div>
+<p>If the end key is lower than the lowest key, no results are returned.</p>
+<div class="highlight-pycon"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">db</span><span class="p">[:</span><span class="s">&#39;0&#39;</span><span class="p">]</span>
+<span class="go">[]</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">If the start key is greater than the end key, lsm-python will
+assume you want the range in reverse order.</p>
+</div>
+<p>Examples in descending (reverse) order:</p>
+<div class="highlight-pycon"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">db</span><span class="p">[</span><span class="s">&#39;d&#39;</span><span class="p">:</span><span class="s">&#39;a&#39;</span><span class="p">]</span>
+<span class="go">[(&#39;d&#39;, &#39;D&#39;), (&#39;c&#39;, &#39;C&#39;), (&#39;a&#39;, &#39;A&#39;)]</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">db</span><span class="p">[</span><span class="s">&#39;e&#39;</span><span class="p">:</span><span class="s">&#39;a&#39;</span><span class="p">]</span>
+<span class="go">[(&#39;d&#39;, &#39;D&#39;), (&#39;c&#39;, &#39;C&#39;), (&#39;a&#39;, &#39;A&#39;)]</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">db</span><span class="p">[</span><span class="s">&#39;e&#39;</span><span class="p">:</span><span class="s">&#39;b&#39;</span><span class="p">]</span>
+<span class="go">[(&#39;d&#39;, &#39;D&#39;), (&#39;c&#39;, &#39;C&#39;)]</span>
+</pre></div>
+</div>
+<p>If one of the boundaries is not specified (<code class="docutils literal"><span class="pre">None</span></code>), then it will
+start at the highest and lowest keys, respectively.</p>
+<div class="highlight-pycon"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">db</span><span class="p">[</span><span class="s">&#39;ccc&#39;</span><span class="p">::</span><span class="bp">True</span><span class="p">]</span>
+<span class="go">[(&#39;c&#39;, &#39;C&#39;), (&#39;a&#39;, &#39;A&#39;)]</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">db</span><span class="p">[:</span><span class="s">&#39;ccc&#39;</span><span class="p">:</span><span class="bp">True</span><span class="p">]</span>
+<span class="go">[(&#39;f&#39;, &#39;F&#39;), (&#39;d&#39;, &#39;D&#39;)]</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">db</span><span class="p">[</span><span class="s">&#39;x&#39;</span><span class="p">::</span><span class="bp">True</span><span class="p">]</span>
+<span class="go">[(&#39;f&#39;, &#39;F&#39;), (&#39;d&#39;, &#39;D&#39;), (&#39;c&#39;, &#39;C&#39;), (&#39;a&#39;, &#39;A&#39;)]</span>
+</pre></div>
+</div>
+<p>If the end key is higher than the highest key, no results are
+returned.</p>
+<div class="highlight-pycon"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">db</span><span class="p">[:</span><span class="s">&#39;x&#39;</span><span class="p">:</span><span class="bp">True</span><span class="p">]</span>
+<span class="go">[]</span>
+</pre></div>
+</div>
+<p>If the start key is lower than the lowest key, no results are
+returned.</p>
+<div class="highlight-pycon"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">db</span><span class="p">[</span><span class="s">&#39;0&#39;</span><span class="p">::</span><span class="bp">True</span><span class="p">]</span>
+<span class="go">[]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="lsm.LSM.flush">
+<code class="descname">flush</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#lsm.LSM.flush" title="Permalink to this definition">¶</a></dt>
+<dd><p>Flush the in-memory tree to disk, creating a new segment.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="lsm.LSM.insert">
+<code class="descname">insert</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#lsm.LSM.insert" title="Permalink to this definition">¶</a></dt>
+<dd><p>Insert a key/value pair to the database. If the key exists, the
+previous value will be overwritten.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>Rather than calling <a class="reference internal" href="#lsm.LSM.insert" title="lsm.LSM.insert"><code class="xref py py-meth docutils literal"><span class="pre">insert()</span></code></a>, you can simply treat
+your database as a dictionary and use the
+<a class="reference internal" href="#lsm.LSM.__setitem__" title="lsm.LSM.__setitem__"><code class="xref py py-meth docutils literal"><span class="pre">__setitem__()</span></code></a> API:</p>
+<div class="last highlight-python"><div class="highlight"><pre><span class="c"># These are equivalent:</span>
+<span class="n">lsm_db</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="s">&#39;key&#39;</span><span class="p">,</span> <span class="s">&#39;value&#39;</span><span class="p">)</span>
+<span class="n">lsm_db</span><span class="p">[</span><span class="s">&#39;key&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;value&#39;</span>
+</pre></div>
+</div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="lsm.LSM.keys">
+<code class="descname">keys</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#lsm.LSM.keys" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a generator that successively yields the keys in the database.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>reverse</strong> (<em>bool</em>) &#8211; Return the keys in reverse order.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">generator</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="lsm.LSM.open">
+<code class="descname">open</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#lsm.LSM.open" title="Permalink to this definition">¶</a></dt>
+<dd><p>Open the database. If the database was already open, this will return
+False, otherwise returns True on success.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="lsm.LSM.pages_read">
+<code class="descname">pages_read</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#lsm.LSM.pages_read" title="Permalink to this definition">¶</a></dt>
+<dd><p>The number of 4KB pages read from the database file during the
+lifetime of this connection.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="lsm.LSM.pages_written">
+<code class="descname">pages_written</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#lsm.LSM.pages_written" title="Permalink to this definition">¶</a></dt>
+<dd><p>The number of 4KB pages written to the database file during the
+lifetime of this connection.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="lsm.LSM.rollback">
+<code class="descname">rollback</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#lsm.LSM.rollback" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rollback the inner-most transaction. If <cite>keep_transaction</cite> is <cite>True</cite>,
+then the transaction will remain open after the changes were rolled
+back.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>keep_transaction</strong> (<em>bool</em>) &#8211; Whether the transaction will remain open
+after the changes are rolled back (default=True).</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Boolean indicating whether the changes were rolled back.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="lsm.LSM.set_auto_checkpoint">
+<code class="descname">set_auto_checkpoint</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#lsm.LSM.set_auto_checkpoint" title="Permalink to this definition">¶</a></dt>
+<dd><p>If this option is set to non-zero value N, then a checkpoint is
+automatically attempted after each N KB of data have been written to
+the database file.</p>
+<p>The amount of uncheckpointed data already written to the database file
+is a global parameter. After performing database work (writing to the
+database file), the process checks if the total amount of
+uncheckpointed data exceeds the value of this paramter. If so, a
+checkpoint is performed. This means that this option may cause the
+connection to perform a checkpoint even if the current connection has
+itself written very little data into the database file.</p>
+<p>The default value is 2048 (checkpoint every 2MB).</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="lsm.LSM.set_automerge">
+<code class="descname">set_automerge</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#lsm.LSM.set_automerge" title="Permalink to this definition">¶</a></dt>
+<dd><p>The minimum number of segments to merge together at a time.</p>
+<p>The default value is 4.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="lsm.LSM.set_block_size">
+<code class="descname">set_block_size</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#lsm.LSM.set_block_size" title="Permalink to this definition">¶</a></dt>
+<dd><p>Must be set to a power of two between 64 and 65536, inclusive (block
+sizes between 64KB and 64MB).</p>
+<p>If the connection creates a new database, the block size of the new
+database is set to the value of this option in KB. After lsm_open()
+has been called, querying this parameter returns the actual block
+size of the opened database.</p>
+<p>The default value is 1024 (1MB blocks).</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p>This may only be set before calling <code class="docutils literal"><span class="pre">lsm_open()</span></code>. The best
+way to set this value is when you instantiate your <a class="reference internal" href="#lsm.LSM" title="lsm.LSM"><code class="xref py py-class docutils literal"><span class="pre">LSM</span></code></a>
+object.</p>
+<p class="last">If the database is already open, then a <code class="docutils literal"><span class="pre">ValueError</span></code> will be
+raised.</p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="lsm.LSM.set_multiple_processes">
+<code class="descname">set_multiple_processes</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#lsm.LSM.set_multiple_processes" title="Permalink to this definition">¶</a></dt>
+<dd><p>If true, the library uses shared-memory and posix advisory locks to
+co-ordinate access by clients from within multiple processes.
+Otherwise, if false, all database clients must be located in the same
+process.</p>
+<p>The default value is <code class="docutils literal"><span class="pre">True</span></code>.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p>This may only be set before calling <code class="docutils literal"><span class="pre">lsm_open()</span></code>. The best
+way to set this value is when you instantiate your <a class="reference internal" href="#lsm.LSM" title="lsm.LSM"><code class="xref py py-class docutils literal"><span class="pre">LSM</span></code></a>
+object.</p>
+<p class="last">If the database is already open, then a <code class="docutils literal"><span class="pre">ValueError</span></code> will be
+raised.</p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="lsm.LSM.set_page_size">
+<code class="descname">set_page_size</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#lsm.LSM.set_page_size" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the page size (in bytes). Default value is 4096 bytes.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p>This may only be set before calling <code class="docutils literal"><span class="pre">lsm_open()</span></code>. The best
+way to set this value is when you instantiate your <a class="reference internal" href="#lsm.LSM" title="lsm.LSM"><code class="xref py py-class docutils literal"><span class="pre">LSM</span></code></a>
+object.</p>
+<p class="last">If the database is already open, then a <code class="docutils literal"><span class="pre">ValueError</span></code> will be
+raised.</p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="lsm.LSM.set_readonly">
+<code class="descname">set_readonly</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#lsm.LSM.set_readonly" title="Permalink to this definition">¶</a></dt>
+<dd><p>This parameter may only be set before lsm_open() is called.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="lsm.LSM.set_safety">
+<code class="descname">set_safety</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#lsm.LSM.set_safety" title="Permalink to this definition">¶</a></dt>
+<dd><p>Valid values are 0, 1 (the default) and 2. This parameter determines
+how robust the database is in the face of a system crash (e.g. a power
+failure or operating system crash). As follows:</p>
+<ul>
+<li><p class="first">0 (off):    No robustness. A system crash may corrupt the database.</p>
+</li>
+<li><dl class="first docutils">
+<dt>1 (normal): Some robustness. A system crash may not corrupt the</dt>
+<dd><p class="first last">database file, but recently committed transactions may
+be lost following recovery.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>2 (full):   Full robustness. A system crash may not corrupt the</dt>
+<dd><p class="first last">database file. Following recovery the database file
+contains all successfully committed transactions.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<p>Values:</p>
+<ul class="simple">
+<li><code class="docutils literal"><span class="pre">SAFETY_OFF</span></code></li>
+<li><code class="docutils literal"><span class="pre">SAFETY_NORMAL</span></code></li>
+<li><code class="docutils literal"><span class="pre">SAFETY_FULL</span></code></li>
+</ul>
+</dd></dl>
+
+<dl class="method">
+<dt id="lsm.LSM.transaction">
+<code class="descname">transaction</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#lsm.LSM.transaction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a context manager that runs the wrapped block in a transaction.</p>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">with</span> <span class="n">lsm_db</span><span class="o">.</span><span class="n">transaction</span><span class="p">()</span> <span class="k">as</span> <span class="n">txn</span><span class="p">:</span>
+    <span class="n">lsm_db</span><span class="p">[</span><span class="s">&#39;k1&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;v1&#39;</span>
+
+<span class="k">with</span> <span class="n">lsm_db</span><span class="o">.</span><span class="n">transaction</span><span class="p">()</span> <span class="k">as</span> <span class="n">txn</span><span class="p">:</span>
+    <span class="n">lsm_db</span><span class="p">[</span><span class="s">&#39;k1&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;v1-1&#39;</span>
+    <span class="n">txn</span><span class="o">.</span><span class="n">rollback</span><span class="p">()</span>
+
+<span class="k">assert</span> <span class="n">lsm_db</span><span class="p">[</span><span class="s">&#39;k1&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;v1&#39;</span>
+</pre></div>
+</div>
+<p>You can also use the <a class="reference internal" href="#lsm.LSM.transaction" title="lsm.LSM.transaction"><code class="xref py py-meth docutils literal"><span class="pre">transaction()</span></code></a> method as a decorator.
+If the wrapped function returns normally, the transaction is committed,
+otherwise it is rolled back.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="nd">@lsm_db.transaction</span><span class="p">()</span>
+<span class="k">def</span> <span class="nf">transfer_funds</span><span class="p">(</span><span class="n">from_account</span><span class="p">,</span> <span class="n">to_account</span><span class="p">,</span> <span class="n">amount</span><span class="p">):</span>
+    <span class="c"># transfer money...</span>
+    <span class="k">return</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="lsm.LSM.update">
+<code class="descname">update</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#lsm.LSM.update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add an arbitrary number of key/value pairs. Unlike the Python
+<code class="docutils literal"><span class="pre">dict.update</span></code> method, <a class="reference internal" href="#lsm.LSM.update" title="lsm.LSM.update"><code class="xref py py-meth docutils literal"><span class="pre">update()</span></code></a> does not accept
+arbitrary keyword arguments and only takes a single dictionary as
+the parameter.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>values</strong> (<em>dict</em>) &#8211; A dictionary of key/value pairs.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="lsm.LSM.values">
+<code class="descname">values</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#lsm.LSM.values" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a generator that successively yields the values in the database.
+The values are <strong>ordered based on their key</strong>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>reverse</strong> (<em>bool</em>) &#8211; Return the values in reverse key-order.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">generator</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="lsm.LSM.work">
+<code class="descname">work</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#lsm.LSM.work" title="Permalink to this definition">¶</a></dt>
+<dd><p>Explicitly perform work on the database structure.</p>
+<p>If the database has an old in-memory tree when <a class="reference internal" href="#lsm.LSM.work" title="lsm.LSM.work"><code class="xref py py-meth docutils literal"><span class="pre">work()</span></code></a> is
+called, it is flushed to disk. If this means that more than <code class="docutils literal"><span class="pre">nkb</span></code> of
+data is written to the database file, no further work is performed.
+Otherwise, the number of KB written is subtracted from nKB before
+proceeding.</p>
+<p>Typically you will use <code class="docutils literal"><span class="pre">1</span></code> for the parameter in order to <em>optimize</em>
+the database.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>nkb</strong> (<em>int</em>) &#8211; Limit on the number of KB of data that should be
+written to the database file before the call returns. It is a
+hint and is not honored strictly.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The number of KB written to the database file.</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">A background thread or process is ideal for running this method.</p>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="lsm.Cursor">
+<em class="property">class </em><code class="descclassname">lsm.</code><code class="descname">Cursor</code><a class="headerlink" href="#lsm.Cursor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wrapper around the <cite>lsm_cursor</cite> object.</p>
+<p>Functions <a class="reference internal" href="#lsm.Cursor.seek" title="lsm.Cursor.seek"><code class="xref py py-meth docutils literal"><span class="pre">seek()</span></code></a>, <a class="reference internal" href="#lsm.Cursor.first" title="lsm.Cursor.first"><code class="xref py py-meth docutils literal"><span class="pre">first()</span></code></a>, and <a class="reference internal" href="#lsm.Cursor.last" title="lsm.Cursor.last"><code class="xref py py-meth docutils literal"><span class="pre">last()</span></code></a> are
+<em>seek</em> functions. Whether or not <a class="reference internal" href="#lsm.Cursor.next" title="lsm.Cursor.next"><code class="xref py py-meth docutils literal"><span class="pre">next()</span></code></a> and <a class="reference internal" href="#lsm.Cursor.previous" title="lsm.Cursor.previous"><code class="xref py py-meth docutils literal"><span class="pre">previous()</span></code></a>
+may be called successfully depends on the most recent seek function called
+on the cursor. Specifically,</p>
+<ul class="simple">
+<li>At least one seek function must have been called on the cursor.</li>
+<li>To call <code class="docutils literal"><span class="pre">next()</span></code>, the most recent call to a seek function must have
+been either <code class="docutils literal"><span class="pre">first()</span></code> or a call to <code class="docutils literal"><span class="pre">seek()</span></code> specifying <code class="docutils literal"><span class="pre">SEEK_GE</span></code>.</li>
+<li>To call <code class="docutils literal"><span class="pre">previous()</span></code>, the most recent call to a seek function must have
+been either <code class="docutils literal"><span class="pre">last()</span></code> or a call to <code class="docutils literal"><span class="pre">seek()</span></code> specifying <code class="docutils literal"><span class="pre">SEEK_LE</span></code>.</li>
+</ul>
+<p>Otherwise, if the above conditions are not met when <code class="docutils literal"><span class="pre">next()</span></code> or
+<code class="docutils literal"><span class="pre">previous()</span></code> is called, <code class="docutils literal"><span class="pre">LSM_MISUSE</span></code> is returned and the cursor
+position remains unchanged.</p>
+<p>For more information, see:</p>
+<p><a class="reference external" href="http://www.sqlite.org/src4/doc/trunk/www/lsmusr.wiki#reading_from_a_database">http://www.sqlite.org/src4/doc/trunk/www/lsmusr.wiki#reading_from_a_database</a></p>
+<dl class="method">
+<dt id="lsm.Cursor.__enter__">
+<code class="descname">__enter__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#lsm.Cursor.__enter__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Expose the cursor as a context manager. After the wrapped block,
+the cursor will be closed, which is very important.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="lsm.Cursor.__iter__">
+<code class="descname">__iter__</code><a class="headerlink" href="#lsm.Cursor.__iter__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterate from the cursor&#8217;s current position. The iterator returns
+successive key/value pairs.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="lsm.Cursor.close">
+<code class="descname">close</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#lsm.Cursor.close" title="Permalink to this definition">¶</a></dt>
+<dd><p>Close the cursor.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">If you are using the cursor as a context manager, then it is not
+necessary to call this method.</p>
+</div>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">If a cursor is not closed, then the database cannot be closed
+properly.</p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="lsm.Cursor.compare">
+<code class="descname">compare</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#lsm.Cursor.compare" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compare the given key with key at the cursor&#8217;s current position.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="lsm.Cursor.fetch_range">
+<code class="descname">fetch_range</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#lsm.Cursor.fetch_range" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fetch a range of keys, inclusive of both the start and end keys. If
+the start key is not specified, then the first key will be used. If
+the end key is not specified, then all succeeding keys will be fetched.</p>
+<p>For complete details, see the docstring for
+<a class="reference internal" href="#lsm.LSM.fetch_range" title="lsm.LSM.fetch_range"><code class="xref py py-meth docutils literal"><span class="pre">LSM.fetch_range()</span></code></a>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="lsm.Cursor.fetch_until">
+<code class="descname">fetch_until</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#lsm.Cursor.fetch_until" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method returns a generator that yields key/value pairs obtained
+by iterating from the cursor&#8217;s current position until it reaches
+the given <code class="docutils literal"><span class="pre">key</span></code>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="lsm.Cursor.first">
+<code class="descname">first</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#lsm.Cursor.first" title="Permalink to this definition">¶</a></dt>
+<dd><p>Jump to the first key in the database.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="lsm.Cursor.is_valid">
+<code class="descname">is_valid</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#lsm.Cursor.is_valid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a boolean indicating whether the cursor is pointing at a
+valid record.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="lsm.Cursor.key">
+<code class="descname">key</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#lsm.Cursor.key" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the key at the cursor&#8217;s current position.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="lsm.Cursor.keys">
+<code class="descname">keys</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#lsm.Cursor.keys" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a generator that successively yields keys.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="lsm.Cursor.last">
+<code class="descname">last</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#lsm.Cursor.last" title="Permalink to this definition">¶</a></dt>
+<dd><p>Jump to the last key in the database.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="lsm.Cursor.next">
+<code class="descname">next</code><a class="headerlink" href="#lsm.Cursor.next" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="lsm.Cursor.open">
+<code class="descname">open</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#lsm.Cursor.open" title="Permalink to this definition">¶</a></dt>
+<dd><p>Open the cursor. In general this method does not need to be called
+by applications, as it is called automatically when a
+<a class="reference internal" href="#lsm.Cursor" title="lsm.Cursor"><code class="xref py py-class docutils literal"><span class="pre">Cursor</span></code></a> is instantiated.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="lsm.Cursor.previous">
+<code class="descname">previous</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#lsm.Cursor.previous" title="Permalink to this definition">¶</a></dt>
+<dd><p>Move the cursor to the previous record. If no previous record exists,
+then a <code class="docutils literal"><span class="pre">StopIteration</span></code> will be raised.</p>
+<p>If you encounter an Exception indicating <em>Misuse (21)</em> when calling
+this method, then you need to be sure that you are either calling
+<a class="reference internal" href="#lsm.Cursor.last" title="lsm.Cursor.last"><code class="xref py py-meth docutils literal"><span class="pre">last()</span></code></a> or <a class="reference internal" href="#lsm.Cursor.seek" title="lsm.Cursor.seek"><code class="xref py py-meth docutils literal"><span class="pre">seek()</span></code></a> with a seek method of <code class="docutils literal"><span class="pre">SEEK_LE</span></code>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="lsm.Cursor.seek">
+<code class="descname">seek</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#lsm.Cursor.seek" title="Permalink to this definition">¶</a></dt>
+<dd><p>Seek to the given key using the specified matching method. If the
+operation did not find a valid key, then a <code class="docutils literal"><span class="pre">KeyError</span></code> will be raised.</p>
+<ul>
+<li><dl class="first docutils">
+<dt><code class="docutils literal"><span class="pre">SEEK_EQ</span></code> (default): match key based on equality. If no match is</dt>
+<dd><p class="first last">found then a <code class="docutils literal"><span class="pre">KeyError</span></code> is raised.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><code class="docutils literal"><span class="pre">SEEK_LE</span></code>: if the key does not exist, return the largest key in the</dt>
+<dd><p class="first last">database that is <em>smaller</em> than the given key. If no smaller key
+exists, then a <code class="docutils literal"><span class="pre">KeyError</span></code> will be raised.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><code class="docutils literal"><span class="pre">SEEK_GE</span></code>: if the key does not exist, return the smallest key in</dt>
+<dd><p class="first last">the database that is <em>larger</em> than the given key. If no larger key
+exists, then a <code class="docutils literal"><span class="pre">KeyError</span></code> will be raised.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<p>For more details, read:</p>
+<p><a class="reference external" href="http://www.sqlite.org/src4/doc/trunk/www/lsmapi.wiki#lsm_csr_seek">http://www.sqlite.org/src4/doc/trunk/www/lsmapi.wiki#lsm_csr_seek</a></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="lsm.Cursor.value">
+<code class="descname">value</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#lsm.Cursor.value" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the value at the cursor&#8217;s current position.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="lsm.Cursor.values">
+<code class="descname">values</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#lsm.Cursor.values" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a generator that successively yields values.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="lsm.Transaction">
+<em class="property">class </em><code class="descclassname">lsm.</code><code class="descname">Transaction</code><a class="headerlink" href="#lsm.Transaction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Context manager and decorator to run the wrapped block in a transaction.
+LSM supports nested transactions, so the context manager/decorator can be
+mixed and matched and nested arbitrarily.</p>
+<p>Rather than instantiating this class directly, use
+<a class="reference internal" href="#lsm.LSM.transaction" title="lsm.LSM.transaction"><code class="xref py py-meth docutils literal"><span class="pre">LSM.transaction()</span></code></a>.</p>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">with</span> <span class="n">lsm_db</span><span class="o">.</span><span class="n">transaction</span><span class="p">()</span> <span class="k">as</span> <span class="n">txn</span><span class="p">:</span>
+    <span class="n">lsm_db</span><span class="p">[</span><span class="s">&#39;k1&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;v1&#39;</span>
+
+<span class="k">with</span> <span class="n">lsm_db</span><span class="o">.</span><span class="n">transaction</span><span class="p">()</span> <span class="k">as</span> <span class="n">txn</span><span class="p">:</span>
+    <span class="n">lsm_db</span><span class="p">[</span><span class="s">&#39;k1&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;v1-1&#39;</span>
+    <span class="n">txn</span><span class="o">.</span><span class="n">rollback</span><span class="p">()</span>
+
+<span class="k">assert</span> <span class="n">lsm_db</span><span class="p">[</span><span class="s">&#39;k1&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;v1&#39;</span>
+</pre></div>
+</div>
+<dl class="method">
+<dt id="lsm.Transaction.commit">
+<code class="descname">commit</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#lsm.Transaction.commit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Commit the transaction and optionally open a new transaction.
+This is especially useful for context managers, where you may commit
+midway through a wrapped block of code, but want to retain
+transactional behavior for the rest of the block.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="lsm.Transaction.rollback">
+<code class="descname">rollback</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#lsm.Transaction.rollback" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rollback the transaction and optionally retain the open transaction.
+This is especially useful for context managers, where you may rollback
+midway through a wrapped block of code, but want to retain the
+transactional behavior for the rest of the block.</p>
+</dd></dl>
+
+</dd></dl>
+
+<div class="section" id="constants">
+<h2>Constants<a class="headerlink" href="#constants" title="Permalink to this headline">¶</a></h2>
+<p>Seek methods, can be used when fetching records or slices.</p>
+<dl class="docutils">
+<dt><code class="docutils literal"><span class="pre">SEEK_EQ</span></code></dt>
+<dd>The cursor is left at EOF (invalidated). A call to lsm_csr_valid()
+returns non-zero.</dd>
+<dt><code class="docutils literal"><span class="pre">SEEK_LE</span></code></dt>
+<dd>The cursor is left pointing to the largest key in the database that
+is smaller than (pKey/nKey). If the database contains no keys smaller
+than (pKey/nKey), the cursor is left at EOF.</dd>
+<dt><code class="docutils literal"><span class="pre">SEEK_GE</span></code></dt>
+<dd>The cursor is left pointing to the smallest key in the database that
+is larger than (pKey/nKey). If the database contains no keys larger
+than (pKey/nKey), the cursor is left at EOF.</dd>
+</dl>
+<p>If the fourth parameter is <code class="docutils literal"><span class="pre">SEEK_LEFAST</span></code>, this function searches the
+database in a similar manner to <code class="docutils literal"><span class="pre">SEEK_LE</span></code>, with two differences:</p>
+<p>Even if a key can be found (the cursor is not left at EOF), the
+lsm_csr_value() function may not be used (attempts to do so return
+LSM_MISUSE).</p>
+<p>The key that the cursor is left pointing to may be one that has
+been recently deleted from the database. In this case it is
+guaranteed that the returned key is larger than any key currently
+in the database that is less than or equal to (pKey/nKey).</p>
+<p><code class="docutils literal"><span class="pre">SEEK_LEFAST</span></code> requests are intended to be used to allocate database
+keys.</p>
+<p>Used in calls to <a class="reference internal" href="#lsm.LSM.set_safety" title="lsm.LSM.set_safety"><code class="xref py py-meth docutils literal"><span class="pre">LSM.set_safety()</span></code></a>.</p>
+<ul class="simple">
+<li><code class="docutils literal"><span class="pre">SAFETY_OFF</span></code></li>
+<li><code class="docutils literal"><span class="pre">SAFETY_NORMAL</span></code></li>
+<li><code class="docutils literal"><span class="pre">SAFETY_FULL</span></code></li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">API Documentation</a><ul>
+<li><a class="reference internal" href="#constants">Constants</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="quickstart.html"
+                        title="previous chapter">Quick-start</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/api.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="quickstart.html" title="Quick-start"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">lsm-db 0.1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2015, Charles Leifer.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+    </div>
+  </body>
+</html>
