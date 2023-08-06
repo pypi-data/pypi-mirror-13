@@ -1,0 +1,11 @@
+__version__ = "1.0.18"
+__git_commiter_name__ = "Guy Rozendorn"
+__git_commiter_email__ = "guy@rzn.co.il"
+__git_branch__ = '(HEAD detached at v1.0.18)'
+__git_remote_tracking_branch__ = '(No remote tracking)'
+__git_remote_url__ = '(Not remote tracking)'
+__git_head_hash__ = 'acf52d45da7808ff283939a5fafb7456e0b79e25'
+__git_head_subject__ = 'Finished Release v1.0.18'
+__git_head_message__ = '* develop:\n  APR-51 /indexes\n  APR-49\n  APR-48\n  fixing previous commit\n  sync: use execute_assert_success instead of log_execute_assert_success\n  TRIVIAL adding support for python-infinidat-openstack_2.2.post24-1-linux-ubuntu-trusty-x64.deb\n  CINDER-86 adding support for parsing python-infi.pyutils_1.1.0-1-linux-ubuntu-trusty-x86.deb\n  CINDER-86 adding support for parsing python-functools32_3.2.3-2-1-linux-ubuntu-trusty-x64.deb\n  empty commit to trigger build\n  APR-45 fix in the install function too\n  TRIVIAL making the tests pass\n  update buildout.cfg\n  APR-45 fix installation script on Solaris x64\n  APR-46 fix errors from setup script on unsupported systems\n  APR-43 closing the ftp client\n  APR-43 closing the ftp client\n  APR-44 wget -q -O filename\n  APR-42 fixing solaris install one-liner\n  TRIVIAL fixing push_packages of specific versions\n  making the version text look a little nicer'
+__git_dirty_diff__ = ''
+__git_commit_date__ = '2016-02-15 15:39:02'
