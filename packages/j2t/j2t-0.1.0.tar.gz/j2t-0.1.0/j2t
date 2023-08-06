@@ -1,0 +1,48 @@
+#!/usr/bin/env python3
+
+import argparse
+import jinja2
+import json
+import os
+import shutil
+import sys
+
+varargs = []
+
+class appendvarargs(argparse.Action):
+    def __call__(self, parser, args, values, option_string=None):
+    	varargs.append((option_string, values))
+
+parser = argparse.ArgumentParser(description='Jinja2 Template Transformer Utility')
+parser.add_argument('-t', '--template', type=str, metavar='path',      help='jinja2 template path (default: stdin)', default='-')
+parser.add_argument('-o', '--output',   type=str, metavar='path',      help='output path (default: stdout)',         default='-')
+parser.add_argument('-j', '--add-json', type=str, metavar='path',      help='add json data',      action=appendvarargs)
+parser.add_argument('-y', '--add-yaml', type=str, metavar='path',      help='add yaml data',      action=appendvarargs)
+parser.add_argument('-k', '--add-kv',   type=str, metavar='key=value', help='add key=value pair', action=appendvarargs)
+args = parser.parse_args()
+
+output   = '/dev/stdout' if args.output   == '-' else args.output
+template = '/dev/stdin'  if args.template == '-' else args.template
+
+data = {}
+
+for arg, value in varargs:
+	if arg == '--add-yaml':
+		import yaml
+		with open(value, 'r') as f:
+			data.update(yaml.load(f))
+	elif arg == '--add-json':
+		import json
+		with open(value, 'r') as f:
+			data.update(json.load(f))
+	elif arg == '--add-kv':
+		key, value = value.split('=', 1)
+		data[key] = value
+	else:
+		parser.error('invalid argument: ' + arg)
+
+with open(template, 'r') as f:
+	template = 	jinja2.Template(f.read())
+
+with open(output, 'w') as f:
+	template.stream(data).dump(f)
