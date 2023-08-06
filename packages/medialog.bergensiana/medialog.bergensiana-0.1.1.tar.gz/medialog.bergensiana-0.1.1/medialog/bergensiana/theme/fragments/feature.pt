@@ -1,0 +1,36 @@
+<section id="feature"  
+		 tal:define="folder_is nocall:context/features|nothing">
+    <div class="container"  tal:condition="folder_is">
+      <div class="container">
+           <div class="center wow fadeInDown">
+                <h2 tal:content="context/features/Title" />
+                <p class="lead" 
+                	tal:content="context/features/Description"  />
+            </div>
+
+			<div class="features" >
+				<div tal:repeat="item 
+					context/features/@@folderListing"
+					class="feature  wow fadeInDown animated" 
+					data-wow-delay="600ms" data-wow-duration="1000ms" 
+					style="visibility: visible; animation-duration: 1000ms; 
+					animation-delay: 600ms; animation-name: fadeInDown;">
+					<div class="feature-wrap fa">
+						<i>
+						<span  tal:replace="structure item/iconfield/@@iconload" 
+						            tal:condition="exists:item/iconfield" />
+						</i>
+						 <i class="fa fa-info" 
+							tal:condition="not:exists:item/iconfield">
+						 
+						<h2 tal:content="item/Title" />
+						<h3 tal:content="item/Description" />
+					</div>            
+
+				</div>
+
+            </div>
+        </div>
+    </div>
+    <tal:css tal:replace="structure context/@@fontload"/>
+</section>

@@ -1,0 +1,44 @@
+<section id="main-slider" class="no-margin" 
+	tal:condition="exists: context/slider">
+	<div id="slider">
+        <tal:repeat tal:repeat="item  context/slider/@@folderListing">
+            <div  class="fillme" tal:define="item_url item/getURL|item/absolute_url;
+				    image_url python:item_url + '/@@images/image'">
+ 				<img class="slider-img img-responsive" src="" alt="" tal:attributes="src image_url"/>
+	            <div class="slidetext-container">
+	                <div class="slidetext  wow bounceInUp animated">
+					    <h1   tal:content="item/Title" />
+					    <h3  tal:content="item/Description" />
+								    
+					    
+                    </div>
+                </div>
+ 
+            </div>
+        </tal:repeat>
+    </div>
+
+ 
+
+<link rel="stylesheet" href="++theme++bergensiana/css/responsiveslides.css">
+<script src="++theme++bergensiana/javascript/responsiveslides.min.js"></script>
+
+
+<script>$(function () {
+    $("#slider").responsiveSlides({
+    maxwidth: 4000,
+    nav: true,
+    speed: 1000,
+    pager: true,
+    prevText: "<",  
+    nextText: ">",    
+  
+    });
+});
+$(window).resize(function(){
+   // Setting the heigth of the slides
+   $('#slider').height($('#slider').width()*50/100);
+}).resize();
+</script>
+
+</section>
