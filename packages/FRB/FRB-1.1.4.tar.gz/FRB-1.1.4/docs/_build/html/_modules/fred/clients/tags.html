@@ -1,0 +1,284 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>fred.clients.tags &mdash; FRED 1.0 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="FRED 1.0 documentation" href="../../../index.html"/>
+        <link rel="up" title="fred" href="../../fred.html"/> 
+
+  
+  <script src="../../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> FRED
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../usage.html">Quickstart Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api.html">API Documentation</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../../../index.html">FRED</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../../../index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+      
+          <li><a href="../../fred.html">fred</a> &raquo;</li>
+      
+    <li>fred.clients.tags</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for fred.clients.tags</h1><div class="highlight"><pre>
+
+<span class="kn">from</span> <span class="nn">fred.utils</span> <span class="kn">import</span> <span class="n">NamespacedClient</span><span class="p">,</span> <span class="n">query_params</span>
+<span class="kn">from</span> <span class="nn">fred.helpers</span> <span class="kn">import</span> <span class="n">_get_request</span>
+
+<div class="viewcode-block" id="TagsClient"><a class="viewcode-back" href="../../../api.html#fred.clients.tags.TagsClient">[docs]</a><span class="k">class</span> <span class="nc">TagsClient</span><span class="p">(</span><span class="n">NamespacedClient</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class for working with FRED tags</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="nd">@query_params</span><span class="p">(</span><span class="s">&#39;realtime_start&#39;</span><span class="p">,</span><span class="s">&#39;realtime_end&#39;</span><span class="p">,</span><span class="s">&#39;limit&#39;</span><span class="p">,</span><span class="s">&#39;offset&#39;</span><span class="p">,</span>
+                  <span class="s">&#39;order_by&#39;</span><span class="p">,</span><span class="s">&#39;sort_order&#39;</span><span class="p">,</span><span class="s">&#39;exclude_tag_names&#39;</span><span class="p">)</span>
+<div class="viewcode-block" id="TagsClient.series"><a class="viewcode-back" href="../../../api.html#fred.clients.tags.TagsClient.series">[docs]</a>    <span class="k">def</span> <span class="nf">series</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">tag_names</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span><span class="n">response_type</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span><span class="n">params</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Function to request series matching all tags in the tag_names parameter.</span>
+<span class="sd">        `&lt;https://research.stlouisfed.org/docs/api/fred/category_series.html&gt;`_</span>
+
+<span class="sd">        :arg str tag_names: Tag names that series match. Required. Separate with semicolon as in &quot;income;bea&quot;</span>
+<span class="sd">        :arg str response_type: File extension of response. Options are &#39;xml&#39;, &#39;json&#39;,</span>
+<span class="sd">                            &#39;dict&#39;,&#39;df&#39;,&#39;numpy&#39;,&#39;csv&#39;,&#39;tab,&#39;pipe&#39;. Required.</span>
+<span class="sd">        :arg str realtime_start: The start of the real-time period. Format &quot;YYYY-MM-DD&quot;</span>
+<span class="sd">        :arg str realtime_end: The end of the real-time period. Format &quot;YYYY-MM-DD&quot;</span>
+<span class="sd">        :arg int limit: The maximum number of results to return. Options 1 to 1000</span>
+<span class="sd">        :arg int offset: Data offset. Options &gt;=0</span>
+<span class="sd">        :arg str order_by: Order results by values of the specified attribute. Options are &#39;series_id&#39;,</span>
+<span class="sd">                            &#39;title&#39;, &#39;units&#39;, &#39;frequency&#39;, &#39;seasonal_adjustment&#39;, &#39;realtime_start&#39;, &#39;realtime_end&#39;,</span>
+<span class="sd">                            &#39;last_updated&#39;, &#39;observation_start&#39;, &#39;observation_end&#39;, &#39;popularity&#39;</span>
+<span class="sd">        :arg str sort_order: Sort results for attribute values specified by order_by. Options are &#39;asc&#39;,&#39;desc&#39;</span>
+<span class="sd">        :arg str exclude_tag_names: Tag names used to exclude series. Separate with semicolon as in &quot;income;bea&quot;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="s">&#39;/tags/series?&#39;</span>
+        <span class="n">params</span><span class="p">[</span><span class="s">&#39;tag_names&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">tag_names</span>
+        <span class="n">response_type</span> <span class="o">=</span> <span class="n">response_type</span> <span class="k">if</span> <span class="n">response_type</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">response_type</span>
+        <span class="k">if</span> <span class="n">response_type</span> <span class="o">!=</span> <span class="s">&#39;xml&#39;</span><span class="p">:</span> <span class="n">params</span><span class="p">[</span><span class="s">&#39;file_type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;json&#39;</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">_get_request</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">url_root</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">api_key</span><span class="p">,</span><span class="n">path</span><span class="p">,</span><span class="n">response_type</span><span class="p">,</span><span class="n">params</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">response</span></div>
+
+    <span class="nd">@query_params</span><span class="p">(</span><span class="s">&#39;realtime_start&#39;</span><span class="p">,</span><span class="s">&#39;realtime_end&#39;</span><span class="p">,</span><span class="s">&#39;limit&#39;</span><span class="p">,</span><span class="s">&#39;offset&#39;</span><span class="p">,</span>
+                  <span class="s">&#39;order_by&#39;</span><span class="p">,</span><span class="s">&#39;sort_order&#39;</span><span class="p">,</span><span class="s">&#39;tag_names&#39;</span><span class="p">,</span><span class="s">&#39;tag_group_id&#39;</span><span class="p">,</span><span class="s">&#39;search_text&#39;</span><span class="p">)</span>
+<div class="viewcode-block" id="TagsClient.tags"><a class="viewcode-back" href="../../../api.html#fred.clients.tags.TagsClient.tags">[docs]</a>    <span class="k">def</span> <span class="nf">tags</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">response_type</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span><span class="n">params</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Function to request FRED tags.</span>
+<span class="sd">        FRED tags are attributes assigned to series.</span>
+<span class="sd">        `&lt;https://research.stlouisfed.org/docs/api/fred/tags.html&gt;`_</span>
+
+<span class="sd">        :arg str response_type: File extension of response. Options are &#39;xml&#39;, &#39;json&#39;,</span>
+<span class="sd">                            &#39;dict&#39;,&#39;df&#39;,&#39;numpy&#39;,&#39;csv&#39;,&#39;tab,&#39;pipe&#39;. Required.</span>
+<span class="sd">        :arg str realtime_start: The start of the real-time period. Format &quot;YYYY-MM-DD&quot;</span>
+<span class="sd">        :arg str realtime_end: The end of the real-time period. Format &quot;YYYY-MM-DD&quot;</span>
+<span class="sd">        :arg int limit: The maximum number of results to return. Options 1 to 1000</span>
+<span class="sd">        :arg int offset: Data offset. Options &gt;=0</span>
+<span class="sd">        :arg str order_by: Order results by values of the specified attribute. Options are &#39;series_count&#39;,</span>
+<span class="sd">                            &#39;popularity&#39;, &#39;created&#39;, &#39;name&#39;, &#39;group_id&#39;</span>
+<span class="sd">        :arg str sort_order: Sort results for attribute values specified by order_by. Options are &#39;asc&#39;,&#39;desc&#39;</span>
+<span class="sd">        :arg str tag_names: Tag names to only include in the response. Separate with semicolon as in &quot;income;bea&quot;</span>
+<span class="sd">        :arg str tag_group_id: Tag ID to filter tags by. Options are &#39;freq&#39;, &#39;gen&#39;, &#39;geo&#39;, &#39;geot&#39;, &#39;rls&#39;, &#39;seas&#39;, &#39;src&#39;</span>
+<span class="sd">        :arg str search_text: The words to find matching tags with. For example &#39;mortgage rates&#39;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="s">&#39;/tags?&#39;</span>
+        <span class="n">response_type</span> <span class="o">=</span> <span class="n">response_type</span> <span class="k">if</span> <span class="n">response_type</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">response_type</span>
+        <span class="k">if</span> <span class="n">response_type</span> <span class="o">!=</span> <span class="s">&#39;xml&#39;</span><span class="p">:</span> <span class="n">params</span><span class="p">[</span><span class="s">&#39;file_type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;json&#39;</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">_get_request</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">url_root</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">api_key</span><span class="p">,</span><span class="n">path</span><span class="p">,</span><span class="n">response_type</span><span class="p">,</span><span class="n">params</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">response</span></div>
+
+    <span class="nd">@query_params</span><span class="p">(</span><span class="s">&#39;realtime_start&#39;</span><span class="p">,</span><span class="s">&#39;realtime_end&#39;</span><span class="p">,</span><span class="s">&#39;limit&#39;</span><span class="p">,</span><span class="s">&#39;offset&#39;</span><span class="p">,</span>
+                  <span class="s">&#39;order_by&#39;</span><span class="p">,</span><span class="s">&#39;sort_order&#39;</span><span class="p">,</span><span class="s">&#39;exclude_tag_names&#39;</span><span class="p">,</span><span class="s">&#39;tag_group_id&#39;</span><span class="p">,</span><span class="s">&#39;search_text&#39;</span><span class="p">)</span>
+<div class="viewcode-block" id="TagsClient.related_tags"><a class="viewcode-back" href="../../../api.html#fred.clients.tags.TagsClient.related_tags">[docs]</a>    <span class="k">def</span> <span class="nf">related_tags</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">tag_names</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span><span class="n">response_type</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span><span class="n">params</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Function to request FRED related tags.</span>
+<span class="sd">        FRED tags are attributes assigned to series.</span>
+<span class="sd">        `&lt;https://research.stlouisfed.org/docs/api/fred/related_tags.html&gt;`_</span>
+
+<span class="sd">        :arg str tag_names: Tag names that series match. Required. Separate with semicolon as in &quot;income;bea&quot;</span>
+<span class="sd">        :arg str response_type: File extension of response. Options are &#39;xml&#39;, &#39;json&#39;,</span>
+<span class="sd">                            &#39;dict&#39;,&#39;df&#39;,&#39;numpy&#39;,&#39;csv&#39;,&#39;tab,&#39;pipe&#39;. Required.</span>
+<span class="sd">        :arg str realtime_start: The start of the real-time period. Format &quot;YYYY-MM-DD&quot;</span>
+<span class="sd">        :arg str realtime_end: The end of the real-time period. Format &quot;YYYY-MM-DD&quot;</span>
+<span class="sd">        :arg int limit: The maximum number of results to return. Options 1 to 1000</span>
+<span class="sd">        :arg int offset: Data offset. Options &gt;=0</span>
+<span class="sd">        :arg str order_by: Order results by values of the specified attribute. Options are &#39;series_count&#39;,</span>
+<span class="sd">                            &#39;popularity&#39;, &#39;created&#39;, &#39;name&#39;, &#39;group_id&#39;</span>
+<span class="sd">        :arg str sort_order: Sort results for attribute values specified by order_by. Options are &#39;asc&#39;,&#39;desc&#39;</span>
+<span class="sd">        :arg str exclude_tag_names: Tag names to exclude. Separate with semicolon as in &quot;income;bea&quot;</span>
+<span class="sd">        :arg str tag_group_id: Tag ID to filter tags by. Options are &#39;freq&#39;, &#39;gen&#39;, &#39;geo&#39;, &#39;geot&#39;, &#39;rls&#39;, &#39;seas&#39;, &#39;src&#39;</span>
+<span class="sd">        :arg str search_text: The words to find matching tags with. For example &#39;mortgage rates&#39;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">path</span><span class="o">=</span><span class="s">&#39;/related_tags?&#39;</span>
+        <span class="n">params</span><span class="p">[</span><span class="s">&#39;tag_names&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">tag_names</span>
+        <span class="n">response_type</span> <span class="o">=</span> <span class="n">response_type</span> <span class="k">if</span> <span class="n">response_type</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">response_type</span>
+        <span class="k">if</span> <span class="n">response_type</span> <span class="o">!=</span> <span class="s">&#39;xml&#39;</span><span class="p">:</span> <span class="n">params</span><span class="p">[</span><span class="s">&#39;file_type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;json&#39;</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">_get_request</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">url_root</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">api_key</span><span class="p">,</span><span class="n">path</span><span class="p">,</span><span class="n">response_type</span><span class="p">,</span><span class="n">params</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">response</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, Aleksandar Velkoski.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../../',
+            VERSION:'1.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

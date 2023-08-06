@@ -1,0 +1,1130 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>API Documentation &mdash; FRED 1.0 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="FRED 1.0 documentation" href="index.html"/>
+        <link rel="prev" title="Quickstart Guide" href="usage.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> FRED
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Quickstart Guide</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">API Documentation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#fred">Fred</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#categories">Categories</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#releases">Releases</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#series">Series</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#sources">Sources</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#tags">Tags</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">FRED</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+    <li>API Documentation</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/api.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="api-documentation">
+<span id="api"></span><h1>API Documentation<a class="headerlink" href="#api-documentation" title="Permalink to this headline">¶</a></h1>
+<p>All API calls map the raw REST api as closely as possible, including the
+distinction between required and optional arguments to the calls. This means
+that the code makes distinction between positional and keyword arguments; we,
+however, recommend that people <strong>use keyword arguments for all calls for
+consistency and safety</strong>.</p>
+<span class="target" id="module-fred"></span><div class="section" id="fred">
+<h2>Fred<a class="headerlink" href="#fred" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="fred.Fred">
+<em class="property">class </em><code class="descclassname">fred.</code><code class="descname">Fred</code><span class="sig-paren">(</span><em>api_key='beaa9d5a890451a1e4a6f0ccad1c3321'</em>, <em>response_type='xml'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fred.html#Fred"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fred.Fred" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fred client. Provides a straightforward mapping from Python to FRED REST endpoints.
+The instance has attributes <code class="docutils literal"><span class="pre">cateogry</span></code>, <code class="docutils literal"><span class="pre">release</span></code>, <code class="docutils literal"><span class="pre">series</span></code>, <code class="docutils literal"><span class="pre">tag</span></code>
+and <code class="docutils literal"><span class="pre">source</span></code> that provide access to instances of
+<a class="reference internal" href="#fred.clients.categories.CategoriesClient" title="fred.clients.categories.CategoriesClient"><code class="xref py py-class docutils literal"><span class="pre">fred.clients.categories.CategoriesClient</span></code></a>,
+<a class="reference internal" href="#fred.clients.releases.ReleasesClient" title="fred.clients.releases.ReleasesClient"><code class="xref py py-class docutils literal"><span class="pre">fred.clients.releases.ReleasesClient</span></code></a>,
+<a class="reference internal" href="#fred.clients.eseries.ESeriesClient" title="fred.clients.eseries.ESeriesClient"><code class="xref py py-class docutils literal"><span class="pre">fred.clients.eseries.ESeriesClient</span></code></a>,
+<a class="reference internal" href="#fred.clients.tags.TagsClient" title="fred.clients.tags.TagsClient"><code class="xref py py-class docutils literal"><span class="pre">fred.clients.tags.TagsClient</span></code></a> and
+<a class="reference internal" href="#fred.clients.sources.SourcesClient" title="fred.clients.sources.SourcesClient"><code class="xref py py-class docutils literal"><span class="pre">fred.clients.sources.SourcesClient</span></code></a> respectively. This is the
+preferred (and only supported) way to get access to those classes and their
+methods.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>api_key</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; 32 character alpha-numeric lowercase string. Required.</li>
+<li><strong>realtime_start</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The start of the real-time period. Format &#8220;YYYY-MM-DD&#8221;</li>
+<li><strong>realtime_end</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The end of the real-time period. Format &#8220;YYYY-MM-DD&#8221;</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<span class="target" id="module-fred.clients.categories"></span></div>
+<div class="section" id="categories">
+<h2>Categories<a class="headerlink" href="#categories" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="fred.clients.categories.CategoriesClient">
+<em class="property">class </em><code class="descclassname">fred.clients.categories.</code><code class="descname">CategoriesClient</code><span class="sig-paren">(</span><em>client</em>, <em>api_key</em>, <em>url_root</em>, <em>response_type</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fred/clients/categories.html#CategoriesClient"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fred.clients.categories.CategoriesClient" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class for working with FRED categories</p>
+<dl class="method">
+<dt id="fred.clients.categories.CategoriesClient.children">
+<code class="descname">children</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fred/clients/categories.html#CategoriesClient.children"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fred.clients.categories.CategoriesClient.children" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to request a particular category&#8217;s children
+<a class="reference external" href="https://research.stlouisfed.org/docs/api/fred/category_children.html">https://research.stlouisfed.org/docs/api/fred/category_children.html</a></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>category_id</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; The id for a category. Required.</li>
+<li><strong>response_type</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; File extension of response. Options are &#8216;xml&#8217;, &#8216;json&#8217;,
+&#8216;dict&#8217;,&#8217;df&#8217;,&#8217;numpy&#8217;,&#8217;csv&#8217;,&#8217;tab,&#8217;pipe&#8217;. Required.</li>
+<li><strong>realtime_start</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The start of the real-time period. Format &#8220;YYYY-MM-DD&#8221;</li>
+<li><strong>realtime_end</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The end of the real-time period. Format &#8220;YYYY-MM-DD&#8221;</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="fred.clients.categories.CategoriesClient.details">
+<code class="descname">details</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fred/clients/categories.html#CategoriesClient.details"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fred.clients.categories.CategoriesClient.details" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to request a particular category&#8217;s high-level details
+<a class="reference external" href="https://research.stlouisfed.org/docs/api/fred/category.html">https://research.stlouisfed.org/docs/api/fred/category.html</a></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>category_id</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; The id for a category. Required.</li>
+<li><strong>response_type</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; File extension of response. Options are &#8216;xml&#8217;, &#8216;json&#8217;,
+&#8216;dict&#8217;,&#8217;df&#8217;,&#8217;numpy&#8217;,&#8217;csv&#8217;,&#8217;tab,&#8217;pipe&#8217;. Required.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="fred.clients.categories.CategoriesClient.related">
+<code class="descname">related</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fred/clients/categories.html#CategoriesClient.related"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fred.clients.categories.CategoriesClient.related" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to request a particular category&#8217;s related categories.
+Related categories are A related category is a one-way relation between 2 categories
+that is not part of a parent-child category hierarchy.
+Most categories do not have related categories.
+<a class="reference external" href="https://research.stlouisfed.org/docs/api/fred/category_related.html">https://research.stlouisfed.org/docs/api/fred/category_related.html</a></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>category_id</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; The id for a category. Required.</li>
+<li><strong>response_type</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; File extension of response. Options are &#8216;xml&#8217;, &#8216;json&#8217;,
+&#8216;dict&#8217;,&#8217;df&#8217;,&#8217;numpy&#8217;,&#8217;csv&#8217;,&#8217;tab,&#8217;pipe&#8217;. Required.</li>
+<li><strong>realtime_start</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The start of the real-time period. Format &#8220;YYYY-MM-DD&#8221;</li>
+<li><strong>realtime_end</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The end of the real-time period. Format &#8220;YYYY-MM-DD&#8221;</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="fred.clients.categories.CategoriesClient.related_tags">
+<code class="descname">related_tags</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fred/clients/categories.html#CategoriesClient.related_tags"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fred.clients.categories.CategoriesClient.related_tags" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to request FRED related tags for a particular category.
+FRED tags are attributes assigned to series.
+Series are assigned tags and categories. Indirectly through series,
+it is possible to get the tags for a category. No tags exist for a
+category that does not have series.
+<a class="reference external" href="https://research.stlouisfed.org/docs/api/fred/category_tags.html">https://research.stlouisfed.org/docs/api/fred/category_tags.html</a></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>category_id</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; The id for a category. Required.</li>
+<li><strong>response_type</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; File extension of response. Options are &#8216;xml&#8217;, &#8216;json&#8217;,
+&#8216;dict&#8217;,&#8217;df&#8217;,&#8217;numpy&#8217;,&#8217;csv&#8217;,&#8217;tab,&#8217;pipe&#8217;. Required.</li>
+<li><strong>tag_names</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Tag names that series match. Required. Separate with semicolon as in &#8220;income;bea&#8221;</li>
+<li><strong>realtime_start</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The start of the real-time period. Format &#8220;YYYY-MM-DD&#8221;</li>
+<li><strong>realtime_end</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The end of the real-time period. Format &#8220;YYYY-MM-DD&#8221;</li>
+<li><strong>limit</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; The maximum number of results to return. Options 1 to 1000</li>
+<li><strong>offset</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; Data offset. Options &gt;=0</li>
+<li><strong>order_by</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Order results by values of the specified attribute. Options are &#8216;series_id&#8217;,
+&#8216;title&#8217;, &#8216;units&#8217;, &#8216;frequency&#8217;, &#8216;seasonal_adjustment&#8217;, &#8216;realtime_start&#8217;, &#8216;realtime_end&#8217;,
+&#8216;last_updated&#8217;, &#8216;observation_start&#8217;, &#8216;observation_end&#8217;, &#8216;popularity&#8217;</li>
+<li><strong>sort_order</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Sort results for attribute values specified by order_by. Options are &#8216;asc&#8217;,&#8217;desc&#8217;</li>
+<li><strong>exclude_tag_names</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Tag names to exclude. Separate with semicolon as in &#8220;income;bea&#8221;</li>
+<li><strong>tag_group_id</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Tag ID to filter tags by. Options are &#8216;freq&#8217;, &#8216;gen&#8217;, &#8216;geo&#8217;, &#8216;geot&#8217;, &#8216;rls&#8217;, &#8216;seas&#8217;, &#8216;src&#8217;</li>
+<li><strong>search_text</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The words to find matching tags with. For example &#8216;mortgage rates&#8217;</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="fred.clients.categories.CategoriesClient.series">
+<code class="descname">series</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fred/clients/categories.html#CategoriesClient.series"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fred.clients.categories.CategoriesClient.series" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to request a particular category&#8217;s data series
+<a class="reference external" href="https://research.stlouisfed.org/docs/api/fred/category_series.html">https://research.stlouisfed.org/docs/api/fred/category_series.html</a></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>category_id</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; The id for a category. Required.</li>
+<li><strong>response_type</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; File extension of response. Options are &#8216;xml&#8217;, &#8216;json&#8217;,
+&#8216;dict&#8217;,&#8217;df&#8217;,&#8217;numpy&#8217;,&#8217;csv&#8217;,&#8217;tab,&#8217;pipe&#8217;. Required.</li>
+<li><strong>realtime_start</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The start of the real-time period. Format &#8220;YYYY-MM-DD&#8221;</li>
+<li><strong>realtime_end</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The end of the real-time period. Format &#8220;YYYY-MM-DD&#8221;</li>
+<li><strong>limit</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; The maximum number of results to return. Options 1 to 1000</li>
+<li><strong>offset</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; Data offset. Options &gt;=0</li>
+<li><strong>order_by</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Order results by values of the specified attribute. Options are &#8216;series_id&#8217;,
+&#8216;title&#8217;, &#8216;units&#8217;, &#8216;frequency&#8217;, &#8216;seasonal_adjustment&#8217;, &#8216;realtime_start&#8217;, &#8216;realtime_end&#8217;,
+&#8216;last_updated&#8217;, &#8216;observation_start&#8217;, &#8216;observation_end&#8217;, &#8216;popularity&#8217;</li>
+<li><strong>sort_order</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Sort results for attribute values specified by order_by. Options are &#8216;asc&#8217;,&#8217;desc&#8217;</li>
+<li><strong>filter_variable</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The attribute to filter results by. Options are  &#8216;frequency&#8217;, &#8216;units&#8217;,&#8217;seasonal_adjustment&#8217;</li>
+<li><strong>filter_value</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The value of the filter_variable attribute to filter results by.</li>
+<li><strong>tag_names</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Tag names used to match series. Separate with semicolon as in &#8220;income;bea&#8221;</li>
+<li><strong>exclude_tag_names</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Tag names used to exclude series. Separate with semicolon as in &#8220;income;bea&#8221;</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="fred.clients.categories.CategoriesClient.tags">
+<code class="descname">tags</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fred/clients/categories.html#CategoriesClient.tags"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fred.clients.categories.CategoriesClient.tags" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to request a particular category&#8217;s FRED tags.
+FRED tags are attributes assigned to series.
+Series are assigned tags and categories. Indirectly through series,
+it is possible to get the tags for a category. No tags exist for a
+category that does not have series.
+<a class="reference external" href="https://research.stlouisfed.org/docs/api/fred/category_tags.html">https://research.stlouisfed.org/docs/api/fred/category_tags.html</a></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>category_id</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; The id for a category. Required.</li>
+<li><strong>response_type</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; File extension of response. Options are &#8216;xml&#8217;, &#8216;json&#8217;,
+&#8216;dict&#8217;,&#8217;df&#8217;,&#8217;numpy&#8217;,&#8217;csv&#8217;,&#8217;tab,&#8217;pipe&#8217;. Required.</li>
+<li><strong>realtime_start</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The start of the real-time period. Format &#8220;YYYY-MM-DD&#8221;</li>
+<li><strong>realtime_end</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The end of the real-time period. Format &#8220;YYYY-MM-DD&#8221;</li>
+<li><strong>limit</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; The maximum number of results to return. Options 1 to 1000</li>
+<li><strong>offset</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; Data offset. Options &gt;=0</li>
+<li><strong>order_by</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Order results by values of the specified attribute. Options are &#8216;series_id&#8217;,
+&#8216;title&#8217;, &#8216;units&#8217;, &#8216;frequency&#8217;, &#8216;seasonal_adjustment&#8217;, &#8216;realtime_start&#8217;, &#8216;realtime_end&#8217;,
+&#8216;last_updated&#8217;, &#8216;observation_start&#8217;, &#8216;observation_end&#8217;, &#8216;popularity&#8217;</li>
+<li><strong>sort_order</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Sort results for attribute values specified by order_by. Options are &#8216;asc&#8217;,&#8217;desc&#8217;</li>
+<li><strong>tag_names</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Tag names to only include in the response. Separate with semicolon as in &#8220;income;bea&#8221;</li>
+<li><strong>tag_group_id</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Tag ID to filter tags by. Options are &#8216;freq&#8217;, &#8216;gen&#8217;, &#8216;geo&#8217;, &#8216;geot&#8217;, &#8216;rls&#8217;, &#8216;seas&#8217;, &#8216;src&#8217;</li>
+<li><strong>search_text</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The words to find matching tags with. For example &#8216;mortgage rates&#8217;</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-fred.clients.releases"></span></div>
+<div class="section" id="releases">
+<h2>Releases<a class="headerlink" href="#releases" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="fred.clients.releases.ReleasesClient">
+<em class="property">class </em><code class="descclassname">fred.clients.releases.</code><code class="descname">ReleasesClient</code><span class="sig-paren">(</span><em>client</em>, <em>api_key</em>, <em>url_root</em>, <em>response_type</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fred/clients/releases.html#ReleasesClient"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fred.clients.releases.ReleasesClient" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class for working with FRED releases</p>
+<dl class="method">
+<dt id="fred.clients.releases.ReleasesClient.all_dates">
+<code class="descname">all_dates</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fred/clients/releases.html#ReleasesClient.all_dates"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fred.clients.releases.ReleasesClient.all_dates" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to request release dates for all releases of economic data.
+<a class="reference external" href="https://research.stlouisfed.org/docs/api/fred/releases_dates.html">https://research.stlouisfed.org/docs/api/fred/releases_dates.html</a></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>response_type</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; File extension of response. Options are &#8216;xml&#8217;, &#8216;json&#8217;,
+&#8216;dict&#8217;,&#8217;df&#8217;,&#8217;numpy&#8217;,&#8217;csv&#8217;,&#8217;tab,&#8217;pipe&#8217;. Required.</li>
+<li><strong>realtime_start</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The start of the real-time period. Format &#8220;YYYY-MM-DD&#8221;</li>
+<li><strong>realtime_end</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The end of the real-time period. Format &#8220;YYYY-MM-DD&#8221;</li>
+<li><strong>limit</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; The maximum number of results to return. Options 1 to 1000</li>
+<li><strong>offset</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; Data offset. Options &gt;=0</li>
+<li><strong>order_by</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Order results by values of the specified attribute. Options are  &#8216;release_date&#8217;,
+&#8216;release_id&#8217;, &#8216;release_name&#8217;.</li>
+<li><strong>sort_order</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Sort results for attribute values specified by order_by. Options are &#8216;asc&#8217;,&#8217;desc&#8217;</li>
+<li><strong>include_release_dates_with_no_data</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Determines whether release dates with no data available are returned.
+Options are &#8216;true&#8217;, &#8216;false&#8217;</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="fred.clients.releases.ReleasesClient.all_releases">
+<code class="descname">all_releases</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fred/clients/releases.html#ReleasesClient.all_releases"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fred.clients.releases.ReleasesClient.all_releases" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to request all releases of economic data.
+<a class="reference external" href="https://research.stlouisfed.org/docs/api/fred/releases.html">https://research.stlouisfed.org/docs/api/fred/releases.html</a></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>response_type</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; File extension of response. Options are &#8216;xml&#8217;, &#8216;json&#8217;,
+&#8216;dict&#8217;,&#8217;df&#8217;,&#8217;numpy&#8217;,&#8217;csv&#8217;,&#8217;tab,&#8217;pipe&#8217;. Required.</li>
+<li><strong>realtime_start</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The start of the real-time period. Format &#8220;YYYY-MM-DD&#8221;</li>
+<li><strong>realtime_end</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The end of the real-time period. Format &#8220;YYYY-MM-DD&#8221;</li>
+<li><strong>limit</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; The maximum number of results to return. Options 1 to 1000</li>
+<li><strong>offset</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; Data offset. Options &gt;=0</li>
+<li><strong>order_by</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Order results by values of the specified attribute. Options are  &#8216;release_id&#8217;,
+&#8216;name&#8217;, &#8216;press_release&#8217;, &#8216;realtime_start&#8217;, &#8216;realtime_end&#8217;</li>
+<li><strong>sort_order</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Sort results for attribute values specified by order_by. Options are &#8216;asc&#8217;,&#8217;desc&#8217;</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="fred.clients.releases.ReleasesClient.dates">
+<code class="descname">dates</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fred/clients/releases.html#ReleasesClient.dates"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fred.clients.releases.ReleasesClient.dates" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to request release dates for a particular release of economic data.
+Note that release dates are published by data sources and do not necessarily
+represent when data will be available on the FRED or ALFRED websites.
+<a class="reference external" href="https://research.stlouisfed.org/docs/api/fred/release_dates.html">https://research.stlouisfed.org/docs/api/fred/release_dates.html</a></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>release_id</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; The id for a release. Required.</li>
+<li><strong>response_type</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; File extension of response. Options are &#8216;xml&#8217;, &#8216;json&#8217;,
+&#8216;dict&#8217;,&#8217;df&#8217;,&#8217;numpy&#8217;,&#8217;csv&#8217;,&#8217;tab,&#8217;pipe&#8217;. Required.</li>
+<li><strong>realtime_start</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The start of the real-time period. Format &#8220;YYYY-MM-DD&#8221;</li>
+<li><strong>realtime_end</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The end of the real-time period. Format &#8220;YYYY-MM-DD&#8221;</li>
+<li><strong>limit</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; The maximum number of results to return. Options 1 to 1000</li>
+<li><strong>offset</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; Data offset. Options &gt;=0</li>
+<li><strong>sort_order</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Sort results is ascending or descending release date order. Options are &#8216;asc&#8217;,&#8217;desc&#8217;</li>
+<li><strong>include_release_dates_with_no_data</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Determines whether release dates with no data available are returned.
+Options are &#8216;true&#8217;, &#8216;false&#8217;</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="fred.clients.releases.ReleasesClient.details">
+<code class="descname">details</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fred/clients/releases.html#ReleasesClient.details"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fred.clients.releases.ReleasesClient.details" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to request the high-level details for a particular release of economic data..
+<a class="reference external" href="https://research.stlouisfed.org/docs/api/fred/release.html">https://research.stlouisfed.org/docs/api/fred/release.html</a></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>release_id</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; The id for a release. Required.</li>
+<li><strong>response_type</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; File extension of response. Options are &#8216;xml&#8217;, &#8216;json&#8217;,
+&#8216;dict&#8217;,&#8217;df&#8217;,&#8217;numpy&#8217;,&#8217;csv&#8217;,&#8217;tab,&#8217;pipe&#8217;. Required.</li>
+<li><strong>realtime_start</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The start of the real-time period. Format &#8220;YYYY-MM-DD&#8221;</li>
+<li><strong>realtime_end</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The end of the real-time period. Format &#8220;YYYY-MM-DD&#8221;</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="fred.clients.releases.ReleasesClient.related_tags">
+<code class="descname">related_tags</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fred/clients/releases.html#ReleasesClient.related_tags"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fred.clients.releases.ReleasesClient.related_tags" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to request FRED related tags for a particular release.
+FRED tags are attributes assigned to series.
+Series are assigned tags and releases. Indirectly through series,
+it is possible to get the tags for a category. No tags exist for a
+release that does not have series.
+<a class="reference external" href="https://research.stlouisfed.org/docs/api/fred/release_related_tags.html">https://research.stlouisfed.org/docs/api/fred/release_related_tags.html</a></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>release_id</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; The id for a release. Required.</li>
+<li><strong>tag_names</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Tag names that series match. Separate with semicolon as in &#8220;income;bea&#8221;. Required</li>
+<li><strong>response_type</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; File extension of response. Options are &#8216;xml&#8217;, &#8216;json&#8217;,
+&#8216;dict&#8217;,&#8217;df&#8217;,&#8217;numpy&#8217;,&#8217;csv&#8217;,&#8217;tab,&#8217;pipe&#8217;. Required.</li>
+<li><strong>realtime_start</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The start of the real-time period. Format &#8220;YYYY-MM-DD&#8221;</li>
+<li><strong>realtime_end</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The end of the real-time period. Format &#8220;YYYY-MM-DD&#8221;</li>
+<li><strong>limit</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; The maximum number of results to return. Options 1 to 1000</li>
+<li><strong>offset</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; Data offset. Options &gt;=0</li>
+<li><strong>order_by</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Order results by values of the specified attribute. Options are &#8216;series_count&#8217;,
+&#8216;popularity&#8217;, &#8216;created&#8217;, &#8216;name&#8217;, &#8216;group_id&#8217;</li>
+<li><strong>sort_order</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Sort results for attribute values specified by order_by. Options are &#8216;asc&#8217;,&#8217;desc&#8217;</li>
+<li><strong>exclude_tag_names</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Tag names to exclude. Separate with semicolon as in &#8220;income;bea&#8221;</li>
+<li><strong>tag_group_id</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Tag ID to filter tags by. Options are &#8216;freq&#8217;, &#8216;gen&#8217;, &#8216;geo&#8217;, &#8216;geot&#8217;, &#8216;rls&#8217;, &#8216;seas&#8217;, &#8216;src&#8217;</li>
+<li><strong>search_text</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The words to find matching tags with. For example &#8216;mortgage rates&#8217;</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="fred.clients.releases.ReleasesClient.series">
+<code class="descname">series</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fred/clients/releases.html#ReleasesClient.series"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fred.clients.releases.ReleasesClient.series" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to request the series on a release of economic data.
+<a class="reference external" href="https://research.stlouisfed.org/docs/api/fred/release_series.html">https://research.stlouisfed.org/docs/api/fred/release_series.html</a></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>release_id</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; The id for a release. Required.</li>
+<li><strong>response_type</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; File extension of response. Options are &#8216;xml&#8217;, &#8216;json&#8217;,
+&#8216;dict&#8217;,&#8217;df&#8217;,&#8217;numpy&#8217;,&#8217;csv&#8217;,&#8217;tab,&#8217;pipe&#8217;. Required.</li>
+<li><strong>realtime_start</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The start of the real-time period. Format &#8220;YYYY-MM-DD&#8221;</li>
+<li><strong>realtime_end</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The end of the real-time period. Format &#8220;YYYY-MM-DD&#8221;</li>
+<li><strong>limit</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; The maximum number of results to return. Options 1 to 1000</li>
+<li><strong>offset</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; Data offset. Options &gt;=0</li>
+<li><strong>order_by</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Order results by values of the specified attribute. Options are  &#8216;series_id&#8217;, &#8216;title&#8217;, &#8216;units&#8217;, &#8216;frequency&#8217;,
+&#8216;seasonal_adjustment&#8217;, &#8216;realtime_start&#8217;, &#8216;realtime_end&#8217;, &#8216;last_updated&#8217;, &#8216;observation_start&#8217;,
+&#8216;observation_end&#8217;, &#8216;popularity&#8217;</li>
+<li><strong>sort_order</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Sort results for attribute values specified by order_by. Options are &#8216;asc&#8217;,&#8217;desc&#8217;</li>
+<li><strong>filter_variable</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The attribute to filter results by. Options are  &#8216;frequency&#8217;, &#8216;units&#8217;,&#8217;seasonal_adjustment&#8217;</li>
+<li><strong>filter_value</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The value of the filter_variable attribute to filter results by.</li>
+<li><strong>tag_names</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Tag names used to match series. Separate with semicolon as in &#8220;income;bea&#8221;</li>
+<li><strong>exclude_tag_names</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Tag names used to exclude series. Separate with semicolon as in &#8220;income;bea&#8221;</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="fred.clients.releases.ReleasesClient.sources">
+<code class="descname">sources</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fred/clients/releases.html#ReleasesClient.sources"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fred.clients.releases.ReleasesClient.sources" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to request the sources for a particular release of economic data.
+<a class="reference external" href="https://research.stlouisfed.org/docs/api/fred/release.html">https://research.stlouisfed.org/docs/api/fred/release.html</a></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>release_id</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; The id for a release. Required.</li>
+<li><strong>response_type</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; File extension of response. Options are &#8216;xml&#8217;, &#8216;json&#8217;,
+&#8216;dict&#8217;,&#8217;df&#8217;,&#8217;numpy&#8217;,&#8217;csv&#8217;,&#8217;tab,&#8217;pipe&#8217;. Required.</li>
+<li><strong>realtime_start</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The start of the real-time period. Format &#8220;YYYY-MM-DD&#8221;</li>
+<li><strong>realtime_end</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The end of the real-time period. Format &#8220;YYYY-MM-DD&#8221;</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="fred.clients.releases.ReleasesClient.tags">
+<code class="descname">tags</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fred/clients/releases.html#ReleasesClient.tags"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fred.clients.releases.ReleasesClient.tags" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to request FRED tags for a particular release.
+FRED tags are attributes assigned to series.
+Series are assigned tags and releases. Indirectly through series,
+it is possible to get the tags for a category. No tags exist for a
+release that does not have series.
+<a class="reference external" href="https://research.stlouisfed.org/docs/api/fred/release_tags.html">https://research.stlouisfed.org/docs/api/fred/release_tags.html</a></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>release_id</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; The id for a release. Required.</li>
+<li><strong>response_type</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; File extension of response. Options are &#8216;xml&#8217;, &#8216;json&#8217;,
+&#8216;dict&#8217;,&#8217;df&#8217;,&#8217;numpy&#8217;,&#8217;csv&#8217;,&#8217;tab,&#8217;pipe&#8217;. Required.</li>
+<li><strong>realtime_start</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The start of the real-time period. Format &#8220;YYYY-MM-DD&#8221;</li>
+<li><strong>realtime_end</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The end of the real-time period. Format &#8220;YYYY-MM-DD&#8221;</li>
+<li><strong>limit</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; The maximum number of results to return. Options 1 to 1000</li>
+<li><strong>offset</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; Data offset. Options &gt;=0</li>
+<li><strong>order_by</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Order results by values of the specified attribute. Options are &#8216;series_count&#8217;,
+&#8216;popularity&#8217;, &#8216;created&#8217;, &#8216;name&#8217;, &#8216;group_id&#8217;</li>
+<li><strong>sort_order</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Sort results for attribute values specified by order_by. Options are &#8216;asc&#8217;,&#8217;desc&#8217;</li>
+<li><strong>tag_names</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Tag names that series match. Separate with semicolon as in &#8220;income;bea&#8221;</li>
+<li><strong>tag_group_id</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Tag ID to filter tags by. Options are &#8216;freq&#8217;, &#8216;gen&#8217;, &#8216;geo&#8217;, &#8216;geot&#8217;, &#8216;rls&#8217;, &#8216;seas&#8217;, &#8216;src&#8217;</li>
+<li><strong>search_text</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The words to find matching tags with. For example &#8216;mortgage rates&#8217;</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-fred.clients.eseries"></span></div>
+<div class="section" id="series">
+<h2>Series<a class="headerlink" href="#series" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="fred.clients.eseries.ESeriesClient">
+<em class="property">class </em><code class="descclassname">fred.clients.eseries.</code><code class="descname">ESeriesClient</code><span class="sig-paren">(</span><em>client</em>, <em>api_key</em>, <em>url_root</em>, <em>response_type</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fred/clients/eseries.html#ESeriesClient"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fred.clients.eseries.ESeriesClient" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class for working with FRED series</p>
+<dl class="method">
+<dt id="fred.clients.eseries.ESeriesClient.categories">
+<code class="descname">categories</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fred/clients/eseries.html#ESeriesClient.categories"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fred.clients.eseries.ESeriesClient.categories" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to request the categories for an economic data series.
+<a class="reference external" href="https://research.stlouisfed.org/docs/api/fred/release.html">https://research.stlouisfed.org/docs/api/fred/release.html</a></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>series_id</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; The id for a series. Required.</li>
+<li><strong>response_type</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; File extension of response. Options are &#8216;xml&#8217;, &#8216;json&#8217;,
+&#8216;dict&#8217;,&#8217;df&#8217;,&#8217;numpy&#8217;,&#8217;csv&#8217;,&#8217;tab,&#8217;pipe&#8217;. Required.</li>
+<li><strong>realtime_start</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The start of the real-time period. Format &#8220;YYYY-MM-DD&#8221;</li>
+<li><strong>realtime_end</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The end of the real-time period. Format &#8220;YYYY-MM-DD&#8221;</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="fred.clients.eseries.ESeriesClient.details">
+<code class="descname">details</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fred/clients/eseries.html#ESeriesClient.details"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fred.clients.eseries.ESeriesClient.details" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to request a series of economic data.
+<a class="reference external" href="https://research.stlouisfed.org/docs/api/fred/release.html">https://research.stlouisfed.org/docs/api/fred/release.html</a></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>series_id</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; The id for a series. Required.</li>
+<li><strong>response_type</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; File extension of response. Options are &#8216;xml&#8217;, &#8216;json&#8217;,
+&#8216;dict&#8217;,&#8217;df&#8217;,&#8217;numpy&#8217;,&#8217;csv&#8217;,&#8217;tab,&#8217;pipe&#8217;. Required.</li>
+<li><strong>realtime_start</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The start of the real-time period. Format &#8220;YYYY-MM-DD&#8221;</li>
+<li><strong>realtime_end</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The end of the real-time period. Format &#8220;YYYY-MM-DD&#8221;</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="fred.clients.eseries.ESeriesClient.observations">
+<code class="descname">observations</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fred/clients/eseries.html#ESeriesClient.observations"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fred.clients.eseries.ESeriesClient.observations" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to request the observations or data values for an economic data series.
+<a class="reference external" href="https://research.stlouisfed.org/docs/api/fred/series_observations.html">https://research.stlouisfed.org/docs/api/fred/series_observations.html</a></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>series_id</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; The id for a series. Required.</li>
+<li><strong>response_type</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; File extension of response. Options are &#8216;xml&#8217;, &#8216;json&#8217;,
+&#8216;dict&#8217;,&#8217;df&#8217;,&#8217;numpy&#8217;,&#8217;csv&#8217;,&#8217;tab,&#8217;pipe&#8217;. Required.</li>
+<li><strong>realtime_start</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The start of the real-time period. Format &#8220;YYYY-MM-DD&#8221;</li>
+<li><strong>realtime_end</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The end of the real-time period. Format &#8220;YYYY-MM-DD&#8221;</li>
+<li><strong>limit</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; The maximum number of results to return. Options 1 to 100000</li>
+<li><strong>offset</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; Data offset. Options &gt;=0</li>
+<li><strong>sort_order</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Sort results is ascending or descending observation_date order. Options are &#8216;asc&#8217;,&#8217;desc&#8217;</li>
+<li><strong>observation_start</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The start of the observation period. Format &#8220;YYYY-MM-DD&#8221;</li>
+<li><strong>observation_end</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The end of the observation period. Format &#8220;YYYY-MM-DD&#8221;</li>
+<li><strong>units</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; A key that indicates a data value transformation. Options are &#8216;lin&#8217;, &#8216;chg&#8217;, &#8216;ch1&#8217;, &#8216;pch&#8217;,
+&#8216;pc1&#8217;, &#8216;pca&#8217;, &#8216;cch&#8217;, &#8216;cca&#8217;, &#8216;log&#8217;</li>
+<li><strong>frequency</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Indicates a lower frequency to aggregate values. Options are &#8216;d&#8217;, &#8216;w&#8217;,
+&#8216;bw&#8217;, &#8216;m&#8217;, &#8216;q&#8217;, &#8216;sa&#8217;, &#8216;a&#8217;, &#8216;wef&#8217;, &#8216;weth&#8217;, &#8216;wew&#8217;, &#8216;wetu&#8217;, &#8216;wem&#8217;,
+&#8216;wesu&#8217;, &#8216;wesa&#8217;, &#8216;bwew&#8217;, &#8216;bwem&#8217;</li>
+<li><strong>aggregation_method</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Indicates the aggregation method used for frequency aggregation. Options are  &#8216;avg&#8217;,
+&#8216;sum&#8217;, &#8216;eop&#8217;</li>
+<li><strong>output_type</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; Output type. Options are 1, 2, 3, 4</li>
+<li><strong>vintage_dates</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Date(s) in history. Format &#8220;YYYY-MM-DD&#8221;. Example for multiple dates &#8220;2000-01-01,2005-02-24,...&#8221;</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="fred.clients.eseries.ESeriesClient.release">
+<code class="descname">release</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fred/clients/eseries.html#ESeriesClient.release"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fred.clients.eseries.ESeriesClient.release" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to request the release for an economic data series.
+<a class="reference external" href="https://research.stlouisfed.org/docs/api/fred/series_release.html">https://research.stlouisfed.org/docs/api/fred/series_release.html</a></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>series_id</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; The id for a series. Required.</li>
+<li><strong>response_type</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; File extension of response. Options are &#8216;xml&#8217;, &#8216;json&#8217;,
+&#8216;dict&#8217;,&#8217;df&#8217;,&#8217;numpy&#8217;,&#8217;csv&#8217;,&#8217;tab,&#8217;pipe&#8217;. Required.</li>
+<li><strong>realtime_start</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The start of the real-time period. Format &#8220;YYYY-MM-DD&#8221;</li>
+<li><strong>realtime_end</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The end of the real-time period. Format &#8220;YYYY-MM-DD&#8221;</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="fred.clients.eseries.ESeriesClient.search">
+<code class="descname">search</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fred/clients/eseries.html#ESeriesClient.search"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fred.clients.eseries.ESeriesClient.search" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to request economic data series that match search text.
+<a class="reference external" href="https://research.stlouisfed.org/docs/api/fred/series_search.html">https://research.stlouisfed.org/docs/api/fred/series_search.html</a></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>search_text</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The words to match against economic data series. Required.</li>
+<li><strong>response_type</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; File extension of response. Options are &#8216;xml&#8217;, &#8216;json&#8217;,
+&#8216;dict&#8217;,&#8217;df&#8217;,&#8217;numpy&#8217;,&#8217;csv&#8217;,&#8217;tab,&#8217;pipe&#8217;. Required.</li>
+<li><strong>search_type</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Determines the type of search to perform. Options are &#8216;full_text&#8217;,&#8217;series_id&#8217;</li>
+<li><strong>realtime_start</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The start of the real-time period. Format &#8220;YYYY-MM-DD&#8221;</li>
+<li><strong>realtime_end</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The end of the real-time period. Format &#8220;YYYY-MM-DD&#8221;</li>
+<li><strong>limit</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; The maximum number of results to return. Options 1 to 1000</li>
+<li><strong>offset</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; Data offset. Options &gt;=0</li>
+<li><strong>order_by</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Order results by values of the specified attribute. Options are &#8216;search_rank&#8217;,
+&#8216;series_id&#8217;, &#8216;title&#8217;, &#8216;units&#8217;, &#8216;frequency&#8217;, &#8216;seasonal_adjustment&#8217;, &#8216;realtime_start&#8217;,
+&#8216;realtime_end&#8217;, &#8216;last_updated&#8217;, &#8216;observation_start&#8217;, &#8216;observation_end&#8217;, &#8216;popularity&#8217;</li>
+<li><strong>sort_order</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Sort results for attribute values specified by order_by. Options are &#8216;asc&#8217;,&#8217;desc&#8217;</li>
+<li><strong>filter_variable</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The attribute to filter results by. Options are  &#8216;frequency&#8217;, &#8216;units&#8217;,&#8217;seasonal_adjustment&#8217;</li>
+<li><strong>filter_value</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The value of the filter_variable attribute to filter results by.</li>
+<li><strong>tag_names</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Tag names used to match series. Separate with semicolon as in &#8220;income;bea&#8221;</li>
+<li><strong>exclude_tag_names</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Tag names used to exclude series. Separate with semicolon as in &#8220;income;bea&#8221;</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="fred.clients.eseries.ESeriesClient.search_related_tags">
+<code class="descname">search_related_tags</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fred/clients/eseries.html#ESeriesClient.search_related_tags"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fred.clients.eseries.ESeriesClient.search_related_tags" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to request the related FRED tags for one or more FRED tags matching a series search.
+<a class="reference external" href="https://research.stlouisfed.org/docs/api/fred/series_search_related_tags.html">https://research.stlouisfed.org/docs/api/fred/series_search_related_tags.html</a></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>series_search_text</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The words to match against economic data series. Required.</li>
+<li><strong>tag_names</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Tag names that series match. Separate with semicolon as in &#8220;income;bea&#8221;. Required.</li>
+<li><strong>response_type</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; File extension of response. Options are &#8216;xml&#8217;, &#8216;json&#8217;,
+&#8216;dict&#8217;,&#8217;df&#8217;,&#8217;numpy&#8217;,&#8217;csv&#8217;,&#8217;tab,&#8217;pipe&#8217;. Required.</li>
+<li><strong>realtime_start</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The start of the real-time period. Format &#8220;YYYY-MM-DD&#8221;</li>
+<li><strong>realtime_end</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The end of the real-time period. Format &#8220;YYYY-MM-DD&#8221;</li>
+<li><strong>limit</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; The maximum number of results to return. Options 1 to 1000</li>
+<li><strong>offset</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; Data offset. Options &gt;=0</li>
+<li><strong>order_by</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Order results by values of the specified attribute. Options are  &#8216;series_count&#8217;,
+&#8216;popularity&#8217;, &#8216;created&#8217;, &#8216;name&#8217;, &#8216;group_id&#8217;</li>
+<li><strong>sort_order</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Sort results for attribute values specified by order_by. Options are &#8216;asc&#8217;,&#8217;desc&#8217;</li>
+<li><strong>tag_group_id</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Tag ID to filter tags by. Options are &#8216;freq&#8217;, &#8216;gen&#8217;, &#8216;geo&#8217;, &#8216;geot&#8217;, &#8216;rls&#8217;, &#8216;seas&#8217;, &#8216;src&#8217;</li>
+<li><strong>tag_search_text</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The words to find matching tags with.</li>
+<li><strong>exclude_tag_names</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Tag names to exclude. Separate with semicolon as in &#8220;income;bea&#8221;</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="fred.clients.eseries.ESeriesClient.search_tags">
+<code class="descname">search_tags</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fred/clients/eseries.html#ESeriesClient.search_tags"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fred.clients.eseries.ESeriesClient.search_tags" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to request the FRED tags for a series search.
+<a class="reference external" href="https://research.stlouisfed.org/docs/api/fred/series_search_tags.html">https://research.stlouisfed.org/docs/api/fred/series_search_tags.html</a></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>series_search_text</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The words to match against economic data series. Required.</li>
+<li><strong>response_type</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; File extension of response. Options are &#8216;xml&#8217;, &#8216;json&#8217;,
+&#8216;dict&#8217;,&#8217;df&#8217;,&#8217;numpy&#8217;,&#8217;csv&#8217;,&#8217;tab,&#8217;pipe&#8217;. Required.</li>
+<li><strong>realtime_start</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The start of the real-time period. Format &#8220;YYYY-MM-DD&#8221;</li>
+<li><strong>realtime_end</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The end of the real-time period. Format &#8220;YYYY-MM-DD&#8221;</li>
+<li><strong>limit</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; The maximum number of results to return. Options 1 to 1000</li>
+<li><strong>offset</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; Data offset. Options &gt;=0</li>
+<li><strong>order_by</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Order results by values of the specified attribute. Options are  &#8216;series_count&#8217;,
+&#8216;popularity&#8217;, &#8216;created&#8217;, &#8216;name&#8217;, &#8216;group_id&#8217;</li>
+<li><strong>sort_order</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Sort results for attribute values specified by order_by. Options are &#8216;asc&#8217;,&#8217;desc&#8217;</li>
+<li><strong>tag_names</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Tag names that series match. Separate with semicolon as in &#8220;income;bea&#8221;</li>
+<li><strong>tag_group_id</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Tag ID to filter tags by. Options are &#8216;freq&#8217;, &#8216;gen&#8217;, &#8216;geo&#8217;, &#8216;geot&#8217;, &#8216;rls&#8217;, &#8216;seas&#8217;, &#8216;src&#8217;</li>
+<li><strong>tag_search_text</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The words to find matching tags with.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="fred.clients.eseries.ESeriesClient.tags">
+<code class="descname">tags</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fred/clients/eseries.html#ESeriesClient.tags"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fred.clients.eseries.ESeriesClient.tags" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to request FRED tags for a particular series.
+FRED tags are attributes assigned to series.
+<a class="reference external" href="https://research.stlouisfed.org/docs/api/fred/series_tags.html">https://research.stlouisfed.org/docs/api/fred/series_tags.html</a></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>series_id</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; The id for a series. Required.</li>
+<li><strong>response_type</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; File extension of response. Options are &#8216;xml&#8217;, &#8216;json&#8217;,
+&#8216;dict&#8217;,&#8217;df&#8217;,&#8217;numpy&#8217;,&#8217;csv&#8217;,&#8217;tab,&#8217;pipe&#8217;. Required.</li>
+<li><strong>realtime_start</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The start of the real-time period. Format &#8220;YYYY-MM-DD&#8221;</li>
+<li><strong>realtime_end</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The end of the real-time period. Format &#8220;YYYY-MM-DD&#8221;</li>
+<li><strong>order_by</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Order results by values of the specified attribute. Options are &#8216;series_count&#8217;,
+&#8216;popularity&#8217;, &#8216;created&#8217;, &#8216;name&#8217;, &#8216;group_id&#8217;</li>
+<li><strong>sort_order</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Sort results for attribute values specified by order_by. Options are &#8216;asc&#8217;,&#8217;desc&#8217;</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="fred.clients.eseries.ESeriesClient.updates">
+<code class="descname">updates</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fred/clients/eseries.html#ESeriesClient.updates"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fred.clients.eseries.ESeriesClient.updates" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to request economic data series sorted by when observations
+were updated on the FRED server (attribute last_updated). Results are
+limited to series updated within the last two weeks.
+<a class="reference external" href="https://research.stlouisfed.org/docs/api/fred/series_updates.html">https://research.stlouisfed.org/docs/api/fred/series_updates.html</a></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>series_id</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; The id for a series. Required.</li>
+<li><strong>response_type</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; File extension of response. Options are &#8216;xml&#8217;, &#8216;json&#8217;,
+&#8216;dict&#8217;,&#8217;df&#8217;,&#8217;numpy&#8217;,&#8217;csv&#8217;,&#8217;tab,&#8217;pipe&#8217;. Required.</li>
+<li><strong>realtime_start</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The start of the real-time period. Format &#8220;YYYY-MM-DD&#8221;</li>
+<li><strong>realtime_end</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The end of the real-time period. Format &#8220;YYYY-MM-DD&#8221;</li>
+<li><strong>limit</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; The maximum number of results to return. Options 1 to 1000</li>
+<li><strong>offset</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; Data offset. Options &gt;=0</li>
+<li><strong>filter_value</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Limit results by geographic type of economic data series. Options are &#8216;macro&#8217;,
+&#8216;regional&#8217;, and &#8216;all&#8217;</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="fred.clients.eseries.ESeriesClient.vintage_dates">
+<code class="descname">vintage_dates</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fred/clients/eseries.html#ESeriesClient.vintage_dates"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fred.clients.eseries.ESeriesClient.vintage_dates" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to request the dates in history when a series&#8217; data values were
+revised or new data values were released. Vintage dates are the release dates
+for a series excluding release dates when the data for the series did not change.
+<a class="reference external" href="https://research.stlouisfed.org/docs/api/fred/series_vintagedates.html">https://research.stlouisfed.org/docs/api/fred/series_vintagedates.html</a></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>series_id</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; The id for a series. Required.</li>
+<li><strong>response_type</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; File extension of response. Options are &#8216;xml&#8217;, &#8216;json&#8217;,
+&#8216;dict&#8217;,&#8217;df&#8217;,&#8217;numpy&#8217;,&#8217;csv&#8217;,&#8217;tab,&#8217;pipe&#8217;. Required.</li>
+<li><strong>realtime_start</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The start of the real-time period. Format &#8220;YYYY-MM-DD&#8221;</li>
+<li><strong>realtime_end</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The end of the real-time period. Format &#8220;YYYY-MM-DD&#8221;</li>
+<li><strong>limit</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; The maximum number of results to return. Options 1 to 1000</li>
+<li><strong>offset</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; Data offset. Options &gt;=0</li>
+<li><strong>sort_order</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Sort results by vintage_date. Options are &#8216;asc&#8217;,&#8217;desc&#8217;</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-fred.clients.sources"></span></div>
+<div class="section" id="sources">
+<h2>Sources<a class="headerlink" href="#sources" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="fred.clients.sources.SourcesClient">
+<em class="property">class </em><code class="descclassname">fred.clients.sources.</code><code class="descname">SourcesClient</code><span class="sig-paren">(</span><em>client</em>, <em>api_key</em>, <em>url_root</em>, <em>response_type</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fred/clients/sources.html#SourcesClient"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fred.clients.sources.SourcesClient" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class for working with FRED sources</p>
+<dl class="method">
+<dt id="fred.clients.sources.SourcesClient.details">
+<code class="descname">details</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fred/clients/sources.html#SourcesClient.details"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fred.clients.sources.SourcesClient.details" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to request a particular source of economic data.
+<a class="reference external" href="https://research.stlouisfed.org/docs/api/fred/source.html">https://research.stlouisfed.org/docs/api/fred/source.html</a></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>source_id</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; The id for a source. Required.</li>
+<li><strong>response_type</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; File extension of response. Options are &#8216;xml&#8217;, &#8216;json&#8217;,
+&#8216;dict&#8217;,&#8217;df&#8217;,&#8217;numpy&#8217;,&#8217;csv&#8217;,&#8217;tab,&#8217;pipe&#8217;. Required.</li>
+<li><strong>realtime_start</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The start of the real-time period. Format &#8220;YYYY-MM-DD&#8221;</li>
+<li><strong>realtime_end</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The end of the real-time period. Format &#8220;YYYY-MM-DD&#8221;</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="fred.clients.sources.SourcesClient.releases">
+<code class="descname">releases</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fred/clients/sources.html#SourcesClient.releases"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fred.clients.sources.SourcesClient.releases" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to request all releases of economic data.
+<a class="reference external" href="https://research.stlouisfed.org/docs/api/fred/releases.html">https://research.stlouisfed.org/docs/api/fred/releases.html</a></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>source_id</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; The id for a source. Required.</li>
+<li><strong>response_type</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; File extension of response. Options are &#8216;xml&#8217;, &#8216;json&#8217;,
+&#8216;dict&#8217;,&#8217;df&#8217;,&#8217;numpy&#8217;,&#8217;csv&#8217;,&#8217;tab,&#8217;pipe&#8217;. Required.</li>
+<li><strong>realtime_start</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The start of the real-time period. Format &#8220;YYYY-MM-DD&#8221;</li>
+<li><strong>realtime_end</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The end of the real-time period. Format &#8220;YYYY-MM-DD&#8221;</li>
+<li><strong>limit</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; The maximum number of results to return. Options 1 to 1000</li>
+<li><strong>offset</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; Data offset. Options &gt;=0</li>
+<li><strong>order_by</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Order results by values of the specified attribute. Options are &#8216;source_id&#8217;,
+&#8216;name&#8217;, &#8216;realtime_start&#8217;, &#8216;realtime_end&#8217;</li>
+<li><strong>sort_order</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Sort results for attribute values specified by order_by. Options are &#8216;asc&#8217;,&#8217;desc&#8217;</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="fred.clients.sources.SourcesClient.sources">
+<code class="descname">sources</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fred/clients/sources.html#SourcesClient.sources"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fred.clients.sources.SourcesClient.sources" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to request all sources of economic data.
+<a class="reference external" href="https://research.stlouisfed.org/docs/api/fred/sources.html">https://research.stlouisfed.org/docs/api/fred/sources.html</a></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>response_type</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; File extension of response. Options are &#8216;xml&#8217;, &#8216;json&#8217;,
+&#8216;dict&#8217;,&#8217;df&#8217;,&#8217;numpy&#8217;,&#8217;csv&#8217;,&#8217;tab,&#8217;pipe&#8217;. Required.</li>
+<li><strong>realtime_start</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The start of the real-time period. Format &#8220;YYYY-MM-DD&#8221;</li>
+<li><strong>realtime_end</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The end of the real-time period. Format &#8220;YYYY-MM-DD&#8221;</li>
+<li><strong>limit</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; The maximum number of results to return. Options 1 to 1000</li>
+<li><strong>offset</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; Data offset. Options &gt;=0</li>
+<li><strong>order_by</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Order results by values of the specified attribute. Options are &#8216;source_id&#8217;,
+&#8216;name&#8217;, &#8216;realtime_start&#8217;, &#8216;realtime_end&#8217;</li>
+<li><strong>sort_order</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Sort results for attribute values specified by order_by. Options are &#8216;asc&#8217;,&#8217;desc&#8217;</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-fred.clients.tags"></span></div>
+<div class="section" id="tags">
+<h2>Tags<a class="headerlink" href="#tags" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="fred.clients.tags.TagsClient">
+<em class="property">class </em><code class="descclassname">fred.clients.tags.</code><code class="descname">TagsClient</code><span class="sig-paren">(</span><em>client</em>, <em>api_key</em>, <em>url_root</em>, <em>response_type</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fred/clients/tags.html#TagsClient"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fred.clients.tags.TagsClient" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class for working with FRED tags</p>
+<dl class="method">
+<dt id="fred.clients.tags.TagsClient.related_tags">
+<code class="descname">related_tags</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fred/clients/tags.html#TagsClient.related_tags"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fred.clients.tags.TagsClient.related_tags" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to request FRED related tags.
+FRED tags are attributes assigned to series.
+<a class="reference external" href="https://research.stlouisfed.org/docs/api/fred/related_tags.html">https://research.stlouisfed.org/docs/api/fred/related_tags.html</a></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>tag_names</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Tag names that series match. Required. Separate with semicolon as in &#8220;income;bea&#8221;</li>
+<li><strong>response_type</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; File extension of response. Options are &#8216;xml&#8217;, &#8216;json&#8217;,
+&#8216;dict&#8217;,&#8217;df&#8217;,&#8217;numpy&#8217;,&#8217;csv&#8217;,&#8217;tab,&#8217;pipe&#8217;. Required.</li>
+<li><strong>realtime_start</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The start of the real-time period. Format &#8220;YYYY-MM-DD&#8221;</li>
+<li><strong>realtime_end</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The end of the real-time period. Format &#8220;YYYY-MM-DD&#8221;</li>
+<li><strong>limit</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; The maximum number of results to return. Options 1 to 1000</li>
+<li><strong>offset</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; Data offset. Options &gt;=0</li>
+<li><strong>order_by</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Order results by values of the specified attribute. Options are &#8216;series_count&#8217;,
+&#8216;popularity&#8217;, &#8216;created&#8217;, &#8216;name&#8217;, &#8216;group_id&#8217;</li>
+<li><strong>sort_order</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Sort results for attribute values specified by order_by. Options are &#8216;asc&#8217;,&#8217;desc&#8217;</li>
+<li><strong>exclude_tag_names</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Tag names to exclude. Separate with semicolon as in &#8220;income;bea&#8221;</li>
+<li><strong>tag_group_id</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Tag ID to filter tags by. Options are &#8216;freq&#8217;, &#8216;gen&#8217;, &#8216;geo&#8217;, &#8216;geot&#8217;, &#8216;rls&#8217;, &#8216;seas&#8217;, &#8216;src&#8217;</li>
+<li><strong>search_text</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The words to find matching tags with. For example &#8216;mortgage rates&#8217;</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="fred.clients.tags.TagsClient.series">
+<code class="descname">series</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fred/clients/tags.html#TagsClient.series"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fred.clients.tags.TagsClient.series" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to request series matching all tags in the tag_names parameter.
+<a class="reference external" href="https://research.stlouisfed.org/docs/api/fred/category_series.html">https://research.stlouisfed.org/docs/api/fred/category_series.html</a></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>tag_names</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Tag names that series match. Required. Separate with semicolon as in &#8220;income;bea&#8221;</li>
+<li><strong>response_type</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; File extension of response. Options are &#8216;xml&#8217;, &#8216;json&#8217;,
+&#8216;dict&#8217;,&#8217;df&#8217;,&#8217;numpy&#8217;,&#8217;csv&#8217;,&#8217;tab,&#8217;pipe&#8217;. Required.</li>
+<li><strong>realtime_start</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The start of the real-time period. Format &#8220;YYYY-MM-DD&#8221;</li>
+<li><strong>realtime_end</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The end of the real-time period. Format &#8220;YYYY-MM-DD&#8221;</li>
+<li><strong>limit</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; The maximum number of results to return. Options 1 to 1000</li>
+<li><strong>offset</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; Data offset. Options &gt;=0</li>
+<li><strong>order_by</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Order results by values of the specified attribute. Options are &#8216;series_id&#8217;,
+&#8216;title&#8217;, &#8216;units&#8217;, &#8216;frequency&#8217;, &#8216;seasonal_adjustment&#8217;, &#8216;realtime_start&#8217;, &#8216;realtime_end&#8217;,
+&#8216;last_updated&#8217;, &#8216;observation_start&#8217;, &#8216;observation_end&#8217;, &#8216;popularity&#8217;</li>
+<li><strong>sort_order</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Sort results for attribute values specified by order_by. Options are &#8216;asc&#8217;,&#8217;desc&#8217;</li>
+<li><strong>exclude_tag_names</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Tag names used to exclude series. Separate with semicolon as in &#8220;income;bea&#8221;</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="fred.clients.tags.TagsClient.tags">
+<code class="descname">tags</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fred/clients/tags.html#TagsClient.tags"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fred.clients.tags.TagsClient.tags" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to request FRED tags.
+FRED tags are attributes assigned to series.
+<a class="reference external" href="https://research.stlouisfed.org/docs/api/fred/tags.html">https://research.stlouisfed.org/docs/api/fred/tags.html</a></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>response_type</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; File extension of response. Options are &#8216;xml&#8217;, &#8216;json&#8217;,
+&#8216;dict&#8217;,&#8217;df&#8217;,&#8217;numpy&#8217;,&#8217;csv&#8217;,&#8217;tab,&#8217;pipe&#8217;. Required.</li>
+<li><strong>realtime_start</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The start of the real-time period. Format &#8220;YYYY-MM-DD&#8221;</li>
+<li><strong>realtime_end</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The end of the real-time period. Format &#8220;YYYY-MM-DD&#8221;</li>
+<li><strong>limit</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; The maximum number of results to return. Options 1 to 1000</li>
+<li><strong>offset</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; Data offset. Options &gt;=0</li>
+<li><strong>order_by</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Order results by values of the specified attribute. Options are &#8216;series_count&#8217;,
+&#8216;popularity&#8217;, &#8216;created&#8217;, &#8216;name&#8217;, &#8216;group_id&#8217;</li>
+<li><strong>sort_order</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Sort results for attribute values specified by order_by. Options are &#8216;asc&#8217;,&#8217;desc&#8217;</li>
+<li><strong>tag_names</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Tag names to only include in the response. Separate with semicolon as in &#8220;income;bea&#8221;</li>
+<li><strong>tag_group_id</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Tag ID to filter tags by. Options are &#8216;freq&#8217;, &#8216;gen&#8217;, &#8216;geo&#8217;, &#8216;geot&#8217;, &#8216;rls&#8217;, &#8216;seas&#8217;, &#8216;src&#8217;</li>
+<li><strong>search_text</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The words to find matching tags with. For example &#8216;mortgage rates&#8217;</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+      
+        <a href="usage.html" class="btn btn-neutral" title="Quickstart Guide" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, Aleksandar Velkoski.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'1.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
