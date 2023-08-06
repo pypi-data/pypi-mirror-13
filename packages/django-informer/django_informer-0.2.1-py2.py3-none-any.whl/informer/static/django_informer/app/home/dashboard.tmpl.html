@@ -1,0 +1,28 @@
+<p ng-cloak ng-if="informers.length < 1">No <em>Informer</em> was set.</p>
+
+<div    layout-sm="column"
+        layout-gt-sm="row"
+        layout-wrap>
+
+    <md-card    flex="30"
+                ng-repeat="informer in informers"
+                ng-mouseenter="hover = 'md-whiteframe-5dp'"
+                ng-mouseleave="hover = ''"
+                ng-class="hover">
+        <md-card-content>
+            <h1 class="md-display-1">
+                {{ informer.name | name }}
+                <small ng-switch="informer.operational">
+                    <i class="material-icons" ng-switch-when="true">keyboard_arrow_up</i>
+                    <i class="material-icons" ng-switch-when="false">keyboard_arrow_down</i>
+                    <i class="material-icons" ng-switch-default>clear</i>
+                </small>
+            </h2>
+            <p class="md-title">{{ informer.message | limitTo : 40 }}</p>
+        </md-card-content>
+        <div class="md-actions" layout="row" layout-align="end center">
+            <md-button href="#/detail/{{informer.name | name}}">details</md-button>
+        </div>
+    </md-card>
+
+</div>

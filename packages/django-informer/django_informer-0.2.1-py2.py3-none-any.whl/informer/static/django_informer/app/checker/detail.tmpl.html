@@ -1,0 +1,32 @@
+<div layout="column" layout-padding>
+    <a href="#/dashboard/">
+        <md-icon md-font-set="material-icons">keyboard_backspace</md-icon>
+    </a>
+
+    <h1 class="md-display-1">
+        {{ informer.name | name }}
+        <small ng-switch="informer.operational">
+            <i class="material-icons" ng-switch-when="true">keyboard_arrow_up</i>
+            <i class="material-icons" ng-switch-when="false">keyboard_arrow_down</i>
+            <i class="material-icons" ng-switch-default>clear</i>
+        </small>
+    </h1>
+    <p class="md-title">{{ informer.message }}</p>
+
+    <md-divider></md-divider>
+
+    <span class="md-headline">Measures</span>
+    <span class="md-subhead">data collected from {{informer.name}}.</span>
+
+    <p class="md-display-1">availability <sup>{{availability | number:2}}%</sup></p>
+
+    <div ng-repeat="measure in informer.measures" ng-if="measure !== 'availability'">
+        <div informer-time-series-chart
+            data-informer="{{ informer.name | name }}"
+            data-measure="{{measure}}"
+            style="margin-bottom: 5%"
+            flex="95"></div>
+        </div>
+    </div>
+
+</div>
