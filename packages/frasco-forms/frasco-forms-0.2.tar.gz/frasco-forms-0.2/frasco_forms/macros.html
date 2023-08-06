@@ -1,0 +1,34 @@
+
+{% macro form_tag(form, action="", method="POST", hidden_tags=True) -%}
+  {% do kwargs.setdefault("enctype", form.enctype) %}
+  {{ html_tag("form", action=action, method=method, **kwargs) }}
+    {% if hidden_tags %}{{ form.hidden_tag() }}{% endif %}
+    {{ caller() }}
+  </form>
+{% endmacro %}
+
+
+{% macro form_field(field) -%}
+  <p class="{% if field.flags.required %}required{% endif %} {% if field.errors %}error{% endif %}">
+    {% if field.type == 'BooleanField' %}
+      <label class="checkbox">{{ field(**kwargs) }} {{ field.label.text }}</label>
+    {% elif field.type in ('HiddenField', 'CSRFTokenField') %}
+      {{ field(**kwargs) }}
+    {% else %}
+      {{ field.label }} {{ field(**kwargs) }}
+    {% endif %}
+    {% if field.errors %}
+      <span class="error">{{ field.errors|join(', ') }}</span>
+    {% endif %}
+    {% if field.description %}
+      <span class="description">{{ field.description }}</span>
+    {% endif %}
+  </p>
+{%- endmacro %}
+
+
+{% macro form_btn(label="Submit") -%}
+  <p class="button">
+    {{ html_tag("button", type="submit", **kwargs) }}{{ label }}</button>
+  </p>
+{%- endmacro %}
