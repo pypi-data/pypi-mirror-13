@@ -1,0 +1,127 @@
+mosaik-zmq
+===========
+
+This adapter was built to send mosaik simulation data to the data stream management system `Odysseus`__.
+Odysseus allows to process and visualise the simulation results online during the simulation.
+More information can be found in the `mosaik documentation`__.
+
+But due to the use of `ZeroMQ`__, which is a high-performance asynchronous messaging library, 
+the mosaik-zmq adapter can also be used to process or store results of a simulation in any software supporting ZeroMQ sockets.
+
+__ http://odysseus.offis.uni-oldenburg.de
+__ http://mosaik.readthedocs.org/en/latest/ecosystem/odysseus.html
+__ http://zguide.zeromq.org/py:all
+
+Installation
+------------
+
+*mosaik-zmq* can be installed using pip:
+
+::
+
+    $ pip install mosaik-zmq
+
+__ https://pyzmq.readthedocs.org/en/latest/
+
+*mosaik-zmq* uses the `pyzmq`__ module. If you get an error during installation,
+install the python 3 headers and python-zmq package  (e.g., ``sudo apt-get install python3-dev python-zmq``)
+
+If installation is still not working you may need to install a C compiler (e.g. ``sudo apt-get install
+build-essential``)
+
+
+Usage
+-----
+
+The mosaik-zmq adapter can be added to a simulation scenario like any other component.
+First you have to add the following code to the *sim_config*:
+
+.. code-block:: python
+
+   sim_config = {
+      'ZMQ': {
+         'cmd': 'mosaik-zmq %(addr)s',
+      },
+   }
+
+Initialization
+^^^^^^^^^^^^^^
+
+When you start *mosaik-zmq*, you have to provide a *step_size* and a *duration*
+argument. The *step_size* defines how often data will be sent. The
+*duration* is the simulation end time in seconds. 
+
+Example:
+
+.. code-block:: python
+
+   zmqModel = world.start('ZMQ', step_size=15*60, duration=15*60*24*30)
+
+Model instantiation
+^^^^^^^^^^^^^^^^^^^
+
+Every instance of *mosaik-zmq* allows you to create instances of its
+*Socket* model. The *Socket* has the following parameters:
+
+- *host* (default: 'tcp://\*:') is the address of the host the data will be sent to.
+
+- *port* (default: 5558) is the port on which the host will receive data.
+
+- *socket_type* (default: 'PUB') is the type of the ZeroMQ socket to open for connection between the adapter and the host. Two different patterns can be used. The default is 'PUB', which stands for the `publish subscribe pattern`__ . Alternatively the `push pull pattern`__ ('PUSH') can be used.
+
+Example code:
+
+.. code-block:: python
+
+   zmq = zmqModel.Socket(host='tcp://*:', port=5558, socket_type='PUB')
+
+__ http://zguide.zeromq.org/py:all#Getting-the-Message-Out
+__ http://zguide.zeromq.org/py:all#Divide-and-Conquer
+
+Connection
+^^^^^^^^^^
+
+To get data sent to the host the zmq model has to be connected to an other model in the scenario definition.
+Based on the `mosaik-demo`__ the scenario could look like this:
+
+.. code-block:: python
+
+   pvsim = world.start('CSV', sim_start=START, datafile=PV_DATA)
+   pvs = pvsim.PV.create(20)
+
+   zmqModel = world.start('ZMQ', step_size=15*60, duration=15*60*24*30)
+   zmq = zmqModel.Socket(host='tcp://*:', port=5558, socket_type='PUB')
+
+   connect_many_to_one(world, pvs, zmq, 'P')
+
+__ https://bitbucket.org/mosaik/mosaik-demo
+
+
+Getting help
+------------
+
+If you need help, please visit the `mosaik-users mailing list`__.
+
+__ https://mosaik.offis.de/mailinglist
+
+
+Changelog
+=========
+
+0.1.1 – 2016-01-20
+------------------
+
+- Updated documentation
+
+0.1 – 2015-12-16
+----------------
+
+- Initial release
+
+
+Authors
+=======
+
+The mosaik ZeroMQ connector was created by Jan Sören Schwarz.
+
+
