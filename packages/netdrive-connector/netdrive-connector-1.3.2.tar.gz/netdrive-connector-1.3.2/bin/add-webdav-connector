@@ -1,0 +1,125 @@
+#!/bin/sh
+
+# Copyright (c) 2015, Euan Thoms
+# All rights reserved.
+# 
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+# 
+# * Redistributions of source code must retain the above copyright notice, this
+#   list of conditions and the following disclaimer.
+# 
+# * Redistributions in binary form must reproduce the above copyright notice,
+#   this list of conditions and the following disclaimer in the documentation
+#   and/or other materials provided with the distribution.
+# 
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+# DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+# FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+# SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+# CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+# OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+SERVER_URL=$1
+MOUNT_POINT=$2
+DAV_USERNAME=$3
+DAV_PASSWORD=$4
+
+FS_TYPE="davfs"
+MOUNT_OPTIONS="users,noauto"
+
+get_mount_user(){
+
+  ## test if mount point exists
+  if [ ! -d ${MOUNT_POINT} ]
+  then
+    echo ""
+    echo "ERROR (1): mount point does not exist"
+    echo ""
+    exit 1
+  fi
+
+  ## get mount point owner
+  MOUNT_USER=`ls -ld ${MOUNT_POINT} | awk '{print $3}'`
+  MOUNT_USER_GROUP=`ls -ld ${MOUNT_POINT} | awk '{print $4}'`
+  MOUNT_USER_FOLDER=`su - ${MOUNT_USER} -c 'eval "echo $HOME"'`
+
+}
+
+add_connection(){
+
+  get_mount_user
+
+  ## test if connection already exists
+  cat /etc/fstab | grep " ${FS_TYPE} " | grep "${SERVER_URL}" | grep "${MOUNT_POINT}" > /dev/null
+  if [ $? = 0 ]
+  then
+    echo ""
+    echo "ERROR (2): That connection is already setup"
+    echo ""
+    exit 2
+  fi
+
+  echo "${SERVER_URL} ${MOUNT_POINT} ${FS_TYPE} ${MOUNT_OPTIONS} 0 0" >> /etc/fstab
+
+  ## make sure ~/.davfs2/secrets exists with correct permissions
+  if [ ! -d ${MOUNT_USER_FOLDER}/.davfs2 ]
+  then
+    mkdir ${MOUNT_USER_FOLDER}/.davfs2
+  fi
+  if [ ! -f ${MOUNT_USER_FOLDER}/.davfs2/secrets ]
+  then
+    touch ${MOUNT_USER_FOLDER}/.davfs2/secrets
+  fi
+  chmod 0600 ${MOUNT_USER_FOLDER}/.davfs2/secrets
+  chown -R ${MOUNT_USER}:${MOUNT_USER_GROUP} ${MOUNT_USER_FOLDER}/.davfs2
+
+}
+
+save_credentials_no_prompt(){
+
+  ## add credentials to davfs2 secrets file
+  echo "${SERVER_URL} ${DAV_USERNAME} ${DAV_PASSWORD}" >> ${MOUNT_USER_FOLDER}/.davfs2/secrets
+
+}
+
+save_credentials_prompt_pass(){
+
+  echo "Please enter the webdav password:"
+  read DAV_PASSWORD
+
+  ## add credentials to davfs2 secrets file
+  echo "${SERVER_URL} ${DAV_USERNAME} ${DAV_PASSWORD}" >> ${MOUNT_USER_FOLDER}/.davfs2/secrets
+
+}
+
+if [ $# = 2 ]
+then
+  add_connection
+elif [ $# = 3 ]
+then
+  add_connection
+  save_credentials_prompt_pass
+elif [ $# = 4 ]
+then
+  add_connection
+  save_credentials_no_prompt
+else
+  echo ""
+  echo "Usage (1): $0 server_url mount_point"
+  echo "Example  : $0 http://webdav.example.com:80/shares /home/bill/Shares"
+  echo ""
+  echo "Usage (2): $0 server_url mount_point username"
+  echo "Example  : $0 http://webdav.example.com:80/shares /home/bill/Shares bill"
+  echo ""
+  echo "Usage (3): $0 server_url mount_point username password"
+  echo "Example  : $0 http://webdav.example.com:80/shares /home/bill/Shares bill opensesame"
+  echo "!WARNING!: this method may save your password to the HISTFILE (command history)"
+  echo ""
+  echo "NOTE:    : options (2) and (3) will add an entry to the ~/.davfs2/secrets file for password-less login."
+  echo ""
+fi

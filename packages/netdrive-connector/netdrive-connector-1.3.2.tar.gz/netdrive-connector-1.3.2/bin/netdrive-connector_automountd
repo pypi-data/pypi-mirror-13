@@ -1,0 +1,97 @@
+#!/bin/sh
+
+# Copyright (c) 2016, Euan Thoms
+# All rights reserved.
+# 
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+# 
+# * Redistributions of source code must retain the above copyright notice, this
+#   list of conditions and the following disclaimer.
+# 
+# * Redistributions in binary form must reproduce the above copyright notice,
+#   this list of conditions and the following disclaimer in the documentation
+#   and/or other materials provided with the distribution.
+# 
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+# DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+# FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+# SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+# CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+# OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+MOUNTPOINT=$1
+FS_TYPE=$2
+
+# Logout detection method 1: trap signals sent by DE/DM
+trap cleanup 1 2 3 6 9 11 15
+
+cleanup()
+{
+  if [ "${FS_TYPE}" = "fuse.sshfs" ]
+  then
+    fusermount -u ${MOUNTPOINT}
+  else
+    umount ${MOUNTPOINT}
+  fi
+  if [ $? = 0 ]
+  then
+    exit 0
+  else
+    exit 1
+  fi
+}
+
+CURRENT_USER=`whoami`
+PARENT_PID=$PPID
+
+get_is_x_user()
+{
+  IFS="
+"
+  IS_X_USER="False"
+  for i in `who`
+  do
+    NAME=`echo $i | awk '{print $1}'`
+    LINE=`echo $i | awk '{print $2}'`
+    if [ "${NAME}" = "${CURRENT_USER}" ] && [ "${LINE}" = ":0" ]
+    then
+      IS_X_USER="True"
+    fi
+  done
+}
+
+get_is_x_user
+
+mount | grep "${MOUNTPOINT} "
+if [ $? != 0 ]
+then
+  mount ${MOUNTPOINT}
+
+  while true
+  do
+    sleep 5
+
+    # Logout detection method 2: test for session entry in 'who' going away
+    if [ "${IS_X_USER}" = "True" ]
+    then
+      get_is_x_user
+      if [ "${IS_X_USER}" = "False" ]
+      then
+        cleanup
+      fi
+    fi
+
+    # Logout detection method 3: test for Parent PID dying
+    # TODO: this is Linux specific, need BSD too
+    ps -ef | awk '{print $2}' | grep ${PARENT_PID}
+    if [ $? != 0 ]
+    then
+      cleanup
+    fi
+  done
+fi

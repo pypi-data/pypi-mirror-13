@@ -1,0 +1,86 @@
+#!/bin/sh
+
+# Copyright (c) 2015, Euan Thoms
+# All rights reserved.
+# 
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+# 
+# * Redistributions of source code must retain the above copyright notice, this
+#   list of conditions and the following disclaimer.
+# 
+# * Redistributions in binary form must reproduce the above copyright notice,
+#   this list of conditions and the following disclaimer in the documentation
+#   and/or other materials provided with the distribution.
+# 
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+# DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+# FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+# SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+# CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+# OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+SERVER_URL=$1
+MOUNT_POINT=$2
+
+FS_TYPE="davfs"
+
+BSD_SED_IN_PLACE="sed -i ''"
+GNU_SED_IN_PLACE="sed -i "
+
+OS=`uname -o`
+if [ $OS = 'GNU/Linux' ]
+then
+  SED_IN_PLACE=${GNU_SED_IN_PLACE}
+else
+  SED_IN_PLACE=${BSD_SED_IN_PLACE}
+fi
+
+get_mount_user(){
+
+  ## get mount point owner
+  MOUNT_USER=`ls -ld ${MOUNT_POINT} | awk '{print $3}'`
+  MOUNT_USER_GROUP=`ls -ld ${MOUNT_POINT} | awk '{print $4}'`
+  MOUNT_USER_FOLDER=`su - ${MOUNT_USER} -c 'eval "echo $HOME"'`
+
+}
+
+remove_connection(){
+
+  ## test if connection exists
+  cat /etc/fstab | grep " ${FS_TYPE} " | grep "${SERVER_URL}" | grep "${MOUNT_POINT}" > /dev/null
+  if [ $? != 0 ]
+  then
+    echo ""
+    echo "ERROR (2): That connection is not setup"
+    echo ""
+    exit 2
+  fi
+
+  ## remove entry from fstab
+  ${SED_IN_PLACE} "\|^${SERVER_URL} ${MOUNT_POINT} ${FS_TYPE} .*|d" /etc/fstab
+
+}
+
+remove_credentials(){
+
+  ## remove credentials from davfs2 secrets file
+  ${SED_IN_PLACE} "\|${SERVER_URL} .*|d" ${MOUNT_USER_FOLDER}/.davfs2/secrets
+
+}
+
+if [ $# = 2 ]
+then
+  get_mount_user
+  remove_credentials
+  remove_connection
+else
+  echo ""
+  echo "Usage (1): $0 server_url mount_point"
+  echo "Example  : $0 http://webdav.example.com:80/shares /home/bill/Shares"
+  echo ""
+fi
