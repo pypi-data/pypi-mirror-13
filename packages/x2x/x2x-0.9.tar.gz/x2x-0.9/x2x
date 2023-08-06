@@ -1,0 +1,207 @@
+#!/usr/bin/env python
+
+# x2x - convert to base x
+
+# Copyright (c) 2014 Jason Schulz <http://github.com/uxcn>
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+import sys
+import string
+
+import argparse
+
+dg = string.hexdigits
+
+b = sys.argv[0]
+
+def on_error(e, x=1):
+    print('%s: %s' % (b, e))
+    sys.exit(x)
+
+def init(p):
+
+    p.set_defaults(p=p)
+
+    p.add_argument('-f', '--from', type=int, default=0, dest='f', metavar='base', help='from base')
+    p.add_argument('-t', '--to', type=int, default=0, dest='t', metavar='base', help='to base')
+
+    g = p.add_mutually_exclusive_group()
+
+    g.add_argument('-l', '--lower', default=False, dest='u', action='store_false', help='output lowercase characters')
+    g.add_argument('-u', '--upper', default=False, dest='u', action='store_true', help='output uppercase characters')
+
+    p.add_argument('v', metavar='value', help='value')
+
+def dig(c, b):
+
+    o = ord(c)
+
+    if o > 47 and o < 58:
+        d = o - 48 # 0..9
+    elif o > 64 and o < 71:
+        d = o - 55 # A..F
+    elif o > 96 and o < 103:
+        d = o - 87 # a..f
+    else:
+        on_error('invalid digit (' + c + ')')
+
+    if d >= b:
+        on_error('digit exceeds base (' + c + ')')
+
+    return d
+
+def add(x, y, b):
+
+    d = 0
+    ds = len(x)
+
+    while y > 0:
+
+        if d >= ds:
+            v = y
+            x += [v % b]
+        else:
+            v = x[d] + y
+            x[d] = v % b
+
+        y = v // b
+        d += 1
+
+    return x
+
+def mul(x, y, b):
+
+    c = 0
+    d = 0
+    ds = len(x)
+
+    while c != 0 or d < ds:
+
+        if d >= ds:
+            v = c
+            x += [v % b]
+        else:
+            v = x[d] * y + c
+            x[d] = v % b
+
+        c = v // b
+        d += 1
+
+    return x
+
+p = argparse.ArgumentParser(add_help=False)
+
+if len(sys.argv) > 1:
+
+    v = sys.argv[-1]
+
+    # argparse does not understand general negative values by default
+    if not v.startswith('-f') and not v.startswith('-t') and v.startswith('-'):
+        sys.argv[-1:-1] = ['--']
+
+init(p)
+
+a = p.parse_args()
+
+fb = a.f
+tb = a.t
+u = a.u
+
+cs = a.v
+
+g = ''
+p = ''
+s = ''
+ds = []
+
+if tb == 2:
+    p = '0b'
+elif tb == 8:
+    p = '0'
+elif tb == 16:
+    p = '0x'
+
+if cs[0] == '-':
+    cs = cs[1:]
+    g = '-'
+else:
+    g = ''
+
+if cs[0] == '0':
+
+    if len(cs) == 1:
+
+        print(g + p + cs)
+        sys.exit(0)
+
+    elif cs[1] == 'x' or cs[1] == 'X':
+        cs = cs[2:]
+
+        if fb != 0 and fb != 16:
+            on_error('prefix does not match from base (' + cs[:2] + ', ' + str(fb) + ')')
+
+        fb = 16
+    elif cs[1] == 'd' or cs[1] == 'D':
+        cs = cs[2:]
+
+        if fb != 0 and fb != 10:
+            on_error('prefix does not match from base (' + cs[:2] + ', ' + str(fb) + ')')
+
+        fb = 10
+    elif cs[1] == 'o' or cs[1] == 'O':
+        cs = cs[2:]
+
+        if fb != 0 and fb != 8:
+            on_error('prefix does not match from base (' + cs[:2] + ', ' + str(fb) + ')')
+
+        fb = 8
+    elif cs[1] == 'b' or cs[1] == 'B':
+        cs = cs[2:]
+
+        if fb != 0 and fb != 2:
+            on_error('prefix does not match from base (' + cs[:2] + ', ' + str(fb) + ')')
+
+        fb = 2
+    else:
+        cs = cs[1:]
+
+        if fb != 0 and fb != 8:
+            on_error('prefix does not match from base (0, ' + str(fb) + ')')
+
+        fb = 8
+
+if fb == 0:
+    fb = 10
+
+if tb == 0:
+    tb = 10
+
+for c in cs:
+    ds = add(mul(ds, fb, tb), dig(c, fb), tb)
+
+for d in ds:
+    s = dg[d] + s
+
+if not u:
+    print(g + p + s)
+else:
+    print(g + p.upper() + s.upper())
+
+# vim:ft=python:et:ts=4:sts=4:sw=4:tw=80
