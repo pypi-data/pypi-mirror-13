@@ -1,0 +1,47 @@
+<div metal:define-macro="files_view" tal:omit-tag=""
+       xmlns:tal="http://xml.zope.org/namespaces/tal"
+       xmlns:metal="http://xml.zope.org/namespaces/metal">
+  <table class="list" tal:define="join import: os.path.join">
+    <caption>${_('Files')}</caption>
+    <thead>
+      <tr>
+        <th colspan="2">${_('Path in storage')}</th>
+        <th>${_('Path in target')}</th>
+        <th class="center" tal:condition="i_am == 'pack'">${_('Visible')}</th>
+        <th class="last">${_('Actions')}</th>
+      </tr>
+    </thead>
+    <tbody tal:repeat="file_type file_types" class="group">
+      <tr>
+        <th colspan="5">${file_type_labels[file_type]}</th>
+      </tr>
+      <tr tal:repeat="item files[file_type]">
+        <td class="checkbox"></td>
+        <td>
+          <a class="selectable" data-path="${join(item[1], item[2])}"
+             href="${route('file_render', storage_id=item[1], path=item[2])}">
+            <img src="/Static/Images/MimeTypes/${item[0] if item[0] in MIME_TYPES else 'unknown'}.png"
+                 alt="${item[0]}" title="${item[0]}"/>
+            ${'%s%s%s' % (item[1], sep, item[2])}
+          </a>
+        </td>
+        <td>${item[3]}</td>
+        <td class="center" tal:condition="i_am == 'pack'">
+          <span tal:condition="item[4]" tal:omit-tag="">
+            <img src="/Static/Images/check.png" alt="X"/>
+          </span>
+        </td>
+        <td class="last actions">
+          <span tal:condition="item[2]" tal:omit-tag="">
+            ${form.submit_image('sel!%s%s%s' % (item[1], sep, item[2]), _('Add to selection'),
+              '/Static/Images/action_select_one.png')}
+            ${form.button(route('file_download', storage_id=item[1], path=item[2]),
+              src='/Static/Images/action_download_one.png', title=_('Download file'))}
+          </span>
+          ${form.button(route('storage_browse', storage_id=item[1], path=item[2]),
+            src='/Static/Images/action_browse.png', title=_('View in storage'), class_="slow")}
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>

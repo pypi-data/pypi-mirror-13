@@ -1,0 +1,70 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:tal="http://xml.zope.org/namespaces/tal"
+      xmlns:metal="http://xml.zope.org/namespaces/metal"
+      metal:use-macro="base">
+<head><title></title></head>
+<body>
+<div id="mainPanel" metal:fill-slot="main">
+  <!-- ............................... Buttons ............................ -->
+  <div id="buttons">
+    <div class="first">
+      ${request.breadcrumbs.back_button()}
+    </div>
+    <div class="last">
+      ${form.button(request.current_route_path(), _('Refresh'), class_='buttonMain')}
+      ${form.button(route('job_index', project_id=project['project_id']), _('View background jobs'))}
+      ${form.button(route('project_dashboard', project_id=project['project_id']), _('View dashboard'))}
+    </div>
+    <hr class="hidden"/>
+  </div>
+  <div id="main">
+    <h2 id="subtitle" class="job" title="${_('Background job log')}">
+      ${project['label']} <em>${job.label}</em>
+    </h2>
+    <!-- ............................ Action list ......................... -->
+    <div class="listActions">
+      <div class="first">${paging.pager_top('job22', _('Background job log'))}</div>
+      <div class="last" tal:switch="action == 'del?'">
+        <span tal:case="True" tal:omit-tag="">
+          ${form.submit('del!.x', _('Confirm log erasure'), class_='button')}
+          ${form.submit_cancel(_('Cancel'))}
+        </span>
+        <span tal:case="False" tal:omit-tag="">
+          ${form.submit_image('del?', _('Erase log'), '/Static/Images/action_log_empty.png')}
+        </span>
+      </div>
+    </div>
+    <!-- ................................ Log ............................. -->
+    <div id="content">
+      <table tal:condition="paging" class="list smallList"
+             tal:define="dt import: datetime">
+        <tr>
+          <th class="checkbox"> </th>
+          <th>${_('Message')}</th>
+          <th class="last">${_('Age')}</th>
+        </tr>
+        <tr tal:repeat="log paging">
+          <td class="checkbox">
+            <img src="/Static/Images/log_${log.status}.png" alt="${log.status}"/>
+          </td>
+          <td>
+            <pre class="logLines">${log.text}</pre>
+          </td>
+          <td title="${dt.datetime.fromtimestamp(log.moment).isoformat(' ').split('.')[0]}"
+              class="last actions info">
+            ${age(dt.datetime.fromtimestamp(log.moment))}
+          </td>
+        </tr>
+      </table>
+      <div id="flash" tal:condition="not paging">${_('Empty log.')}</div>
+    </div>
+    <div class="listPager">
+      <div class="first">${paging.pager_bottom('job', _('Background job log'))}</div>
+      <div class="last">
+        ${_('Lines per page:')} ${form.select('page_size', '', paging.page_sizes, True)}
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

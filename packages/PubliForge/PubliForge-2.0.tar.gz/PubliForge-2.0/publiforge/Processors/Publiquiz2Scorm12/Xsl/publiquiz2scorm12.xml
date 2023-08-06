@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- $Id: publiquiz2scorm12.xml ba03399bcca2 2015/07/27 10:15:27 Patrick $ -->
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+                xmlns="http://www.w3.org/1999/xhtml">
+
+  <xsl:import href="publiquiz2html5.xsl"/>
+  <xsl:import href="publiquiz2scorm12_template.inc.xsl"/>
+  <xsl:import href="publiquiz2scorm12_i18n.inc.xsl"/>
+  <xsl:import href="publiquiz2scorm12_ims.inc.xsl"/>
+
+  <!-- Variables -->
+  <xsl:variable name="path" select="concat($output, 'Container~/Content/')"/>
+  <xsl:variable name="toc" select="0"/>
+  <xsl:variable name="toc_division_depth" select="0"/>
+  <xsl:variable name="toc_section_depth" select="0"/>
+  <xsl:variable name="nonav" select="1"/>
+  <xsl:variable name="minify" select="1"/>
+
+  <!--
+      =========================================================================
+      publiset
+      =========================================================================
+  -->
+  <xsl:template match="publiset"/>
+
+  <!--
+      =========================================================================
+      publiquiz
+      =========================================================================
+  -->
+  <xsl:template match="publiquiz">
+    <xsl:apply-templates select="document|topic|quiz"/>
+    <xsl:if test="$img"><xsl:apply-templates select="//image" mode="ini"/></xsl:if>
+    <xsl:if test="$aud"><xsl:apply-templates select="//audio|//smil" mode="ini"/></xsl:if>
+    <xsl:if test="$vid"><xsl:apply-templates select="//video" mode="ini"/></xsl:if>
+    <xsl:call-template name="minify_files"/>
+    <xsl:call-template name="post_ini"/>
+  </xsl:template>
+
+  <!--
+      =========================================================================
+      document
+      =========================================================================
+  -->
+  <xsl:template match="document">
+    <xsl:call-template name="imsmanifest"/>
+
+    <xsl:choose>
+      <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ One file ~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+      <xsl:when test="$onefile">
+        <xsl:call-template name="html_file">
+          <xsl:with-param name="name" select="$fid"/>
+          <xsl:with-param name="title">
+            <xsl:call-template name="title_text">
+              <xsl:with-param name="default" select="$fid"/>
+            </xsl:call-template>
+          </xsl:with-param>
+          <xsl:with-param name="body">
+            <body class="pdocDocument">
+              <xsl:if test="head/title">
+                <h1>
+                  <xsl:call-template name="title"/>
+                  <xsl:if test="head/subtitle">
+                    <br/>
+                    <span class="h2">
+                      <xsl:call-template name="subtitle"/>
+                    </span>
+                  </xsl:if>
+                </h1>
+              </xsl:if>
+              <xsl:apply-templates select="." mode="onefiletoc"/>
+              <xsl:apply-templates select="division|topic" mode="onefile"/>
+              <xsl:call-template name="quiz_action"/>
+              <xsl:if test="$index and .//index">
+                <div class="pdocIndex">
+                  <xsl:call-template name="index"/>
+                </div>
+              </xsl:if>
+              <xsl:if test=".//note">
+                <div class="pdocNoteFooter">
+                  <xsl:apply-templates select=".//note" mode="footer"/>
+                </div>
+              </xsl:if>
+            </body>
+          </xsl:with-param>
+        </xsl:call-template>
+      </xsl:when>
+
+      <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~ Multi files ~~~~~~~~~~~~~~~~~~~~~~~~ -->
+      <xsl:otherwise>
+        <xsl:apply-templates
+            select=".//division|.//topic|.//quiz" mode="file"/>
+      </xsl:otherwise>
+    </xsl:choose>
+  </xsl:template>
+
+  <!--
+      =========================================================================
+      topic
+      =========================================================================
+  -->
+  <xsl:template match="topic">
+    <xsl:call-template name="imsmanifest"/>
+
+    <xsl:call-template name="html_file">
+      <xsl:with-param name="name" select="concat($fid, '-tpc-0001')"/>
+      <xsl:with-param name="title">
+        <xsl:value-of select="head/title"/>
+      </xsl:with-param>
+      <xsl:with-param name="body">
+        <body>
+          <xsl:attribute name="class">
+            <xsl:text>pdocTopic</xsl:text>
+            <xsl:if test="@type"> pdocTopic-<xsl:value-of select="@type"/></xsl:if>
+          </xsl:attribute>
+          <xsl:apply-templates select="header"/>
+          <xsl:if test="head/title">
+            <div class="h1"><xsl:apply-templates select="head/title"/></div>
+          </xsl:if>
+          <xsl:if test="head/subtitle">
+            <div class="h2"><xsl:call-template name="subtitle"/></div>
+          </xsl:if>
+          <xsl:apply-templates select="." mode="corpus"/>
+          <xsl:if test="$onefile and .//note">
+            <div class="pdocNoteFooter">
+              <xsl:apply-templates select=".//note" mode="footer"/>
+            </div>
+          </xsl:if>
+          <xsl:apply-templates select="footer"/>
+        </body>
+      </xsl:with-param>
+    </xsl:call-template>
+  </xsl:template>
+
+  <!--
+      =========================================================================
+      quiz
+      =========================================================================
+  -->
+  <xsl:template match="quiz">
+    <xsl:call-template name="imsmanifest"/>
+
+    <xsl:call-template name="html_file">
+      <xsl:with-param name="name" select="concat($fid, '-quz-0001')"/>
+      <xsl:with-param name="title">
+        <xsl:value-of select="head/title"/>
+      </xsl:with-param>
+      <xsl:with-param name="body">
+        <body>
+          <xsl:attribute name="class">
+            <xsl:text>pquizQuiz</xsl:text>
+            <xsl:if test="@type"> pquizQuiz-<xsl:value-of select="@type"/></xsl:if>
+          </xsl:attribute>
+          <xsl:if test="head/title">
+            <h1><xsl:apply-templates select="head/title"/></h1>
+          </xsl:if>
+          <xsl:if test="head/subtitle">
+            <h2><xsl:call-template name="subtitle"/></h2>
+          </xsl:if>
+          
+          <form action="#" method="post">
+            <xsl:apply-templates select="." mode="corpus"/>
+            <xsl:call-template name="quiz_action"/>
+          </form>
+
+          <xsl:if test="$onefile and .//note">
+            <div class="pdocNoteFooter">
+              <xsl:apply-templates select=".//note" mode="footer"/>
+            </div>
+          </xsl:if>
+         </body>
+      </xsl:with-param>
+    </xsl:call-template>
+  </xsl:template>
+
+</xsl:stylesheet>

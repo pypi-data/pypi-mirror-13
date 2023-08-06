@@ -1,0 +1,39 @@
+# $Id: publiset_save.regex f08d2f3466a0 2015/06/09 17:53:07 Patrick $
+
+[Regex]
+# <pattern>  =  <replacement>
+
+<!--\[if [^!]+!\[endif\]-->  =
+
+(\s[a-z-]+)="BOOL(1|True)"  =  \1="true"
+\s[a-z-]+="BOOL(__.*__|False)"  =
+
+<\?hold\s*\?>  =  __hold__
+>\s*__hold__\s*<  =  ><?hold?><
+__hold__  =  " "
+<p><\?hold\?></p>\s*<p>   =  <p>
+</p>\s*<p><\?hold\?></p>  =  </p>
+<(?P<a>title|shorttitle|subtitle|identifier|copyright|collection|contributors)[^>]*><\?hold\?></(?P=a)>  =
+<(?P<a>date|source|keywordset|subjectset|indexset|abstract|cover|element)[^>]*><\?hold\?></(?P=a)>  =
+
+\s[a-z:-]+=""  =
+<(?P<a>identifier|source|name|date|element|link|division)[^>]*>\s*</(?P=a)>  =
+(<[a-z-]+\s*/>|<[a-z-]+>\s*</[a-z-]+>)  =
+<[a-z-]+>\s*</[a-z-]+>  =
+<[a-z-]+>\s*</[a-z-]+>  =
+(?s)<division>\s*<head[^>]*>.*</head>\s*</division> =
+
+<((?:title|shorttitle|subtitle|copyright|firstname|lastname|label|address|role)[^/>]*)>(\s+)  =  \2<\1>
+(\s+)</((?:title|shorttitle|subtitle|copyright|firstname|lastname|label|address|role))>  =  </\2>\1
+<((?:sup|sub|date|name|highlight|emphasis|link)[^/>]*)>(\s+)  =  \2<\1>
+(\s+)</((?:sup|sub|date|name|highlight|emphasis|link)[^>]*)>  =  </\2>\1
+
+\s*<(/?)(head|title|shorttitle|subtitle|copyright|collection|keywordset|keyword|subjectset|subject)>\s*  =  <\1\2>
+\s*<(/?)(contributors|contributor|firstname|lastname|label|address|role|abstract|cover)>\s*  =  <\1\2>
+\s*<(/?)(p)>\s*  =  <\1\2>
+
+\s*<(/?)(identifier|element|division|file|link)([^>]*)>\s*  =  <\1\2\3>
+
+\s+<!--  =  <!--
+-->\s+   =  -->
+‧  =   

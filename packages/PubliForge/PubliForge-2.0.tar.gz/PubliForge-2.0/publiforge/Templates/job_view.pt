@@ -1,0 +1,108 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:tal="http://xml.zope.org/namespaces/tal"
+      xmlns:metal="http://xml.zope.org/namespaces/metal"
+      metal:use-macro="base">
+<head><title></title></head>
+<body>
+<div id="mainPanel" metal:fill-slot="main">
+  <!-- ............................... Buttons ............................ -->
+  <div id="buttons">
+    <div class="first">
+      ${request.breadcrumbs.back_button()}
+    </div>
+    <div class="last" tal:condition="i_editor"> 
+      ${form.button(route('job_edit', project_id=job.project_id, job_id=job.job_id),
+        _('Edit'), class_='buttonMain')}
+      ${form.button(route('project_%s' % ('edit' in request.breadcrumbs.back_path() and 'edit' or 'view'),
+         project_id=job.project_id), _('View project settings'))}
+    </div>
+    <hr class="hidden"/>
+  </div>
+  <div id="main">
+    <h2 id="subtitle" class="job" title="${_('Background job')}">
+      ${project['label']} <em>${job.label}</em>
+    </h2>
+    <!-- ................................ Tabs ............................ -->
+    <div id="tabSet">
+      ${tab_set.toc('tabJob')}
+      <!-- ..... Description ...... -->
+      ${tab_set.tab_begin(0, 'd')}
+      ${form.grid_item(_('Label:'), job.label, class_='')}
+      ${form.grid_item(_('Description:'), job.description, class_='')}
+      ${form.grid_item(_('Processing:'), processing_label, class_='')}
+      <div class="formItem">
+        <label><em>${_('Time To Live:')}</em></label>
+        <div title="${_('${s} seconds', {'s': job.ttl})}">
+          ${duration(request, job.ttl)}
+        </div>
+      </div>
+      <div class="formItem">
+        <label><em>${_('Log Time To Live:')}</em></label>
+        <div title="${_('${s} seconds', {'s': job.log_ttl})}">
+          ${duration(request, job.log_ttl)}
+        </div>
+      </div>
+      <div class="formItem" tal:condition="job.period > 1">
+        <label><em>${_('Period:')}</em></label>
+        <div>${_('${n} cycles', {'n': job.period})}</div>
+      </div>
+      <div class="formItem" tal:condition="job.stopped">
+        <label><em>${_('Stopped:')}</em></label>
+        <div id="stopped"><img src="/Static/Images/check.png" alt="X"/></div>
+      </div>
+      ${tab_set.tab_end()}
+      <!-- ......... Packs ........ -->
+      ${tab_set.tab_begin(1, 'p')}
+      <div class="listActions" tal:condition="packs">
+        <div class="first">
+          <img src="/Static/Images/pack22.png" alt="${_('Packs')}"/>
+          <label>${_('Packs')}</label>
+        </div>
+        <div class="last"> </div>
+      </div>
+      <table class="list smallList" tal:condition="packs">
+        <caption>${_('Packs')}</caption>
+        <tr>
+          <th>${_('Label')}</th>
+          <th>${_('Description')}</th>
+        </tr>
+        <tr tal:repeat="pack sorted(packs, key=lambda k: k.label)">
+          <td>
+            <a href="${route('pack_view', project_id=pack.project_id, pack_id=pack.pack_id)}">
+              ${pack.label}
+            </a>
+          </td>
+          <td class="info">${pack.description}</td>
+        </tr>
+      </table>
+      <div tal:condition="not packs">${_('No pack.')}</div>
+      ${tab_set.tab_end()}
+      <!-- ..... Connections ...... -->
+      ${tab_set.tab_begin(2, 'c')}
+      <div class="formItem" tal:condition="job.task_ko_id">
+        <label><em>${_('In case of failure:')}</em></label>
+        <div>
+          ${task_ko_label}
+          <span tal:condition="job.task_ko_mode != 'normal'" tal:omit-tag="">
+            [${LINK_TYPES[job.task_ko_mode]}]
+          </span>
+        </div>
+      </div>
+      <div class="formItem" tal:condition="job.task_ok_id">
+        <label><em>${_('In case of success:')}</em></label>
+        <div>
+          ${task_ok_label}
+          <span tal:condition="job.task_ok_mode != 'normal'" tal:omit-tag="">
+            [${LINK_TYPES[job.task_ok_mode]}]
+          </span>
+         </div>
+      </div>
+      <div tal:condition="not job.task_ko_id and not job.task_ok_id">
+        ${_('No connection.')}
+      </div>
+      ${tab_set.tab_end()}
+    </div>
+  </div>
+</div>
+</body>
+</html>

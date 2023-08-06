@@ -1,0 +1,117 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:tal="http://xml.zope.org/namespaces/tal"
+      xmlns:metal="http://xml.zope.org/namespaces/metal"
+      metal:use-macro="base">
+<head><title></title></head>
+<body>
+<div id="mainPanel" metal:fill-slot="main">
+  <!-- ............................... Buttons ............................ -->
+  <div id="buttons">
+    <div class="first">
+      ${request.breadcrumbs.back_button()}
+    </div>
+    <div class="last">
+      ${form.button(request.current_route_path(), _('Refresh'), class_='buttonMain')}
+      ${form.button(route('project_dashboard', project_id=project['project_id']), _('View dashboard'))}
+    </div>
+    <hr class="hidden"/>
+  </div>
+  <div id="main">
+    <h2 id="subtitle" class="job" title="${_('Background jobs')}">${project['label']}</h2>
+    <!-- ............................. Flash .............................. -->
+    <div tal:define="flash load: flash.macro.pt" metal:use-macro="flash"></div>
+    <!-- ............................ Action list ......................... -->
+    <h3 class="list">${_('Background Job List')}</h3>
+    <div class="listActions">
+      <div class="first">
+        <img src="/Static/Images/job22.png" alt="background jobs" title="${_('Background jobs')}"/>
+      </div>
+      <div class="last" tal:switch="action">
+        <span tal:case="'del?#'" tal:omit-tag="">
+          ${form.submit('del!#.x', _('Confirm log erasures'), class_='button')}
+          ${form.submit_cancel(_('Cancel'))}
+        </span>
+        <span tal:case="'act?#'" tal:omit-tag="">
+          ${form.submit('act!#.x', _('Confirm activation'), class_='button')}
+          ${form.submit_cancel(_('Cancel'))}
+        </span>
+        <span tal:case="'stp?#'" tal:omit-tag="">
+          ${form.submit('stp!#.x', _('Confirm suspension'), class_='button')}
+          ${form.submit_cancel(_('Cancel'))}
+        </span>
+        <span tal:case="default" tal:omit-tag="">
+          ${form.submit_image('del?#', _('Erase logs'),
+            '/Static/Images/action_log_empty.png')}
+          ${form.submit_image('act?#', _('Activate selected background jobs'),
+            '/Static/Images/action_start.png')}
+          ${form.submit_image('stp?#', _('Suspend selected background jobs'),
+            '/Static/Images/action_stop.png')}
+        </span>
+      </div>
+    </div>
+    <!-- ................................ Jobs ............................ -->
+    <div id="content">
+      <table class="list" tal:define="dt import: datetime">
+        <tr>
+          <th class="checkbox" id="check_all"></th>
+          <th>${_('Background job')}</th>
+          <th>${_('Description')}</th>
+          <th>${_('Last execution')}</th>
+          <th class="center">${_('Status')}</th>
+          <th class="last">${_('Actions')}</th>
+        </tr>
+        <tr tal:repeat="job jobs">
+          <td class="checkbox">
+            ${form.checkbox('#%d' % job.job_id, id=None, class_='listCheck')}
+          </td>
+          <td>
+            <a href="${route('job_log', project_id=job.project_id, job_id=job.job_id)}">
+              ${job.label}
+            </a>
+          </td>
+          <td class="info">
+            ${job.description}
+          </td>
+          <td tal:switch="job.start is None">
+            <span tal:case="True" tal:omit-tag=""> </span>
+            <span tal:case="False"
+                  title="${dt.datetime.fromtimestamp(job.start).isoformat(' ').split('.')[0]}">
+              ${age(dt.datetime.fromtimestamp(job.start))}
+            </span>
+          </td>
+          <td class="center">
+            <img src="/Static/Images/light_${job.stopped and 'grey' or 'green'}.png"
+                 alt="${job.stopped and _('Inactive') or _('Active')}"
+                 title="${job.stopped and _('Inactive') or _('Active')}"/>
+          </td>
+          <td class="last actions" tal:switch="action">
+            <span tal:case="'del?%d' % job.job_id" tal:omit-tag="">
+              ${form.submit('del!%d.x' % job.job_id, _('Confirm log erasure'), class_='button')}
+              ${form.submit_cancel(_('Cancel'))}
+            </span>
+            <span tal:case="'act?%d' % job.job_id" tal:omit-tag="">
+              ${form.submit('act!%d.x' % job.job_id, _('Confirm activation'), class_='button')}
+              ${form.submit_cancel(_('Cancel'))}
+            </span>
+            <span tal:case="'stp?%d' % job.job_id" tal:omit-tag="">
+              ${form.submit('stp!%d.x' % job.job_id, _('Confirm suspension'), class_='button')}
+              ${form.submit_cancel(_('Cancel'))}
+            </span>
+            <span tal:case="default"  tal:omit-tag="">
+              ${form.button(route('job_log', project_id=job.project_id, job_id=job.job_id),
+                src='/Static/Images/action_log.png', title=_('Display the log'), class_="slow")}
+              ${form.submit_image('del?%d' % job.job_id, _('Erase log'),
+                '/Static/Images/action_log_empty_one.png')}
+              ${form.submit_image('act?%d' % job.job_id, _('Activate background job'),
+                '/Static/Images/action_start_one.png')}
+              ${form.submit_image('stp?%d' % job.job_id, _('Suspend background job'),
+                '/Static/Images/action_stop_one.png')}
+            </span>
+          </td>
+        </tr>
+      </table>
+    </div>
+  </div>
+</div>
+</body>
+</html>

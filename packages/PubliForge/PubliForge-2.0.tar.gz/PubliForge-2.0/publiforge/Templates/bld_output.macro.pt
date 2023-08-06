@@ -1,0 +1,23 @@
+<div metal:define-macro="build_output" tal:omit-tag=""
+     xmlns:tal="http://xml.zope.org/namespaces/tal"
+     xmlns:metal="http://xml.zope.org/namespaces/metal">
+  <div class="formItem" tal:condition="processing.output"
+       tal:define="join import: os.path.join">
+    <label><em>${_('Output:')}</em></label>
+    <div id="output">
+      <h3><a href="${route('storage_root', storage_id=output['storage_id'])}">${output['storage_label']}</a></h3>
+      ${form.button(route('storage_browse', storage_id=output['storage_id'], path=output['path']),
+        src='/Static/Images/action_browse.png', title=_('View in storage'), class_="slow")}
+      ${form.submit_image('sel!%s%s%s' % (output['storage_id'], sep, output['path']),
+        _('Add to selection'), '/Static/Images/action_select.png')}
+      <span tal:condition="len(packs)==1" tal:omit-tag="">
+        ${form.submit_image('get!output', _('Get output path from selection'),
+          '/Static/Images/action_select_get.png')}
+      </span>
+      <a class="selectable" data-path="${join(output['storage_id'], output['path'])}"
+         href="${route('file_render', storage_id=output['storage_id'], path=output['path'])}">
+        ${output['storage_id']}${sep}${output['path']}
+      </a>
+    </div>
+  </div>
+</div>
