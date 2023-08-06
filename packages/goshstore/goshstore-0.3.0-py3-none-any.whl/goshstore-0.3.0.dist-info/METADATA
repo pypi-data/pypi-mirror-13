@@ -1,0 +1,57 @@
+Metadata-Version: 2.0
+Name: goshstore
+Version: 0.3.0
+Summary: Django get-or-set hstore field
+Home-page: https://github.com/conanfanli/goshstore
+Author: Conan Fan Li
+Author-email: conanlics@gmail.com
+License: MIT
+Keywords: django hstore postgres
+Platform: UNKNOWN
+Classifier: Development Status :: 3 - Alpha
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python :: 3.4
+Requires-Dist: django (<=1.9.1,>=1.9.0)
+Provides-Extra: dev
+Requires-Dist: psycopg2 (==2.6.1); extra == 'dev'
+Requires-Dist: coverage (==4.0.2); extra == 'dev'
+
+django-goshstorefield
+=====================
+.. image:: https://travis-ci.org/conanfanli/goshstore.svg?branch=master
+    :alt: Build Status
+    :target: https://travis-ci.org/conanfanli/goshstore
+
+django-goshstore field is a reusable Django field that allows you to get or set values from hstore fields.
+
+
+How to use
+----------
+Assuming you have a django model defined:
+
+.. code-block:: python
+
+    from django.db import models
+    from goshstore import GosHStoreField
+
+    class MyModel(models.Model):
+        hstores = GosHStoreField(default={})
+
+        @hstores.getter(key='foo', converter=Decimal)
+        def get_foo(self, save=True, reset=False):
+            return max(range(100))
+
+    instance = MyModel()
+
+
+Calling `instance.get_foo()` will return `instance.hstores['foo']` if `'foo'`
+is in `instance.hstores`. Otherwise, 100 will be stored into
+`instance.hstores['foo']` and `instance.save(update_fields=['hstores'])`
+will be called. To prevent calling `instance.save()`, call
+`instance.get_foo(save=False)`.
+
+When calling `instance.get_foo(reset=True)`, `max(range(100))` will be
+evaluated and returned regardless whether `'foo'` is already in
+`instance.hstores`.
+
+
