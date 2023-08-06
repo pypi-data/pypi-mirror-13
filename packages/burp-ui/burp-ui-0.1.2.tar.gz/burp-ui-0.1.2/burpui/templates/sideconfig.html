@@ -1,0 +1,39 @@
+
+          <div id="navbar-config" bs-scrollspy-list>
+            <h4>Configuration navigation</h4>
+            <ul class="nav nav-sidebar">
+              <li class="active" bs-scrollspy data-target="#boolean"><a href="#boolean">Booleans</a></li>
+              <li bs-scrollspy data-target="#string"><a href="#string">Strings</a></li>
+              <li bs-scrollspy data-target="#integer"><a href="#integer">Integers</a></li>
+              <li bs-scrollspy data-target="#multi"><a href="#multi">Multi</a></li>
+              <li bs-scrollspy data-target="#includes_source"><a href="#includes_source">Includes</a></li>
+            </ul>
+            <h4>Client to configure</h4>
+            <ul class="nav nav-sidebar" ng-cloak>
+              {% raw %}
+              <li>
+                <ui-select ng-model="client.selected" style="width: 100%;" on-select="selectClient($item, $select)">
+                  <ui-select-match placeholder="Select a client">{{ $select.selected.name }}</ui-select-match>
+                  <ui-select-choices repeat="client in clients | filter: {name: $select.search}">
+                    <div ng-bind-html="client.name | highlight: $select.search"></div>
+                    <small>
+                      config: <span ng-bind-html="''+client.value | highlight: $select.search"></span>
+                    </small>
+                  </ui-select-choices>
+                </ui-select>
+              </li>
+              {% endraw %}
+            </ul>
+            <ul class="nav nav-sidebar">
+              <li>
+                <form action="{{ url_for('api.new_client', server=server) }}" method="POST" ng-submit="createClient($event)">
+                  <div class="input-group">
+                    <input class="form-control" type="text" name="newclient" id="newclient" placeholder="Create new client">
+                    <span class="input-group-btn">
+                      <button class="btn btn-success" type="submit"><span class="glyphicon glyphicon-plus"></span></button>
+                    </span>
+                  </div>
+                </form>
+              </li>
+            </ul>
+          </div>

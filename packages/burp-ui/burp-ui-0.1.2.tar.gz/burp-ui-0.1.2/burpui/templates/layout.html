@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
+
+    <title>Burp Server Dashboard</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="{{ url_for('bower.static', filename='bootswatch/slate/bootstrap.min.css') }}" rel="stylesheet">
+    {% if report -%}
+    <link href="{{ url_for('bower.static', filename='nvd3/build/nv.d3.min.css') }}" rel="stylesheet">
+    {% else -%}
+    <link href="{{ url_for('bower.static', filename='datatables/media/css/dataTables.bootstrap.min.css') }}" rel="stylesheet">
+    {% endif -%}
+    {% if tree -%}
+    <link href="{{ url_for('bower.static', filename='jquery.fancytree/dist/skin-bootstrap/ui.fancytree.min.css') }}" rel="stylesheet">
+    {% endif -%}
+    {% if settings -%}
+    <link href="{{ url_for('bower.static', filename='bootstrap-switch/dist/css/bootstrap3/bootstrap-switch.min.css') }}" rel="stylesheet">
+    <link href="{{ url_for('bower.static', filename='ui-select/dist/select.min.css') }}" rel="stylesheet">
+    {% endif -%}
+    {% if calendar -%}
+    <link href="{{ url_for('bower.static', filename='fullcalendar/dist/fullcalendar.min.css') }}" rel="stylesheet">
+    {% endif -%}
+
+    <!-- Custom styles for this template -->
+    <link href="{{ url_for('static', filename='dashboard.css') }}" rel="stylesheet">
+
+  </head>
+
+  <body ng-app="MainApp">
+
+    {% include "topbar.html" %}
+
+    <div class="container-fluid">
+			<div class="row" {% if settings %}ng-controller="ConfigCtrl"{% elif live %}ng-controller="LiveCtrl"{% endif %}>
+        {% if not live and not login and not about -%}
+        {% include "sidebar.html" %}
+        {% endif -%}
+        {% block body %}{% endblock %}
+      </div>
+    </div>
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="{{ url_for('bower.static', filename='jquery/dist/jquery.min.js') }}"></script>
+    <script src="{{ url_for('bower.static', filename='jquery-ui/jquery-ui.min.js') }}"></script>
+    <script src="{{ url_for('bower.static', filename='bootstrap/dist/js/bootstrap.min.js') }}"></script>
+    <!-- Typeadhead + Bloodhound Javascript
+    ================================================== -->
+    <script src="{{ url_for('bower.static', filename='typeahead.js/dist/typeahead.bundle.min.js') }}"></script>
+    {% if report -%}
+    <!-- d3 + nvd3 Javascript
+    ================================================== -->
+    <script src="{{ url_for('bower.static', filename='d3/d3.min.js') }}"></script>
+    <script src="{{ url_for('bower.static', filename='nvd3/build/nv.d3.min.js') }}"></script>
+    {% elif not calendar -%}
+    <!-- DataTables
+    ================================================== -->
+    <script src="{{ url_for('bower.static', filename='datatables/media/js/jquery.dataTables.min.js') }}"></script>
+    <script src="{{ url_for('bower.static', filename='datatables/media/js/dataTables.bootstrap.min.js') }}"></script>
+    <script src="{{ url_for('bower.static', filename='datatables-responsive/js/dataTables.responsive.js') }}"></script>
+    {% endif -%}
+    {% if tree -%}
+    <!-- Fancytree Javascript
+    ================================================== -->
+    <script src="{{ url_for('bower.static', filename='jquery.fancytree/dist/jquery.fancytree-all.min.js') }}"></script>
+    <!-- FileDownload Javascript
+    ================================================== -->
+    <script src="{{ url_for('bower.static', filename='jquery-file-download/src/Scripts/jquery.fileDownload.js') }}"></script>
+    {% endif -%}
+    {% if about or live or calendar or settings -%}
+    <!-- configuration angular views
+    ================================================== -->
+    <script src="{{ url_for('bower.static', filename='angular/angular.min.js') }}"></script>
+    <script src="{{ url_for('bower.static', filename='angular-route/angular-route.min.js') }}"></script>
+    <script src="{{ url_for('bower.static', filename='angular-sanitize/angular-sanitize.min.js') }}"></script>
+    <script src="{{ url_for('bower.static', filename='angular-resource/angular-resource.min.js') }}"></script>
+    <script src="{{ url_for('bower.static', filename='angular-animate/angular-animate.min.js') }}"></script>
+    {% endif -%}
+    {% if settings -%}
+    <!-- configuration panel Javascript
+    ================================================== -->
+    <script src="{{ url_for('bower.static', filename='lodash/dist/lodash.min.js') }}"></script>
+    <script src="{{ url_for('bower.static', filename='bootstrap-switch/dist/js/bootstrap-switch.min.js') }}"></script>
+    <script src="{{ url_for('bower.static', filename='angular-bootstrap-switch/dist/angular-bootstrap-switch.min.js') }}"></script>
+    <script src="{{ url_for('bower.static', filename='ui-select/dist/select.min.js') }}"></script>
+    <script src="{{ url_for('bower.static', filename='angular-strap/dist/angular-strap.min.js') }}"></script>
+    <script src="{{ url_for('bower.static', filename='angular-strap/dist/angular-strap.tpl.min.js') }}"></script>
+    <script src="{{ url_for('bower.static', filename='angular-onbeforeunload/build/angular-onbeforeunload.js') }}"></script>
+    {% endif -%}
+    {% if calendar -%}
+    <!-- calendar Javascript
+    ================================================== -->
+    <script src="{{ url_for('bower.static', filename='angular-bootstrap/ui-bootstrap.min.js') }}"></script>
+    <script src="{{ url_for('bower.static', filename='angular-bootstrap/ui-bootstrap-tpls.min.js') }}"></script>
+    <script src="{{ url_for('bower.static', filename='moment/min/moment.min.js') }}"></script>
+    <script src="{{ url_for('bower.static', filename='angular-ui-calendar/src/calendar.js') }}"></script>
+    <script src="{{ url_for('bower.static', filename='fullcalendar/dist/fullcalendar.min.js') }}"></script>
+    <script src="{{ url_for('bower.static', filename='fullcalendar/dist/gcal.js') }}"></script>
+    {% endif -%}
+    <script type="text/javascript">
+      {% include "gerard.js" %}
+    </script>
+    <!-- @DEMO@ -->
+  </body>
+</html>
