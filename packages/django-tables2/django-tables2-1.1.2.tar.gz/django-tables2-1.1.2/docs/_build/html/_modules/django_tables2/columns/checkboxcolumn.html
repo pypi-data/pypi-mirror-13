@@ -1,0 +1,168 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>django_tables2.columns.checkboxcolumn &mdash; django-tables2 1.0.6 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '1.0.6',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="django-tables2 1.0.6 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">django-tables2 1.0.6 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for django_tables2.columns.checkboxcolumn</h1><div class="highlight"><pre>
+<span class="c"># coding: utf-8</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">absolute_import</span><span class="p">,</span> <span class="n">unicode_literals</span>
+<span class="kn">from</span> <span class="nn">django.utils.safestring</span> <span class="kn">import</span> <span class="n">mark_safe</span>
+<span class="kn">from</span> <span class="nn">django_tables2.utils</span> <span class="kn">import</span> <span class="n">AttributeDict</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">from</span> <span class="nn">.base</span> <span class="kn">import</span> <span class="n">Column</span><span class="p">,</span> <span class="n">library</span>
+
+
+<span class="nd">@library.register</span>
+<div class="viewcode-block" id="CheckBoxColumn"><a class="viewcode-back" href="../../../pages/api-reference.html#django_tables2.columns.CheckBoxColumn">[docs]</a><span class="k">class</span> <span class="nc">CheckBoxColumn</span><span class="p">(</span><span class="n">Column</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A subclass of `.Column` that renders as a checkbox form input.</span>
+
+<span class="sd">    This column allows a user to *select* a set of rows. The selection</span>
+<span class="sd">    information can then be used to apply some operation (e.g. &quot;delete&quot;) onto</span>
+<span class="sd">    the set of objects that correspond to the selected rows.</span>
+
+<span class="sd">    The value that is extracted from the :term:`table data` for this column is</span>
+<span class="sd">    used as the value for the checkbox, i.e. ``&lt;input type=&quot;checkbox&quot;</span>
+<span class="sd">    value=&quot;...&quot; /&gt;``</span>
+
+<span class="sd">    This class implements some sensible defaults:</span>
+
+<span class="sd">    - HTML input&#39;s ``name`` attribute is the :term:`column name` (can override</span>
+<span class="sd">      via *attrs* argument).</span>
+<span class="sd">    - *orderable* defaults to `False`.</span>
+
+<span class="sd">    .. note::</span>
+
+<span class="sd">        You&#39;d expect that you could select multiple checkboxes in the rendered</span>
+<span class="sd">        table and then *do something* with that. This functionality isn&#39;t</span>
+<span class="sd">        implemented. If you want something to actually happen, you&#39;ll need to</span>
+<span class="sd">        implement that yourself.</span>
+
+<span class="sd">    In addition to *attrs* keys supported by `.Column`, the following are</span>
+<span class="sd">    available:</span>
+
+<span class="sd">    - *input*     -- ``&lt;input&gt;`` elements in both ``&lt;td&gt;`` and ``&lt;th&gt;``.</span>
+<span class="sd">    - *th__input* -- Replaces *input* attrs in header cells.</span>
+<span class="sd">    - *td__input* -- Replaces *input* attrs in body cells.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attrs</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="o">**</span><span class="n">extra</span><span class="p">):</span>
+        <span class="c"># For backwards compatibility, passing in a normal dict effectively</span>
+        <span class="c"># should assign attributes to the `&lt;input&gt;` tag.</span>
+        <span class="n">valid</span> <span class="o">=</span> <span class="nb">set</span><span class="p">((</span><span class="s">&quot;input&quot;</span><span class="p">,</span> <span class="s">&quot;th__input&quot;</span><span class="p">,</span> <span class="s">&quot;td__input&quot;</span><span class="p">,</span> <span class="s">&quot;th&quot;</span><span class="p">,</span> <span class="s">&quot;td&quot;</span><span class="p">,</span> <span class="s">&quot;cell&quot;</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">attrs</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">set</span><span class="p">(</span><span class="n">attrs</span><span class="p">)</span> <span class="o">&amp;</span> <span class="nb">set</span><span class="p">(</span><span class="n">valid</span><span class="p">):</span>
+            <span class="c"># if none of the keys in attrs are actually valid, assume it&#39;s some</span>
+            <span class="c"># old code that should be be interpreted as {&quot;td__input&quot;: ...}</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&#39;attrs keys must be one of </span><span class="si">%s</span><span class="s">, interpreting as {&quot;td__input&quot;: </span><span class="si">%s</span><span class="s">}&#39;</span>
+                          <span class="o">%</span> <span class="p">(</span><span class="s">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">valid</span><span class="p">),</span> <span class="n">attrs</span><span class="p">),</span> <span class="ne">DeprecationWarning</span><span class="p">)</span>
+            <span class="n">attrs</span> <span class="o">=</span> <span class="p">{</span><span class="s">&quot;td__input&quot;</span><span class="p">:</span> <span class="n">attrs</span><span class="p">}</span>
+        <span class="c"># This is done for backwards compatible too, there used to be a</span>
+        <span class="c"># ``header_attrs`` argument, but this has been deprecated. We&#39;ll</span>
+        <span class="c"># maintain it for a while by translating it into ``head.checkbox``.</span>
+        <span class="k">if</span> <span class="s">&quot;header_attrs&quot;</span> <span class="ow">in</span> <span class="n">extra</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&#39;header_attrs argument is deprecated, &#39;</span>
+                          <span class="s">&#39;use attrs={&quot;th__input&quot;: ...} instead&#39;</span><span class="p">,</span>
+                          <span class="ne">DeprecationWarning</span><span class="p">)</span>
+            <span class="n">attrs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s">&#39;th__input&#39;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">extra</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">&#39;header_attrs&#39;</span><span class="p">))</span>
+
+        <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;orderable&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span> <span class="s">&#39;attrs&#39;</span><span class="p">:</span> <span class="n">attrs</span><span class="p">}</span>
+        <span class="n">kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">extra</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">CheckBoxColumn</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">header</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">default</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="s">&#39;checkbox&#39;</span><span class="p">}</span>
+        <span class="n">general</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;input&#39;</span><span class="p">)</span>
+        <span class="n">specific</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;th__input&#39;</span><span class="p">)</span>
+        <span class="n">attrs</span> <span class="o">=</span> <span class="n">AttributeDict</span><span class="p">(</span><span class="n">default</span><span class="p">,</span> <span class="o">**</span><span class="p">(</span><span class="n">specific</span> <span class="ow">or</span> <span class="n">general</span> <span class="ow">or</span> <span class="p">{}))</span>
+        <span class="k">return</span> <span class="n">mark_safe</span><span class="p">(</span><span class="s">&#39;&lt;input </span><span class="si">%s</span><span class="s">/&gt;&#39;</span> <span class="o">%</span> <span class="n">attrs</span><span class="o">.</span><span class="n">as_html</span><span class="p">())</span>
+
+    <span class="k">def</span> <span class="nf">render</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">bound_column</span><span class="p">):</span>  <span class="c"># pylint: disable=W0221</span>
+        <span class="n">default</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="s">&#39;checkbox&#39;</span><span class="p">,</span>
+            <span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="n">bound_column</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+            <span class="s">&#39;value&#39;</span><span class="p">:</span> <span class="n">value</span>
+        <span class="p">}</span>
+        <span class="n">general</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;input&#39;</span><span class="p">)</span>
+        <span class="n">specific</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;td__input&#39;</span><span class="p">)</span>
+        <span class="n">attrs</span> <span class="o">=</span> <span class="n">AttributeDict</span><span class="p">(</span><span class="n">default</span><span class="p">,</span> <span class="o">**</span><span class="p">(</span><span class="n">specific</span> <span class="ow">or</span> <span class="n">general</span> <span class="ow">or</span> <span class="p">{}))</span>
+        <span class="k">return</span> <span class="n">mark_safe</span><span class="p">(</span><span class="s">&#39;&lt;input </span><span class="si">%s</span><span class="s">/&gt;&#39;</span> <span class="o">%</span> <span class="n">attrs</span><span class="o">.</span><span class="n">as_html</span><span class="p">())</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">django-tables2 1.0.6 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright .
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.3.
+    </div>
+  </body>
+</html>
