@@ -1,0 +1,11 @@
+__version__ = "0.1.17"
+__git_commiter_name__ = "Guy Rozendorn"
+__git_commiter_email__ = "guy@rzn.co.il"
+__git_branch__ = '(HEAD detached at v0.1.17)'
+__git_remote_tracking_branch__ = '(No remote tracking)'
+__git_remote_url__ = '(Not remote tracking)'
+__git_head_hash__ = 'b81fdb0b4208c53997b8593fbac22dd7305d09c9'
+__git_head_subject__ = 'Finished Release v0.1.17'
+__git_head_message__ = '* develop:\n  update buildout.cfg\n  pass sslContext'
+__git_dirty_diff__ = ''
+__git_commit_date__ = '2016-02-15 15:46:47'
