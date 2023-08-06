@@ -1,0 +1,130 @@
+Metadata-Version: 2.0
+Name: aioes
+Version: 0.3.0
+Summary: Elasticsearch integration with asyncio.
+Home-page: http://aioes.readthedocs.org
+Author: Andrew Svetlov
+Author-email: andrew.svetlov@gmail.com
+License: Apache 2
+Download-URL: https://pypi.python.org/pypi/aioes
+Platform: POSIX
+Classifier: License :: OSI Approved :: BSD License
+Classifier: Intended Audience :: Developers
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.4
+Classifier: Programming Language :: Python :: 3.5
+Classifier: Operating System :: POSIX
+Classifier: Operating System :: MacOS :: MacOS X
+Classifier: Environment :: Web Environment
+Classifier: Development Status :: 4 - Beta
+Classifier: Topic :: Database
+Classifier: Topic :: Database :: Front-Ends
+Requires-Dist: aiohttp (>=0.17.0)
+
+asyncio client library for elasticsearch
+=========================================
+
+**aioes** is a asyncio_ compatible library for working with ElasticSearch_
+
+Documentation
+-------------
+
+Read **aioes** documentation on Read The Docs: http://aioes.readthedocs.org/
+
+Example
+-------
+
+::
+
+    import asyncio
+    from aioes import Elasticsearch
+
+    @asyncio.coroutine
+    def go():
+        es = Elasticsearch(['localhost:9200'])
+        ret = yield from es.create(index="my-index",
+                                   doc_type="test-type",
+                                   id=42,
+                                   body={"str": "data",
+                                         "int": 1})
+        assert (ret == {'_id': '42',
+                        '_index': 'my-index',
+                        '_type': 'test-type',
+                        '_version': 1,
+                        'ok': True})
+
+        answer = yield from es.get(index="my-index",
+                                   doc_type="test-type",
+                                   id=42)
+        assert answer['_source'] == {'str': 'data', 'int': 1}
+
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(go())
+
+
+Requirements
+------------
+
+* Python_ 3.3+
+* asyncio_ or Python 3.4+
+* aiohttp_ 0.9.1+
+
+
+Tests
+-----
+
+Make sure you have an instance of elastic-search running on port 9200
+before executing the tests.
+
+In order for all tests to work you need to add the following lines in the
+`config/elasticsearch.yml` configuration file:
+
+Enable groovy scripts::
+
+  script.groovy.sandbox.enabled: true
+
+Set a repository path::
+
+  path.repo: ["/tmp"]
+
+
+The test suite uses `nose`, to execute::
+
+  nosetests tests
+
+
+License
+-------
+
+aioes is offered under the BSD license.
+
+.. _python: https://www.python.org/downloads/
+.. _asyncio: https://pypi.python.org/pypi/asyncio
+.. _aiohttp: https://pypi.python.org/pypi/aiohttp
+.. _ElasticSearch: http://www.elasticsearch.org/
+
+CHANGES
+-------
+
+0.3.0 (2016-01-27)
+^^^^^^^^^^^^^^^^^^
+
+* Use aiohttp.ClientSession internally #36
+
+0.2.0 (2015-10-08)
+^^^^^^^^^^^^^^^^^^
+
+* Make compatible with Elasticsearch 1.7
+
+* Support Python 3.5
+
+* Drop Python 3.3 support
+
+* Relicense under Apache 2
+
+
+0.1.0 (2014-10-04)
+^^^^^^^^^^^^^^^^^^
+
+* Initial release
+
