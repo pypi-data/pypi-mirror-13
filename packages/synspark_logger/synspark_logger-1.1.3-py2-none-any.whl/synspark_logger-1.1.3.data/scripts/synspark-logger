@@ -1,0 +1,206 @@
+#!python
+# emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: t -*-
+# vi: set ft=python sts=4 ts=4 sw=4 noet :
+import ConfigParser
+import logging
+import os
+import signal
+import sys
+
+import synspark_logger
+from synspark_logger import api
+from synspark_logger.filter import Filter
+from synspark_logger.output import log
+
+
+def get_config_list(config, section, option_name):
+    """Get an list form config file
+
+    :param config: RawConfigParser object
+    :param section: config section name
+    :param option_name: config value name
+    :return: clean list in config
+    """
+    if not config.has_option(section, option_name):
+        return []
+
+    values_str = config.get(section, option_name)
+    values = values_str.split('\n') if '\n' in values_str else \
+        values_str.split(',')
+    return [v.lstrip() for v in values if v.lstrip()]
+
+
+def __signal_handler(signum, frame):
+    """Receive system signal."""
+    log.warning('Caught signal %d. Exiting' % signum)
+    synspark_logger.stop()
+    sys.exit(-1)
+
+
+if __name__ == '__main__':
+    signal.signal(signal.SIGTERM, __signal_handler)
+    signal.signal(signal.SIGINT, __signal_handler)
+
+    # default value
+    log.setLevel(logging.ERROR)
+    config_path = os.path.join('etc', 'synspark_logger', 'synspark_logger.cfg')
+    if not os.path.exists(config_path):
+        # not in /etc => search in python env (/usr/local, virtualenv, ...)
+        path_sep = os.path.pathsep
+        path = os.sep.join(
+            os.environ.get('PATH').split(path_sep)[0]  # get first env path
+            .split(os.sep)[:-1]  # ignore bin directory
+        )
+
+        if not os.path.exists(os.path.join(path, config_path)):
+            log.error('Config file not found!')
+            sys.exit(-1)
+
+        config_path = os.path.join(path, config_path)
+
+    # exec command arg
+    for arg in sys.argv[1:]:
+        # set verbosity level
+        if arg.startswith('-v'):
+            nb = arg.count('v') - 1 if arg.count('v') <= 3 else 2
+            level = (logging.WARNING, logging.INFO, logging.DEBUG)[nb]
+            log.setLevel(level)
+            print('set log level to %s' % logging.getLevelName(level))
+
+        # set config path
+        elif arg.startswith('-c='):
+            config_path = arg[3:]
+            print('use config file located at %s' % config_path)
+
+        # set new api key
+        elif arg.startswith('-k='):
+            api.key = arg[3:]
+
+        # set test url (dev test)
+        elif arg.startswith('-u='):
+            api.url = arg[3:]
+            print('use api url: %s' % api.url)
+
+        # set retry dir path
+        elif arg.startswith('-r='):
+            api.retry_dir_path = arg[3:]
+            print('use retry dir located at %s' % api.retry_dir_path)
+
+        # install/uninstall deamon
+        elif arg in ('install_daemon', 'uninstall_daemon'):
+            from synspark_logger.install import install_daemon, uninstall_daemon
+
+            # edit defaul log value
+            if logging.ERROR == log.getEffectiveLevel():
+                log.setLevel(logging.INFO)
+
+            install_daemon() if arg.startswith('instal') else uninstall_daemon()
+            sys.exit(0)
+
+        # print help
+        else:
+            if not arg.startswith('-h'):
+                print('Unknown %s parameter' % arg)
+            print('Usage: %s [OPTIONS]' % sys.argv[0])
+            print('')
+            print('Synspark logge send security logs to Synspark platform.')
+            print('Version: %s' % synspark_logger.__version__)
+            print('')
+            print('Options:')
+            print('    -c=<FILE>            change configuration path file')
+            print('    -k=<KEY>             save new api key')
+            print('    -r=<DIR_PATH>        retry dir path')
+            print('    -v                   set verbosity to warning')
+            print('    -vv                  set verbosity to information')
+            print('    -vvv                 set verbosity to debug')
+            print('    -h                   display this help message')
+            print('    install_daemon       install system deamon requirement')
+            print('    uninstall_daemon     uninstall system deamon requirement')
+            sys.exit(0)
+
+    # launch
+    print('Run ...\n\n')
+
+    # config load
+    if not os.path.isfile(config_path):
+        log.critical('config file not found at: %s' % config_path)
+        sys.exit(1)
+
+    config = ConfigParser.RawConfigParser()
+    config.read(config_path)
+    api.max_retry = config.get('general', 'max_retry')
+
+    # save new api key value
+    if api.key:
+        print('set new api key %s' % api.key)
+        config.set('general', 'api_key', api.key)
+        with open(config_path, 'w') as f:
+            config.write(f)
+        print('Api key saved, exit ...')
+        sys.exit(0)
+    else:
+        api.key = config.get('general', 'api_key')
+
+    # set retry dir path
+    if not api.retry_dir_path:
+        api.retry_dir_path = config.get('general', 'retry_dir_path')
+
+    if api.key and 'API' in api.key:
+        log.critical('api_key need to set in %s' % config_path)
+        sys.exit(2)
+
+    # disable no used backend
+    section_backend = [s for s in config.sections() if
+                       config.has_option(s, 'backend')]
+    active_backend = set()
+    for section in section_backend:
+        for backend in get_config_list(config, section, 'backend'):
+            active_backend.add(backend)
+
+    for backend_name in list(synspark_logger.backend):
+        if backend_name not in active_backend:
+            del(synspark_logger.backend[backend_name])
+            log.debug('disable "%s" backend (no in config file: %s)' % (
+                backend_name, config_path
+            ))
+
+    # init synspark_logger module
+    synspark_logger.init()
+
+    # load config
+    for section in section_backend:
+        # create filter
+        filter = Filter(section)
+
+        # filter: nimimal criticity
+        if config.has_option(section, 'min_criticity'):
+            filter.set_min_criticity(config.get(section, 'min_criticity'))
+
+        # filter: syslog facility
+        syslog_facility = get_config_list(config, section, 'syslog_facility')
+        filter.add_syslog_facility(*syslog_facility)
+
+        # filter: message rules
+        for filter_line in get_config_list(config, section, 'filter'):
+            filter.add_message_rule(filter_line)
+
+        # send config to active backend
+        for backend_name in get_config_list(config, section, 'backend'):
+            backend = synspark_logger.backend.get(backend_name)
+
+            if not backend:
+                log.error('backend "%s" not found (conf file section "%s")' % (
+                    backend_name, section
+                ))
+                continue
+
+            if 'files' == backend_name:
+                # add paths to watcher
+                for path in get_config_list(config, section, 'paths'):
+                    backend.watcher_add(path, filter=filter)
+
+            elif 'systemd' == backend_name:
+                backend.add_filter(filter)
+
+    # start synspark_logger module
+    synspark_logger.start()
