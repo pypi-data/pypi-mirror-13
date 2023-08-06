@@ -1,0 +1,509 @@
+{% load i18n penates %}<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+        "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+{#https://developer.apple.com/library/ios/featuredarticles/iPhoneConfigurationProfileRef/Introduction/Introduction.html#}
+<plist version="1.0">
+    <dict>
+        <key>PayloadContent</key>
+        <array>
+            <dict>
+                <key>PayloadDescription</key>
+                <string>{% trans 'Configure the security of the configuration profile.' %}</string>
+                <key>PayloadDisplayName</key>
+                <string>{% trans 'Security profile' %}</string>
+                <key>PayloadIdentifier</key>
+                <string>{{ inverted_domain }}.ProfileSecurity</string>
+                <key>PayloadOrganization</key>
+                <string>{{ domain }}</string>
+                <key>PayloadType</key>
+                <string>com.apple.profileRemovalPassword</string>
+                <key>PayloadUUID</key>
+                <string>{% generate_uuid %}</string>
+                <key>PayloadVersion</key>
+                <integer>1</integer>
+                <key>RemovalPassword</key>
+                <string>{{ password }}</string>
+            </dict>
+
+            {% for server in ldap_servers %}
+                <dict>
+                    <key>LDAPAccountDescription</key>
+                    <string>{% trans 'LDAP account' %} {{ server.hostname }}</string>
+                    <key>LDAPAccountHostName</key>
+                    <string>{{ server.hostname }}:{{ server.port }}</string>
+                    <key>LDAPAccountUserName</key>
+                    <string>uid={{ username }},ou=Users,{{ ldap_base_dn }}</string>
+                    <key>LDAPAccountPassword</key>
+                    <string>{{ password }}</string>
+                    <key>LDAPAccountUseSSL</key>
+                    {% if server.encryption == 'tls' %}
+                        <true/>{% else %}<false/>{% endif %}
+                    <key>LDAPSearchSettings</key>
+                    <array>
+                        <dict>
+                            <key>LDAPSearchSettingDescription</key>
+                            <string>{% trans 'My search' %}</string>
+                            <key>LDAPSearchSettingScope</key>
+                            <string>LDAPSearchSettingScopeSubtree</string>
+                            <key>LDAPSearchSettingSearchBase</key>
+                            <string>ou=Users,{{ ldap_base_dn }}</string>
+                        </dict>
+                    </array>
+                    <key>PayloadDescription</key>
+                    <string>{% trans 'Configure a LDAP account.' %}</string>
+                    <key>PayloadDisplayName</key>
+                    <string>{% trans 'LDAP' %}</string>
+                    <key>PayloadIdentifier</key>
+                    <string>{{ inverted_domain }}.ldap{{ forloop.counter }}</string>
+                    <key>PayloadOrganization</key>
+                    <string>{{ organization }}</string>
+                    <key>PayloadType</key>
+                    <string>com.apple.ldap.account</string>
+                    <key>PayloadUUID</key>
+                    <string>{% generate_uuid %}</string>
+                    <key>PayloadVersion</key>
+                    <integer>1</integer>
+                </dict>
+            {% endfor %}
+
+            {% for server in caldav_servers %}
+                <dict>
+                    <key>CalDAVAccountDescription</key>
+                    <string>{% trans 'Calendar server' %}</string>
+                    <key>CalDAVHostName</key>
+                    <string>{{ server.hostname }}</string>
+                    <key>CalDAVPassword</key>
+                    <string>{{ password }}</string>
+                    <key>CalDAVPort</key>
+                    <integer>{{ server.port }}</integer>
+                    <key>CalDAVUseSSL</key>
+                    {% if server.user_ssl %}
+                        <true/>{% else %}<false/>{% endif %}
+                    <key>CalDAVUsername</key>
+                    <string>{{ username }}</string>
+                    <key>PayloadDescription</key>
+                    <string>{% trans 'Configure a CalDAV account' %}</string>
+                    <key>PayloadDisplayName</key>
+                    <string>CalDAV ({{ server.hostname }})</string>
+                    <key>PayloadIdentifier</key>
+                    <string>{{ inverted_domain }}.caldav{{ forloop.counter }}</string>
+                    <key>PayloadOrganization</key>
+                    <string>{{ organization }}</string>
+                    <key>PayloadType</key>
+                    <string>com.apple.caldav.account</string>
+                    <key>PayloadUUID</key>
+                    <string>{% generate_uuid %}</string>
+                    <key>PayloadVersion</key>
+                    <integer>1</integer>
+                </dict>
+            {% endfor %}
+
+            {% for server in carddav_servers %}
+                <dict>
+                    <key>CardDAVAccountDescription</key>
+                    <string>Mon compte CardDAV</string>
+                    <key>CardDAVHostName</key>
+                    <string>{{ server.hostname }}</string>
+                    <key>CardDAVPassword</key>
+                    <string>{{ password }}</string>
+                    <key>CardDAVPort</key>
+                    <integer>{{ server.port }}</integer>
+                    <key>CardDAVUseSSL</key>
+                    {% if server.user_ssl %}
+                        <true/>{% else %}<false/>{% endif %}
+                    <key>CardDAVUsername</key>
+                    <string>{{ username }}</string>
+                    <key>PayloadDescription</key>
+                    <string>{% trans 'Configure a CardDAV account' %}</string>
+                    <key>PayloadDisplayName</key>
+                    <string>CardDAV</string>
+                    <key>PayloadIdentifier</key>
+                    <string>{{ inverted_domain }}.carddav{{ forloop.counter }}</string>
+                    <key>PayloadOrganization</key>
+                    <string>{{ organization }}</string>
+                    <key>PayloadType</key>
+                    <string>com.apple.caldav.account</string>
+                    <key>PayloadUUID</key>
+                    <string>{% generate_uuid %}</string>
+                    <key>PayloadVersion</key>
+                    <integer>1</integer>
+                </dict>
+            {% endfor %}
+
+            {% for server in http_proxies %}
+                <dict>
+                    <key>ProxyType</key>
+                    <string>manual</string>
+                    <key>ProxyServer</key>
+                    <string>{{ server.hostname }}</string>
+                    <key>ProxyPort</key>
+                    <string>{{ server.port }}</string>
+                    <key>ProxyPassword</key>
+                    <string>{{ password }}</string>
+                    <key>ProxyUsername</key>
+                    <string>{{ username }}</string>
+                    <key>PayloadDescription</key>
+                    <string>{% trans 'Configure a HTTP proxy' %}</string>
+                    <key>PayloadDisplayName</key>
+                    <string>HTTP Proxy ({{ server.hostname }})</string>
+                    <key>PayloadIdentifier</key>
+                    <string>{{ inverted_domain }}.proxy{{ forloop.counter }}</string>
+                    <key>PayloadOrganization</key>
+                    <string>{{ organization }}</string>
+                    <key>PayloadType</key>
+                    <string>com.apple.proxy.http.global</string>
+                    <key>PayloadUUID</key>
+                    <string>{% generate_uuid %}</string>
+                    <key>PayloadVersion</key>
+                    <integer>1</integer>
+                </dict>
+            {% endfor %}
+
+            <dict>
+                <key>PayloadCertificateFileName</key>
+                <string>CA_cert.cer</string>
+                <key>PayloadContent</key>
+                <data>{{ ca_cert_path|base64_file }}</data>
+                <key>PayloadDescription</key>
+                <string>{% trans 'Root certificate' %}</string>
+                <key>PayloadDisplayName</key>
+                <string>{{ domain }}</string>
+                <key>PayloadIdentifier</key>
+                <string>{{ inverted_domain }}.reference</string>
+                <key>PayloadOrganization</key>
+                <string>{{ organization }}</string>
+                <key>PayloadType</key>
+                <string>com.apple.security.root</string>
+                <key>PayloadUUID</key>
+                <string>{% generate_uuid %}</string>
+                <key>PayloadVersion</key>
+                <integer>1</integer>
+            </dict>
+            <dict>
+                <key>PayloadCertificateFileName</key>
+                <string>hosts_cert.cer</string>
+                <key>PayloadContent</key>
+                <data>{{ hosts_crt_path|base64_file }}</data>
+                <key>PayloadDescription</key>
+                <string>{% trans 'Root certificate for hosts' %}</string>
+                <key>PayloadDisplayName</key>
+                <string>{{ domain }}.hosts</string>
+                <key>PayloadIdentifier</key>
+                <string>{{ inverted_domain }}.reference.hosts</string>
+                <key>PayloadOrganization</key>
+                <string>{{ organization }}</string>
+                <key>PayloadType</key>
+                <string>com.apple.security.root</string>
+                <key>PayloadUUID</key>
+                <string>{% generate_uuid %}</string>
+                <key>PayloadVersion</key>
+                <integer>1</integer>
+            </dict>
+            <dict>
+                <key>PayloadCertificateFileName</key>
+                <string>users_cert.cer</string>
+                <key>PayloadContent</key>
+                <data>{{ users_crt_path|base64_file }}</data>
+                <key>PayloadDescription</key>
+                <string>{% trans 'Root certificate for users' %}</string>
+                <key>PayloadDisplayName</key>
+                <string>{{ domain }}.users</string>
+                <key>PayloadIdentifier</key>
+                <string>{{ inverted_domain }}.reference.users</string>
+                <key>PayloadOrganization</key>
+                <string>{{ organization }}</string>
+                <key>PayloadType</key>
+                <string>com.apple.security.root</string>
+                <key>PayloadUUID</key>
+                <string>{% generate_uuid %}</string>
+                <key>PayloadVersion</key>
+                <integer>1</integer>
+            </dict>
+            <dict>
+                <key>PayloadCertificateFileName</key>
+                <string>services_cert.cer</string>
+                <key>PayloadContent</key>
+                <data>{{ services_crt_path|base64_file }}</data>
+                <key>PayloadDescription</key>
+                <string>{% trans 'Root certificate for services' %}</string>
+                <key>PayloadDisplayName</key>
+                <string>{{ domain }}.services</string>
+                <key>PayloadIdentifier</key>
+                <string>{{ inverted_domain }}.reference.services</string>
+                <key>PayloadOrganization</key>
+                <string>{{ organization }}</string>
+                <key>PayloadType</key>
+                <string>com.apple.security.root</string>
+                <key>PayloadUUID</key>
+                <string>{% generate_uuid %}</string>
+                <key>PayloadVersion</key>
+                <integer>1</integer>
+            </dict>
+            {% for certificate in p12_certificates %}
+                <dict>
+                    <key>Password</key>
+                    <string>{{ password }}</string>
+                    <key>PayloadCertificateFileName</key>
+                    <string>{{ username }}.p12</string>
+                    <key>PayloadContent</key>
+                    <data>{{ certificate.0|base64_file }}</data>
+                    <key>PayloadDescription</key>
+                    <string>User certificate {{ certificate.1 }}</string>
+                    <key>PayloadDisplayName</key>
+                    <string>{% trans 'Personal certificate' %} {{ username }}@{{ domain }}</string>
+                    <key>PayloadIdentifier</key>
+                    <string>{{ inverted_domain }}.reference.{{ certificate.1 }}</string>
+                    <key>PayloadOrganization</key>
+                    <string>{{ organization }}</string>
+                    <key>PayloadType</key>
+                    <string>com.apple.security.pkcs12</string>
+                    <key>PayloadUUID</key>
+                    <string>{% generate_uuid %}</string>
+                    <key>PayloadVersion</key>
+                    <integer>1</integer>
+                </dict>
+            {% endfor %}
+            <dict>
+                <key>FullName</key>
+                <string>{{ user.display_name }}</string>
+                <key>EmailAddress</key>
+                <string>{{ user.mail }}</string>
+                <key>UserName</key>
+                <string>{{ username }}</string>
+                <key>Password</key>
+                <string>{{ password }}</string>
+                <key>PayloadDescription</key>
+                <string>User identification</string>
+                <key>PayloadDisplayName</key>
+                <string>{% trans 'Personal identification' %} {{ username }}@{{ domain }}</string>
+                <key>PayloadIdentifier</key>
+                <string>{{ inverted_domain }}.identification</string>
+                <key>PayloadOrganization</key>
+                <string>{{ organization }}</string>
+                <key>PayloadType</key>
+                <string>com.apple.configurationprofile.identification</string>
+                <key>PayloadUUID</key>
+                <string>{% generate_uuid %}</string>
+                <key>PayloadVersion</key>
+                <integer>1</integer>
+            </dict>
+
+            {% for service in email_servers %}
+                <dict>
+                    <key>EmailAccountDescription</key>
+                    <string>{{ username }}@{{ domain }}</string>
+                    <key>EmailAccountName</key>
+                    <string>{% trans 'base e-mail account' %}</string>
+                    <key>EmailAccountType</key>
+                    <string>EmailTypeIMAP</string>
+                    <key>EmailAddress</key>
+                    <string>{{ username }}@{{ domain }}</string>
+                    {% if service.imap %}
+                        <key>IncomingMailServerAuthentication</key>
+                        <string>EmailAuthPassword</string>
+                        <key>IncomingMailServerHostName</key>
+                        <string>{{ service.imap.hostname }}</string>
+                        <key>IncomingMailServerPortNumber</key>
+                        <integer>{{ service.imap.port }}</integer>
+                        <key>IncomingMailServerUseSSL</key>
+                        {% if service.imap.encryption == 'tls' %}
+                            <true/>{% else %}<false/>{% endif %}
+                        <key>IncomingMailServerUsername</key>
+                        <string>{{ username }}</string>
+                        <key>IncomingPassword</key>
+                        <string>{{ password }}</string>
+                    {% endif %}
+                    {% if service.smtp %}
+                        <key>OutgoingMailServerAuthentication</key>
+                        <string>EmailAuthPassword</string>
+                        <key>OutgoingMailServerHostName</key>
+                        <string>{{ service.smtp.hostname }}</string>
+                        <key>OutgoingMailServerPortNumber</key>
+                        <integer>{{ service.smtp.port }}</integer>
+                        <key>OutgoingMailServerUseSSL</key>
+                        {% if service.smtp.encryption == 'tls' %}
+                            <true/>{% else %}<false/>{% endif %}
+                        <key>OutgoingMailServerUsername</key>
+                        <string>{{ username }}</string>
+                        <key>OutgoingPassword</key>
+                        <string>{{ password }}</string>
+                        <key>OutgoingPasswordSameAsIncomingPassword</key>
+                        <true/>
+                    {% endif %}
+                    <key>PayloadDescription</key>
+                    <string>{% trans 'Configure an email account' %}</string>
+                    <key>PayloadDisplayName</key>
+                    <string>{% trans 'Mail account' %}</string>
+                    <key>PayloadIdentifier</key>
+                    <string>{{ inverted_domain }}.email{{ forloop.counter }}</string>
+                    <key>PayloadOrganization</key>
+                    <string>{{ organization }}</string>
+                    <key>PayloadType</key>
+                    <string>com.apple.mail.managed</string>
+                    <key>PayloadUUID</key>
+                    <string>{% generate_uuid %}</string>
+                    <key>PayloadVersion</key>
+                    <integer>1</integer>
+                    <key>PreventAppSheet</key>
+                    <true/>
+                    <key>PreventMove</key>
+                    <false/>
+                    <key>SMIMEEnabled</key>
+                    <true/>
+                </dict>
+            {% endfor %}
+            <dict>
+                <key>Enable</key>
+                <string>On</string>
+                <key>Defer</key>
+                <true/>
+                <key>UserEntersMissingInfo</key>
+                <true/>
+                <key>UseRecoveryKey</key>
+                <true/>
+                <key>ShowRecoveryKey</key>
+                <true/>
+                <key>Certificate</key>
+                <string>{{ hosts_crt_path|base64_file }}</string>
+                <key>Username</key>
+                <string>{{ username }}</string>
+                <key>Password</key>
+                <string>{{ password }}</string>
+
+                <key>PayloadDescription</key>
+                <string>{% trans 'Filevault 2 settings' %}</string>
+                <key>PayloadDisplayName</key>
+                <string>Filevault 2 on {{ domain }}</string>
+                <key>PayloadIdentifier</key>
+                <string>{{ inverted_domain }}.filevault2</string>
+                <key>PayloadOrganization</key>
+                <string>{{ organization }}</string>
+                <key>PayloadType</key>
+                <string>com.apple.MCX.FileVault2</string>
+                <key>PayloadUUID</key>
+                <string>{% generate_uuid %}</string>
+                <key>PayloadVersion</key>
+                <integer>1</integer>
+            </dict>
+
+{#            <dict>#}
+{#                <key>PayloadDescription</key>#}
+{#                <string>Configure les abonnements calendriers</string>#}
+{#                <key>PayloadDisplayName</key>#}
+{#                <string>Calendrier auquel vous Ãªtes abonnÃ© (My Subscribed Calendar)</string>#}
+{#                <key>PayloadIdentifier</key>#}
+{#                <string>test.example.org.CalSub</string>#}
+{#                <key>PayloadOrganization</key>#}
+{#                <string>example.org</string>#}
+{#                <key>PayloadType</key>#}
+{#                <string>com.apple.subscribedcalendar.account</string>#}
+{#                <key>PayloadUUID</key>#}
+{#                <string>0AC6F0A6-ED5C-4C93-9725-560B49F8EB07</string>#}
+{#                <key>PayloadVersion</key>#}
+{#                <integer>1</integer>#}
+{#                <key>SubCalAccountDescription</key>#}
+{#                <string>My Subscribed Calendar</string>#}
+{#                <key>SubCalAccountHostName</key>#}
+{#                <string>https://calendar.test.example.org</string>#}
+{#                <key>SubCalAccountPassword</key>#}
+{#                <string>password</string>#}
+{#                <key>SubCalAccountUseSSL</key>#}
+{#                <true/>#}
+{#                <key>SubCalAccountUsername</key>#}
+{#                <string>login</string>#}
+{#            </dict>#}
+{#            <dict>#}
+{#                <key>EAP</key>#}
+{#                <dict/>#}
+{#                <key>IPSec</key>#}
+{#                <dict>#}
+{#                    <key>AuthenticationMethod</key>#}
+{#                    <string>SharedSecret</string>#}
+{#                    <key>SharedSecret</key>#}
+{#                    <data>#}
+{#                        c2hhcmVkX3NlY3JldA==#}
+{#                    </data>#}
+{#                </dict>#}
+{#                <key>IPv4</key>#}
+{#                <dict>#}
+{#                    <key>OverridePrimary</key>#}
+{#                    <integer>1</integer>#}
+{#                </dict>#}
+{#                <key>PPP</key>#}
+{#                <dict>#}
+{#                    <key>AuthName</key>#}
+{#                    <string>user_account</string>#}
+{#                    <key>CommRemoteAddress</key>#}
+{#                    <string>vpn01.test.example.org</string>#}
+{#                </dict>#}
+{#                <key>PayloadDescription</key>#}
+{#                <string>Configure les rÃ©glages VPN, y compris lâauthentification.</string>#}
+{#                <key>PayloadDisplayName</key>#}
+{#                <string>VPN (VPN example.org)</string>#}
+{#                <key>PayloadIdentifier</key>#}
+{#                <string>test.example.org.VPN</string>#}
+{#                <key>PayloadOrganization</key>#}
+{#                <string>example.org</string>#}
+{#                <key>PayloadType</key>#}
+{#                <string>com.apple.vpn.managed</string>#}
+{#                <key>PayloadUUID</key>#}
+{#                <string>98D65B3C-A5DE-4438-B9F2-D617E52E7404</string>#}
+{#                <key>PayloadVersion</key>#}
+{#                <integer>1</integer>#}
+{#                <key>Proxies</key>#}
+{#                <dict/>#}
+{#                <key>UserDefinedName</key>#}
+{#                <string>VPN example.org</string>#}
+{#                <key>VPNType</key>#}
+{#                <string>L2TP</string>#}
+{#            </dict>#}
+            <dict>
+                <key>PayloadType</key>
+                <string>com.apple.sso</string>
+                <key>PayloadVersion</key>
+                <integer>1</integer>
+                <key>PayloadIdentifier</key>
+                <string>{{ inverted_domain }}.sso.kerberos</string>
+                <key>PayloadUUID</key>
+                <string>{% generate_uuid %}</string>
+                <key>PayloadDisplayName</key>
+                <string>{% trans 'SSO profile' %}</string>
+                <key>PayloadDescription</key>
+                <string>{% trans 'Configures Kerberos Single Sign On.' %}</string>
+                <key>PayloadOrganization</key>
+                <string>{{ organization }}</string>
+                <key>Name</key>
+                <string>{% trans 'Kerberos configuration' %}</string>
+                <key>Kerberos</key>
+                <dict>
+                    <key>Realm</key>
+                    <string>{{ realm }}</string>
+                    <key>URLPrefixMatches</key>
+                    <array>
+                        {% for kerberos_prefix in kerberos_prefixes %}<string>{{ kerberos_prefix }}</string>
+                        {% endfor %}
+                    </array>
+                    <key>AppIdentifierMatches</key>
+                    <array>
+                        <string>com.apple.mobilesafari</string>
+                    </array>
+                </dict>
+            </dict>
+        </array>
+        <key>PayloadDescription</key>
+        <string>{% trans 'Default profile' %}</string>
+        <key>PayloadDisplayName</key>
+        <string>{% trans 'Profile' %} {{ username }}@{{ domain }}</string>
+        <key>PayloadIdentifier</key>
+        <string>{{ domain }}</string>
+        <key>PayloadOrganization</key>
+        <string>{{ organization }}</string>
+        <key>PayloadRemovalDisallowed</key>
+        <true/>
+        <key>PayloadType</key>
+        <string>Configuration</string>
+        <key>PayloadUUID</key>
+        <string>{% generate_uuid %}</string>
+        <key>PayloadVersion</key>
+        <integer>1</integer>
+    </dict>
+</plist>
