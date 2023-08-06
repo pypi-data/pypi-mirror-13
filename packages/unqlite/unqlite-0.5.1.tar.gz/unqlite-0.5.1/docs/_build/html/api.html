@@ -1,0 +1,1213 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>API Documentation &mdash; unqlite-python 0.2.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.2.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="unqlite-python 0.2.0 documentation" href="index.html" />
+    <link rel="prev" title="Quick-start" href="quickstart.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="quickstart.html" title="Quick-start"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">unqlite-python 0.2.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="api-documentation">
+<span id="api"></span><h1>API Documentation<a class="headerlink" href="#api-documentation" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="UnQLite">
+<em class="property">class </em><code class="descname">UnQLite</code><span class="sig-paren">(</span><em>[database=':mem:'[, flags=UNQLITE_OPEN_CREATE[, open_database=True]]</em><span class="sig-paren">)</span><a class="headerlink" href="#UnQLite" title="Permalink to this definition">¶</a></dt>
+<dd><p>The <a class="reference internal" href="#UnQLite" title="UnQLite"><code class="xref py py-class docutils literal"><span class="pre">UnQLite</span></code></a> object provides a pythonic interface for interacting
+with <a class="reference external" href="http://unqlite.symisc.net/">UnQLite databases</a>. UnQLite is a lightweight,
+embedded NoSQL database and JSON document store.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>database</strong> (<em>str</em>) &#8211; The path to the database file.</li>
+<li><strong>flags</strong> (<em>int</em>) &#8211; How the database file should be opened.</li>
+<li><strong>open_database</strong> (<em>bool</em>) &#8211; When set to <code class="docutils literal"><span class="pre">True</span></code>, the database will be opened automatically when the class is instantiated. If set to <code class="docutils literal"><span class="pre">False</span></code> you will need to manually call <a class="reference internal" href="#UnQLite.open" title="UnQLite.open"><code class="xref py py-meth docutils literal"><span class="pre">open()</span></code></a>.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">UnQLite supports in-memory databases, which can be created by passing in <code class="docutils literal"><span class="pre">':mem:'</span></code> as the database file. This is the default behavior if no database file is specified.</p>
+</div>
+<p>Example usage:</p>
+<div class="highlight-pycon"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">db</span> <span class="o">=</span> <span class="n">UnQLite</span><span class="p">()</span>  <span class="c"># Create an in-memory database.</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">db</span><span class="p">[</span><span class="s">&#39;foo&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;bar&#39;</span>  <span class="c"># Use as a key/value store.</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">db</span><span class="p">[</span><span class="s">&#39;foo&#39;</span><span class="p">]</span>
+<span class="go">bar</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="n">db</span><span class="p">[</span><span class="s">&#39;k</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+<span class="gp">...</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="s">&#39;k3&#39;</span> <span class="ow">in</span> <span class="n">db</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="s">&#39;k4&#39;</span> <span class="ow">in</span> <span class="n">db</span>
+<span class="go">False</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">del</span> <span class="n">db</span><span class="p">[</span><span class="s">&#39;k3&#39;</span><span class="p">]</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">db</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s">&#39;k2&#39;</span><span class="p">,</span> <span class="s">&#39;XXXX&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">db</span><span class="p">[</span><span class="s">&#39;k2&#39;</span><span class="p">]</span>
+<span class="go">&#39;2XXXX&#39;</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">db</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span> <span class="k">as</span> <span class="n">cursor</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">cursor</span><span class="p">:</span>
+<span class="gp">... </span>        <span class="k">print</span> <span class="n">key</span><span class="p">,</span> <span class="s">&#39;=&gt;&#39;</span><span class="p">,</span> <span class="n">value</span>
+<span class="gp">...</span>
+<span class="go">foo =&gt; bar</span>
+<span class="go">k0 =&gt; 0</span>
+<span class="go">k1 =&gt; 1</span>
+<span class="go">k2 =&gt; 2XXXX</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">script</span> <span class="o">=</span> <span class="s">&quot;&quot;&quot;</span>
+<span class="gp">... </span><span class="s">    db_create(&#39;users&#39;);</span>
+<span class="gp">... </span><span class="s">    db_store(&#39;users&#39;, $list_of_users);</span>
+<span class="gp">... </span><span class="s">    $users_from_db = db_fetch_all(&#39;users&#39;);</span>
+<span class="gp">... </span><span class="s">&quot;&quot;&quot;</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">list_of_users</span> <span class="o">=</span> <span class="p">[</span>
+<span class="gp">... </span>    <span class="p">{</span><span class="s">&#39;username&#39;</span><span class="p">:</span> <span class="s">&#39;Huey&#39;</span><span class="p">,</span> <span class="s">&#39;age&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">},</span>
+<span class="gp">... </span>    <span class="p">{</span><span class="s">&#39;username&#39;</span><span class="p">:</span> <span class="s">&#39;Mickey&#39;</span><span class="p">,</span> <span class="s">&#39;age&#39;</span><span class="p">:</span> <span class="mi">5</span><span class="p">}</span>
+<span class="gp">... </span><span class="p">]</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">db</span><span class="o">.</span><span class="n">vm</span><span class="p">(</span><span class="n">script</span><span class="p">)</span> <span class="k">as</span> <span class="n">vm</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="n">vm</span><span class="p">[</span><span class="s">&#39;list_of_users&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">list_of_users</span>
+<span class="gp">... </span>    <span class="n">vm</span><span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+<span class="gp">... </span>    <span class="n">users_from_db</span> <span class="o">=</span> <span class="n">vm</span><span class="p">[</span><span class="s">&#39;users_from_db&#39;</span><span class="p">]</span>
+<span class="gp">...</span>
+<span class="go">True</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">users_from_db</span>  <span class="c"># UnQLite assigns items in a collection an ID.</span>
+<span class="go">[{&#39;username&#39;: &#39;Huey&#39;, &#39;age&#39;: 3, &#39;__id&#39;: 0},</span>
+<span class="go"> {&#39;username&#39;: &#39;Mickey&#39;, &#39;age&#39;: 5, &#39;__id&#39;: 1}]</span>
+</pre></div>
+</div>
+<dl class="method">
+<dt id="UnQLite.open">
+<code class="descname">open</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#UnQLite.open" title="Permalink to this definition">¶</a></dt>
+<dd><p>Open the database. This method should only be called if the database was manually closed, or if the database was instantiated with <code class="docutils literal"><span class="pre">open_database=False</span></code>.</p>
+<p>Valid flags:</p>
+<ul class="simple">
+<li><code class="docutils literal"><span class="pre">UNQLITE_OPEN_CREATE</span></code></li>
+<li><code class="docutils literal"><span class="pre">UNQLITE_OPEN_READONLY</span></code></li>
+<li><code class="docutils literal"><span class="pre">UNQLITE_OPEN_READWRITE</span></code></li>
+<li><code class="docutils literal"><span class="pre">UNQLITE_OPEN_CREATE</span></code></li>
+<li><code class="docutils literal"><span class="pre">UNQLITE_OPEN_EXCLUSIVE</span></code></li>
+<li><code class="docutils literal"><span class="pre">UNQLITE_OPEN_TEMP_DB</span></code></li>
+<li><code class="docutils literal"><span class="pre">UNQLITE_OPEN_NOMUTEX</span></code></li>
+<li><code class="docutils literal"><span class="pre">UNQLITE_OPEN_OMIT_JOURNALING</span></code></li>
+<li><code class="docutils literal"><span class="pre">UNQLITE_OPEN_IN_MEMORY</span></code></li>
+<li><code class="docutils literal"><span class="pre">UNQLITE_OPEN_MMAP</span></code></li>
+</ul>
+<p>Detailed descriptions of these flags can be found in the <a class="reference external" href="http://unqlite.org/c_api/unqlite_open.html">unqlite_open docs</a>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="UnQLite.close">
+<code class="descname">close</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#UnQLite.close" title="Permalink to this definition">¶</a></dt>
+<dd><p>Close the database.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">If you are using a file-based database, by default any uncommitted changes will be committed when the database is closed. If you wish to discard uncommitted changes, you can use <a class="reference internal" href="#UnQLite.disable_autocommit" title="UnQLite.disable_autocommit"><code class="xref py py-meth docutils literal"><span class="pre">disable_autocommit()</span></code></a>.</p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="UnQLite.__enter__">
+<code class="descname">__enter__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#UnQLite.__enter__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Use the database as a context manager, opening the connection and closing it at the end of the wrapped block:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">with</span> <span class="n">UnQLite</span><span class="p">(</span><span class="s">&#39;my_db.udb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">db</span><span class="p">:</span>
+    <span class="n">db</span><span class="p">[</span><span class="s">&#39;foo&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;bar&#39;</span>
+
+<span class="c"># When the context manager exits, the database is closed.</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="UnQLite.disable_autocommit">
+<code class="descname">disable_autocommit</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#UnQLite.disable_autocommit" title="Permalink to this definition">¶</a></dt>
+<dd><p>When the database is closed, prevent any uncommitted writes from being saved.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">This method only affects file-based databases.</p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="UnQLite.store">
+<code class="descname">store</code><span class="sig-paren">(</span><em>key</em>, <em>value</em><span class="sig-paren">)</span><a class="headerlink" href="#UnQLite.store" title="Permalink to this definition">¶</a></dt>
+<dd><p>Store a value in the given key.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>key</strong> (<em>str</em>) &#8211; Identifier used for storing data.</li>
+<li><strong>value</strong> (<em>str</em>) &#8211; A value to store in UnQLite.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">db</span> <span class="o">=</span> <span class="n">UnQLite</span><span class="p">()</span>
+<span class="n">db</span><span class="o">.</span><span class="n">store</span><span class="p">(</span><span class="s">&#39;some key&#39;</span><span class="p">,</span> <span class="s">&#39;some value&#39;</span><span class="p">)</span>
+<span class="n">db</span><span class="o">.</span><span class="n">store</span><span class="p">(</span><span class="s">&#39;another key&#39;</span><span class="p">,</span> <span class="s">&#39;another value&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>You can also use the dictionary-style <code class="docutils literal"><span class="pre">db[key]</span> <span class="pre">=</span> <span class="pre">value</span></code> to store a value:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">db</span><span class="p">[</span><span class="s">&#39;some key&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;some value&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="UnQLite.fetch">
+<code class="descname">fetch</code><span class="sig-paren">(</span><em>key</em><span class="sig-paren">)</span><a class="headerlink" href="#UnQLite.fetch" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieve the value stored at the given <code class="docutils literal"><span class="pre">key</span></code>. If no value exists in the given key, a <code class="docutils literal"><span class="pre">KeyError</span></code> will be raised.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>key</strong> (<em>str</em>) &#8211; Identifier to retrieve</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The data stored at the given key</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="docutils literal"><span class="pre">KeyError</span></code> if the given key does not exist.</td>
+</tr>
+</tbody>
+</table>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">db</span> <span class="o">=</span> <span class="n">UnQLite</span><span class="p">()</span>
+<span class="n">db</span><span class="o">.</span><span class="n">store</span><span class="p">(</span><span class="s">&#39;some key&#39;</span><span class="p">,</span> <span class="s">&#39;some value&#39;</span><span class="p">)</span>
+<span class="n">value</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">fetch</span><span class="p">(</span><span class="s">&#39;some key&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>You can also use the dictionary-style <code class="docutils literal"><span class="pre">value</span> <span class="pre">=</span> <span class="pre">db[key]</span></code> lookup to retrieve a value:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">value</span> <span class="o">=</span> <span class="n">db</span><span class="p">[</span><span class="s">&#39;some key&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="UnQLite.delete">
+<code class="descname">delete</code><span class="sig-paren">(</span><em>key</em><span class="sig-paren">)</span><a class="headerlink" href="#UnQLite.delete" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove the key and its associated value from the database.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>key</strong> (<em>str</em>) &#8211; The key to remove from the database.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="docutils literal"><span class="pre">KeyError</span></code> if the given key does not exist.</td>
+</tr>
+</tbody>
+</table>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">clear_cache</span><span class="p">():</span>
+    <span class="n">db</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="s">&#39;cached-data&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>You can also use the python <code class="docutils literal"><span class="pre">del</span></code> keyword combined with a dictionary lookup:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">clear_cache</span><span class="p">():</span>
+    <span class="k">del</span> <span class="n">db</span><span class="p">[</span><span class="s">&#39;cached-data&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="UnQLite.append">
+<code class="descname">append</code><span class="sig-paren">(</span><em>key</em>, <em>value</em><span class="sig-paren">)</span><a class="headerlink" href="#UnQLite.append" title="Permalink to this definition">¶</a></dt>
+<dd><p>Append the given <code class="docutils literal"><span class="pre">value</span></code> to the data stored in the <code class="docutils literal"><span class="pre">key</span></code>. If no data exists, the operation is equivalent to <a class="reference internal" href="#UnQLite.store" title="UnQLite.store"><code class="xref py py-meth docutils literal"><span class="pre">store()</span></code></a>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>key</strong> (<em>str</em>) &#8211; The identifier of the value to append to.</li>
+<li><strong>value</strong> &#8211; The value to append.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="UnQLite.exists">
+<code class="descname">exists</code><span class="sig-paren">(</span><em>key</em><span class="sig-paren">)</span><a class="headerlink" href="#UnQLite.exists" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return whether the given <code class="docutils literal"><span class="pre">key</span></code> exists in the database.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>key</strong> (<em>str</em>) &#8211; </td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">A boolean value indicating whether the given <code class="docutils literal"><span class="pre">key</span></code> exists in the database.</td>
+</tr>
+</tbody>
+</table>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">get_expensive_data</span><span class="p">():</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">db</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="s">&#39;cached-data&#39;</span><span class="p">):</span>
+        <span class="n">db</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s">&#39;cached-data&#39;</span><span class="p">,</span> <span class="n">calculate_expensive_data</span><span class="p">())</span>
+    <span class="k">return</span> <span class="n">db</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;cached-data&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>You can also use the python <code class="docutils literal"><span class="pre">in</span></code> keyword to determine whether a key exists:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">get_expensive_data</span><span class="p">():</span>
+    <span class="k">if</span> <span class="s">&#39;cached-data&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">db</span><span class="p">:</span>
+        <span class="n">db</span><span class="p">[</span><span class="s">&#39;cached-data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">calculate_expensive_data</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">db</span><span class="p">[</span><span class="s">&#39;cached-data&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="UnQLite.begin">
+<code class="descname">begin</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#UnQLite.begin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Begin a transaction.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="UnQLite.rollback">
+<code class="descname">rollback</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#UnQLite.rollback" title="Permalink to this definition">¶</a></dt>
+<dd><p>Roll back the current transaction.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="UnQLite.commit">
+<code class="descname">commit</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#UnQLite.commit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Commit the current transaction.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="UnQLite.transaction">
+<code class="descname">transaction</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#UnQLite.transaction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a context manager for performing multiple operations in a transaction.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">Transactions occur at the disk-level and have no effect on in-memory databases.</p>
+</div>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># Transfer $100 in a transaction.</span>
+<span class="k">with</span> <span class="n">db</span><span class="o">.</span><span class="n">transaction</span><span class="p">():</span>
+    <span class="n">db</span><span class="p">[</span><span class="s">&#39;from_acct&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">db</span><span class="p">[</span><span class="s">&#39;from_account&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="mi">100</span>
+    <span class="n">db</span><span class="p">[</span><span class="s">&#39;to_acct&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">db</span><span class="p">[</span><span class="s">&#39;to_acct&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="mi">100</span>
+
+<span class="c"># Make changes and then roll them back.</span>
+<span class="k">with</span> <span class="n">db</span><span class="o">.</span><span class="n">transaction</span><span class="p">():</span>
+    <span class="n">db</span><span class="p">[</span><span class="s">&#39;foo&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;bar&#39;</span>
+    <span class="n">db</span><span class="o">.</span><span class="n">rollback</span><span class="p">()</span>  <span class="c"># Whoops, do not commit these changes.</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="UnQLite.commit_on_success">
+<code class="descname">commit_on_success</code><span class="sig-paren">(</span><em>fn</em><span class="sig-paren">)</span><a class="headerlink" href="#UnQLite.commit_on_success" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function decorator that will cause the wrapped function to have all statements wrapped in a transaction. If the function returns without an exception, the transaction is committed. If an exception occurs in the function, the transaction is rolled back.</p>
+<p>Example:</p>
+<div class="highlight-pycon"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="nd">@db.commit_on_success</span>
+<span class="gp">... </span><span class="k">def</span> <span class="nf">save_value</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">exc</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="n">db</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+<span class="gp">... </span>    <span class="k">if</span> <span class="n">exc</span><span class="p">:</span>
+<span class="gp">... </span>        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&#39;uh-oh&#39;</span><span class="p">)</span>
+<span class="gp">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">save_value</span><span class="p">(</span><span class="s">&#39;k3&#39;</span><span class="p">,</span> <span class="s">&#39;v3&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">save_value</span><span class="p">(</span><span class="s">&#39;k3&#39;</span><span class="p">,</span> <span class="s">&#39;vx&#39;</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
+<span class="gt">Traceback (most recent call last):</span>
+  File <span class="nb">&quot;&lt;stdin&gt;&quot;</span>, line <span class="m">1</span>, in <span class="n">&lt;module&gt;</span>
+  File <span class="nb">&quot;unqlite/core.py&quot;</span>, line <span class="m">312</span>, in <span class="n">wrapper</span>
+    <span class="k">return</span> <span class="n">fn</span><span class="p">()</span>
+  File <span class="nb">&quot;&lt;stdin&gt;&quot;</span>, line <span class="m">5</span>, in <span class="n">save_value</span>
+<span class="gr">Exception</span>: <span class="n">uh-oh</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">db</span><span class="p">[</span><span class="s">&#39;k3&#39;</span><span class="p">]</span>
+<span class="go">&#39;v3&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="UnQLite.cursor">
+<code class="descname">cursor</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#UnQLite.cursor" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">a <a class="reference internal" href="#Cursor" title="Cursor"><code class="xref py py-class docutils literal"><span class="pre">Cursor</span></code></a> instance.</td>
+</tr>
+</tbody>
+</table>
+<p>Create a cursor for traversing database records.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="UnQLite.vm">
+<code class="descname">vm</code><span class="sig-paren">(</span><em>code</em><span class="sig-paren">)</span><a class="headerlink" href="#UnQLite.vm" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>code</strong> (<em>str</em>) &#8211; a Jx9 script.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">a <a class="reference internal" href="#VM" title="VM"><code class="xref py py-class docutils literal"><span class="pre">VM</span></code></a> instance with the compiled script.</td>
+</tr>
+</tbody>
+</table>
+<p>Compile the given Jx9 script and return an initialized <a class="reference internal" href="#VM" title="VM"><code class="xref py py-class docutils literal"><span class="pre">VM</span></code></a> instance.</p>
+<p>Usage:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">script</span> <span class="o">=</span> <span class="s">&quot;$users = db_fetch_all(&#39;users&#39;);&quot;</span>
+<span class="k">with</span> <span class="n">db</span><span class="o">.</span><span class="n">vm</span><span class="p">(</span><span class="n">script</span><span class="p">)</span> <span class="k">as</span> <span class="n">vm</span><span class="p">:</span>
+    <span class="n">vm</span><span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+    <span class="n">users</span> <span class="o">=</span> <span class="n">vm</span><span class="p">[</span><span class="s">&#39;users&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="UnQLite.collection">
+<code class="descname">collection</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="headerlink" href="#UnQLite.collection" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<em>str</em>) &#8211; The name of the collection.</td>
+</tr>
+</tbody>
+</table>
+<p>Factory method for instantiating a <a class="reference internal" href="#Collection" title="Collection"><code class="xref py py-class docutils literal"><span class="pre">Collection</span></code></a> for working with a collection of JSON objects.</p>
+<p>Usage:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">Users</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">collection</span><span class="p">(</span><span class="s">&#39;users&#39;</span><span class="p">)</span>
+
+<span class="c"># Fetch all records in the collection.</span>
+<span class="n">all_users</span> <span class="o">=</span> <span class="n">Users</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+
+<span class="c"># Create a new record.</span>
+<span class="n">Users</span><span class="o">.</span><span class="n">store</span><span class="p">({</span><span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="s">&#39;Charlie&#39;</span><span class="p">,</span> <span class="s">&#39;activities&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s">&#39;reading&#39;</span><span class="p">,</span> <span class="s">&#39;programming&#39;</span><span class="p">]})</span>
+</pre></div>
+</div>
+<p>See the <a class="reference internal" href="#Collection" title="Collection"><code class="xref py py-class docutils literal"><span class="pre">Collection</span></code></a> docs for more examples.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="UnQLite.keys">
+<code class="descname">keys</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#UnQLite.keys" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">A generator that successively yields the keys in the database.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="UnQLite.values">
+<code class="descname">values</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#UnQLite.values" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">A generator that successively yields the values in the database.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="UnQLite.items">
+<code class="descname">items</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#UnQLite.items" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">A generator that successively yields tuples containing the keys and values in the database.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="UnQLite.update">
+<code class="descname">update</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="headerlink" href="#UnQLite.update" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>data</strong> (<em>dict</em>) &#8211; Dictionary of data to store in the database. If any keys in <code class="docutils literal"><span class="pre">data</span></code> already exist, the values will be overwritten.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="UnQLite.__iter__">
+<code class="descname">__iter__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#UnQLite.__iter__" title="Permalink to this definition">¶</a></dt>
+<dd><p>UnQLite databases can be iterated over. The iterator is a <a class="reference internal" href="#Cursor" title="Cursor"><code class="xref py py-class docutils literal"><span class="pre">Cursor</span></code></a>, and will yield 2-tuples of keys and values:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">db</span> <span class="o">=</span> <span class="n">UnQLite</span><span class="p">(</span><span class="s">&#39;my_db.udb&#39;</span><span class="p">)</span>
+<span class="k">for</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span> <span class="ow">in</span> <span class="n">db</span><span class="p">:</span>
+    <span class="k">print</span> <span class="n">key</span><span class="p">,</span> <span class="s">&#39;=&gt;&#39;</span><span class="p">,</span> <span class="n">value</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="UnQLite.range">
+<code class="descname">range</code><span class="sig-paren">(</span><em>start_key</em>, <em>end_key</em><span class="optional">[</span>, <em>include_end_key=True</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#UnQLite.range" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterate over a range of key/value pairs in the database.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">db</span><span class="o">.</span><span class="n">range</span><span class="p">(</span><span class="s">&#39;d.20140101&#39;</span><span class="p">,</span> <span class="s">&#39;d.20140201&#39;</span><span class="p">,</span> <span class="bp">False</span><span class="p">):</span>
+    <span class="n">calculate_daily_aggregate</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="UnQLite.__len__">
+<code class="descname">__len__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#UnQLite.__len__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the number of records in the database.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">This method calculates the lengthy by iterating and counting every record. At the time of writing, there is no C API for calculating the size of the database.</p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="UnQLite.flush">
+<code class="descname">flush</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#UnQLite.flush" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delete all records in the database.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">This method works by iterating through all the records and deleting them one-by-one. At the time of writing there is no API for bulk deletes. If you are worried about speed, simply delete the database file and re-open it.</p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="UnQLite.random_string">
+<code class="descname">random_string</code><span class="sig-paren">(</span><em>nbytes</em><span class="sig-paren">)</span><a class="headerlink" href="#UnQLite.random_string" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>nbytes</strong> (<em>int</em>) &#8211; number of bytes to generate</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">a string consisting of random lower-case letters (a-z).</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="UnQLite.random_number">
+<code class="descname">random_number</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#UnQLite.random_number" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">a random positive integer</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="UnQLite.lib_version">
+<code class="descname">lib_version</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#UnQLite.lib_version" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The UnQLite library version.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="Transaction">
+<em class="property">class </em><code class="descname">Transaction</code><span class="sig-paren">(</span><em>unqlite</em><span class="sig-paren">)</span><a class="headerlink" href="#Transaction" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>unqlite</strong> (<a class="reference internal" href="#UnQLite" title="UnQLite"><em>UnQLite</em></a>) &#8211; An <a class="reference internal" href="#UnQLite" title="UnQLite"><code class="xref py py-class docutils literal"><span class="pre">UnQLite</span></code></a> instance.</td>
+</tr>
+</tbody>
+</table>
+<p>Context-manager for executing wrapped blocks in a transaction. Rather than instantiating this object directly, it is recommended that you use <a class="reference internal" href="#UnQLite.transaction" title="UnQLite.transaction"><code class="xref py py-meth docutils literal"><span class="pre">UnQLite.transaction()</span></code></a>.</p>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">with</span> <span class="n">db</span><span class="o">.</span><span class="n">transaction</span><span class="p">():</span>
+    <span class="n">db</span><span class="p">[</span><span class="s">&#39;from_acct&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">db</span><span class="p">[</span><span class="s">&#39;from_acct&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="mi">100</span>
+    <span class="n">db</span><span class="p">[</span><span class="s">&#39;to_acct&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">db</span><span class="p">[</span><span class="s">&#39;to_acct&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="mi">100</span>
+</pre></div>
+</div>
+<p>To roll back changes inside a transaction, call <a class="reference internal" href="#UnQLite.rollback" title="UnQLite.rollback"><code class="xref py py-meth docutils literal"><span class="pre">UnQLite.rollback()</span></code></a>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">with</span> <span class="n">db</span><span class="o">.</span><span class="n">transaction</span><span class="p">():</span>
+    <span class="n">db</span><span class="p">[</span><span class="s">&#39;from_acct&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">db</span><span class="p">[</span><span class="s">&#39;from_acct&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="mi">100</span>
+    <span class="n">db</span><span class="p">[</span><span class="s">&#39;to_acct&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">db</span><span class="p">[</span><span class="s">&#39;to_acct&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="mi">100</span>
+    <span class="k">if</span> <span class="nb">int</span><span class="p">(</span><span class="n">db</span><span class="p">[</span><span class="s">&#39;to_acct&#39;</span><span class="p">])</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">db</span><span class="o">.</span><span class="n">rollback</span><span class="p">()</span>  <span class="c"># Not enough funds!</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="class">
+<dt id="Cursor">
+<em class="property">class </em><code class="descname">Cursor</code><span class="sig-paren">(</span><em>unqlite</em><span class="sig-paren">)</span><a class="headerlink" href="#Cursor" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>unqlite</strong> (<a class="reference internal" href="#UnQLite" title="UnQLite"><em>UnQLite</em></a>) &#8211; An <a class="reference internal" href="#UnQLite" title="UnQLite"><code class="xref py py-class docutils literal"><span class="pre">UnQLite</span></code></a> instance.</td>
+</tr>
+</tbody>
+</table>
+<p>Create a cursor. Cursors should generally be used as context managers.</p>
+<p>Rather than instantiating this class directly, it is preferable to call the factory method <a class="reference internal" href="#UnQLite.cursor" title="UnQLite.cursor"><code class="xref py py-meth docutils literal"><span class="pre">UnQLite.cursor()</span></code></a>.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">):</span>
+    <span class="n">db</span><span class="p">[</span><span class="s">&#39;k</span><span class="si">%d</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+
+<span class="c"># Cursor support iteration, which returns key/value pairs.</span>
+<span class="k">with</span> <span class="n">db</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span> <span class="k">as</span> <span class="n">cursor</span><span class="p">:</span>
+    <span class="n">all_items</span> <span class="o">=</span> <span class="p">[(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">cursor</span><span class="p">]</span>
+
+    <span class="c"># You can seek to a record, then iterate to retrieve a portion</span>
+    <span class="c"># of results.</span>
+    <span class="n">cursor</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="s">&#39;k2&#39;</span><span class="p">)</span>
+    <span class="n">k2</span><span class="p">,</span> <span class="n">k3</span> <span class="o">=</span> <span class="p">[</span><span class="n">key</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">cursor</span><span class="p">]</span>
+
+<span class="c"># Previous cursor was closed automatically, open a new one.</span>
+<span class="k">with</span> <span class="n">db</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span> <span class="k">as</span> <span class="n">cursor</span><span class="p">:</span>
+    <span class="n">cursor</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="s">&#39;k1&#39;</span><span class="p">)</span>  <span class="c"># Jump to the 2nd record, k1</span>
+    <span class="k">assert</span> <span class="n">cursor</span><span class="o">.</span><span class="n">key</span><span class="p">()</span> <span class="o">==</span> <span class="s">&#39;k1&#39;</span>  <span class="c"># Use the key()/value() methods.</span>
+    <span class="k">assert</span> <span class="n">cursor</span><span class="o">.</span><span class="n">value</span><span class="p">()</span> <span class="o">==</span> <span class="s">&#39;1&#39;</span>
+
+    <span class="n">cursor</span><span class="o">.</span><span class="n">delete</span><span class="p">()</span>  <span class="c"># Delete k1/v1</span>
+    <span class="n">cursor</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>  <span class="c"># Cursor now points to k0/0</span>
+    <span class="n">cursor</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>  <span class="c"># Cursor jumps to k2/2 since k1/1 is deleted.</span>
+    <span class="k">assert</span> <span class="n">cursor</span><span class="o">.</span><span class="n">key</span><span class="p">()</span> <span class="o">==</span> <span class="s">&#39;k2&#39;</span>
+
+    <span class="n">keys</span> <span class="o">=</span> <span class="p">[</span><span class="n">key</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">cursor</span><span class="p">]</span>  <span class="c"># Cursor iterates from k2-&gt;k3</span>
+    <span class="k">assert</span> <span class="n">keys</span> <span class="o">==</span> <span class="p">[</span><span class="s">&#39;k2&#39;</span><span class="p">,</span> <span class="s">&#39;k3&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+<dl class="method">
+<dt id="Cursor.reset">
+<code class="descname">reset</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Cursor.reset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reset the cursor, which also resets the pointer to the first record.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Cursor.seek">
+<code class="descname">seek</code><span class="sig-paren">(</span><em>key</em><span class="optional">[</span>, <em>flags=UNQLITE_CURSOR_MATCH_EXACT</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#Cursor.seek" title="Permalink to this definition">¶</a></dt>
+<dd><p>Advance the cursor to the given key using the comparison method
+described in the flags.</p>
+<p>A detailed description of alternate flags and their usage can be found in the <a class="reference external" href="http://unqlite.org/c_api/unqlite_kv_cursor.html">unqlite_kv_cursor docs</a>.</p>
+<p>Usage:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">with</span> <span class="n">db</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span> <span class="k">as</span> <span class="n">cursor</span><span class="p">:</span>
+    <span class="n">cursor</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="s">&#39;item.20140101&#39;</span><span class="p">)</span>
+    <span class="k">while</span> <span class="n">cursor</span><span class="o">.</span><span class="n">is_valid</span><span class="p">():</span>
+        <span class="n">data_for_day</span> <span class="o">=</span> <span class="n">cursor</span><span class="o">.</span><span class="n">value</span><span class="p">()</span>
+        <span class="c"># do something with data for day</span>
+        <span class="n">handle_data</span><span class="p">(</span><span class="n">data_for_day</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">cursor</span><span class="o">.</span><span class="n">key</span><span class="p">()</span> <span class="o">==</span> <span class="s">&#39;item.20140201&#39;</span><span class="p">:</span>
+            <span class="k">break</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">cursor</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="Cursor.first">
+<code class="descname">first</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Cursor.first" title="Permalink to this definition">¶</a></dt>
+<dd><p>Place cursor at the first record.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Cursor.last">
+<code class="descname">last</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Cursor.last" title="Permalink to this definition">¶</a></dt>
+<dd><p>Place cursor at the last record.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Cursor.next_entry">
+<code class="descname">next_entry</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Cursor.next_entry" title="Permalink to this definition">¶</a></dt>
+<dd><p>Move the cursor to the next record.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="docutils literal"><span class="pre">StopIteration</span></code> if you have gone past the last record.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="Cursor.previous_entry">
+<code class="descname">previous_entry</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Cursor.previous_entry" title="Permalink to this definition">¶</a></dt>
+<dd><p>Move the cursor to the previous record.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="docutils literal"><span class="pre">StopIteration</span></code> if you have gone past the first record.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="Cursor.is_valid">
+<code class="descname">is_valid</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Cursor.is_valid" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+</tr>
+</tbody>
+</table>
+<p>Indicate whether this cursor is pointing to a valid record.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Cursor.__iter__">
+<code class="descname">__iter__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Cursor.__iter__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterate over the keys in the database, returning 2-tuples of key/value.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Iteration will begin wherever the cursor is currently pointing, rather than starting at the first record.</p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="Cursor.key">
+<code class="descname">key</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Cursor.key" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the key of the current record.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Cursor.value">
+<code class="descname">value</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Cursor.value" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the value of the current record.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Cursor.delete">
+<code class="descname">delete</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Cursor.delete" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delete the record currently pointed to by the cursor.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">The <a class="reference internal" href="#Cursor.delete" title="Cursor.delete"><code class="xref py py-meth docutils literal"><span class="pre">delete()</span></code></a> method is a little weird in that
+it only seems to work if you explicitly call <a class="reference internal" href="#Cursor.seek" title="Cursor.seek"><code class="xref py py-meth docutils literal"><span class="pre">seek()</span></code></a>
+beforehand.</p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="Cursor.fetch_until">
+<code class="descname">fetch_until</code><span class="sig-paren">(</span><em>stop_key</em><span class="optional">[</span>, <em>include_stop_key=True</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#Cursor.fetch_until" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>stop_key</strong> (<em>str</em>) &#8211; The key at which the cursor should stop iterating.</li>
+<li><strong>include_stop_key</strong> (<em>bool</em>) &#8211; Whether the stop key/value pair should be returned.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Yield successive key/value pairs until the <code class="docutils literal"><span class="pre">stop_key</span></code> is reached.
+By default the <code class="docutils literal"><span class="pre">stop_key</span></code> and associated value will be returned, but
+this behavior can be controlled using the <code class="docutils literal"><span class="pre">include_stop_key</span></code> flag.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="VM">
+<em class="property">class </em><code class="descname">VM</code><span class="sig-paren">(</span><em>unqlite</em>, <em>code</em><span class="sig-paren">)</span><a class="headerlink" href="#VM" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>unqlite</strong> (<a class="reference internal" href="#UnQLite" title="UnQLite"><em>UnQLite</em></a>) &#8211; An <a class="reference internal" href="#UnQLite" title="UnQLite"><code class="xref py py-class docutils literal"><span class="pre">UnQLite</span></code></a> instance.</li>
+<li><strong>code</strong> (<em>str</em>) &#8211; A Jx9 script.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Python wrapper around an UnQLite virtual machine. The VM is the primary means of executing Jx9 scripts and interacting with the JSON document store.</p>
+<p>VM instances should not be instantiated directly, but created by calling <a class="reference internal" href="#UnQLite.vm" title="UnQLite.vm"><code class="xref py py-meth docutils literal"><span class="pre">UnQLite.vm()</span></code></a>.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">For information on Jx9 scripting, see the <a class="reference external" href="http://unqlite.org/jx9.html">Jx9 docs</a>.</p>
+</div>
+<p>Example of passing values into a Jx9 script prior to execution, then extracting values afterwards:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">script</span> <span class="o">=</span> <span class="s">&quot;&quot;&quot;</span>
+<span class="s">    $collection = &#39;users&#39;;</span>
+<span class="s">    db_create($collection);</span>
+<span class="s">    db_store($collection, $values);</span>
+<span class="s">    $users = db_fetch_all($collection);</span>
+<span class="s">&quot;&quot;&quot;</span>
+
+<span class="c"># We can pass all sorts of interesting data in to our script.</span>
+<span class="n">values</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">{</span><span class="s">&#39;username&#39;</span><span class="p">:</span> <span class="s">&#39;huey&#39;</span><span class="p">,</span> <span class="s">&#39;color&#39;</span><span class="p">:</span> <span class="s">&#39;white&#39;</span><span class="p">},</span>
+    <span class="p">{</span><span class="s">&#39;username&#39;</span><span class="p">:</span> <span class="s">&#39;mickey&#39;</span><span class="p">,</span> <span class="s">&#39;color&#39;</span><span class="p">:</span> <span class="s">&#39;black&#39;</span><span class="p">},</span>
+<span class="p">]</span>
+
+<span class="k">with</span> <span class="n">db</span><span class="o">.</span><span class="n">vm</span><span class="p">(</span><span class="n">script</span><span class="p">)</span> <span class="k">as</span> <span class="n">vm</span><span class="p">:</span>
+    <span class="c"># Set the value of the `values` variable in the Jx9 script:</span>
+    <span class="n">vm</span><span class="p">[</span><span class="s">&#39;values&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">values</span>
+
+    <span class="c"># Execute the script, which creates the collection and stores</span>
+    <span class="c"># the two records.</span>
+    <span class="n">vm</span><span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+
+    <span class="c"># After execution, we can extract the value of the `users` variable.</span>
+    <span class="n">users</span> <span class="o">=</span> <span class="n">vm</span><span class="p">[</span><span class="s">&#39;users&#39;</span><span class="p">]</span>
+
+    <span class="c"># Jx9 document store assigns a unique 0-based id to each record</span>
+    <span class="c"># in a collection. The extracted variable `users` will now equal:</span>
+    <span class="k">print</span> <span class="n">users</span> <span class="o">==</span> <span class="p">[</span>
+        <span class="p">{</span><span class="s">&#39;username&#39;</span><span class="p">:</span> <span class="s">&#39;huey&#39;</span><span class="p">,</span> <span class="s">&#39;color&#39;</span><span class="p">:</span> <span class="s">&#39;white&#39;</span><span class="p">,</span> <span class="s">&#39;__id&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">},</span>
+        <span class="p">{</span><span class="s">&#39;username&#39;</span><span class="p">:</span> <span class="s">&#39;mickey&#39;</span><span class="p">,</span> <span class="s">&#39;color&#39;</span><span class="p">:</span> <span class="s">&#39;black&#39;</span><span class="p">,</span> <span class="s">&#39;__id&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">},</span>
+    <span class="p">]</span>  <span class="c"># prints `True`</span>
+</pre></div>
+</div>
+<dl class="method">
+<dt id="VM.execute">
+<code class="descname">execute</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#VM.execute" title="Permalink to this definition">¶</a></dt>
+<dd><p>Execute the compiled Jx9 script.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="VM.close">
+<code class="descname">close</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#VM.close" title="Permalink to this definition">¶</a></dt>
+<dd><p>Release the VM, deallocating associated memory.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">When using the VM as a context manager, this is handled automatically.</p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="VM.__enter__">
+<code class="descname">__enter__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#VM.__enter__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Typically the VM should be used as a context manager. The context manager API handles compiling the Jx9 code and releasing the data-structures afterwards.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">with</span> <span class="n">db</span><span class="o">.</span><span class="n">vm</span><span class="p">(</span><span class="n">jx9_script</span><span class="p">)</span> <span class="k">as</span> <span class="n">vm</span><span class="p">:</span>
+    <span class="n">vm</span><span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="VM.set_value">
+<code class="descname">set_value</code><span class="sig-paren">(</span><em>name</em>, <em>value</em><span class="sig-paren">)</span><a class="headerlink" href="#VM.set_value" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>name</strong> (<em>str</em>) &#8211; A variable name</li>
+<li><strong>value</strong> &#8211; Value to pass in to the scope of the Jx9 script, which should be either a string, int, float, bool, list, dict, or None (basically a valid JSON type).</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Set the value of a Jx9 variable. You can also use dictionary-style assignment to set the value.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="VM.get_value">
+<code class="descname">get_value</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="headerlink" href="#VM.get_value" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<em>str</em>) &#8211; A variable name</td>
+</tr>
+</tbody>
+</table>
+<p>Retrieve the value of a variable after the execution of a Jx9 script. You can also use dictionary-style lookup to retrieve the value.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="VM.compile">
+<code class="descname">compile</code><span class="sig-paren">(</span><em>code</em><span class="sig-paren">)</span><a class="headerlink" href="#VM.compile" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>code</strong> (<em>str</em>) &#8211; A Jx9 script.</td>
+</tr>
+</tbody>
+</table>
+<p>Compile the Jx9 script and initialize the VM.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">It is not necessary to call this method yourself, as it is called automatically when the VM is used as a context manager.</p>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">This does not execute the code. To execute the code, you must also call <a class="reference internal" href="#VM.execute" title="VM.execute"><code class="xref py py-meth docutils literal"><span class="pre">VM.execute()</span></code></a>.</p>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="Collection">
+<em class="property">class </em><code class="descname">Collection</code><span class="sig-paren">(</span><em>unqlite</em>, <em>name</em><span class="sig-paren">)</span><a class="headerlink" href="#Collection" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>unqlite</strong> &#8211; a <a class="reference internal" href="#UnQLite" title="UnQLite"><code class="xref py py-class docutils literal"><span class="pre">UnQLite</span></code></a> instance</li>
+<li><strong>name</strong> (<em>str</em>) &#8211; the name of the collection</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Perform common operations on a JSON document collection.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Rather than instantiating this class directly, use the factory method <a class="reference internal" href="#UnQLite.collection" title="UnQLite.collection"><code class="xref py py-meth docutils literal"><span class="pre">UnQLite.collection()</span></code></a>.</p>
+</div>
+<p>Basic operations:</p>
+<div class="highlight-pycon"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">users</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">collection</span><span class="p">(</span><span class="s">&#39;users&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">users</span><span class="o">.</span><span class="n">create</span><span class="p">()</span>  <span class="c"># Create the collection if it does not exist.</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">users</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span>
+<span class="go">True</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">users</span><span class="o">.</span><span class="n">store</span><span class="p">([</span>
+<span class="gp">... </span>    <span class="p">{</span><span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="s">&#39;Charlie&#39;</span><span class="p">,</span> <span class="s">&#39;color&#39;</span><span class="p">:</span> <span class="s">&#39;green&#39;</span><span class="p">},</span>
+<span class="gp">... </span>    <span class="p">{</span><span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="s">&#39;Huey&#39;</span><span class="p">,</span> <span class="s">&#39;color&#39;</span><span class="p">:</span> <span class="s">&#39;white&#39;</span><span class="p">},</span>
+<span class="gp">... </span>    <span class="p">{</span><span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="s">&#39;Mickey&#39;</span><span class="p">,</span> <span class="s">&#39;color&#39;</span><span class="p">:</span> <span class="s">&#39;black&#39;</span><span class="p">}])</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">users</span><span class="o">.</span><span class="n">store</span><span class="p">({</span><span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="s">&#39;Leslie&#39;</span><span class="p">,</span> <span class="s">&#39;color&#39;</span><span class="p">:</span> <span class="s">&#39;also green&#39;</span><span class="p">})</span>
+<span class="go">True</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">users</span><span class="o">.</span><span class="n">fetch</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>  <span class="c"># Fetch the first record.</span>
+<span class="go">{&#39;__id&#39;: 0, &#39;color&#39;: &#39;green&#39;, &#39;name&#39;: &#39;Charlie&#39;}</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">users</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>  <span class="c"># Delete the first record.</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">users</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">users</span><span class="o">.</span><span class="n">last_record_id</span><span class="p">())</span>  <span class="c"># Delete the last record.</span>
+<span class="go">True</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">users</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="p">{</span><span class="s">&#39;color&#39;</span><span class="p">:</span> <span class="s">&#39;white&#39;</span><span class="p">,</span> <span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="s">&#39;Baby Huey&#39;</span><span class="p">})</span>
+<span class="go">True</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">users</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+<span class="go">[{&#39;__id&#39;: 1, &#39;color&#39;: &#39;white&#39;, &#39;name&#39;: &#39;Baby Huey&#39;},</span>
+<span class="go"> {&#39;__id&#39;: 2, &#39;color&#39;: &#39;black&#39;, &#39;name&#39;: &#39;Mickey&#39;}]</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">users</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">obj</span><span class="p">:</span> <span class="n">obj</span><span class="p">[</span><span class="s">&#39;name&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;B&#39;</span><span class="p">))</span>
+<span class="go">[{&#39;__id&#39;: 1, &#39;color&#39;: &#39;white&#39;, &#39;name&#39;: &#39;Baby Huey&#39;}]</span>
+</pre></div>
+</div>
+<dl class="method">
+<dt id="Collection.all">
+<code class="descname">all</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Collection.all" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list containing all records in the collection.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Collection.filter">
+<code class="descname">filter</code><span class="sig-paren">(</span><em>filter_fn</em><span class="sig-paren">)</span><a class="headerlink" href="#Collection.filter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Filter the list of records using the provided function (or lambda).
+Your filter function should accept a single parameter, which will be
+the record, and return a boolean value indicating whether the record
+should be returned.</p>
+<p>Example:</p>
+<div class="highlight-pycon"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">users</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">user</span><span class="p">:</span> <span class="n">user</span><span class="p">[</span><span class="s">&#39;is_admin&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="bp">True</span><span class="p">)</span>
+<span class="go">[{&#39;__id&#39;: 0, &#39;username&#39;: &#39;Huey&#39;, &#39;is_admin&#39;: True},</span>
+<span class="go"> {&#39;__id&#39;: 3, &#39;username&#39;: &#39;Zaizee&#39;, &#39;is_admin&#39;: True},</span>
+<span class="go"> {&#39;__id&#39;: 4, &#39;username&#39;: &#39;Charlie&#39;, &#39;is_admin&#39;: True}]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="Collection.create">
+<code class="descname">create</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Collection.create" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create the collection if it does not exist.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Collection.drop">
+<code class="descname">drop</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Collection.drop" title="Permalink to this definition">¶</a></dt>
+<dd><p>Drop the collection, deleting all records.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Collection.exists">
+<code class="descname">exists</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Collection.exists" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">boolean value indicating whether the collection exists.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="Collection.last_record_id">
+<code class="descname">last_record_id</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Collection.last_record_id" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The integer ID of the last record stored in the collection.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="Collection.current_record_id">
+<code class="descname">current_record_id</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Collection.current_record_id" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The integer ID of the record pointed to by the active cursor.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="Collection.reset_cursor">
+<code class="descname">reset_cursor</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Collection.reset_cursor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reset the collection cursor to point to the first record in the collection.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Collection.__len__">
+<code class="descname">__len__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Collection.__len__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the number of records in the collection.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Collection.fetch">
+<code class="descname">fetch</code><span class="sig-paren">(</span><em>record_id</em><span class="sig-paren">)</span><a class="headerlink" href="#Collection.fetch" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the record with the given id.</p>
+<div class="highlight-pycon"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">users</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">collection</span><span class="p">(</span><span class="s">&#39;users&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">users</span><span class="o">.</span><span class="n">fetch</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>  <span class="c"># Fetch the first record in the collection</span>
+<span class="go">{&#39;name&#39;: &#39;Charlie&#39;, &#39;color&#39;: &#39;green&#39;, &#39;__id&#39;: 0}</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">users</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>  <span class="c"># You can also use dictionary-style lookup.</span>
+<span class="go">{&#39;name&#39;: &#39;Huey&#39;, &#39;color&#39;: &#39;white&#39;, &#39;__id&#39;: 1}</span>
+</pre></div>
+</div>
+<p>You can also use the dictionary API:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">users</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="go">{&#39;name&#39;: &#39;Charlie&#39;, &#39;color&#39;: &#39;green&#39;, &#39;__id&#39;: 0}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="Collection.store">
+<code class="descname">store</code><span class="sig-paren">(</span><em>record</em><span class="sig-paren">)</span><a class="headerlink" href="#Collection.store" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>record</strong> &#8211; Either a dictionary (single-record), or a list of dictionaries.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Boolean indicating if the record was stored successfully.</td>
+</tr>
+</tbody>
+</table>
+<p>Store the record(s) in the collection.</p>
+<div class="highlight-pycon"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">users</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">collection</span><span class="p">(</span><span class="s">&#39;users&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">users</span><span class="o">.</span><span class="n">store</span><span class="p">({</span><span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="s">&#39;Charlie&#39;</span><span class="p">,</span> <span class="s">&#39;color&#39;</span><span class="p">:</span> <span class="s">&#39;green&#39;</span><span class="p">})</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">users</span><span class="o">.</span><span class="n">store</span><span class="p">([</span>
+<span class="gp">... </span>    <span class="p">{</span><span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="s">&#39;Huey&#39;</span><span class="p">,</span> <span class="s">&#39;color&#39;</span><span class="p">:</span> <span class="s">&#39;white&#39;</span><span class="p">},</span>
+<span class="gp">... </span>    <span class="p">{</span><span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="s">&#39;Mickey&#39;</span><span class="p">,</span> <span class="s">&#39;color&#39;</span><span class="p">:</span> <span class="s">&#39;black&#39;</span><span class="p">}])</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="Collection.update">
+<code class="descname">update</code><span class="sig-paren">(</span><em>record_id</em>, <em>record</em><span class="sig-paren">)</span><a class="headerlink" href="#Collection.update" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>record_id</strong> &#8211; The ID of the record to update.</li>
+<li><strong>record</strong> &#8211; A dictionary of data to update the given record ID.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Boolean value indicating if the update was successful.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Update the data stored for the given <code class="docutils literal"><span class="pre">record_id</span></code>. The data is completely replaced, rather than being appended to.</p>
+<div class="highlight-pycon"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">users</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">collection</span><span class="p">(</span><span class="s">&#39;users&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">users</span><span class="o">.</span><span class="n">store</span><span class="p">({</span><span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="s">&#39;Charlie&#39;</span><span class="p">})</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">users</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">users</span><span class="o">.</span><span class="n">last_record_id</span><span class="p">(),</span> <span class="p">{</span><span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="s">&#39;Chuck&#39;</span><span class="p">})</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">users</span><span class="o">.</span><span class="n">fetch</span><span class="p">(</span><span class="n">users</span><span class="o">.</span><span class="n">last_record_id</span><span class="p">())</span>
+<span class="go">{&#39;__id&#39;: 0, &#39;name&#39;: &#39;Chuck&#39;}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="Collection.delete">
+<code class="descname">delete</code><span class="sig-paren">(</span><em>record_id</em><span class="sig-paren">)</span><a class="headerlink" href="#Collection.delete" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>record_id</strong> &#8211; The database-provided ID of the record to delete.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Boolean indicating if the record was deleted successfully.</td>
+</tr>
+</tbody>
+</table>
+<p>Delete the record with the given id.</p>
+<div class="highlight-pycon"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">collection</span><span class="p">(</span><span class="s">&#39;data&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">data</span><span class="o">.</span><span class="n">create</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">data</span><span class="o">.</span><span class="n">store</span><span class="p">({</span><span class="s">&#39;foo&#39;</span><span class="p">:</span> <span class="s">&#39;bar&#39;</span><span class="p">})</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">data</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">last_record_id</span><span class="p">())</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">data</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+<span class="go">[]</span>
+</pre></div>
+</div>
+<p>You can also use the dictionary API:</p>
+<div class="highlight-pycon"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">del</span> <span class="n">users</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>  <span class="c"># Delete user object with `__id=1`.</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="Collection.fetch_current">
+<code class="descname">fetch_current</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Collection.fetch_current" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fetch the record pointed to by the collection cursor.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="quickstart.html"
+                        title="previous chapter">Quick-start</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/api.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="quickstart.html" title="Quick-start"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">unqlite-python 0.2.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2014, charles leifer.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+    </div>
+  </body>
+</html>

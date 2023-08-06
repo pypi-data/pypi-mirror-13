@@ -1,0 +1,298 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Quick-start &mdash; unqlite-python 0.2.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.2.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="unqlite-python 0.2.0 documentation" href="index.html" />
+    <link rel="next" title="API Documentation" href="api.html" />
+    <link rel="prev" title="Installation" href="installation.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="api.html" title="API Documentation"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="installation.html" title="Installation"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">unqlite-python 0.2.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="quick-start">
+<span id="quickstart"></span><h1>Quick-start<a class="headerlink" href="#quick-start" title="Permalink to this headline">¶</a></h1>
+<p>Below is a sample interactive console session designed to show some of the basic features and functionality of the unqlite-python library. Also check out the <a class="reference external" href="http://unqlite-python.readthedocs.org/en/latest/api.html">full API documentation</a>.</p>
+<p>To begin, instantiate an <a class="reference internal" href="api.html#UnQLite" title="UnQLite"><code class="xref py py-class docutils literal"><span class="pre">UnQLite</span></code></a> object. You can specify either the path to a database file, or use UnQLite as an in-memory database.</p>
+<div class="highlight-pycon"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">unqlite</span> <span class="kn">import</span> <span class="n">UnQLite</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">db</span> <span class="o">=</span> <span class="n">UnQLite</span><span class="p">()</span>  <span class="c"># Create an in-memory database.</span>
+</pre></div>
+</div>
+<div class="section" id="key-value-features">
+<h2>Key/value features<a class="headerlink" href="#key-value-features" title="Permalink to this headline">¶</a></h2>
+<p>UnQLite can be used as a key/value store.</p>
+<div class="highlight-pycon"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">db</span><span class="p">[</span><span class="s">&#39;foo&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;bar&#39;</span>  <span class="c"># Use as a key/value store.</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">db</span><span class="p">[</span><span class="s">&#39;foo&#39;</span><span class="p">]</span>
+<span class="go">bar</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="n">db</span><span class="p">[</span><span class="s">&#39;k</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+<span class="gp">...</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="s">&#39;k3&#39;</span> <span class="ow">in</span> <span class="n">db</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="s">&#39;k4&#39;</span> <span class="ow">in</span> <span class="n">db</span>
+<span class="go">False</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">del</span> <span class="n">db</span><span class="p">[</span><span class="s">&#39;k3&#39;</span><span class="p">]</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">db</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s">&#39;k2&#39;</span><span class="p">,</span> <span class="s">&#39;XXXX&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">db</span><span class="p">[</span><span class="s">&#39;k2&#39;</span><span class="p">]</span>
+<span class="go">&#39;2XXXX&#39;</span>
+</pre></div>
+</div>
+<p>The database can also be iterated through directly:</p>
+<div class="highlight-pycon"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="p">[</span><span class="n">item</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">db</span><span class="p">]</span>
+<span class="go">[(&#39;foo&#39;, &#39;bar&#39;), (&#39;k0&#39;, &#39;0&#39;), (&#39;k1&#39;, &#39;1&#39;), (&#39;k2&#39;, &#39;2XXXX&#39;)]</span>
+</pre></div>
+</div>
+<p>UnQLite databases support common <code class="docutils literal"><span class="pre">dict</span></code> APIs, such as <a class="reference internal" href="api.html#UnQLite.keys" title="UnQLite.keys"><code class="xref py py-meth docutils literal"><span class="pre">keys()</span></code></a>, <a class="reference internal" href="api.html#UnQLite.values" title="UnQLite.values"><code class="xref py py-meth docutils literal"><span class="pre">values()</span></code></a>, <a class="reference internal" href="api.html#UnQLite.items" title="UnQLite.items"><code class="xref py py-meth docutils literal"><span class="pre">items()</span></code></a>, and <a class="reference internal" href="api.html#UnQLite.update" title="UnQLite.update"><code class="xref py py-meth docutils literal"><span class="pre">update()</span></code></a>.</p>
+</div>
+<div class="section" id="cursors">
+<h2>Cursors<a class="headerlink" href="#cursors" title="Permalink to this headline">¶</a></h2>
+<p>For finer-grained record traversal, you can use cursors.</p>
+<div class="highlight-pycon"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">db</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span> <span class="k">as</span> <span class="n">cursor</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">cursor</span><span class="p">:</span>
+<span class="gp">... </span>        <span class="k">print</span> <span class="n">key</span><span class="p">,</span> <span class="s">&#39;=&gt;&#39;</span><span class="p">,</span> <span class="n">value</span>
+<span class="gp">...</span>
+<span class="go">k0 =&gt; 0</span>
+<span class="go">k1 =&gt; 1</span>
+<span class="go">k2 =&gt; 2XXXX</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">db</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span> <span class="k">as</span> <span class="n">cursor</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="n">cursor</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="s">&#39;k2&#39;</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="k">print</span> <span class="n">cursor</span><span class="o">.</span><span class="n">value</span><span class="p">()</span>
+<span class="gp">...</span>
+<span class="go">2</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">db</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span> <span class="k">as</span> <span class="n">cursor</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="n">cursor</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="s">&#39;k0&#39;</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="k">print</span> <span class="nb">list</span><span class="p">(</span><span class="n">cursor</span><span class="o">.</span><span class="n">fetch_until</span><span class="p">(</span><span class="s">&#39;k2&#39;</span><span class="p">,</span> <span class="n">include_stop_key</span><span class="o">=</span><span class="bp">False</span><span class="p">))</span>
+<span class="gp">...</span>
+<span class="go">[(&#39;k0&#39;, &#39;0&#39;), (&#39;k1&#39;, &#39;1&#39;)]</span>
+</pre></div>
+</div>
+<p>For more information, see the <a class="reference internal" href="api.html#Cursor" title="Cursor"><code class="xref py py-class docutils literal"><span class="pre">Cursor</span></code></a> API documentation.</p>
+</div>
+<div class="section" id="document-store-features">
+<h2>Document store features<a class="headerlink" href="#document-store-features" title="Permalink to this headline">¶</a></h2>
+<p>In my opinion the most interesting feature of UnQLite is its JSON document store. The <a class="reference external" href="http://unqlite.org/jx9.html">Jx9 scripting language</a> is used to interact with the document store, and it is a wacky mix of C, JavaScript and PHP.</p>
+<p>Interacting with the document store basically consists of creating a Jx9 script (you might think of it as an imperative SQL query), compiling it, and then executing it.</p>
+<div class="highlight-pycon"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">script</span> <span class="o">=</span> <span class="s">&quot;&quot;&quot;</span>
+<span class="gp">... </span><span class="s">    db_create(&#39;users&#39;);</span>
+<span class="gp">... </span><span class="s">    db_store(&#39;users&#39;, $list_of_users);</span>
+<span class="gp">... </span><span class="s">    $users_from_db = db_fetch_all(&#39;users&#39;);</span>
+<span class="gp">... </span><span class="s">&quot;&quot;&quot;</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">list_of_users</span> <span class="o">=</span> <span class="p">[</span>
+<span class="gp">... </span>    <span class="p">{</span><span class="s">&#39;username&#39;</span><span class="p">:</span> <span class="s">&#39;Huey&#39;</span><span class="p">,</span> <span class="s">&#39;age&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">},</span>
+<span class="gp">... </span>    <span class="p">{</span><span class="s">&#39;username&#39;</span><span class="p">:</span> <span class="s">&#39;Mickey&#39;</span><span class="p">,</span> <span class="s">&#39;age&#39;</span><span class="p">:</span> <span class="mi">5</span><span class="p">}</span>
+<span class="gp">... </span><span class="p">]</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">db</span><span class="o">.</span><span class="n">vm</span><span class="p">(</span><span class="n">script</span><span class="p">)</span> <span class="k">as</span> <span class="n">vm</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="n">vm</span><span class="p">[</span><span class="s">&#39;list_of_users&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">list_of_users</span>
+<span class="gp">... </span>    <span class="n">vm</span><span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+<span class="gp">... </span>    <span class="n">users_from_db</span> <span class="o">=</span> <span class="n">vm</span><span class="p">[</span><span class="s">&#39;users_from_db&#39;</span><span class="p">]</span>
+<span class="gp">...</span>
+<span class="go">True</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">users_from_db</span>  <span class="c"># UnQLite assigns items in a collection an ID.</span>
+<span class="go">[{&#39;username&#39;: &#39;Huey&#39;, &#39;age&#39;: 3, &#39;__id&#39;: 0},</span>
+<span class="go"> {&#39;username&#39;: &#39;Mickey&#39;, &#39;age&#39;: 5, &#39;__id&#39;: 1}]</span>
+</pre></div>
+</div>
+<p>This is just a taste of what is possible with Jx9. More information can be found in the <a class="reference internal" href="api.html#VM" title="VM"><code class="xref py py-class docutils literal"><span class="pre">VM</span></code></a> documentation.</p>
+</div>
+<div class="section" id="collections">
+<h2>Collections<a class="headerlink" href="#collections" title="Permalink to this headline">¶</a></h2>
+<p>To simplify working with JSON document collections, <code class="docutils literal"><span class="pre">unqlite-python</span></code> provides a light API for
+executing Jx9 queries on collections. A collection is an ordered list of JSON objects
+(records). Records can be appended, updated or deleted.
+be support for updates as well.</p>
+<p>To begin working with <a class="reference internal" href="api.html#Collection" title="Collection"><code class="xref py py-class docutils literal"><span class="pre">Collection</span></code></a>, you can use the <a class="reference internal" href="api.html#UnQLite.collection" title="UnQLite.collection"><code class="xref py py-meth docutils literal"><span class="pre">UnQLite.collection()</span></code></a> factory method:</p>
+<div class="highlight-pycon"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">users</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">collection</span><span class="p">(</span><span class="s">&#39;users&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">users</span><span class="o">.</span><span class="n">create</span><span class="p">()</span>  <span class="c"># Create the collection if it does not exist.</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">users</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<p>You can use the <a class="reference internal" href="api.html#Collection.store" title="Collection.store"><code class="xref py py-meth docutils literal"><span class="pre">Collection.store()</span></code></a> method to add one or many records. To add a single record just pass in a python <code class="docutils literal"><span class="pre">dict</span></code>. To add multiple records, pass in a list of dicts. Records can be fetched and deleted by ID using <a class="reference internal" href="api.html#Collection.fetch" title="Collection.fetch"><code class="xref py py-meth docutils literal"><span class="pre">fetch()</span></code></a> and <a class="reference internal" href="api.html#Collection.delete" title="Collection.delete"><code class="xref py py-meth docutils literal"><span class="pre">delete()</span></code></a>.</p>
+<div class="highlight-pycon"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">users</span><span class="o">.</span><span class="n">store</span><span class="p">([</span>
+<span class="gp">... </span>    <span class="p">{</span><span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="s">&#39;Charlie&#39;</span><span class="p">,</span> <span class="s">&#39;color&#39;</span><span class="p">:</span> <span class="s">&#39;green&#39;</span><span class="p">},</span>
+<span class="gp">... </span>    <span class="p">{</span><span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="s">&#39;Huey&#39;</span><span class="p">,</span> <span class="s">&#39;color&#39;</span><span class="p">:</span> <span class="s">&#39;white&#39;</span><span class="p">},</span>
+<span class="gp">... </span>    <span class="p">{</span><span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="s">&#39;Mickey&#39;</span><span class="p">,</span> <span class="s">&#39;color&#39;</span><span class="p">:</span> <span class="s">&#39;black&#39;</span><span class="p">}])</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">users</span><span class="o">.</span><span class="n">store</span><span class="p">({</span><span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="s">&#39;Leslie&#39;</span><span class="p">,</span> <span class="s">&#39;color&#39;</span><span class="p">:</span> <span class="s">&#39;also green&#39;</span><span class="p">})</span>
+<span class="go">True</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">users</span><span class="o">.</span><span class="n">fetch</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>  <span class="c"># Fetch the first record.</span>
+<span class="go">{&#39;__id&#39;: 0, &#39;color&#39;: &#39;green&#39;, &#39;name&#39;: &#39;Charlie&#39;}</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">users</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>  <span class="c"># Delete the first record.</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">users</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">users</span><span class="o">.</span><span class="n">last_record_id</span><span class="p">())</span>  <span class="c"># Delete the last record.</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<p>You can retrieve all records in the collection, or specify a filtering function. The filtering function will be registered as a foreign function with the Jx9 VM and called <em>from</em> the VM.</p>
+<div class="highlight-pycon"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">users</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+<span class="go">[{&#39;__id&#39;: 1, &#39;color&#39;: &#39;white&#39;, &#39;name&#39;: &#39;Huey&#39;},</span>
+<span class="go"> {&#39;__id&#39;: 2, &#39;color&#39;: &#39;black&#39;, &#39;name&#39;: &#39;Mickey&#39;}]</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">users</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">obj</span><span class="p">:</span> <span class="n">obj</span><span class="p">[</span><span class="s">&#39;name&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;H&#39;</span><span class="p">))</span>
+<span class="go">[{&#39;__id&#39;: 1, &#39;color&#39;: &#39;white&#39;, &#39;name&#39;: &#39;Huey&#39;}]</span>
+</pre></div>
+</div>
+<p>More information can be found in the <a class="reference internal" href="api.html#Collection" title="Collection"><code class="xref py py-class docutils literal"><span class="pre">Collection</span></code></a> documentation.</p>
+</div>
+<div class="section" id="transactions">
+<h2>Transactions<a class="headerlink" href="#transactions" title="Permalink to this headline">¶</a></h2>
+<p>UnQLite supports transactions for file-backed databases (since transactions occur at the filesystem level, they have no effect on in-memory databases).</p>
+<p>The easiest way to create a transaction is with the context manager:</p>
+<div class="highlight-pycon"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">db</span> <span class="o">=</span> <span class="n">UnQLite</span><span class="p">(</span><span class="s">&#39;/tmp/test.db&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">db</span><span class="o">.</span><span class="n">transaction</span><span class="p">():</span>
+<span class="gp">... </span>    <span class="n">db</span><span class="p">[</span><span class="s">&#39;k1&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;v1&#39;</span>
+<span class="gp">... </span>    <span class="n">db</span><span class="p">[</span><span class="s">&#39;k2&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;v2&#39;</span>
+<span class="gp">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">db</span><span class="p">[</span><span class="s">&#39;k1&#39;</span><span class="p">]</span>
+<span class="go">&#39;v1&#39;</span>
+</pre></div>
+</div>
+<p>You can also use the transaction decorator which will wrap a function call in a transaction and commit upon successful execution (rolling back if an exception occurs).</p>
+<div class="highlight-pycon"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="nd">@db.commit_on_success</span>
+<span class="gp">... </span><span class="k">def</span> <span class="nf">save_value</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">exc</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="n">db</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+<span class="gp">... </span>    <span class="k">if</span> <span class="n">exc</span><span class="p">:</span>
+<span class="gp">... </span>        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&#39;uh-oh&#39;</span><span class="p">)</span>
+<span class="gp">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">save_value</span><span class="p">(</span><span class="s">&#39;k3&#39;</span><span class="p">,</span> <span class="s">&#39;v3&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">save_value</span><span class="p">(</span><span class="s">&#39;k3&#39;</span><span class="p">,</span> <span class="s">&#39;vx&#39;</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
+<span class="gt">Traceback (most recent call last):</span>
+  File <span class="nb">&quot;&lt;stdin&gt;&quot;</span>, line <span class="m">1</span>, in <span class="n">&lt;module&gt;</span>
+  File <span class="nb">&quot;unqlite/core.py&quot;</span>, line <span class="m">312</span>, in <span class="n">wrapper</span>
+    <span class="k">return</span> <span class="n">fn</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+  File <span class="nb">&quot;&lt;stdin&gt;&quot;</span>, line <span class="m">5</span>, in <span class="n">save_value</span>
+<span class="gr">Exception</span>: <span class="n">uh-oh</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">db</span><span class="p">[</span><span class="s">&#39;k3&#39;</span><span class="p">]</span>
+<span class="go">&#39;v3&#39;</span>
+</pre></div>
+</div>
+<p>For finer-grained control you can call <a class="reference internal" href="api.html#UnQLite.begin" title="UnQLite.begin"><code class="xref py py-meth docutils literal"><span class="pre">begin()</span></code></a>, <a class="reference internal" href="api.html#UnQLite.rollback" title="UnQLite.rollback"><code class="xref py py-meth docutils literal"><span class="pre">rollback()</span></code></a> and <a class="reference internal" href="api.html#UnQLite.commit" title="UnQLite.commit"><code class="xref py py-meth docutils literal"><span class="pre">commit()</span></code></a> manually.</p>
+<div class="highlight-pycon"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">db</span><span class="o">.</span><span class="n">begin</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">db</span><span class="p">[</span><span class="s">&#39;k3&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;v3-xx&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">db</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">db</span><span class="p">[</span><span class="s">&#39;k3&#39;</span><span class="p">]</span>
+<span class="go">&#39;v3-xx&#39;</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Quick-start</a><ul>
+<li><a class="reference internal" href="#key-value-features">Key/value features</a></li>
+<li><a class="reference internal" href="#cursors">Cursors</a></li>
+<li><a class="reference internal" href="#document-store-features">Document store features</a></li>
+<li><a class="reference internal" href="#collections">Collections</a></li>
+<li><a class="reference internal" href="#transactions">Transactions</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="installation.html"
+                        title="previous chapter">Installation</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="api.html"
+                        title="next chapter">API Documentation</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/quickstart.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="api.html" title="API Documentation"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="installation.html" title="Installation"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">unqlite-python 0.2.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2014, charles leifer.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+    </div>
+  </body>
+</html>
