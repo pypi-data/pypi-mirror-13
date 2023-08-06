@@ -1,0 +1,25 @@
+from setuptools import setup, find_packages
+
+setup(
+    name='django-livesettings3',
+    version='1.4.17',
+    description="Python 3 port of django-livesettings",
+    long_description="""Python 3 version of django live settings. It provides the ability to configure settings via an admin interface, rather than by editing "settings.py".""",
+    author='Kunal Deo',
+    author_email='kunaldeo@gmail.com',
+    url='https://github.com/kunaldeo/django-livesettings3/',
+    license='New BSD License',
+    platforms=['any'],
+    classifiers=['Development Status :: 4 - Beta',
+                 'Environment :: Web Environment',
+                 'Intended Audience :: Developers',
+                 'License :: OSI Approved :: BSD License',
+                 'Operating System :: OS Independent',
+                 'Programming Language :: Python',
+                 'Programming Language :: Python :: 3.4',
+                 'Programming Language :: Python :: 3.5',
+                 'Framework :: Django'],
+    packages=find_packages(),
+    install_requires=['django>=1.8', 'django-keyedcache3'],
+    include_package_data=True,
+)
