@@ -1,0 +1,44 @@
+=== About ===
+
+https://engineering.redhat.com/trac/satellite/wiki/Quality_Engineering/Projects/5minute
+
+=== QuickStart ===
+
+Install OpenStack Nova client tool:
+
+  # yum -y install python-novaclient
+
+Get config file:
+
+  1. Login to http://qeos.lab.eng.rdu2.redhat.com/
+  2. Navigate to Access & Security -> API Access
+  3. Save file from "Download OpenStack RC File" to ~/.5minute/config
+
+Get started:
+
+  Show help:
+
+    $ ./5minute help
+
+  Upload your SSH public key:
+
+    $ ./5minute key ~/.ssh/id_rsa.pub
+
+  Show images we can work with:
+
+    $ ./5minute images
+
+  Boot your machine (consider adding '--name' or '--flavor' to the command):
+
+    $ ./5minute boot 5minute-RHEL6.6-x86-64-v2
+
+  You will get floating IP assigned and *.usersys.redhat.com hostname. It will
+  take 5 - 20 minutes to hostname to work, but you should be able to use IP
+  just fine:
+
+    $ ssh root@10.8.53.29
+
+  When you are done, kill the machine (you can do it via OpenStack webUI,
+  but this way we can clean DNS records much quicker):
+
+    $ ./5minute delete $USER-5minute-RHEL6.6-x86-64-v2
