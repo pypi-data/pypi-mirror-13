@@ -1,0 +1,34 @@
+Home-page: https://bitbucket.org/biocommons/eutils
+Author: Reece Hart
+Author-email: biocommons-dev@googlegroups.com
+License: Apache License 2.0 (http://www.apache.org/licenses/LICENSE-2.0)
+Description: eutils (https://bitbucket.org/biocommons/eutils/) is a Python package
+        that facilitates the use of the National Center for Biotechnology
+        Information (NCBI) Eutilities interface.  It is conceptually similar
+        to facilities in Biopython and PyCogent, but it differs from those in
+        a few important ways. Features:
+        
+        * Eutils, and nothing else.  This reduces the number of dependencies.
+        
+        * Caching and throttling are built-in. (NCBI bans excessive use.)
+        
+        * Aims to provide parsers for all major data types.
+        
+        Status: eutils is in early development.  PubMed, Gene, RefSeq
+        (nucleotide), and dbSNP data are well-represented; others are not
+        represented at all.
+        
+        
+Keywords: bioinformatics
+Platform: UNKNOWN
+Classifier: Development Status :: 3 - Alpha
+Classifier: Intended Audience :: Developers
+Classifier: Intended Audience :: Healthcare Industry
+Classifier: Intended Audience :: Science/Research
+Classifier: License :: OSI Approved :: Apache Software License
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python :: 2
+Classifier: Programming Language :: Python
+Classifier: Topic :: Database :: Front-Ends
+Classifier: Topic :: Scientific/Engineering :: Bio-Informatics
+Classifier: Topic :: Scientific/Engineering :: Medical Science Apps.
