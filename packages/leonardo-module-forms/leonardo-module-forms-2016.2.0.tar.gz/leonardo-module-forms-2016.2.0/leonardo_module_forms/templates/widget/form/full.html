@@ -1,0 +1,21 @@
+{% extends widget.get_base_template %}
+
+{% load i18n %}
+
+{% block content %}
+
+<div id="form{{ widget.id }}" class="{{ widget.formclass }}">
+{% if form %}
+<form method="post" action="#form{{ widget.id }}" class="{{ widget.formclass }}">
+  {% csrf_token %}
+  <input type="hidden" name="_formcontent" value="{{ widget.id }}">
+
+  {% include 'horizon/common/_form_fields.html' with form=form %}
+
+  <input class="btn btn-primary" type="submit" value="{{ widget.submit_caption }}"></td>
+</form>
+{% else %}
+{{ message|safe }}
+{% endif %}
+</div>
+{% endblock %}
