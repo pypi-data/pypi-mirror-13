@@ -1,0 +1,2204 @@
+2016-02-26  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Update the ChangeLog file
+
+	Prepared version 1.6.0
+
+2016-02-24  Giulio Calacoci  <giulio.calacoci@2ndquadrant.it>
+
+	Fix subtle bug in local recovery
+
+2016-02-20  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Depend on pytest-runner module only when tests are actually invoked
+
+2016-02-18  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Enable E501 check (long lines) in flake8
+	Enabled in flake8 the E501 check, and reformatted text according to the
+	new line length policy.
+
+	Use pytest-runner module to run tests in setup.py
+
+2016-02-18  Leonardo Cecchi  <leonardo.cecchi@2ndquadrant.it>
+
+	Fix check if ssh is missing
+	Catch any 'command not found' errors during ssh check
+
+2016-02-17  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Update the ChangeLog file
+
+	Prepared version 1.6.0b3
+
+2016-02-15  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Stop running tests on Python 3.2
+
+2016-02-11  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Make the code compatible with Python >= 3.2
+	All the incompatible constructs were rewritten to support both Python 2.x
+	and 3.x. Previously we were running 2to3 during the setup execution.
+
+2016-02-16  Gabriele Bartolini  <gabriele.bartolini@2ndQuadrant.it>
+
+	Add Leonardo Cecchi to authors
+
+2016-02-15  Leonardo Cecchi  <leonardo.cecchi@2ndquadrant.it>
+
+	Rollback transaction after starting a backup
+	Following the complete refactoring of the PostgreSQL connection code,
+	part of this 1.6.0 previous versions (alpha1, beta1 and beta2),
+	Barman is keeping an IDLE connection while taking a backup.
+	This could trigger spurious alerts if a transaction has been left open.
+
+2016-02-15  Giulio Calacoci  <giulio.calacoci@2ndquadrant.it>
+
+	Fix output of 'barman check --nagios'
+	Display the correct number of servers with 'barman check --nagios'
+
+2016-02-12  Leonardo Cecchi  <leonardo.cecchi@2ndquadrant.it>
+
+	Enhance test coverage for the wal_archiver module
+	Remove the unused 'is_wal_relevant' method as well.
+
+2016-02-12  Gabriele Bartolini  <gabriele.bartolini@2ndQuadrant.it>
+
+	Add section about contributing for Barman
+
+	Add a section about .partial files in the documentation
+
+2016-02-12  Leonardo Cecchi  <leonardo.cecchi@2ndquadrant.it>
+
+	Add 'receive-wal running' check
+	When `streaming_archiver` is enabled, this check ensures that
+	a `receive-wal` process is running.
+
+2016-02-12  Giulio Calacoci  <giulio.calacoci@2ndquadrant.it>
+
+	Add --reset option to receive-wal comand
+	Add the `--reset` option to the `receive-wal` command, allowing
+	users to reset the WAL location of the streaming archiver.
+	This is useful in case Barman goes out of sync with the master
+	server.
+
+2016-02-10  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Update the ChangeLog file
+
+2016-02-10  Gabriele Bartolini  <gabriele.bartolini@2ndQuadrant.it>
+
+	Prepared version 1.6.0b2
+
+2016-02-05  Leonardo Cecchi  <leonardo.cecchi@2ndquadrant.it>
+
+	Add check for FAILED backups
+	The 'barman check' command now checks for the presence of failed backups.
+
+2016-02-08  Giulio Calacoci  <giulio.calacoci@2ndquadrant.it>
+
+	Complete integration of RemoteStatusMixin class
+	Let classes implementing the the get_remote_status method inherit
+	from the RemoteStatusMixin base class, completing the refactoring
+	activity started with a previous commit (3179a1e).
+
+2016-02-08  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Fix unwanted removal of duplicate WAL from archive
+	This commit removes an unused and dangerous option from the Compressor
+	interface that allowed the removal of the source WAL file after
+	compression (introduced in 1.6.0 development branch).
+
+	Fixes: #27
+
+	Remove trashing of old WAL files from the archiver
+	The archiver now always archives any file with a valid name that
+	finds inside the incoming directory.
+
+	NOTE: The block of code that has been removed changes behaviour
+	of existing Barman installations, but in a conservative way.
+	We defer to future versions of Barman to better understand
+	WAL files' sequentiality (parsing history files, for example),
+	by writing specific classes/modules responsible for deeper
+	and more robust checks in the archive area.
+
+2016-02-05  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Manage the termination of receive-wal in cron
+	When the 'streaming_archive' option is disabled for a server,
+	a cron execution makes sure that a running receive-wal process
+	is correctly terminated.
+
+	Clearer output and logging messages for `receive-wal`.
+
+2016-02-05  Leonardo Cecchi  <leonardo.cecchi@2ndquadrant.it>
+
+	Add check for archiver errors
+	Barman now checks for the presence of files in the error directory.
+
+2016-02-04  Giulio Calacoci  <giulio.calacoci@2ndquadrant.it>
+
+	Improve error handling when required server parameters are missing
+	Add error handling in case a required parameter (i.e. ssh_command,
+	conninfo, ...) is missing, by emitting meaningful error messages.
+
+2016-02-02  Giulio Calacoci  <giulio.calacoci@2ndquadrant.it>
+
+	Adjust severity of some messages produced by cron command
+	The messages about subprocess execution produced by the cron command
+	were emitted for every cron run. They provide little information and
+	their presence may make the log difficult to analyse, so they have been
+	removed from log.
+
+2016-02-02  Aydan  <Aydan Tasdemir>
+
+	Update docs - Added remote recovery command
+	Closes: #26
+
+2016-02-01  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Update the ChangeLog file
+
+	Prepared version 1.6.0b1
+
+2016-01-29  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Fix python 3.2 error on travis-ci
+
+	Avoid exceptions during ProcessManager initialization
+	Previously a LockFileParsingError exception could have been raised if a
+	lock file were empty.
+
+	Also, the LockFile class now writes the lock content atomically
+
+2016-01-28  Giulio Calacoci  <giulio.calacoci@2ndquadrant.it>
+
+	Remove a spurious error when last_failed_wal is a history file
+	Fixes: SF#77
+
+2016-01-27  Giulio Calacoci  <giulio.calacoci@2ndquadrant.it>
+
+	Fix the 'status' command output with PostgreSQL < 9.4
+	Make sure only one 'Last archived WAL' line is present.
+
+	Fix the command used to retrieve the last archived WAL through
+	ssh when the pg_stat_archiver view is not available.
+
+	Fixes: #25
+
+2016-01-28  Gabriele Bartolini  <gabriele.bartolini@2ndQuadrant.it>
+
+	Set version to 1.6.0b1
+
+2016-01-21  Giulio Calacoci  <giulio.calacoci@2ndquadrant.it>
+
+	Add --stop option to receive-wal command
+	Add the option --stop to the receive-wal command, allowing the user to
+	stop a receive-wal process that running in background for a specific server.
+
+	The implementation is based on the new class ProcessManager that will be
+	used in the future to manage all barman's sub-processes.
+
+2016-01-24  Gabriele Bartolini  <gabriele.bartolini@2ndQuadrant.it>
+
+	Add current data size of the server in 'barman status'
+
+2016-01-22  Gabriele Bartolini  <gabriele.bartolini@2ndQuadrant.it>
+
+	Updated NEWS with current code
+
+2016-01-19  Giulio Calacoci  <giulio.calacoci@2ndquadrant.it>
+
+	Improve archive-wal robustness and log messages
+	Display clearer error messages when discarding a WAL file.
+	Also, WAL files that are older than the first backup are
+	now moved in the 'errors' directory: FAILED backups are now
+	ignored in this process.
+
+	TODO: Add a method to check the presence of files in the error
+	directory.
+
+	Fixes: #24
+
+2016-01-21  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Move archive-wal code into the wal_archiver module
+
+2016-01-17  Gabriele Bartolini  <gabriele.bartolini@2ndQuadrant.it>
+
+	Reorder options in barman.5 man page
+
+2016-01-15  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Add include sorting check in tox flake8 environment
+
+2015-12-05  Giulio Calacoci  <giulio.calacoci@2ndquadrant.it>
+
+	Implement pygzip and pybzip2 compressors
+	The new pygzip and pybzip2 compressors are implemented using Python's
+	internal modules for compressing and decompressing gzip and bzip2 files.
+	This avoids the cost of forking and executing the shell.
+
+	Initial idea by Christoph Moench-Tegeder <cmt@2ndquadrant.de>
+
+2016-01-14  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Update copyright years to 2016
+
+2016-01-08  Giulio Calacoci  <giulio.calacoci@2ndquadrant.it>
+
+	Add 'receive-wal' cron integration
+	Add integration of the new command 'receive-wal' during the execution of
+	the cron command.
+
+	If the option 'streaming_archiver' is on, the command 'receive-wal' is
+	automatically executed as subprocess by the cron command, allowing
+	Barman to receive WAL files from PostgreSQL using the native streaming
+	protocol.
+
+	TODO: Implement a way to interrupt a running streaming process
+
+2015-12-09  Stefano Zacchiroli  <zack@upsilon.cc>
+
+	Add support for the pigz compressor
+	Pigz on-disk format is the same of gzip, but (de)compression is much
+	faster due to the usage of CPU parallelism.
+
+	For write-intense workloads pigz vs gzip might make the difference,
+	between struggling to keep up with archiving incoming WALs and being
+	able to keep up easily.
+
+2016-01-09  Gabriele Bartolini  <gabriele.bartolini@2ndQuadrant.it>
+
+	Add check() method in WalArchiver classes
+	Move code from the server.check_postgres() method in
+	the WalArchiver class, so that each implementation (FileWalArchiver
+	and StreamingArchiver) perform their specific checks.
+	Created the RemoteStatusMixin class that implements a cacheable
+	version of remote status information.
+
+	Currently it is only used by the WalArchiver class tree.
+	TODO: propagate it to all other classes implementing the
+	get_remote_status() function in a later commit.
+
+2016-01-08  Christoph Moench-Tegeder  <christoph@2ndquadrant.de>
+
+	Permit `archive_mode=always` for 9.5 servers
+	PostgreSQL 9.5 introduces archive_mode=always. Even though Barman's
+	current framework for checks does not allow yet to correctly monitor
+	archiving from standby servers, Barman now allows users to set
+	`archive_mode` to `always`, provided that archiving happens from the master.
+
+2016-01-08  Giulio Calacoci  <giulio.calacoci@2ndquadrant.it>
+
+	Fix server creation and output of check command
+	Modified the init method of Server Object, managing errors/exception
+	using the msg_list attribute of the configuration.
+	Modified the check command output.
+
+2016-01-04  Giulio Calacoci  <giulio.calacoci@2ndquadrant.it>
+
+	Rename get_first_backup and get_last_backup methods
+	Renamed get_first_backup() and get_last_backup() methods of the
+	Server and BackupManager classes, respectively into get_first_backup_id()
+	and get_last_backup_id(), for coherence and code clarity.
+	Now the fact that the method returns the ID of a backup instead
+	of a BackupInfo object has been made explicit.
+
+	Fix management of backup id during backup deletion
+	Fix an error that prevents the deletion of an existing
+	backup while a backup on the same server is in progress.
+
+	Fixes #22
+
+2015-12-31  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Use isort python package to keep imports ordered
+
+2015-12-14  Giulio Calacoci  <giulio.calacoci@2ndquadrant.it>
+
+	Implement `receive-wal` command
+	The `receive-wal` command receives the stream of transaction logs for a
+	server. The process relies on `pg_receivexlog` to receive WAL files from
+	a PostgreSQL server through the streaming protocol.
+	It is a foreground process which lasts until it receives a SIGINT.
+
+2015-12-31  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Add support for long running Commands
+	The Command class now supports the execution of long running
+	subprocesses, by passing the subprocess output and error streams
+	to a handler, line by line.
+
+	Remove spurious newlines from log lines
+	Error messages coming from libpq often terminate with a newline.
+	Always call strip() on strings that have been extracted from
+	exceptions before logging them.
+
+	Make get_remote_status methods behaviour coherent
+	A 'get_remote_status' method should never raise an exception in case of
+	error. The expected behaviour is to set missing values to None in the
+	resulting dictionary.
+
+2015-12-29  Leonardo Cecchi  <leonardo.cecchi@2ndquadrant.it>
+
+	Fix exception when streaming connection is unavailable
+	Previously, when 'streaming_archiver' was on and pg_receivexlog correctly
+	installed, Barman would raise an AttributeError exception when streaming
+	connection to PostgreSQL was unavailable, as it could not detect the
+	server version.
+
+	This commit fixes the error by modifying the management of a failed
+	connection to PostgreSQL through streaming connection. It also adds
+	an unit test for this scenario, as well as hints for the user during
+	`barman check` suggesting a possible streaming connection error.
+
+2015-12-28  Leonardo Cecchi  <leonardo.cecchi@2ndquadrant.it>
+
+	Propagate "-c" option to any Barman subprocess
+	The "-c" option lets users specify a custom location for the configuration
+	file. It must be propagated to every Barman subprocess for consistency
+	of behaviour.
+
+	Fixes #19
+
+2015-12-24  Gabriele Bartolini  <gabriele.bartolini@2ndQuadrant.it>
+
+	Update documentation about WAL archiving
+
+2015-12-22  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Manage WAL duplicates in `archive-wal` command
+	In case a WAL file is archived twice, `archive-wal` will check
+	if the new file is identical to the already archived one (compressed
+	WAL files will be decompressed and checked). If yes, the second
+	file is discarded, otherwise it is saved in the 'errors' directory.
+
+	Accept compressed WAL files in incoming directory
+	In case a WAL file in the incoming directory is already compressed
+	using a known algorithm, archive it as is.
+
+	Add streaming support to 'archive-wal' command
+	The `archive-wal` command now looks for both archived WAL files
+	(shipped from PostgreSQL through its `archive_command`) and streamed
+	ones (via the `receive-wal` command).
+
+2015-12-24  Giulio Calacoci  <giulio.calacoci@2ndquadrant.it>
+
+	Add sleep time option to `barman-wal-restore` script
+	Introduce the '-s seconds' option to the barman-wal-restore script.
+	After a failure of the get-wal command, the script will sleep for
+	the specified amount of seconds (default 0, no wait) before
+	exiting the restore_command from PostgreSQL.
+
+	Closes #7
+
+2015-12-22  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Add `streaming_wals_directory` and `errors_directory` options
+
+	Make sure WAL archiving is atomic. Fixes: #9,#12
+
+2015-12-15  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Get rid of pytest warnings from pytest-catchlog
+
+2015-12-11  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Restore compatibility with PostgreSQL 8.3
+	On PostgreSQL older than 8.4, disable the query that detects those
+	settings coming from an included file - as the required pg_setting
+	field was only included in that release.
+
+2015-11-24  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Fixes possible unhandled exceptions in barman.postgres
+	Improve the testing coverage of barman.postgres module.
+
+2015-12-06  Christoph Moench-Tegeder  <cmt@2ndquadrant.com>
+
+	Remove redundant sete[gu]id() calls
+	Python's documentation of the os.setuid/os.setgid calls is
+	oversimplified to the point of being wrong. Under the hood,
+	the setuid(2)/setgid(2) functions are used, thus making these
+	calls as POSIX compliant as the underlying operating system.
+	As barman won't be installed SUID (it's an interpreter file),
+	effective, real and saved user id should always be the same.
+	That way, the only reason to use setuid() family calls at all
+	is for a privileged user (root) to change over to the barman
+	(unprivileged) user. According to POSIX.1-2013, the setuid()
+	call changes all three (real, effective and saved) uids if
+	called by a privileged user (the same holds for setgid() and
+	the group ids). In this construct, the additional seti[gu]id
+	calls are redundant no-ops and can be removed.
+
+2015-11-27  Giulio Calacoci  <giulio.calacoci@2ndquadrant.it>
+
+	Add support for 'streaming_archiver' option
+	Add a global/server boolean option called 'streaming_archiver' which
+	enables the use of the PostgreSQL's streaming protocol to receive
+	transaction logs from a server.
+	If set to 'on', Barman expects to find `pg_receivexlog` in the PATH
+	(see `path` option) and that streaming connection for the server is
+	properly working. Subsequently, it activates both proper connection
+	checks and management of WAL files.
+
+	Refactored the code to use a new class, the StreamingWalArchiver,
+	which is responsible for managing WAL files using a streaming
+	connection.
+
+	Add support for 'archiver' option
+	Add a global/server boolean option called 'archiver' which
+	enables continuous WAL archiving (through log shipping using
+	PostgreSQL's archive_command) for a specific server.
+	If set the 'true' (default), Barman expects that PostgreSQL
+	continously deposits WAL files in the 'incoming' directory
+	of that server, and subsequently activates proper checks and
+	management.
+
+	Refactored the code to use a new class, the FileWalArchiver.
+	The class is in charge of both archival and compression of WAL files.
+	This is the first step towards the implementation of streaming
+	archiving support.
+
+2015-11-25  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Reorder constants in barman.config module
+
+2015-11-20  Giulio Calacoci  <giulio.calacoci@2ndquadrant.it>
+
+	Add `streaming_conninfo` server option
+	Added the `streaming_conninfo` option to Barman configuration.
+	This option (with server scope only), adds the support in Barman
+	for a streaming replication connection to a PostgreSQL server.
+
+	Added also a simple check for the barman check command, that tests
+	that the streaming connection to PostgreSQL is properly working.
+
+2015-11-13  Giulio Calacoci  <giulio.calacoci@2ndquadrant.it>
+
+	Add support for `path_prefix` configuration option
+	The `path_prefix` global/server option can contain one
+	or more absolute paths, separated by colon, where Barman
+	looks for executable files.
+
+	The paths specified in `path_prefix` are tried before the
+	ones specified in `PATH` environment variable.
+
+2015-11-10  Gabriele Bartolini  <gabriele.bartolini@2ndQuadrant.it>
+
+	Refactored access to PostgreSQL
+	Created the 'postgres' module which is responsible for any communication
+	with a PostgreSQL server, wrapping all connection and query management
+	activities. This module is the only point of access to PostgreSQL.
+
+2015-11-06  Stefano Bianucci  <stefano.bianucci@2ndquadrant.it>
+
+	Rename `copy_method` configuration key to `backup_method`
+
+2015-11-03  Giuseppe Broccolo  <giuseppe.broccolo@2ndQuadrant.it>
+
+	Create an implicit restore point at the end of a backup
+	At the end of a backup, if the PostgreSQL version is 9.1 or newer,
+	create an implicit restore point using the pg_create_restore_point()
+	function.
+
+2015-11-11  Gabriele Bartolini  <gabriele.bartolini@2ndQuadrant.it>
+
+	Set version to 1.6.0a1
+
+2015-11-13  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Update the ChangeLog file
+
+	Prepared version 1.5.1
+
+2015-11-13  Giulio Calacoci  <giulio.calacoci@2ndquadrant.it>
+
+	Create pg_xlog/archive_status directory at the end of recovery
+	On PostgreSQL 8.3, the pg_xlog/archive_status directory is not
+	automatically created, if missing, during the startup. To avoid errors
+	Barman now creates that directory at the end of any recovery operation.
+
+2015-11-13  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Converted sphinx directory README to Markdown
+
+2015-11-10  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Pin (temporarily) pytest-catchlog to version 1.1
+	The pytest-catchlog release 1.2.0 broke Python 2.6 compatibility, so pin
+	the 1.1 version until it will be restored.
+
+	Ref: https://github.com/eisensheng/pytest-catchlog/pull/15
+
+	In latest release of pytest-catchlog the result of caplog.records() call
+	is a copy of the event list so any modification of that has no global
+	effect. Change the code that uses caplog.records() to not rely on the
+	previous undocumented behaviour.
+
+2015-11-05  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Fix a typo in barman-wal-restore help output
+
+2015-11-04  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Update the ChangeLog file
+
+	Avoid forcing arcfour cypher in barman-wal-restore
+	OpenSSH 6.7 dropped many low security algorithms, and arcfour is one of
+	them. So we stop forcing it in the script, allowing the user to define
+	the wanted algorithm in ~/.ssh/config
+
+	Ref: http://www.openssh.com/txt/release-6.7
+
+2015-11-04  Giulio Calacoci  <giulio.calacoci@2ndquadrant.it>
+
+	Improve error messaging for missing config files
+
+2015-11-04  Gabriele Bartolini  <gabriele.bartolini@2ndQuadrant.it>
+
+	Set version to 1.5.1b1
+
+2015-10-27  Giulio Calacoci  <giulio.calacoci@2ndquadrant.it>
+
+	Manage 'wal_level' only for PostgreSQL >= 9.0
+	Really fixes #3
+
+2015-10-26  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Fix all E731 pep8 errors
+	Always use a def statement instead of an assignment statement that binds
+	a lambda expression directly to a name.
+
+	See: https://www.python.org/dev/peps/pep-0008/#programming-recommendations
+
+2015-10-22  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Update the ChangeLog file
+
+2015-10-22  Gabriele Bartolini  <gabriele.bartolini@2ndQuadrant.it>
+
+	NEWS for 1.5.1a1
+
+	Set version to 1.5.1a1
+	Revert version to 1.5 branch due to relevant bug fixing
+
+2015-10-12  Giulio Calacoci  <giulio.calacoci@2ndquadrant.it>
+
+	Add the 'archive-wal' command
+	The 'archive-wal' command executes the WAL maintenance operations on a
+	given server.
+
+	This command is automatically executed as a subprocess by the cron
+	command, allowing the parallel execution of WAL archiving on
+	different servers.
+
+2015-10-20  Giuseppe Broccolo  <giuseppe.broccolo@2ndQuadrant.it>
+
+	Avoid 'wal_level' check on PostgreSQL version < 9.0
+	Conditionally skip 'wal_level' check in PostgreSQL
+	versions prior to 9.0.
+
+	Fixes #3
+
+	Avoid retention policy checks during the recovery
+	Additionally, skip any missing tablespace directory during the deletion
+	of a backup (like we already do with missing pgdata directory)
+
+2015-10-20  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Fix more incorrect mock assert calls in unit tests
+	Add flake8-mock plugin in flake8 tox environment to make sure it will
+	not happen again.
+
+	Some more cleanup of testing infrastructure has been done:
+
+	* Switch from pytest-capturelog (unresponsive upstream) to
+	  pytest-catchlog.
+	* Remove the version pinning from mock as 1.3.0 supports py2.6 again.
+	* Add flake8-copyright and flake8-string-format plugins.
+
+2015-10-09  Giulio Calacoci  <giulio.calacoci@2ndquadrant.it>
+
+	Allow parallel cron execution for different servers
+	Allow the execution of multiple 'barman cron' processes, each one
+	handling a different server. Servers will be handled sequentially,
+	skipping those that are already being served by another cron process.
+
+2015-10-22  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Fix calculation of backup size
+	In Barman 1.5.0 the internal directory structure of a backup has been
+	changed, moving tablespaces from being inside the data directory to
+	being inside the backup directory. The method backup_fsync_and_set_sizes()
+	now takes that into account by running against the whole backup directory.
+
+	Fixes #5
+
+2015-10-12  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Fix some incorrect mock assert calls in unit tests
+
+2015-10-06  Giulio Calacoci  <giulio.calacoci@2ndquadrant.it>
+
+	Support for mixed compression types in WAL files (#61)
+	Decompress each WAL file using the specific algorithm
+	reported in the XLOG archive (xlogdb).
+
+	Improve management of xlog.db errors
+	Better management of errors during the decoding of the name
+	of an xlog segment. Added a hint that suggests to run
+	"barman rebuild-xlogdb" to fix corruptions in the xlogdb file.
+
+2015-10-02  Gabriele Bartolini  <gabriele.bartolini@2ndQuadrant.it>
+
+	Started version 1.6.0a1
+
+2015-09-25  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Update the ChangeLog file
+
+	Update Copyright notice
+
+2015-09-25  Gabriele Bartolini  <gabriele.bartolini@2ndQuadrant.it>
+
+	Remove obsolete section from tutorial
+	Removed a section in the tutorial regarding the 'delete'
+	command, as pointed out by Ian Barwick.
+
+2015-09-25  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Enable flake8 in every tox run
+
+2015-09-24  Gabriele Bartolini  <gabriele.bartolini@2ndQuadrant.it>
+
+	Prepared version 1.5.0 for final release
+
+2015-09-24  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Update tox.ini to allow specifying a target test
+	Also add .cache directory, which is created by latest tox, to .gitignore
+
+2015-09-24  Giulio Calacoci  <giulio.calacoci@2ndquadrant.it>
+
+	Changed import of call() method.
+	Now is compatible with all versions of py.test libraries
+
+2015-09-16  Giulio Calacoci  <giulio.calacoci@2ndquadrant.it>
+
+	Support for non-critical checks during backup
+	Add a filter for non-critical checks during backup operations.
+	This patch fixes a bug that prevented users from taking a new
+	backup when minimum redundancy or smelly backup checks failed.
+
+2015-09-15  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Update the ChangeLog file
+
+2015-09-15  Gabriele Bartolini  <gabriele.bartolini@2ndQuadrant.it>
+
+	Prepared for 1.5.0 alpha 1
+
+2015-09-09  Gabriele Bartolini  <gabriele.bartolini@2ndQuadrant.it>
+
+	Converted man pages to Markdown
+
+2015-09-08  Gianni Ciolli  <gianni.ciolli@2ndQuadrant.it>
+
+	Some small fixes to the tutorial
+
+2015-09-01  Francesco Canovai  <francesco.canovai@2ndquadrant.it>
+
+	Updated spec file for RPM building
+
+2015-09-04  Giuseppe Broccolo  <giuseppe.broccolo@2ndQuadrant.it>
+
+	Add barman-wal-restore script
+	Add a simple bash script to be used as `restore_command`
+	in a standby scenario, as fallback method. The script
+	uses ssh to connect to the Barman server and requests
+	the required WAL file for recovery.
+
+	The script checks that destination path is not a directory.
+
+2015-08-27  Gabriele Bartolini  <gabriele.bartolini@2ndQuadrant.it>
+
+	Convert tutorial to Markdown
+
+2015-08-28  Giulio Calacoci  <giulio.calacoci@2ndquadrant.it>
+
+	Manage options without '=' in PostgreSQL configuration files
+
+2015-08-18  Gabriele Bartolini  <gabriele.bartolini@2ndQuadrant.it>
+
+	Allow 'pre' retry hook scripts to stop the command
+	Add EXIT_ABORT_STOP (63) and EXIT_ABORT_CONTINUE (62) exit codes
+	to control how a retry hook script is aborted.
+
+	Termination of a retry hook script with EXIT_ABORT_CONTINUE informs
+	Barman to continue with its operations.
+
+	By terminating a retry hook script with EXIT_ABORT_STOP, users
+	request Barman to stop its main operation (i.e. backup or WAL archival).
+
+	EXIT_ABORT_CONTINUE is implemented by every retry hook script.
+
+	EXIT_ABORT_STOP is currently implemented only with 'pre_backup_retry_script'
+	and 'pre_archive_retry_script'.
+
+	EXIT_ABORT_STOP is currently ignored by 'post_backup_retry_script' and
+	'post_archive_retry_script', and its behaviour in these cases is
+	identical to EXIT_ABORT_CONTINUE.
+
+2015-08-21  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Add flake8 tox environment
+
+2015-08-18  Gabriele Bartolini  <gabriele.bartolini@2ndQuadrant.it>
+
+	Documentation for 'barman_lock_directory'
+
+2015-08-18  Giulio Calacoci  <giulio.calacoci@2ndquadrant.it>
+
+	Analyse include directives for PostgreSQL
+	Check if PostgreSQL administrators take advantage of include
+	directives and specify additional files. Include directives
+	(include, include_if_exists, include_dir) are not supported
+	in Barman for files that reside outside PGDATA.
+
+	During backup, warn users and list the files that require
+	manual backup. During recovery, warn users about the presence
+	of include directives in PostgreSQL configuration.
+
+2015-08-18  Gabriele Bartolini  <gabriele.bartolini@2ndQuadrant.it>
+
+	Workaround for rsync on SUSE Linux
+	Many thanks to Christoph Moench-Tegeder <christoph@2ndquadrant.de>
+	for his workaround proposal. This fixes the outstanding issue
+	on SUSE Linux - previously raised by issues #13 and #26.
+	See also: https://bugzilla.opensuse.org/show_bug.cgi?id=898513
+
+2015-08-17  Gabriele Bartolini  <gabriele.bartolini@2ndQuadrant.it>
+
+	Added copy_method option (fixed to rsync)
+
+2015-08-06  Giulio Calacoci  <giulio.calacoci@2ndquadrant.it>
+
+	Support for 'retry' hook scripts for backup and WAL archiving
+	A 'retry' hook script is a special kind of hook scripts that Barman
+	tries to run indefinitely until it either returns a SUCCESS (0) or
+	an ABORT (63) exit code.
+
+	Safe hook scripts are executed immediately before (pre) and after (post)
+	the command execution. Standard hook scripts are executed immediately
+	before (pre) and after (post) the retry hook scripts.
+
+	This patch adds support for pre/post retry hook scripts for backup
+	and WAL archiving.
+
+	The following four global/server configuration options have been added:
+
+	* pre_backup_retry_script: executed before a backup
+	* post_backup_retry_script: executed after a backup
+	* pre_archive_retry_script: executed before a WAL archive operation
+	* post_archive_retry_script: executed after a WAL archive operation
+
+	By default, no retry hook script is executed. Environment variables
+	are identical to the equivalent standard hook script.
+
+2015-08-12  Gabriele Bartolini  <gabriele.bartolini@2ndQuadrant.it>
+
+	Updated AUTHORS file
+
+2014-05-29  Giulio Calacoci  <giulio.calacoci@2ndquadrant.it>
+
+	Support for the 'get-wal' command
+	The 'barman get-wal' command allows users to fetch any WAL file
+	from the archive of a specific server in Barman.
+
+2015-08-21  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Add simple Travis CI integration
+
+2015-08-11  Gabriele Bartolini  <gabriele.bartolini@2ndQuadrant.it>
+
+	Set version 1.5.0a1
+
+2015-07-30  Giulio Calacoci  <giulio.calacoci@2ndquadrant.it>
+
+	Preserve Timeline history files. Fixes #70.
+	Added check for the management of history files during the removal of a
+	backup or during normal maintenance operations (cron).
+
+2015-08-06  Giulio Calacoci  <giulio.calacoci@2ndquadrant.it>
+
+	Forbid the delete of a running backup
+	Block the execution of a barman delete command on a backup that is in progress.
+	Use locks to ensure that there are no running backups on that server.
+	Otherwise check for the position of the backup to be deleted in the
+	catalogue and its status: if it is the first backup and its status is STARTED or EMPTY,
+	the backup is running and delete is forbidden.
+
+2015-08-03  Giulio Calacoci  <giulio.calacoci@2ndquadrant.it>
+
+	Follow symlinks when checking directory paths
+	Check conflicting paths in configuration files using canonical paths and
+	following symlinks when necessary.
+
+2015-07-13  Francesco Canovai  <francesco.canovai@2ndquadrant.it>
+
+	Pin mock==1.0.1 for testing.
+	In version 1.1.x mock has changed some behaviours and is currently
+	incompatible with our unit tests.
+
+2015-07-08  Stefano Bianucci  <stefano.bianucci@2ndquadrant.it>
+
+	Execute check() before starting a backup
+	Execute the full suite of tests from barman check command before
+	starting a backup. Skip the execution of a backup in case check
+	fails.
+
+	Add a strategy for managing the results of the checks. Now every
+	check is properly logged as error (failure) or debug (success).
+
+2015-07-03  Giulio Calacoci  <giulio.calacoci@2ndquadrant.it>
+
+	Support code documentation using Sphinx
+	Generate code documentation using Sphinx autodocs
+
+2015-07-13  Giulio Calacoci  <giulio.calacoci@2ndquadrant.it>
+
+	Modified test for correct management of timezone
+
+2015-07-10  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Properly support BackupInfo serialization in JSON format.
+
+2015-07-01  Giulio Calacoci  <giulio.calacoci@2ndquadrant.it>
+
+	Improved management of configuration in tests
+	Improved and simplified the management of configurations in tests. Added
+	a method for the creation of dictionaries containing all the keys that
+	are usually present in a configuration. Updated tests accordingly.
+
+2015-06-18  Giulio Calacoci  <giulio.calacoci@2ndquadrant.it>
+
+	Second part of the backup_executor module's refactor
+	Refactored and streamlined the executor module. Introduced a specific
+	class for physical backup with Rsync through Ssh, as well as a strategy
+	pattern for the management of exclusive and concurrent backups (for
+	backups from a standby).
+
+2015-06-23  Gabriele Bartolini  <gabriele.bartolini@2ndquadrant.it>
+
+	Standard error management for server commands
+	Standardised the process of managing errors with server commands in
+	barman/cli.py. By default, inactive servers are skipped (without error)
+	as well as temporarily disabled servers (with error). No distinction is
+	made between calling a command with one server as target or with a list
+	of them (including 'all'). Exceptions are check (no server is skipped,
+	errors are returned only for active servers), cron (no error is ever
+	returned), list-server and diagnose (both managing active/disabled
+	servers with no errors). Inactive servers are the ones with 'active'
+	option set to False. Disabled servers are the ones with internal
+	directory conflicts (e.g. WALs directory = base backup directory).
+
+2015-06-23  Gabriele Bartolini  <gabriele.bartolini@2ndQuadrant.it>
+
+	Asciidoc support for man pages and tutorial
+
+2015-06-16  Giulio Calacoci  <giulio.calacoci@2ndquadrant.it>
+
+	Fixed error in WAL rate calculation.
+	Solved an error during the evaluation of the WAL rate for a backup.
+	Added two basic unit tests.
+
+2015-06-12  Stefano Bianucci  <stefano.bianucci@2ndquadrant.it>
+
+	Add check for wal_level
+	For better usability, warn users about setting a proper value
+	for wal_level setting in PostgreSQL.
+
+2015-05-14  Stefano Bianucci  <stefano.bianucci@2ndquadrant.it>
+
+	Add check for conflicting paths in Barman's configuration
+	Added controls for path-clash during the creation of Barman servers.
+	If there are conflicting paths, Barman will disable those servers
+	containing errors.
+	If a potentially destructive command like "backup" is issued on a server
+	containing conflicts, Barman exits with an error message.
+
+2015-05-21  Giulio Calacoci  <giulio.calacoci@2ndquadrant.it>
+
+	Complete refactor of the 'recover' command
+	The main 'recover' command has been completely refactored, through
+	the creation of a separate module, called 'recovery_executor'.
+	The RecoveryExecutor class now embodies both local and remote
+	operations, laying the road for future improvements.
+
+	This patch also fixes #68, by disabling dangerous settings in
+	postgresql.auto.conf (available from PostgreSQL 9.4).
+
+	Basic unit tests have been added.
+
+2015-05-19  Giulio Calacoci  <giulio.calacoci@2ndquadrant.it>
+
+	Rename class Server to ServerConfig in barman.config module
+	Previously both barman.config and barman.server modules had a Server
+	class. The former has now been renamed to ServerConfig, hence removing
+	the ambiguity.
+
+2015-05-21  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Fix incompatibility with tox version >= 2
+
+2015-05-08  Giulio Calacoci  <giulio.calacoci@2ndquadrant.it>
+
+	Make sure that even an EMPTY backup has a server set.
+
+2015-05-07  Giulio Calacoci  <giulio.calacoci@2ndquadrant.it>
+
+	Improve xlog.db integrity (Closes: #67)
+	* Execute flush() and fsync() after writing a line in xlog.db
+	* Execute fsync() on incoming directory after every WAL is archived
+
+2015-04-13  Giulio Calacoci  <giulio.calacoci@2ndquadrant.it>
+
+	Remove unused 'server' argument from WalFile.from_xlogdb_line()
+	This also fix regression in 'barman delete' command introduced with
+	commit 7ac8fe9c41fd7e5636f370abdc92ca785057263e.
+
+2015-04-13  Giulio Calacoci  <giulio.calacoci@2ndquadrant.com>
+
+	Fix exception during error handling in barman recovery (Closes: #65)
+
+2015-03-24  Giulio Calacoci  <giulio.calacoci@2ndquadrant.com>
+
+	Improved cache management of backups
+	Streamlined the management of the cache of the backups.
+	It is now possible to register and remove a backup from the cache.
+	The cache structure has been simplified and now it is a simple
+	dictionary of backups. Status filters are applied by the
+	get_available_backups() method.
+	Managed registration and removal of a backup in the cache
+	during backup operations.
+
+2015-03-02  Giulio Calacoci  <giulio.calacoci@2ndquadrant.com>
+
+	Create backup_executor module and refactor backup.
+	Extract all the methods relative to the execution of a backup into a
+	dedicated object.
+	The RsyncBackupExecutor encapsulates the operation of backing up a
+	remote server using rsync and ssh to copy files.
+
+2015-03-27  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Improved management of xlogb file
+	The xlogdb file is now correctly fsynced when updated.
+	Also, the rebuild-xlogdb command now operates on a temporary
+	new file, which overwrites the main one when finished.
+
+2015-03-27  Stefano Bianucci  <stefano.bianucci@2ndquadrant.it>
+
+	Add "active" configuration option for a server
+	It is now possible to temporarily disable a server through
+	the 'active' configuration option. Defined at server level
+	as a boolean, when set to False the server is ignored by
+	main operational commands such as cron, backup and recover.
+	By default, it is set to True.
+
+2015-03-20  Giulio Calacoci  <giulio.calacoci@2ndquadrant.com>
+
+	Modified Barman version following PEP 440 rules.
+	Changed Barman version from 1.4.1-alpha1 to 1.4.1a1
+	following PEP 440 rules.
+	Adapted RPM build scripts to produce packages with
+	the correct names.
+
+2015-03-17  Giulio Calacoci  <giulio.calacoci@2ndquadrant.com>
+
+	Fix computation of WAL production ratio
+	The WAL file ratio reported in the 'show-backup' command output was wrong
+	because it was considering only the number of WALS produced during the
+	backup instead of the number of WALs produced until next backup.
+
+2015-02-25  Giulio Calacoci  <giulio.calacoci@2ndquadrant.com>
+
+	Fix for WAL archival stop working if first backup is EMPTY
+	In some rare cases, if an empty backup has left by a failure during a
+	backup, the cron could start trashing WAL files, as if there is no
+	available backups.
+
+	Closes: #64
+
+2015-03-06  Gabriele Bartolini  <gabriele.bartolini@2ndQuadrant.it>
+
+	Added 'barman_lock_directory' global option
+	Barman now allows to specify the default directory for locks through
+	the global option called 'barman_lock_directory', by default set to
+	'barman_home'. Lock files will be created inside this directory.
+
+	Names of lock files have been slightly changed. However, this won't
+	affect users of Barman, unless you are relying on their locations and
+	paths.
+
+	This patch introduces four classes for managing lock files:
+	GlobalCronLock, ServerBackupLock, ServerCronLock and ServerXLOGDBLock.
+
+2015-02-03  Giulio Calacoci  <giulio.calacoci@2ndquadrant.com>
+
+	New backup directory structure
+	Inside the backup directory the 'pgdata' has been renamed to 'data'.
+	Tablespaces, if present, are stored into individual directories alongside
+	the 'data' directory.
+	During backup and recovery operations, tablespaces are copied individually
+	using a separate rsync command.
+
+2015-02-12  Giulio Calacoci  <giulio.calacoci@2ndquadrant.com>
+
+	Improve backup delete command
+	Improve robustness and error reporting of backup delete command
+
+2015-02-10  Stefano Bianucci  <stefano.bianucci@2ndquadrant.it>
+
+	Add unit tests for dateutil module compatibility
+
+2015-02-08  Gabriele Bartolini  <gabriele.bartolini@2ndQuadrant.it>
+
+	After a backup, limit cron activity to WAL archiving only (#62)
+
+2015-01-28  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Clarify rpm spec comments about pre-releases
+
+2015-01-28  Gabriele Bartolini  <gabriele.bartolini@2ndquadrant.it>
+
+	Updated backlog (TODO list)
+
+2015-01-23  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Update metadata in setup.py
+	- Improve barman description
+	- Add Python 3.4
+
+2015-01-23  Gabriele Bartolini  <gabriele.bartolini@2ndQuadrant.it>
+
+	Started version 1.4.1-alpha.1
+
+	Update the ChangeLog file
+
+	Prepared version 1.4.0
+
+2015-01-20  Francesco Canovai  <francesco.canovai@2ndquadrant.it>
+
+	Updated spec files for RHEL7
+
+2015-01-16  Giulio Calacoci  <giulio.calacoci@2ndquadrant.com>
+
+	Delete basebackup dir as last action of a delete.
+	Split the delete operation: remove the PGDATA directory first,
+	then the related WAL files and, at last, the basebackup directory.
+
+2015-01-13  Giulio Calacoci  <giulio.calacoci@2ndquadrant.com>
+
+	Add minimum_redundancy tests in test_retention_policy.py
+
+2015-01-13  Gabriele Bartolini  <gabriele.bartolini@2ndquadrant.it>
+
+	Fix calculation of deduplication ratio
+
+2015-01-12  Gabriele Bartolini  <gabriele.bartolini@2ndQuadrant.it>
+
+	Update the ChangeLog file
+
+	Prepared documentation for version 1.4.0-alpha1
+
+2015-01-11  Gabriele Bartolini  <gabriele.bartolini@2ndQuadrant.it>
+
+	Store deduplication effects for incremental backup
+	When incremental backup is enabled and uses hard links
+	(reuse_backup = link), output of 'backup' command reports
+	the effects of deduplication. The metrict is stored along
+	the backup.info file in the 'deduplicated_size' field.
+
+	IMPORTANT: this metric refers to the increment in size
+	of the current backup from the previous backup and reflects
+	only the situation at backup time.
+
+2015-01-10  Gabriele Bartolini  <gabriele.bartolini@2ndQuadrant.it>
+
+	Prepared version 1.4.0-alpha1
+
+	Updated copyright to 2015
+
+2015-01-09  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Fix smart_copy of tablespaces when using bwlimit option
+
+2015-01-07  Giulio Calacoci  <giulio.calacoci@2ndquadrant.com>
+
+	Add dedicated exception for PostgreSQL connection errors
+
+2015-01-08  Giulio Calacoci  <giulio.calacoci@2ndquadrant.com>
+
+	Fix missing argument error in retention policies backup_status method
+	Improve test coverage for retention_policy.py module
+
+2015-01-07  Giulio Calacoci  <giulio.calacoci@2ndquadrant.com>
+
+	Remove logging of tracebacks on error during backup
+
+2015-01-05  Gabriele Bartolini  <gabriele.bartolini@2ndQuadrant.it>
+
+	Avoid logging of tracebacks during smart copy
+	While retrieving the list of files on destination for smart copy, log
+	any failure as error instead of exception
+
+2014-12-22  Giulio Calacoci  <giulio.calacoci@2ndquadrant.com>
+
+	Unit tests for BackupInfo object
+
+2014-12-24  Giulio Calacoci  <giulio.calacoci@2ndquadrant.com>
+
+	Change the way BackupInfo are created for testing
+	Merge the method build_test_backup_info and the mock_backup_info.
+	Now we use real BackupInfo objects instead of a Mock
+
+2011-12-07  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Incremental base backup implementation
+	Add support for reuse_backup global/server option, accepting
+	three possible values:
+
+	* off:  no incremental backup support (default)
+	* copy: uses the last available backup as source (preventing unmodified
+	        files from being copied)
+	* link: same as copy but uses hard links on destination, if the filesystem
+	        on the backup server allows it (reducing the occupied space)
+
+	Add support for command line '--reuse-backup' option (default: link).
+
+2014-12-24  Gabriele Bartolini  <gabriele.bartolini@2ndquadrant.it>
+
+	Allow last_archived_wal to be any xlog file
+	Correctly show any xlog file as last_archived_wal for
+	pre-pg_stat_archiver cases.
+	Improve testing and docstrings for barman/xlog.py module.
+
+2014-12-09  Giulio Calacoci  <giulio.calacoci@2ndquadrant.com>
+
+	Improve robustness of ssh_command and conninfo options
+
+2014-12-18  Giulio Calacoci  <giulio.calacoci@2ndquadrant.com>
+
+	pg_stat_archiver support for PostgreSQL 9.4
+	Integrate pg_stat_archiver with PostgreSQL 9.4 servers for
+	the barman check, show-server and status commands.
+
+2014-11-28  Giulio Calacoci  <giulio.calacoci@2ndquadrant.com>
+
+	Improve robustness of retention policy unit tests
+
+2014-12-16  Giulio Calacoci  <giulio.calacoci@2ndquadrant.com>
+
+	Fixes retention policies delete bug (#58)
+	The method responsible for deleting obsolete backup in
+	retention policies enforement, will not raise anymore
+	the 'NoneType object is not iterable'. This prevents
+	barman from terminating abruptly.
+
+2014-11-28  Giulio Calacoci  <giulio.calacoci@2ndquadrant.com>
+
+	Pass list of available backups to retention policy code
+
+2014-12-02  Giulio Calacoci  <giulio.calacoci@2ndquadrant.com>
+
+	Include history files in WAL management
+
+2014-12-04  Giulio Calacoci  <giulio.calacoci@2ndquadrant.com>
+
+	Added a util method to find an executable in system path.
+	If rsync is not present on system, a proper error message is
+	displayed to the user when a command using rsync is issued
+
+2014-12-09  Giulio Calacoci  <giulio.calacoci@2ndquadrant.com>
+
+	Changed behaviour if pg_ident.conf is missing from an error to a warning
+
+2014-10-22  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Remove code to replace output stream when quiet
+	Previously the '-q' option was handled replacing the standard output
+	stream with one which trows away averything it gets. Now it is not
+	needed anymore because we haver a proper output module.
+
+2014-09-26  Giulio Calacoci  <giulio.calacoci@2ndquadrant.it>
+
+	Remove all remaining output done by yield
+	Migrate all the remaining part using yeld to do output to using the new
+	output module.
+
+2014-10-07  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Ignore fsync EINVAL errors on directories (#55)
+	On some filesystem doing a fsync on a directory raises an EINVAL error.
+	Ignoring it is usually safe.
+
+2014-09-23  Giulio Calacoci  <giulio.calacoci@2ndquadrant.it>
+
+	Modified output module to access protected properties: quiet and debug
+
+2014-09-10  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Fix bash autocompleter
+	Minor changes:
+	* Some code formatting adjustments
+
+	Move cron retention policy management to a separate method
+
+2014-09-05  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Fix dates in rpm changelog
+
+2014-09-03  Giulio Calacoci  <giulio.calacoci@2ndquadrant.it>
+
+	Calculate backup WAL statistics only if the WALs are already processed
+
+2014-09-02  Giulio Calacoci  <giulio.calacoci@2ndquadrant.it>
+
+	Change default LockFile behaviour to raise if fails acquisition
+
+2014-09-01  Gabriele Bartolini  <gabriele.bartolini@2ndQuadrant.it>
+
+	Invoke WAL maintenance after a successful backup
+	* At the end of the 'barman backup' command, maintenance operations
+	  are automatically started for successful backups (equivalent to
+	  manually executing a 'barman cron' command, just for that server)
+
+	* Trashing of unuseful WALs (part of 'barman cron') has been changed
+	  as follows:
+
+	  * in case of one or more backups, delete WAL files older than
+	    the start WAL of the first backup
+	  * otherwise, trash WAL files in case of exclusive backup server
+	    (that is, not concurrent)
+
+2014-09-03  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Remove redundant server argument from HookScriptRunner.env_from_wal_info()
+
+2014-08-27  Gabriele Bartolini  <gabriele.bartolini@2ndquadrant.it>
+
+	Add relpath() and fullpath() methods in WalInfoFile
+	* Remove 'full_path' attribute in WalInfoFile
+	* Add 'relpath()' method to WalInfoFile, which returns the
+	  relative path of a WAL file within the 'wals_directory' directory
+	* Add 'fullpath()' method to WalInfoFile, which returns the
+	  full path of a WAL file within a server installation (requires
+	  a server object)
+
+2014-08-23  Gabriele Bartolini  <gabriele.bartolini@2ndQuadrant.it>
+
+	Updated version in .spec file
+
+2014-08-20  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Add build_config_from_dicts to testing_helpers module
+
+	Make Config.Server, WalFileInfo and BackupInfo objects json encodable
+
+2014-08-20  Gabriele Bartolini  <gabriele.bartolini@2ndquadrant.it>
+
+	Added unit to JSON representation of a retention policy
+
+	Started version 1.3.4-alpha.1
+
+2014-08-18  Gabriele Bartolini  <gabriele.bartolini@2ndQuadrant.it>
+
+	Update the ChangeLog file
+
+	Fixed typo in release date
+
+2014-08-13  Gabriele Bartolini  <gabriele.bartolini@2ndquadrant.it>
+
+	Prepared version 1.3.3
+
+2014-08-12  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Add an unit-test for Server.get_wal_full_path() method
+
+2014-08-12  Gabriele Bartolini  <gabriele.bartolini@2ndquadrant.it>
+
+	Refactored building of full path of a WAL file
+
+2014-08-01  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Report which file is about to be archived before actually doing it
+
+2014-07-25  Giulio Calacoci  <giulio.calacoci@2ndquadrant.it>
+
+	Remove traceback from output when Barman is interrupted by CTRL-c
+
+	Avoid flushing/fsyncing read only files
+	Fixes: #49 EXCEPTION: [Errno 9] Bad file descriptor
+
+2014-07-24  Giulio Calacoci  <giulio.calacoci@2ndquadrant.it>
+
+	Added Barman's version number to 'barman diagnose'
+
+2014-07-22  Giulio Calacoci  <giulio.calacoci@2ndquadrant.it>
+
+	Move xlogdb_parse_line method in WalFileInfo class
+
+2014-07-23  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Cleanup output API status at the end of test_output.py
+
+2014-07-22  Gabriele Bartolini  <gabriele.bartolini@2ndquadrant.it>
+
+	Estimates WAL production rate for a backup
+
+2014-07-18  Giulio Calacoci  <giulio.calacoci@2ndquadrant.it>
+
+	Removed duplicate log message at the end of  'barman recover' wal segments copy
+
+	Fix datetime.timedelta json serialization in 'barman diagnose' command
+
+2014-07-17  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Update the ChangeLog file
+
+2014-07-17  Gabriele Bartolini  <gabriele.bartolini@2ndQuadrant.it>
+
+	Prepared version 1.3.3-alpha.1 docs
+
+2014-07-17  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Really fix "ssh" version detection in "barman diagnose" command
+
+2014-07-16  Giulio Calacoci  <giulio.calacoci@2ndquadrant.it>
+
+	Add command line options for retry of backup/recover copy
+	Implemented the --retry-times (including --no-retry) and --retry-sleep
+	command line options for backup/recovery copy
+
+	Emit warnings in case of unexptected configuration options
+
+2014-07-14  Giulio Calacoci  <giulio.calacoci@2ndquadrant.it>
+
+	Reduce the verbosity of the log for "barman cron"
+	Currently the "barman cron" command emits one log line for
+	every WAL file that's archived (including the server name
+	as a prefix). No log line is emitted for an empty cron run.
+
+	Make recovery --target-time option more resilient to wrongly formatted values
+	Workaround a bug in dateutil.parser.parse() implementation
+	ref: https://bugs.launchpad.net/dateutil/+bug/1247643
+
+	Improved logging for "barman recover" command
+
+	Default log prefix now contains barman process ID (pid)
+
+2014-07-16  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Fix "ssh" version detection in "barman diagnose" command
+
+2014-07-11  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Fix wrong variable name in BackupManager.delete_wal()
+
+2014-07-09  Giulio Calacoci  <giulio.calacoci@2ndquadrant.it>
+
+	Add unit test for LockFile object and server.xlogdb() call
+	Minor changes:
+	 - converted test_xlog.py to py.test style
+
+2014-07-11  Giulio Calacoci  <giulio.calacoci@2ndquadrant.it>
+
+	Make sure remote WAL destination path is a directory
+	Add a trailing slash to the remote WAL destination path, in
+	order to ensure it is a directory
+
+2014-07-07  Giulio Calacoci  <giulio.calacoci@2ndquadrant.it>
+
+	Fix serialisation of CvsOption during "barman diagnose" command
+
+2014-07-11  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Use a WalFileInfo object when decoding an xlogdb line
+
+	Add --no-human-readable to rsync --list-only invocation
+	In rsync >= 3.1.0 the --list-only format changed adding digit
+	groupings by default in "size" field. To obtain the pre 3.1.0 behavior
+	you need to add --no-human-readable
+	Ref: http://ftp.samba.org/pub/rsync/src/rsync-3.1.0-NEWS
+
+2014-07-09  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Log any hook script failure with its output at warning level
+
+2014-07-08  Gabriele Bartolini  <gabriele.bartolini@2ndQuadrant.it>
+
+	Wraps xlogdb() code in a try/finally block
+
+2014-06-28  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Fix wait parameter logic in LockFile class
+	In previous versions the wait argument on the LockFile constructor was
+	mistakenly ignored, actually preventing the usage of a waiting lock
+	through the Context Manager interface
+
+	Always use utils.mkpath() to create directories that could already exist
+	Minor changes:
+	 - In retry_backup_copy log the exception which caused the failure
+
+2014-06-27  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Really ignore vanished files errors in rsync smart copy routine
+
+2014-06-27  Gabriele Bartolini  <gabriele.bartolini@2ndQuadrant.it>
+
+	Added info messages for the four phases of the new rsync smart copy
+	Minor changes:
+	- Fix unit tests for basebackup_retry_* config values
+
+	Updated documentation for 1.3.3-alpha1
+
+	Set default for basebackup_retry_times to 0
+	For compatibility with previous Barman versions, set
+	basebackup_retry_times to 0 as default value.
+
+2014-06-26  Giulio Calacoci  <giulio.calacoci@2ndquadrant.it>
+
+	Make sure timestamps are tz-aware anywhere in the code
+	Minor changes:
+	 - Add basic unit tests for retention policies
+
+2014-06-26  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Close all open descriptors but std{in,out,err} when spawning a child process
+	Minor changes:
+	 - Remove some dead code
+	 - fix missing 'last_backup_maximum_age' as global option
+
+2014-06-24  Gabriele Bartolini  <gabriele.bartolini@2ndquadrant.it>
+
+	Display compression ratio for WALs in show-backup
+
+2014-06-23  Giulio Calacoci  <giulio.calacoci@2ndquadrant.it>
+
+	Improved Nagios output for check command
+
+2014-06-25  Giulio Calacoci  <giulio.calacoci@2ndquadrant.it>
+
+	Manage KeyboardInterrupt exception in 'barman backup'
+
+2014-06-23  Gabriele Bartolini  <gabriele.bartolini@2ndQuadrant.it>
+
+	Added support for PostgreSQL 8.3
+
+2014-06-24  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Updated rpm packaging spec to work with pre-releases
+	Minor changes:
+	- add rsync dependency to barman.spec file
+
+2014-05-29  Giulio Calacoci  <giulio.calacoci@2ndquadrant.it>
+
+	Support for comma separated list options
+	Added support for a new data type in configuration options:
+	comma separated list values. The first option to be implemented
+	is backup_options, now accepting a list of values.
+
+2014-06-18  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Decode binary strings in command_wrapper
+	This fixes python2.7 and python3 compatibility
+
+	Minor changes:
+	- make scripts/release.sh python3 compatible
+
+2014-06-10  Giulio Calacoci  <giulio.calacoci@2ndquadrant.it>
+
+	Support for 'last_backup_max_age'
+	This new global/server option allows administrators
+	to set the max age of the last backup, making it easier
+	to detect any issues with periodical backup execution.
+
+2014-06-18  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Support for "smart" incremental recovery
+	Avoid invoking rsync with --checksum option during recovery,
+	while maintaining the same level of safety by splitting the
+	copy operation in multiple steps.
+	Barman will only use the --checksum option on files having identical
+	time and size that have been modified after the start of the backup.
+	This change greatly improves the speed of "incremental" recovery.
+
+	Minor changes:
+	- disable --checksum even for backup. During a backup the rsync
+	  destination directory is empty, so it is safe to go with a plain
+	  rsync
+	- Put a ".barman-recover.info" with backup metadata inside the
+	  destination directory during recover.
+
+	Use Postgres' server time for both begin_time and end_time
+	Minor changes:
+	- make sure exceptions during backup are logged with stacktraces
+	- commit on disk the backup status just after issuing the PostgreSQL
+	  start_backup command
+
+	Change version to 1.3.3-alpha.1
+
+2014-06-09  Giulio Calacoci  <giulio.calacoci@2ndquadrant.it>
+
+	Added fsync() for backup and cron operations
+
+2014-06-06  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Fix parsing of 'basebackup_retry_times' and 'basebackup_retry_sleep' options
+
+2014-05-30  Giulio Calacoci  <giulio.calacoci@2ndquadrant.it>
+
+	Fix for #43 recovery.conf not copied on remote recovery
+
+2014-05-08  Giulio Calacoci  <giulio.calacoci@2ndquadrant.it>
+
+	Retry option for base backup
+	If a network error happens during rsync, add the ability
+	to retry a defined number of time.
+
+	Two options have been added:
+	 * basebackup_retry_times: INT (> 0, default 1)
+	     maximum number or retry before giving up
+	 * basebackup_retry_sleep: INT (> 0, default 10)
+	     wait time (seconds) before retrying, after an error
+
+2014-05-29  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Improve robustness of backup code
+	Improve error message about stop_backup failure
+
+2014-04-23  Giulio Calacoci  <giulio.calacoci@2ndquadrant.it>
+
+	fixed missing pre/post archive parameters. #41 on sourceforge
+
+2014-04-15  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Update the ChangeLog file
+
+	Update unit tests to match current rsync flags
+
+2014-04-15  Gabriele Bartolini  <gabriele.bartolini@2ndQuadrant.it>
+
+	Prepared source code for version 1.3.2
+
+2014-04-15  Gabriele Bartolini  <gabriele.bartolini@2ndquadrant.it>
+
+	Added checks for pg_extension (>= 9.1) and pg_is_in_recovery (>= 9.0)
+
+2014-04-11  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Update the ChangeLog file
+
+2014-04-10  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Always pass --checksum to rsync invocations
+
+	Emit a warning if backup_options is set to an invalid value
+
+	Clarify some "permission denied" error
+
+2014-04-08  Gabriele Bartolini  <gabriele.bartolini@2ndQuadrant.it>
+
+	Cosmetic change: Pgespresso -> pgespresso
+
+2014-04-07  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Update RPM spec file for 1.3.1
+
+2014-04-04  Gabriele Bartolini  <gabriele.bartolini@2ndQuadrant.it>
+
+	Prepared documentation for version 1.3.1
+
+2014-04-04  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Fix 'barman diagnose' python3 support
+
+	Improved logging and error reporting
+
+2014-04-03  Gabriele Bartolini  <gabriele.bartolini@2ndQuadrant.it>
+
+	Fixed SourceForge bug #36: Unhandled exception for minimum redundancy
+
+2014-04-03  Giulio Calacoci  <giulio.calacoci@2ndquadrant.it>
+
+	Empty strings are now treated as None in Barman configuration
+
+2014-04-02  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Removed spurious "file not found" message in cron output
+
+	Add release information to 'barman diagnose'
+
+	Sort 'barman show-server' output
+
+	Use a Tablespace object to carry tablespace information
+
+2014-03-26  Giulio Calacoci  <giulio.calacoci@2ndquadrant.it>
+
+	Protect during recovery tablespaces inside PGDATA
+	* When performing a recovery operation, tablespaces that will be recovered
+	  inside the new destination directory (PGDATA) are be 'protected' by
+	  rsync. This avoids overwrites by rsync when copying PGDATA content.
+	* Add debug messages to FS class
+
+2014-03-24  Gabriele Bartolini  <gabriele.bartolini@2ndQuadrant.it>
+
+	Implementation of 'barman diagnose' command (JSON output)
+
+2014-03-21  Gabriele Bartolini  <gabriele.bartolini@2ndQuadrant.it>
+
+	Concurrent backup using the 'pgespresso' extension
+	* Fix bwlimit tablespaces backup (missing destination directory)
+	* Purge unused wal files at first backup in concurrent mode
+	* Exclusion of recovery.conf during backup
+
+2014-03-19  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Fix unhandled exception in recover when destination dir is not writable
+
+2014-02-19  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Make -q command line switch working again
+	Also demote "another cron is running" message from error to info level.
+
+2014-02-02  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Update the ChangeLog file
+
+	Update RPM spec file for release 1.3.0
+
+	Review of NEWS and AUTHORS files
+
+2014-01-31  Gabriele Bartolini  <gabriele.bartolini@2ndQuadrant.it>
+
+	Updated files for final release
+
+2014-01-30  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Improve error messages during remote recovery
+
+2014-01-29  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Use fsync to avoid xlog.db file corruption (Closes #32)
+
+	Add network_compression configuration option (Closes #19)
+	When network_compression is enabled, all network transfers are done
+	using compression (if available).
+
+2014-01-29  Gabriele Bartolini  <gabriele.bartolini@2ndquadrant.it>
+
+	Check directories exist before executing a backup (#14)
+
+2014-01-28  Giulio Calacoci  <giulio.calacoci@2ndquadrant.it>
+
+	Reduce log verbosity during initialisation phase
+
+2014-01-28  Gabriele Bartolini  <gabriele.bartolini@2ndQuadrant.it>
+
+	Load configuration files after logger initialisation
+
+2014-01-21  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Avoid tablespaces inside pgdata directory from being copied twice
+
+2014-01-09  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Generalise recovery operations (local/remote)
+
+2014-01-28  Gabriele Bartolini  <gabriele.bartolini@2ndQuadrant.it>
+
+	Reviewed documentation of WAL archive hook scripts
+
+2014-01-07  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Add pre_archive_script and post_archive_scrip hook scripts
+
+2014-01-23  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Refactor the LockFile management class to report permission errors.
+
+	Fix 'Invalid cross-device link' error in cron when incoming is on a different filesystem (merge request #4 by Holger Hamann)
+
+2014-01-22  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Port 'show-server' command to the new output interface
+
+2014-01-21  Giulio Calacoci  <giulio.calacoci@2ndquadrant.it>
+
+	Updated copyright (2014)
+
+2014-01-17  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Port 'status' and 'list-server' commands to the new output interface
+
+2014-01-09  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Port the 'show-backup' command to the new output interface
+
+2014-01-16  Giulio Calacoci  <giulio.calacoci@2ndquadrant.it>
+
+	Added implementation for backup command --immediate-checkpoint option and immediate_checkpoint configuration option
+
+2014-01-08  Gabriele Bartolini  <gabriele.bartolini@2ndQuadrant.it>
+
+	Bump version number and add release notes for 1.3.0
+
+2013-11-27  Giulio Calacoci  <giulio.calacoci@2ndquadrant.it>
+
+	Add unit tests for infofile and compression modules
+	Fix some python3 compatibility bugs highlighted by the tests
+
+2013-10-18  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Move barman._pretty_size() to barman.utils.pretty_size()
+
+2014-01-03  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Implement BackupInfo as a FieldListFile and move it in infofile module.
+
+2014-01-07  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Refactor output to a dedicate module.
+	The following commands have been ported to the new interface:
+
+	 * backup
+	 * check
+	 * list-backup
+
+	A special NagiosOutputWriter has been added to support Nagios compatible
+	output for the check command
+
+	WARNING: this code doesn't run due to a circular dependency. The issue
+	will be fixed in the next commit
+
+2013-09-12  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Isolate subrocesses' stdin/stdout in command_wrappers module
+
+2014-01-07  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Refactor hooks management
+
+2013-09-12  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Split out logging configuration and userid enforcement from the configuration class.
+
+2013-12-16  Gabriele Bartolini  <gabriele.bartolini@2ndQuadrant.it>
+
+	Added rebuild-xlogdb command man page
+
+2013-11-08  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Implement the rebuild-xlogdb command. (Closes #27)
+
+2013-11-19  Giulio Calacoci  <giulio.calacoci@2ndquadrant.it>
+
+	added documentation for tablespaces relocation (#22)
+
+2013-10-30  Gabriele Bartolini  <gabriele.bartolini@2ndQuadrant.it>
+
+	Added TODO list
+
+2013-09-05  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Update the ChangeLog file
+
+	Bump version to 1.2.3
+
+2013-08-29  Gabriele Bartolini  <gabriele.bartolini@2ndQuadrant.it>
+
+	Updated README and man page
+
+	Added stub of release notes
+
+2013-08-26  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Initial Python 3 support
+
+	Update setup.py to support py.test and recent setuptools
+
+2013-08-24  Damon Snyder  <damonsnyder@users.sourceforge.net>
+
+	27: Addresses potential corruption of WAL xlog.db files.
+	In barman.lockfile.release() the file is unlinked (deleted). This effectively
+	nullifies any future attempts to lock the file by a blocking process by deleting
+	the open file table entry upon which the flock is based.
+
+	This commit removes the unlink and instead unlocks the file and then closes the file
+	descriptor leaving the lock file and open file table entry intact.
+
+2013-08-22  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Add support for restore target name (PostgreSQL 9.1+)
+
+2013-08-21  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	PostgreSQL version in backup.info file is an integer
+
+	Make WAL sequence calculation compatible with PostgreSQL 9.3
+	With PostgreSQL 9.3 WAL files are written in a continuous stream,
+	rather than skipping the last 16MB segment every 4GB, meaning WAL
+	filenames may end in FF.
+
+2013-06-24  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Update the ChangeLog file
+
+	Fix config file parser tests
+
+	Bump version to 1.2.2
+
+	Fix python 2.6 compatibility
+
+	Fix history in spec file
+
+2013-06-17  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Update RPM spec file
+
+2013-06-13  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Update the ChangeLog file
+
+	Fix remote recovery with bwlimit on a tablespace
+
+2013-06-07  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Added the "tablespace_bandwidth_limit" option
+
+2013-06-12  Gabriele Bartolini  <gabriele.bartolini@2ndQuadrant.it>
+
+	Updated docs and man pages for 1.2.1
+
+	Prepared NEWS file for 1.2.1 release
+
+2013-04-26  Gabriele Bartolini  <gabriele.bartolini@2ndQuadrant.it>
+
+	Added the "bandwidth_limit" global/server option which allows to limit the I/O bandwidth (in KBPS) for backup and recovery operations
+
+	Added /etc/barman/barman.conf as default location
+
+2013-03-13  Gabriele Bartolini  <gabriele.bartolini@2ndQuadrant.it>
+
+	Removed duplicate message for previous backup in show command
+
+2013-03-07  Gabriele Bartolini  <gabriele.bartolini@2ndQuadrant.it>
+
+	Cosmetic change in message for "all" reserved section
+
+2013-02-08  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Avoid triggering the minimum_redundancy check on FAILED backups
+
+	Add BARMAN_VERSION to hook script environment
+
+2013-01-31  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Update the ChangeLog file
+
+	Update RPM's spec files
+
+2013-01-30  Gabriele Bartolini  <gabriele.bartolini@2ndQuadrant.it>
+
+	Finalised files for version 1.2.0
+
+2013-01-28  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Forbid the usage of 'all' word as server name
+
+2013-01-11  Gabriele Bartolini  <gabriele.bartolini@2ndquadrant.it>
+
+	Added basic support for Nagios plugin output for check command through the --nagios option
+
+2013-01-28  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Add @expects_obj decorator to cli function as required by the upcoming Argh 1.0 API
+
+2013-01-11  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Migratte to new argh api.
+	Now barman requires arg => 0.21.2 and argcomplete-
+
+2013-01-11  Gabriele Bartolini  <gabriele.bartolini@2ndquadrant.it>
+
+	Prepared release notes
+
+2012-12-18  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Fix typo in doc/barman.conf
+
+2012-12-14  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Return failure exit code if backup command fails in any way
+
+2012-12-14  Gabriele Bartolini  <gabriele.bartolini@2ndQuadrant.it>
+
+	Prepared copyright lines for 2013
+
+	Updated documentation and man pages
+
+	Added retention policy examples in configuration file
+
+2012-12-13  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Q/A on retention policy code
+
+2012-12-12  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Fix configuration parser unit tests
+
+	Exit with error if an invalid server name is passed in any command which takes a list of server
+
+2012-12-08  Gabriele Bartolini  <gabriele.bartolini@2ndQuadrant.it>
+
+	Add retention status to show-backup and list-backup commands
+
+	Auto-management of retention policies for base backups
+	Using the report() method for retention policies, enforce retention
+	policy through cron (if policy mode is 'auto'), by deleting OBSOLETE
+	backups.
+
+	Retention status and report() method for retention policies
+	Created the following states for retention policies:
+	VALID, OBSOLETE, NONE and POTENTIALLY_OBSOLETE (an
+	object which is OBSOLETE but cannot be removed
+	automatically due to minimum_redundancy requirements).
+	Created the report() method for the retention policy
+	base class, which exected the _backup_report() method
+	for base backups and the _wal_report() method for WAL
+	retention policies (currently not enforced).
+	The report method iterates through the DONE backups
+	and according to the retention policy, classifies
+	the backup. RedundancyRetentionPolicy uses the number
+	of backups, RecoveryWindowRetentionPolicy uses the
+	time window and the recoverability point concept.
+
+	Integrated minimum_redundancy with "barman check"
+
+	Initialisation of retention policies for a server
+	Added the _init_retention_policies() method in the
+	Server class constructor, which integrates with
+	the new RetentionPolicy classes and performs
+	syntax checking.
+	Integrated retention policies with log, 'barman check'
+	and 'barman status'.
+
+	String representation conforms to retention syntax
+	The string representation produces now a syntax-valid
+	retention policy configuration string.
+	The previous __str__ method has been renamed into debug()
+	SimpleWALRetentionPolicy objects are now created from
+	the server's main retention policy by the factory class.
+
+2012-12-07  Gabriele Bartolini  <gabriele.bartolini@2ndQuadrant.it>
+
+	Add the global/server option minimum_redundancy. Check it is >= 0. Guarantees that when delete is performed (or retention policies are enforced), this is the minimum number of backups to be kept for that server.
+
+	Add support for retention_policy_mode global/server option which defines the method for enforcing retention policies (currently only "auto", in future versions "manual" will be allowed)
+
+	Added first stub of retention policy classes
+
+	Started version 1.2.0
+
+2012-12-04  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Fix unit config tests
+
+	Update the ChangeLog file
+
+	Add ssl_*_file and unix_socket_directory to dangerous options list
+
+	Display tablespace's oid in show-backup output
+
+	Alphabetically sort servers in all commands output
+
+	Don't give up on first error in 'barman check all' command
+
+2012-12-03  Gabriele Bartolini  <gabriele.bartolini@2ndQuadrant.it>
+
+	Added sorting of files in configuration directory
+
+2012-11-29  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Fix regression in barman check command when configuration_files_directory is None
+
+	Update rpm files to 1.1.2 release
+
+2012-11-29  Carlo Ascani  <carlo.ascani@2ndquadrant.it>
+
+	Update README
+
+2012-11-29  Gabriele Bartolini  <gabriele.bartolini@2ndquadrant.it>
+
+	Prepared files for release
+
+2012-11-28  Gabriele Bartolini  <gabriele.bartolini@2ndquadrant.it>
+
+	Add the configuration_files_directory option which allows to include multiple files from a directory
+
+2012-11-29  Carlo Ascani  <carlo.ascani@2ndquadrant.it>
+
+	Update README
+
+2012-11-28  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Update NEWS file
+
+2012-11-05  Gabriele Bartolini  <gabriele.bartolini@2ndQuadrant.it>
+
+	Added support for list-backup all
+
+2012-11-04  Gabriele Bartolini  <gabriele.bartolini@2ndQuadrant.it>
+
+	Added latest/oldest for show-backup, delete, list-files and recover commands
+
+	Added get_first_backup and get_last_backup functions to Server class
+
+	Added application_name management for PostgreSQL >= 9.0
+
+2012-11-13  Gabriele Bartolini  <gabriele.bartolini@2ndQuadrant.it>
+
+	Switched to version 1.1.2
+
+	Continue if a WAL file is not found during delete (bug #18)
+
+2012-11-04  Gabriele Bartolini  <gabriele.bartolini@2ndQuadrant.it>
+
+	Includes version 90200 for tablespace new function
+
+2012-10-16  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Update the ChangeLog file
+
+	Update NEWS file and rpm package
+
+	Bump version to 1.1.1
+
+	Add more information about the failing line in xlogdb_parse_line errors
+
+2012-10-15  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Fix two bug on recover command
+
+2012-10-12  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Update the ChangeLog file
+
+	Update rpm changelog
+
+	Make recover fail if an invalid tablespace relocation rule is given
+
+	Remove unused imports from cli.py
+
+2012-10-11  Gabriele Bartolini  <gabriele.bartolini@2ndQuadrant.it>
+
+	Updated version to 1.1.0
+
+	Fixes bug #12
+
+2012-10-11  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Fail fast on recover command if the destination directory contains the ':' character (Closes: #4)
+
+	Fix typo in recovery messages
+
+	Report an informative message when pg_start_backup() invocation fails because an exclusive backup is already running (Closes: #8)
+
+	Make current_action an attribute of BackupManager class
+
+2012-10-08  Gabriele Bartolini  <gabriele.bartolini@2ndQuadrant.it>
+
+	Added ticket #10 to NEWS
+
+	Add pg_config_detect_possible_issues function for issue #10
+
+2012-10-04  Gabriele Bartolini  <gabriele.bartolini@2ndQuadrant.it>
+
+	Updated NEWS file with bug fixing #9
+
+	Fixes issue #9 on pg_tablespace_location() for 9.2
+
+2012-08-31  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Add BARMAN_PREVIOUS_ID variable to hooks environment
+
+2012-08-20  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Merge spec changes from Devrim
+
+	Add BARMAN_ERROR and BARMAN_STATUS variables to hook's environment
+
+	Added backup all documentation to README
+
+2012-08-20  Gabriele Bartolini  <gabriele.bartolini@2ndQuadrant.it>
+
+	Updated release notes
+
+	Set version to 1.0.1
+
+2012-08-20  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Document {pre,post}_backup_script in README
+
+	Document {pre,post}_backup_script in configuration man-page
+
+2012-08-17  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Add pre/post backup hook scripts definition (Closes: #7)
+	Add the possibility to manage hook scripts before and after a base
+	backup. Add the global (overridden per server) configuration options
+	called:
+
+	* pre_backup_script: executed before a backup
+	* post_backup_script: executed after a backup
+
+	Use the environment to pass at least the following variabiles:
+
+	* BARMAN_BACKUP_DIR: backup destination directory
+	* BARMAN_BACKUP_ID: ID of the backup
+	* BARMAN_CONFIGURATION: configuration file used by barman
+	* BARMAN_PHASE: 'pre' or 'post'
+	* BARMAN_SERVER: name of the server
+
+	The script definition is passed to the shell and can return any exit code.
+
+	Barman won't perform any exit code check. It will simply log the result in the log file.
+
+	To test it you can try adding
+
+	pre_backup_script = env | grep ^BARMAN
+	post_backup_script = env | grep ^BARMAN
+
+	in your barman config and you'll see the variables on console.
+
+2012-08-16  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Add documentation for 'backup all' command.
+
+2012-07-19  Gabriele Bartolini  <gabriele.bartolini@2ndquadrant.it>
+
+	Add 'backup all' shortcut and, in general, multiple servers specification (issue #1)
+
+	Add 'backup all' shortcut and, in general, multiple servers specification (issue #1)
+
+2012-07-16  Gabriele Bartolini  <gabriele.bartolini@2ndQuadrant.it>
+
+	Fixed typo (thanks to Daymel Bonne Solís)
+
+2012-07-06  Marco Nenciarini  <marco.nenciarini@2ndquadrant.it>
+
+	Initial commit
