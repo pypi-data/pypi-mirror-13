@@ -1,0 +1,40 @@
+{% extends "_layout.html" %}
+{% set active_page = 'holdings' %}
+{% import '_account_macros.html' as account_macros %}
+
+{% macro num_cell(value) -%}
+<td class="num" data-sort-value="{{ value }}">{% if value %}{{ value|format_currency }}{% endif %}</td>
+{%- endmacro %}
+
+{% block content %}
+    {% set holdings = api.holdings() %}
+    <h1>Equity/Holdings</h1>
+    <table class="holdings sortable">
+        <thead>
+            <tr>
+                <th data-sort="string" data-sort-default="desc" class="sorting-asc">Account</th>
+                <th data-sort="float" data-sort-default="desc">Units</th>
+                <th data-sort="string">Currency</th>
+                <th data-sort="string">Cost Currency</th>
+                <th data-sort="float" data-sort-default="desc">Average Cost</th>
+                <th data-sort="float" data-sort-default="desc">Price</th>
+                <th data-sort="float" data-sort-default="desc">Book Value</th>
+                <th data-sort="float" data-sort-default="desc">Market Value</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for holding in holdings %}
+            <tr>
+                <td>{{ account_macros.account_name(holding.account) }}</td>
+                {{ num_cell(holding.number) }}
+                <td>{{ holding.currency}}</td>
+                <td>{{ holding.cost_currency }}</td>
+                {{ num_cell(holding.cost_number) }}
+                {{ num_cell(holding.price_number) }}
+                {{ num_cell(holding.book_value) }}
+                {{ num_cell(holding.market_value) }}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}
