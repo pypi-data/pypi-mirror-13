@@ -1,0 +1,24 @@
+#!C:\Python33-x64\python.exe
+from __future__ import print_function, unicode_literals
+
+from axon.utils import xml2axon
+import io
+import sys
+	
+if __name__ == '__main__':
+    
+    is_stringio = 0
+    if len(sys.argv) == 2:
+        from_file = sys.argv[1]
+        is_stringio = 1
+    elif len(sys.argv) > 3:
+		print('Usage: xml2axon <from_file> <to_file>')
+		sys.exit()
+    else:
+        from_file, to_file = sys.argv[1], sys.argv[2]
+    if is_stringio:
+        text = xml2axon(from_file)
+        print(text)
+    else:
+        xml2axon(from_file, to_file)
+        
