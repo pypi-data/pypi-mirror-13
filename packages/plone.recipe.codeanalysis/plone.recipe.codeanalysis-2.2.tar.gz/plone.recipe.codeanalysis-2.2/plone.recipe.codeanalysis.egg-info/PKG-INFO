@@ -1,0 +1,908 @@
+Metadata-Version: 1.1
+Name: plone.recipe.codeanalysis
+Version: 2.2
+Summary: Static code analysis for buildout-based Python projects.
+Home-page: http://github.com/plone/plone.recipe.codeanalysis/
+Author: Timo Stollenwerk
+Author-email: contact@timostollenwerk.net
+License: GPL version 2
+Description: .. image:: https://img.shields.io/pypi/status/plone.recipe.codeanalysis.svg
+            :target: https://pypi.python.org/pypi/plone.recipe.codeanalysis/
+            :alt: Egg Status
+        
+        .. image:: https://img.shields.io/travis/plone/plone.recipe.codeanalysis/master.svg
+            :target: http://travis-ci.org/plone/plone.recipe.codeanalysis
+            :alt: Travis Build Status
+        
+        .. image:: https://img.shields.io/coveralls/plone/plone.recipe.codeanalysis/master.svg
+            :target: https://coveralls.io/r/plone/plone.recipe.codeanalysis
+            :alt: Test Coverage
+        
+        .. image:: https://img.shields.io/pypi/dm/plone.recipe.codeanalysis.svg
+            :target: https://pypi.python.org/pypi/plone.recipe.codeanalysis/
+            :alt: Downloads
+        
+        .. image:: https://img.shields.io/pypi/pyversions/plone.recipe.codeanalysis.svg
+            :target: https://pypi.python.org/pypi/plone.recipe.codeanalysis/
+            :alt: Python Versions
+        
+        .. image:: https://img.shields.io/pypi/v/plone.recipe.codeanalysis.svg
+            :target: https://pypi.python.org/pypi/plone.recipe.codeanalysis/
+            :alt: Latest Version
+        
+        .. image:: https://img.shields.io/pypi/l/plone.recipe.codeanalysis.svg
+            :target: https://pypi.python.org/pypi/plone.recipe.codeanalysis/
+            :alt: License
+        
+        .. contents::
+        
+        Introduction
+        ============
+        
+        ``plone.recipe.codeanalysis`` provides static code analysis for Buildout-based
+        Python projects, including `flake8`_, `JSHint`_, `CSS Lint`_, and
+        other code checks.
+        
+        This buildout recipe creates a script to run the code analysis::
+        
+            bin/code-analysis
+        
+        By default ``plone.recipe.codeanalysis`` also creates a git pre-commit hook, in
+        order to run the code analysis automatically before each commit.
+        
+        ``plone.recipe.codeanalysis`` comes with a Jenkins integration, that allows to
+        use the same code analysis settings on your local machine as well as on
+        Jenkins.
+        
+        It also allows to run code analysis to any arbitrary folder::
+        
+            bin/code-analysis src/Products.CMFPlone
+        
+        
+        Installation
+        ============
+        
+        Just add a code-analysis section to your buildout.cfg:
+        
+        .. code-block:: ini
+        
+            [buildout]
+            parts += code-analysis
+        
+            [code-analysis]
+            recipe = plone.recipe.codeanalysis
+            directory = ${buildout:directory}/src
+        
+        The directory option is not required. Though, if you don't specify a directory
+        the code analysis will check every file in your buildout directory.
+        
+        This configuration is helpful for working on already existing packages.
+        If you create a new package you might want to enable all checks.
+        This configuration looks like this:
+        
+        .. code-block:: ini
+        
+            [code-analysis]
+            recipe = plone.recipe.codeanalysis[recommended]
+            multiprocessing = True
+            jenkins = False
+            directory =
+                ${buildout:directory}/src
+            pre-commit-hook = True
+            # JS
+            jshint = True
+            jshint-bin = ${buildout:bin-directory}/jshint
+            jshint-suppress-warnings = False
+            jscs = True
+            jscs-bin = ${buildout:bin-directory}/jscs
+            jscs-exclude =
+                ${buildout:directory}/dev/bower_components
+                ${buildout:directory}/node_modules
+            # CSS
+            csslint = True
+            csslint-bin = ${buildout:bin-directory}/csslint
+            # ZPT
+            zptlint = True
+            zptlint-bin = ${buildout:bin-directory}/zptlint
+            # TS
+            tslint = True
+            tslint-bin = ${buildout:directory}/bin/tslint
+            tslint-exclude = ${:jscs-exclude}
+            # Conventions
+            clean-lines = True
+            clean-lines-exclude = ${:jscs-exclude}
+            # i18n
+            find-untranslated = True
+            i18ndude-bin = ${buildout:bin-directory}/i18ndude
+            return-status-codes = True
+            flake8-exclude = bootstrap.py,bootstrap-buildout.py,docs,*.egg,*.cpy,*.vpy,overrides
+        
+            [node]
+            recipe = gp.recipe.node
+            npms = csslint jshint jscs tslint
+            scripts = csslint jshint jscs tslint
+        
+        .. note::
+           The ``[recommended]`` extra enables a host of flake8 plugins that will make
+           your python code more readable and better checked for possible mistakes.
+        
+        Jenkins Installation
+        ====================
+        
+        plone.recipe.codeanalysis provides a Jenkins setting that allows to run it on a Jenkins CI server and to process and integrate the output via the
+        `Jenkins Violations plugin`_.
+        
+        Usually you don't want the recipe to create Jenkins output files on your
+        local machine. Therefore it makes sense to enable the Jenkins output only
+        on the CI machine. To do so, just create a jenkins.cfg that extends and
+        overrides the default buildout file (that includes the other settings):
+        
+        .. code-block:: ini
+        
+            [buildout]
+            parts += code-analysis
+        
+            [code-analysis]
+            recipe = plone.recipe.codeanalysis
+            jenkins = True
+        
+        The Jenkins job itself should run ``bin/code-analysis``::
+        
+            python bootstrap.py -c jenkins.cfg
+            bin/buildout -c jenkins.cfg
+            bin/jenkins-test --all
+            bin/code-analysis
+        
+        The `Jenkins Violations plugin`_ needs to be configured to read the output
+        files generated by this configuration.
+        
+        pep8 (to read the flake8 output)::
+        
+            **/parts/code-analysis/flake8.log
+        
+        csslint::
+        
+            **/parts/code-analysis/csslint.xml
+        
+        jslint (to read the jshint output)::
+        
+            **/parts/code-analysis/jshint.xml
+        
+        checkstyle (to read the jscs output)::
+        
+            **/parts/code-analysis/jscs.xml
+        
+        Filesystem output
+        =================
+        
+        If jenkins is set to False, you can still store the output on the filesystem by setting ``flake8-filesystem = True``.
+        This is ignored if jenkins is set to True.
+        
+        output::
+        
+            **/parts/code-analysis/flake8.txt
+        
+        Links
+        =====
+        
+        Code repository:
+        
+            https://github.com/plone/plone.recipe.codeanalysis
+        
+        Continuous Integration:
+        
+            https://travis-ci.org/plone/plone.recipe.codeanalysis
+        
+        Issue Tracker:
+        
+            https://github.com/plone/plone.recipe.codeanalysis/issues
+        
+        
+        Supported options
+        =================
+        
+        If you need to bypass checks for some reasons on a specific line you may use
+        ``# noqa`` in Python or ``// noqa`` in Javascript files. This works for most
+        of our checks.
+        
+        The recipe supports the following options:
+        
+        **directory**
+            Directory that is subject to the code analysis.
+        
+        **pre-commit-hook**
+            If set to True, a git pre-commit hook is installed that runs the code
+            analysis before each commit. Default is ``True``.
+        
+        **multiprocessing**
+            If set to ``True``, ``code-analysis`` will fork multiple processes and run
+            all linters in parallel. This will dramatically increase speed on a
+            multi-core system, specially when using ``code-analysis`` as pre-commit
+            hook. Default is ``False``.
+        
+        **jenkins**
+            If set to True, the flake8, jshint and csslint code analysis steps will
+            write output files that can be processed by the
+            `Jenkins Violations plugin`_. Default is ``False``.
+        
+        **flake8-filesystem**
+            If set to True, the flake8 code analysis step will
+            write an output file. Ignored if jenkins is True. Default is ``False``.
+        
+        **flake8**
+            If set to True, run Flake8 code analysis. Default is ``True``.
+        
+        **flake8-extensions**
+            Flake8 now takes advantage of ``flake8`` extension system. Default is none.
+            If ``flake8`` is set to False, this option will be ignored. Example to
+            supercharge with some extensions:
+        
+        .. code-block:: ini
+        
+            [code-analysis]
+            recipe = plone.recipe.codeanalysis
+            flake8 = True
+            flake8-extensions =
+                flake8-blind-except
+                flake8-coding
+                flake8-debugger
+                flake8-quotes
+                pep8-naming
+        
+        All through flake8 extensions raised validation errors may be suppressed
+        using the ``flake8-ignore`` option.
+        
+        **flake8-ignore**
+            Skip errors or warnings. See `Flake8 documentation`_ for error codes.
+            Default is none.
+        
+        **flake8-exclude**
+            Comma-separated filename and glob patterns default. Say you want to
+            exclude bootstrap.py, setup.py and all collective.* and plone.* packages.
+            Just set ``flake8-exclude=bootstrap.py,docs,*.egg,setup.py,collective.*,plone.*``
+            in your buildout configuration. Default is
+            ``bootstrap.py,bootstrap-buildout.py,docs,*.egg``.
+        
+        **flake8-max-complexity**
+            McCabe complexity threshold. Default is ``10``.
+        
+        **flake8-max-line-length**
+            Set maximum allowed line length. Default is ``79``.
+        
+        .. note::
+           You can add additional flake8 options as long as they are valid for flake8
+           itself or any of its plugins. Just prefix them with ``flake8-``.
+        
+           For example, if you are using ``pep8-naming`` and want to change the list
+           of ignored names, add the following line on your buildout.cfg:
+           ``flake8-ignore-names = setUp,tearDown,setUpClass,tearDownClass``
+        
+           Look at flake8 documentation and its plugins to see which options are available.
+        
+        **check-manifest**
+            If set to True, ``check-manifest`` will be run to check you MANIFEST.in
+            file. Default is ``False``.
+        
+        **check-manifest-directory**
+            Default is ``.`` which means check the current package where you included
+            code-analysis in buildout.
+        
+            EXPERIMENTAL: For project buildouts where you use several source
+            packages you may want to enter multiple directories or use
+            ``${buildout:develop}`` to include all your development packages.
+        
+        **jshint**
+            If set to True, jshint code analysis is run. Default is ``False``. Note
+            that plone.recipe.codeanalysis requires jshint >= 1.0.
+        
+        **jshint-bin**
+            JSHint executable. Default is ``jshint``. If you have JSHint installed on
+            your system and in your path, there is nothing to do. To install JSHint in
+            your buildout, use the following:
+        
+        .. code-block:: ini
+        
+            [jshint]
+            recipe = gp.recipe.node
+            npms = jshint
+            scripts = jshint
+        
+        set jshint-bin to ``${buildout:bin-directory}/jshint``.
+        
+        **jshint-exclude**
+            Allows you to specify directories which you don't want to be linted.
+            Default is none. If you want JSHint to skip some files you can list them
+            in a file named ``.jshintignore``. See `JSHint documentation`_ for more
+            details.
+        
+        **jshint-suppress-warnings**
+            By default warnings of jshint are suppressed and not shown. You may disable
+            this by setting to False, default is ``True`` for backward compatibility
+            reasons.
+        
+        **jscs**
+            If set to True, jscs code analysis is run. Default is ``False``.
+        
+            JavaScript Code Style options should be configured using a ``.jscs.json``
+            file. You should align your javascript code to the next generation of
+            Plone's javascript framework Mockup_ and take it's ``.jscs.json`` file
+            which is available here:
+            https://github.com/plone/mockup/blob/master/mockup/.jscs.json
+        
+            All configuration options are documented on the `jscs website`_.
+        
+        **jscs-bin**
+            Set the path to a custom version of JSCS, e.g. ``/usr/local/bin/jscs``.
+        
+            If you have Javascript Code Style Checker installed in your system and
+            path, you have nothing to do. To install with Buildout, add the following
+            section to your buildout and set jscs-bin to
+            ``{buildout:bin-directory}/jscs``:
+        
+        .. code-block:: ini
+        
+            [jscs]
+            recipe = gp.recipe.node
+            npms = jscs
+            scripts = jscs
+        
+        **jscs-exclude**
+            Allows you to specify directories and/or files which you don't want to be
+            checked. Default is none. Note that these directories have to be given in
+            absolute paths, use ``${buildout:directory}/foo/bar/static/js-3rd-party``
+            for example.
+        
+        **csslint**
+            If set to True, CSS Lint code analysis is run. Default is ``False``.
+        
+            CSS Lint options should be configured using a ``.csslintrc`` file. A
+            typical ``.csslintrc`` file will look like this::
+        
+                --format=compact
+                --quiet
+                --ignore=adjoining-classes,floats,font-faces,font-sizes,ids,qualified-headings,unique-headings
+                --exclude-list=foo/bar/static/third-party.css
+        
+            This typical configuration includes a list of CSS rules that will be
+            ignored as they are `considered useless`_.
+        
+            See `CSS Lint documentation`_ and `CSS Lint command-line interface`_ for a
+            detailed list and description of the rules.
+        
+        **csslint-bin**
+            Set the path to a custom version of CSS Lint, e.g. ``/usr/local/bin/csslint``.
+        
+            If you have CSS Lint installed in your system and path, you have nothing
+            to do. To install CSS Lint with Buildout, add the following section to
+            your buildout and set csslint-bin to
+            ``{buildout:bin-directory}/csslint``:
+        
+        .. code-block:: ini
+        
+            [csslint]
+            recipe = gp.recipe.node
+            npms = csslint
+            scripts = csslint
+        
+        **csslint-exclude**
+            Allows you to specify directories and/or files which you don't want to be
+            checked. Default is none.
+        
+        **clean-lines**
+            If set to True, **any file** containing trailing spaces or tabs anywhere
+            on the lines will cause a warning. Default is ``False``.
+        
+        **clean-lines-exclude**
+            Allows you to specify directories and/or files which you don't want to be
+            checked. Default is none.
+        
+        **return-status-codes**
+            If set to True, the ``bin/code-analysis`` script returns an error code
+            that Continuous Integration servers (like Travis CI) can use to fail or
+            pass a job, based on the code analyis output. Note that Jenkins usually
+            does not need this option (this is better handled by the Jenkins
+            Violations plugin). Note that this option does not have any effect on the
+            other code analysis scripts. Default is ``False``.
+        
+        i18ndude and zptlint support
+        ----------------------------
+        
+        To reduce the number of Zope/Plone direct dependencies, plone.recipe.codeanalysis no longer depends on `i18ndude`_ nor `zptlint`_;
+        in order to use the following options you have to install them on your
+        system:
+        
+        **find-untranslated**
+            If set to True, scan Zope templates to find untranslated strings.
+            Default is ``False``.
+            To use this you will need to set the ``i18ndude-bin`` option.
+        
+        **find-untranslated-exclude**
+            Allows you to specify directories and/or files which you don't want to be
+            checked. Default is none.
+        
+        **i18ndude-bin**
+            Set the path to a custom version of `i18ndude`_.
+            Default is none.
+        
+        **zptlint**
+            If set to True, zptlint code analysis is run.
+            Default is ``False``.
+            To use this you will need to set the ``zptlint-bin`` option.
+        
+        **zptlint-bin**
+            Set the path to a custom version of `zptlint`_.
+            Default is none.
+        
+        **zptlint-exclude**
+            Allows you to specify directories and/or files which you don't want to be
+            checked. Default is none.
+        
+        
+        Known Issues
+        ============
+        
+        JSHint "ERROR: Unknown option --verbose"::
+        
+            JSHint                [ OK ]
+            ERROR: Unknown option --verbose
+        
+        Upgrade JSHint to latest version (>= 1.0) to fix this issue, e.g.::
+        
+            $ sudo npm install -g jshint
+        
+        
+        JSHint "ERROR: Unknown option --exclude"::
+        
+            JSHint                [ OK ]
+            ERROR: Unknown option --exclude
+        
+        Upgrade JSHint to latest version (>= 2.1.6) to fix this issue, e.g.::
+        
+            $ sudo npm install -g jshint
+        
+        
+        .. _`considered useless`: http://2002-2012.mattwilcox.net/archive/entry/id/1054/
+        .. _`CSS Lint documentation`: https://github.com/CSSLint/csslint/wiki/Rules
+        .. _`CSS Lint command-line interface`: https://github.com/CSSLint/csslint/wiki/Command-line-interface
+        .. _`CSS Lint`: http://csslint.net/
+        .. _`Flake8 documentation`: http://flake8.readthedocs.org/en/latest/warnings.html#error-codes
+        .. _`Jenkins Violations plugin`: https://wiki.jenkins-ci.org/display/JENKINS/Violations
+        .. _`flake8`: https://pypi.python.org/pypi/flake8
+        .. _`JSHint documentation`: http://jshint.com/docs/
+        .. _`JSHint`: http://www.jshint.com/
+        .. _`PEP 3101 (Advanced String Formatting)`: http://www.python.org/dev/peps/pep-3101/
+        .. _`plone.api conventions`: http://ploneapi.readthedocs.org/en/latest/contribute/conventions.html#about-imports
+        .. _`zptlint`: https://pypi.python.org/pypi/zptlint
+        .. _`i18ndude`: https://pypi.python.org/pypi/i18ndude
+        .. _`Unit testing framework documentation`: http://docs.python.org/2/library/unittest.html#deprecated-aliases
+        .. _`Mockup`: https://github.com/plone/mockup
+        .. _`jscs website`: https://www.npmjs.org/package/jscs
+        
+        
+        Example usage
+        =============
+        
+        Minimal buildout::
+        
+            >>> write('buildout.cfg',
+            ... """
+            ... [buildout]
+            ... parts = code-analysis
+            ...
+            ... [code-analysis]
+            ... recipe = plone.recipe.codeanalysis
+            ... directory = %(directory)s
+            ... """ % {
+            ...     'directory' : '${buildout:directory}/plone/recipe/codeanalysis',
+            ... })
+        
+        Running the buildout gives us a 'code-analysis' script that runs the entire
+        code analysis::
+        
+            >>> buildout_output_lower = system(buildout).lower()
+            >>> '/sample-buildout/bin/code-analysis' in buildout_output_lower
+            True
+        
+        It is also possible to run single code analysis scripts::
+        
+            >>> '/sample-buildout/bin/code-analysis-flake8' in buildout_output_lower
+            True
+            >>> '/sample-buildout/bin/code-analysis-jshint' in buildout_output_lower
+            True
+        
+        Flake 8 is installed by the buildout script, there is no need to install it on
+        the system::
+        
+            >>> '/sample-buildout/bin/flake8' in buildout_output_lower
+            True
+        
+        
+        Pre-commit hook
+        ===============
+        
+        If we have a git repository::
+        
+            >>> import subprocess
+            >>> subprocess.call(['mkdir', '-p', '.git/hooks'])
+            0
+        
+        And run buildout again::
+        
+            >>> buildout_output_lower = system(buildout).lower()
+        
+        Then the git pre-commit hook is installed::
+        
+            >>> 'install git pre-commit hook.' in buildout_output_lower
+            True
+        
+        
+        Contributors
+        ============
+        
+        - Timo Stollenwerk, Original Author
+        - Gil Forcada
+        - Héctor Velarde
+        - Ramiro Batista da Luz
+        - Daniel Widerin
+        - Michael Davis
+        
+        
+        Change history
+        ==============
+        
+        2.2 (2016-02-20)
+        ----------------
+        
+        - Fix issue where commit hook did not work on NixOS
+          (fixed to use ``/usr/bin/env bash`` instead ``/bin/bash``).
+          [datakurre]
+        
+        - Allow to pass a folder where to run code analysis against.
+          [gforcada]
+        
+        - Increase minimum requirement of flake8. Older versions could make
+          checks with exceptions in plugins as passed.
+          [do3cc]
+        
+        2.1 (2015-09-21)
+        ----------------
+        
+        - Remove debug statements checker,
+          `flake8-debugger <https://pypi.python.org/pypi/flake8-debugger>`_,
+          `flake8-print <https://pypi.python.org/pypi/flake8-print>`_
+          and jshint can do the same job.
+          [gforcada]
+        
+        - Removed pep3101 checker,
+          `flake8-pep3101 <https://pypi.python.org/pypi/flake8-pep3101>`_
+          works exactly the same.
+          [gforcada]
+        
+        - Remove deprecated aliases checker,
+          `flake8-deprecated <https://pypi.python.org/pypi/flake8-deprecated>`_
+          does the same job.
+          [gforcada]
+        
+        - Remove hasattr checker,
+          `flake8-plone-hasattr <https://pypi.python.org/pypi/flake8-plone-hasattr>`_
+          does the same job.
+          [gforcada]
+        
+        - Add a ``[recommended]`` extra to install a set of flake8 plugins,
+          some of them where part of p.r.codeanalysis up until this release.
+          [gforcada]
+        
+        - Remove leftovers from utf-8 checker removal.
+          [gforcada]
+        
+        - Remove imports checker,
+          `flake8-isort <https://pypi.python.org/pypi/flake8-isort>`_
+          does the same job.
+          [tisto] [gforcada]
+        
+        - Fix typo on test that prevented ipdb imports from being found.
+          [hvelarde]
+        
+        
+        2.0.2 (2015-09-03)
+        ------------------
+        
+        - Less false positives for pep3101.
+          [do3cc]
+        
+        - Add ``--jobs=1`` to flake8 if ``multiprocessing`` is set to ``False``.
+          [saily]
+        
+        - Fix #151 by not instantiating ``Lock`` and ``Value`` if ``multiprocessing``
+          was set to ``False``.
+          [saily]
+        
+        
+        2.0.1 (2015-09-02)
+        ------------------
+        
+        - synchronize :-)
+          [do3cc]
+          Fix multiprocessing bug. Shared state is hard to
+        
+        - Change pep3101 logic. No more false positives on log
+          strings.
+          [do3cc]
+        
+        - Clean tests output.
+          Fixes https://github.com/plone/plone.recipe.codeanalysis/issues/122
+          [gforcada]
+        
+        
+        2.0 (2015-08-07)
+        ----------------
+        
+        - Improve split_lines from analyser which makes exclude statements with more
+          than one directory to be ignored with ``zc.buildout 1.7.1``.
+          Fixes https://github.com/plone/plone.recipe.codeanalysis/issues/129
+          [gil-cano]
+        
+        - Allow passing any option to flake8 or its plugins.
+          Fixes https://github.com/plone/plone.recipe.codeanalysis/issues/131
+          [gforcada]
+        
+        - Create .git/hooks folder if it doesn't exist.
+          Fixes https://github.com/plone/plone.recipe.codeanalysis/issues/124
+          [gforcada]
+        
+        - Compile all regexes on initialization to not have to compile them
+          at every single use, it should make code analysis faster.
+          [gforcada]
+        
+        2.0b1 (2015-05-03)
+        ------------------
+        
+        - Allow usage of wildcards in exclude statements.
+          [saily]
+        
+        - Add ``check-manifest`` as new dependency and a basic check.
+          Fixes https://github.com/plone/plone.recipe.codeanalysis/issues/69
+          [saily]
+        
+        - Add a new option to disable ``jshint`` warning suppression.
+          Fixes https://github.com/plone/plone.recipe.codeanalysis/issues/94
+          [saily]
+        
+        - If an executable could not be found the code-analysis always failed. We've
+          changed this behaviour to return True and succeed the code-analysis.
+          Fixes https://github.com/plone/plone.recipe.codeanalysis/issues/71
+          [saily]
+        
+        - Exclude paths directly in ``find`` unix command which speeds up again a lot.
+          [saily]
+        
+        - Exclude empty strings in ``self.extensions`` which broke install with
+          ``zc.buildout 1.7.1``.
+          Fixes https://github.com/plone/plone.recipe.codeanalysis/issues/115
+          [saily]
+        
+        - Add check for relative imports.
+          Fixes https://github.com/plone/plone.recipe.codeanalysis/issues/44
+          [saily]
+        
+        
+        2.0a2 (2015-04-30)
+        ------------------
+        
+        - Replace manual comparisons of buildout options to ``False`` with a
+          ``bool_option`` method.
+          [saily]
+        
+        - Removed some plugins and replaced them with ``flake8`` plugins. Please
+          not the API change in buildout. Following options have been removed:
+        
+          - **utf8-headers** has been removed, replace it with ``flake8-coding`` if
+            needed.
+          - **utf8-headers-exclude**
+          - **prefer-single-quotes** has been removed, replace it with
+            ``flake8-quotes``.
+          - **prefer-single-quotes-exclude**
+          - **debug-statements** has some reduced functionality, because python
+            debugger checks should be included using ``flake8-debugger`` extension which
+            also checks for ``ipdb``.
+        
+          Fixes https://github.com/plone/plone.recipe.codeanalysis/issues/112
+          [saily]
+        
+        - Add missing tests for deprecated_aliases parser.
+          [saily]
+        
+        - Add new double quotes parser and add test for it. It now also supports
+          # noqa statments and nested quotes.
+          [saily]
+        
+        
+        2.0a1 (2015-04-27)
+        ------------------
+        
+        - Added multiprocessing. This will dramatically increase speed on large
+          packages when using pre-commit hooks.
+          [saily]
+        
+        - Return correct exit codes for console-scripts.
+          Fixes https://github.com/plone/plone.recipe.codeanalysis/issues/66
+          [saily]
+        
+        - Refactor whole linters framework to use OO design patterns, inherit from
+          ``Analyser`` abstract base class.
+          Fixes https://github.com/plone/plone.recipe.codeanalysis/issues/62
+          [saily]
+        
+        - Add bootstrap-buildout.py to flake8-exclude default. zc.buildout > 2 uses
+          bootstrap-buildout.py instead of bootstrap.py.
+          [timo]
+        
+        
+        1.1 (2014-12-04)
+        ----------------
+        
+        - Add a check to look for hasattr() calls, which are considered bad practice.
+          [gforcada, jensens]
+        
+        - Add option to store flake8 output if jenkins is False
+          [Michael Davis]
+        
+        - Fix find_files from utils to find files, not directories
+          [do3cc]
+        
+        
+        1.0 (2014-12-04)
+        ----------------
+        
+        - Nothing changed since 1.0rc1.
+        
+        
+        1.0rc1 (2014-06-18)
+        -------------------
+        
+        - Return a string to avoid TypeError when no file was checked with ``jscs``.
+          [saily]
+        
+        - Check import sorting in ``code_analysis_imports`` and add tests for
+          clean and sorted imports.
+          [saily]
+        
+        - Refactor ``code_analysis_clean_lines`` to use a new method to retrieve
+          files and avoid too complex violation.
+          [saily]
+        
+        
+        1.0b8 (2014-06-05)
+        ------------------
+        
+        - Add ``clean-lines-exclude`` support and updated README.
+          [saily]
+        
+        - Added tests for clean-lines checks.
+          [saily]
+        
+        - Use indices for format() to support Python 2.6.
+          Fixes https://github.com/plone/plone.recipe.codeanalysis/issues/77
+          [timo]
+        
+        
+        1.0b7 (2014-05-04)
+        ------------------
+        
+        - Add Javascript Code Style Checker ``jscs`` support.
+          [saily]
+        
+        - Remove hard dependency on i18ndude and zptlint; this will reduce the number
+          of Zope/Plone direct dependencies to make life happier to people using
+          Pyramid and other web Python-based development frameworks.
+          Fixes https://github.com/plone/plone.recipe.codeanalysis/issues/53
+          [hvelarde]
+        
+        - Do not print out jshint and csslint output for Jenkins. Those files can
+          become quite large.
+          [timo]
+        
+        
+        1.0b6 (2013-10-16)
+        ------------------
+        
+        - Remove progress bullets from flake8 check.
+          [timo]
+        
+        - Improve the way to handle an exception if the command used in popen does
+          not exist.
+          [flohcim]
+        
+        
+        1.0b5 (2013-10-08)
+        ------------------
+        
+        - Fix code analysis method by making it call each check only if the option
+          is activated.
+          [flohcim]
+        
+        - Keep backward compatibility with 'string-formatting' option.
+          [hvelarde]
+        
+        - Rename 'deprecated-alias' to 'deprecated-aliases' and keep backward
+          compatibility.
+          [hvelarde]
+        
+        
+        1.0b4 (2013-10-06)
+        ------------------
+        
+        - Implement Jenkins option on CSS Lint and JSHint.
+          [hvelarde, ramiroluz]
+        
+        - Rename 'deprecated-methods' to 'deprecated-alias'.
+          [gforcada]
+        
+        - Rename 'string-formatting' option to 'pep3101' to keep consistency.
+          [hvelarde]
+        
+        - Remove unused CSSLINT_IGNORE remainings.
+          [timo]
+        
+        - Simplify code analysis method and make it more readable.
+          [timo]
+        
+        
+        1.0b3 (2013-09-12)
+        ------------------
+        
+        - Add return-status-codes option that allows to fail a CI-build on Travis.
+          [timo]
+        
+        - Make system wide installed csslint the default value for
+          the csslint-bin option.
+          [timo]
+        
+        
+        1.0b2 (2013-09-11)
+        ------------------
+        
+        - Deprecate 'csslint-quiet', 'csslint-ignore' and 'csslint-exclude-list'
+          options; CSS Lint must be configured now using a '.csslintrc' file.
+          'csslint-bin' option now defaults to ``bin/csslint``; documentation was
+          updated (closes #20).
+          [hvelarde]
+        
+        - Implement removal of pre-commit hook.
+          Fixes https://github.com/plone/plone.recipe.codeanalysis/issues/21
+          [hvelarde]
+        
+        
+        1.0b1 (2013-08-12)
+        ------------------
+        
+        - Workaround over JSHint limitations to avoid displaying warning messages as
+          errors.
+          Fixes https://github.com/plone/plone.recipe.codeanalysis/issues/13
+          [hvelarde]
+        
+        - Fix CSS Lint validation and implement new 'csslint-quiet' option.
+          [hvelarde]
+        
+        - Fix package distribution.
+          [hvelarde]
+        
+        
+        1.0a1 (2013-08-04)
+        ------------------
+        
+        - Initial release.
+          [timo]
+        
+Platform: UNKNOWN
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: Framework :: Buildout
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: GNU General Public License (GPL)
+Classifier: License :: OSI Approved :: GNU General Public License v2 (GPLv2)
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python :: 2.6
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Programming Language :: Python :: 3.4
+Classifier: Programming Language :: Python
+Classifier: Topic :: Software Development :: Build Tools
