@@ -1,0 +1,35 @@
+<configure
+    xmlns="http://namespaces.zope.org/zope"
+    xmlns:five="http://namespaces.zope.org/five"
+    xmlns:genericsetup="http://namespaces.zope.org/genericsetup"
+    xmlns:upgrade-step="http://namespaces.zope.org/ftw.upgrade"
+    xmlns:i18n="http://namespaces.zope.org/i18n"
+    i18n_domain="ftw.usermanagement">
+
+    <five:registerPackage package="." initialize=".initialize" />
+    <i18n:registerTranslations directory="locales" />
+
+    <include package=".browser" />
+
+    <!-- Register the installation GenericSetup extension profile -->
+    <genericsetup:registerProfile
+        name="default"
+        title="ftw.usermanagement"
+        directory="profiles/default"
+        description="easy to use user management"
+        provides="Products.GenericSetup.interfaces.EXTENSION"
+        />
+
+    <utility
+        provides=".interfaces.IUserManagementVocabularyFactory"
+        component=".source.UsersVocabularyFactory"
+        name="plone.principalsource.Users"
+        />
+
+    <include package="ftw.upgrade" file="meta.zcml" />
+    <upgrade-step:directory
+        profile="ftw.usermanagement:default"
+        directory="upgrades"
+        />
+
+</configure>
