@@ -1,0 +1,334 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+
+# metadata
+"""OctopuSSH."""
+__version__ = "1.5.0"
+__license__ = ' GPLv3+ LGPLv3+ '
+__author__ = ' juancarlos '
+__email__ = ' juancarlospaco@gmail.com '
+__url__ = 'https://github.com/juancarlospaco/octopussh'
+__source__ = ('https://raw.githubusercontent.com/juancarlospaco/'
+              'octopussh/master/octopussh')
+
+
+# imports
+import logging as log
+import os
+import signal
+import sys
+import time
+from copy import copy
+from ctypes import byref, cdll, create_string_buffer
+from datetime import datetime
+from getpass import getuser
+from socket import getfqdn, gethostbyname
+from subprocess import call
+from tempfile import gettempdir
+from urllib import request
+from webbrowser import open_new_tab
+
+from PyQt5.QtCore import QUrl
+from PyQt5.QtGui import QIcon
+from PyQt5.QtWidgets import (QApplication, QCheckBox, QCompleter,
+                             QDialogButtonBox, QFileDialog, QGroupBox,
+                             QHBoxLayout, QLabel, QLineEdit, QMainWindow,
+                             QMessageBox, QShortcut, QVBoxLayout, QWidget)
+
+
+DESKTOP_FILE = """
+[Desktop Entry]
+Comment={description}, powered by OctopuSSH.
+Exec={command} || read -n1 -p 'SSH command failed!. Press any key to exit...'
+GenericName=ssh_to_{name}
+Icon=Terminal
+Name=ssh_to_{name}
+StartupNotify=false
+Terminal=true
+Type=Application
+X-DBUS-ServiceName=ssh_to_{name}
+X-KDE-StartupNotify=false
+"""
+
+
+SH_FILE = r"""#!/usr/bin/env bash
+# -*- coding: utf-8 -*-
+clear
+echo -e '\x1b[29;5;7m    Connecting via SSH to {name} as {user}...    \x1b[0m'
+{command} || read -n1 -p ' SSH command failed!. Press any key to exit...'
+"""
+
+
+###############################################################################
+
+
+class MainWindow(QMainWindow):
+
+    """Class representing main window."""
+
+    def __init__(self, parent=None):
+        """Init main class."""
+        super(MainWindow, self).__init__()
+        self.setWindowTitle(__doc__.strip().capitalize())
+        self.setMinimumSize(700, 240)
+        self.setMaximumSize(800, 400)
+        self.resize(self.minimumSize())
+        self.setWindowIcon(QIcon.fromTheme("preferences-system"))
+        self.center()
+        QShortcut("Ctrl+q", self, activated=lambda: self.close())
+        self.menuBar().addMenu("&File").addAction("Exit", exit)
+        windowMenu = self.menuBar().addMenu("&Window")
+        windowMenu.addAction("Minimize", lambda: self.showMinimized())
+        windowMenu.addAction("Maximize", lambda: self.showMaximized())
+        windowMenu.addAction("FullScreen", lambda: self.showFullScreen())
+        windowMenu.addAction("Restore", lambda: self.showNormal())
+        windowMenu.addAction("Center", lambda: self.center())
+        windowMenu.addAction("To Mouse", lambda: self.move_to_mouse_position())
+        windowMenu.addSeparator()
+        windowMenu.addAction("Minimum size", lambda:
+                             self.resize(self.minimumSize()))
+        windowMenu.addAction("Maximum size", lambda:
+                             self.resize(self.maximumSize()))
+        windowMenu.addSeparator()
+        helpMenu = self.menuBar().addMenu("&Help")
+        helpMenu.addAction("About Qt 5", lambda: QMessageBox.aboutQt(self))
+        helpMenu.addAction("About Python", about_python)
+        helpMenu.addAction("About" + __doc__, about_self)
+        helpMenu.addSeparator()
+        helpMenu.addAction("View Source Code", view_code)
+        helpMenu.addAction("Report Bugs", report_bug)
+        helpMenu.addAction("Check Updates", lambda: QMessageBox.information(
+            self, __doc__, check_for_updates()))
+        container = QWidget()
+        container_layout = QVBoxLayout(container)
+        self.setCentralWidget(container)
+        group0, group1 = QGroupBox("SSH"), QGroupBox("Options")
+        container_layout.addWidget(group0)
+        container_layout.addWidget(group1)
+        self.user, self.pswd = QLineEdit(getuser().lower()), QLineEdit()
+        self.host, self.path = QLineEdit(), QLineEdit()
+        self.user.setPlaceholderText("root")
+        self.pswd.setPlaceholderText("P@ssw0rD!")
+        self.host.setPlaceholderText(gethostbyname(getfqdn()))
+        self.path.setPlaceholderText(os.path.expanduser("~"))
+        self.user.setToolTip("Remote User to use for SSH connection")
+        self.pswd.setToolTip("Password for remote user (OPTIONAL)")
+        self.host.setToolTip("Remote SSH Server IP address or hostname")
+        self.path.setToolTip("Remote SSH Server full path folder (OPTIONAL)")
+        self.user.setCompleter(QCompleter(("root", getuser(), "guest")))
+        self.path.setCompleter(QCompleter(("/root", "/tmp", "/home", "/data")))
+        self.host.setCompleter(QCompleter((
+            "10.0.0.1", "172.16.0.1", "172.31.0.1", "192.168.0.1", "127.0.0.1"
+        )))
+        ssh_layout = QHBoxLayout(group0)
+        ssh_layout.addWidget(QLabel("<b>User"))
+        ssh_layout.addWidget(self.user)
+        ssh_layout.addWidget(QLabel("<b>Server"))
+        ssh_layout.addWidget(self.host)
+        ssh_layout.addWidget(QLabel("Password"))
+        ssh_layout.addWidget(self.pswd)
+        ssh_layout.addWidget(QLabel("Folder"))
+        ssh_layout.addWidget(self.path)
+        self.chrt, self.ionice = QCheckBox("Low CPU"), QCheckBox("Low HDD")
+        self.verb, self.comprs = QCheckBox("Verbose"), QCheckBox("Compression")
+        self.ign = QCheckBox("Ignore know_hosts")
+        self.tun = QCheckBox("Tunnel")
+        self.chrt.setChecked(True)
+        self.ionice.setChecked(True)
+        self.verb.setChecked(True)
+        self.comprs.setChecked(True)
+        self.ign.setChecked(True)
+        self.tun.setChecked(True)
+        self.chrt.setToolTip("Use Low CPU speed priority")
+        self.ionice.setToolTip("Use Low HDD speed priority")
+        self.verb.setToolTip("Use Verbose messages, ideal for Troubleshooting")
+        self.comprs.setToolTip("Use Compression of all Data, ideal for Wifi")
+        self.tun.setToolTip("Use full forwarding SSH tunnel, with X and ports")
+        self.ign.setToolTip("Ignore check of {}/.ssh/known_hosts".format(
+            os.path.expanduser("~")))
+        opt_layout = QHBoxLayout(group1)
+        opt_layout.addWidget(self.chrt)
+        opt_layout.addWidget(self.ionice)
+        opt_layout.addWidget(self.verb)
+        opt_layout.addWidget(self.comprs)
+        opt_layout.addWidget(self.tun)
+        opt_layout.addWidget(self.ign)
+        self.bt = QDialogButtonBox(self)
+        self.bt.setStandardButtons(QDialogButtonBox.Ok |
+                                   QDialogButtonBox.Close)
+        self.bt.rejected.connect(exit)
+        self.bt.accepted.connect(self.run)
+        container_layout.addWidget(self.bt)
+        self.host.setFocus()
+
+    def run(self):
+        """Run the main method and create bash script."""
+        if not len(self.user.text()) or not len(self.host.text()):
+            QMessageBox.warning(self, __doc__, "<b>ERROR:User or Server Empty")
+            return
+        conditional = bool(len(self.pswd.text()))
+        script = " ".join((
+            "ionice --ignore --class 3" if self.ionice.isChecked() else "",
+            "chrt --verbose --idle 0" if self.chrt.isChecked() else "",
+            "sshpass -p '{}'".format(self.pswd.text()) if conditional else "",
+            "ssh", "-vvv" if self.verb.isChecked() else "",
+            "-C" if self.comprs.isChecked() else "",
+            "-g -X" if self.tun.isChecked() else "",
+            "-o StrictHostKeychecking=no" if self.ign.isChecked() else "",
+            "{0}@{1}".format(self.user.text(), self.host.text())))
+        if bool(len(self.path.text())):
+            script += ":{0}".format(self.path.text())
+        default_filename = os.path.join(
+            os.path.expanduser("~"), "ssh_to_" +
+            str(self.host.text()).strip().lower().replace(".", "_") + ".sh")
+        extensions = ("Bash Script Executable for Linux .sh (*.sh);;"
+                      "Desktop Launcher file for Linux (*.desktop)")
+        file_path = QFileDialog.getSaveFileName(
+            self, __doc__.title() + " - Save SSH Script ! ",
+            default_filename, extensions)[0]
+        log.debug(script)
+        if file_path and os.path.isdir(os.path.dirname(file_path)):
+            if file_path.lower().endswith(".desktop"):
+                self.save_as_desktop(file_path, script)
+            else:
+                self.save_as_sh(file_path, script)
+
+    def save_as_sh(self, file_path, script):
+        """Save as SH bash script."""
+        with open(file_path, "w", encoding="utf-8") as sh_file:
+            sh_file.write(SH_FILE.format(name=self.host.text(),
+                command=script, user=self.user.text().upper(),))
+        os.chmod(file_path, 0o775)
+
+    def save_as_desktop(self, file_path, script):
+        """Save as Desktop Launcher."""
+        desc = "Connect to {} as {} using SSH".format(self.host.text().title(),
+                                                      self.user.text().title())
+        launcher = DESKTOP_FILE.format(
+            name=self.host.text(), command=script.strip(), description=desc)
+        with open(file_path, "w", encoding="utf-8") as file_to_write:
+            file_to_write.write(launcher)
+        os.chmod(file_path, 0o775)
+
+    def center(self):
+        """Center Window on the Current Screen,with Multi-Monitor support."""
+        window_geometry = self.frameGeometry()
+        mousepointer_position = QApplication.desktop().cursor().pos()
+        screen = QApplication.desktop().screenNumber(mousepointer_position)
+        centerPoint = QApplication.desktop().screenGeometry(screen).center()
+        window_geometry.moveCenter(centerPoint)
+        self.move(window_geometry.topLeft())
+
+    def move_to_mouse_position(self):
+        """Center the Window on the Current Mouse position."""
+        window_geometry = self.frameGeometry()
+        window_geometry.moveCenter(QApplication.desktop().cursor().pos())
+        self.move(window_geometry.topLeft())
+
+
+
+def make_logger(name=str(os.getpid())):
+    """Build and return a Logging Logger."""
+    if not sys.platform.startswith("win") and sys.stderr.isatty():
+        def add_color_emit_ansi(fn):
+            """Add methods we need to the class."""
+            def new(*args):
+                """Method overload."""
+                if len(args) == 2:
+                    new_args = (args[0], copy(args[1]))
+                else:
+                    new_args = (args[0], copy(args[1]), args[2:])
+                if hasattr(args[0], 'baseFilename'):
+                    return fn(*args)
+                levelno = new_args[1].levelno
+                if levelno >= 50:
+                    color = '\x1b[31;5;7m\n '  # blinking red with black
+                elif levelno >= 40:
+                    color = '\x1b[31m'  # red
+                elif levelno >= 30:
+                    color = '\x1b[33m'  # yellow
+                elif levelno >= 20:
+                    color = '\x1b[32m'  # green
+                elif levelno >= 10:
+                    color = '\x1b[35m'  # pink
+                else:
+                    color = '\x1b[0m'  # normal
+                try:
+                    new_args[1].msg = color + str(new_args[1].msg) + ' \x1b[0m'
+                except Exception as reason:
+                    print(reason)  # Do not use log here.
+                return fn(*new_args)
+            return new
+        log.StreamHandler.emit = add_color_emit_ansi(log.StreamHandler.emit)
+    log_file = os.path.join(gettempdir(), str(name).lower().strip() + ".log")
+    log.basicConfig(level=-1, filemode="w", filename=log_file)
+    log.getLogger().addHandler(log.StreamHandler(sys.stderr))
+    adrs = "/dev/log" if sys.platform.startswith("lin") else "/var/run/syslog"
+    try:
+        handler = log.handlers.SysLogHandler(address=adrs)
+    except Exception:
+        log.debug("Unix SysLog Server not found, ignored Logging to SysLog.")
+    else:
+        log.getLogger().addHandler(handler)
+    log.debug("Logger created with Log file at: {0}.".format(log_file))
+    return log
+
+
+def check_for_updates():
+    """Method to check for updates from Git repo versus this version."""
+    try:
+        last_version = str(request.urlopen(__source__).read().decode("utf8"))
+        this_version = str(open(__file__).read())
+    except Exception:
+        log_exception()
+    else:
+        if this_version != last_version:
+            msg = "Theres a new Version!, update the App from: " + __source__
+            log.warning(msg)
+        else:
+            msg = "No new updates!, You have the latest version of this app."
+            log.info(msg)
+        return msg
+
+
+def about_python():
+    """Open Python official homepage."""
+    return open_new_tab('https://python.org')
+
+
+def about_self():
+    """Open this App homepage."""
+    return open_new_tab(__url__)
+
+
+def view_code():
+    """Open this App local Python source code."""
+    return open_new_tab(__file__)
+
+
+def report_bug():
+    """Open this App Bug Tracker."""
+    return open_new_tab(__url__ + "/issues/new")
+
+
+###############################################################################
+
+
+def main():
+    """Main Loop."""
+    make_logger("octopussh")
+    log.info(__doc__ + __version__)
+    signal.signal(signal.SIGINT, signal.SIG_DFL)  # CTRL+C work to quit app
+    application = QApplication(sys.argv)
+    application.setApplicationName("octopussh")
+    application.setOrganizationName("octopussh")
+    application.setOrganizationDomain("octopussh")
+    application.setWindowIcon(QIcon.fromTheme("preferences-system"))
+    mainwindow = MainWindow()
+    mainwindow.show()
+    sys.exit(application.exec_())
+
+
+if __name__ in '__main__':
+    main()
