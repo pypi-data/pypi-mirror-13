@@ -1,0 +1,260 @@
+# -*- coding: utf-8 -*-
+
+import os
+
+import cos2
+
+from functools import partial
+from cos2 import to_string
+from mock import patch
+
+from common import *
+
+
+def do4append(req, timeout, next_position=0, req_info=None, data_type=None):
+    resp = r4append(next_position)
+
+    if req_info:
+        req_info.req = req
+        req_info.resp = resp
+        req_info.size = get_length(req.data)
+        req_info.data = read_data(req.data, data_type)
+
+    return resp
+
+
+def r4append(next_position, in_status=200, in_headers=None):
+    headers = cos2.CaseInsensitiveDict({
+        'Server': 'ChinacCOS',
+        'Date': 'Fri, 11 Dec 2015 11:40:30 GMT',
+        'Content-Length': '0',
+        'Connection': 'keep-alive',
+        'x-cos-request-id': '566AB62E9C30F8552526DADF',
+        'ETag': '"24F7FA10676D816E0D6C6B5600000000"',
+        'x-cos-next-append-position': str(next_position),
+        'x-cos-hash-crc64ecma': '7962765905601689380'
+    })
+
+    merge_headers(headers, in_headers)
+
+    return MockResponse(in_status, headers, b'')
+
+
+class TestObject(CosTestCase):
+    @patch('cos2.Session.do_request')
+    def test_head(self, do_request):
+        size = 1024
+        resp = r4head(size)
+        do_request.return_value = resp
+
+        result = bucket().head_object('fake-key')
+
+        self.assertEqual(result.content_length, size)
+        self.assertEqual(result.status, 200)
+        self.assertEqual(result.request_id, resp.headers['x-cos-request-id'])
+        self.assertEqual(result.object_type, 'Normal')
+        self.assertEqual(result.content_type, resp.headers['Content-Type'])
+        self.assertEqual(result.etag, resp.headers['ETag'].strip('"'))
+        self.assertEqual(result.last_modified, MTIME)
+
+    @patch('cos2.Session.do_request')
+    def test_object_exists(self, do_request):
+        do_request.return_value = r4head(0, in_status=304)
+        self.assertTrue(bucket().object_exists('fake-key'))
+
+        body = '''<?xml version="1.0" encoding="UTF-8"?>
+        <Error>
+            <Code>NoSuchKey</Code>
+            <Message>The specified key does not exist.</Message>
+            <RequestId>566B6C3D6086505A0CFF0F68</RequestId>
+            <HostId>fake-bucket.cos2.chinac.com</HostId>
+            <Key>fake-key</Key>
+        </Error>'''
+        do_request.auto_spec = True
+        do_request.side_effect = partial(do4body, status=404, body=body, content_type='application/xml')
+
+        self.assertTrue(not bucket().object_exists('fake-key'))
+
+    @patch('cos2.Session.do_request')
+    def test_get(self, do_request):
+        size = 1023
+        resp = r4get(random_bytes(size))
+        do_request.return_value = resp
+
+        result = bucket().get_object('fake-key')
+
+        self.assertEqual(result.read(), resp.body)
+        self.assertEqual(result.content_length, size)
+        self.assertEqual(result.status, 200)
+        self.assertEqual(result.request_id, resp.headers['x-cos-request-id'])
+        self.assertEqual(result.object_type, 'Normal')
+        self.assertEqual(result.content_type, resp.headers['Content-Type'])
+        self.assertEqual(result.etag, resp.headers['ETag'].strip('"'))
+        self.assertEqual(result.last_modified, MTIME)
+
+
+
+    @patch('cos2.Session.do_request')
+    def test_get_to_file(self, do_request):
+        size = 1023
+        resp = r4get(random_bytes(size))
+        do_request.return_value = resp
+
+        filename = self.tempname()
+
+        result = bucket().get_object_to_file('key', filename)
+
+        self.assertEqual(result.request_id, resp.headers['x-cos-request-id'])
+        self.assertEqual(result.content_length, size)
+        self.assertEqual(os.path.getsize(filename), size)
+
+        with open(filename, 'rb') as f:
+            self.assertEqual(resp.body, f.read())
+
+
+    @patch('cos2.Session.do_request')
+    def test_put_result(self, do_request):
+        resp = r4put(in_headers={'ETag': '"E5831D5EBC7AAF5D6C0D20259FE141D2"'})
+        do_request.return_value = resp
+
+        result = bucket().put_object('fake-key', b'dummy content')
+
+        self.assertEqual(result.status, 200)
+        self.assertEqual(result.request_id, resp.headers['x-cos-request-id'])
+        self.assertEqual(result.etag, resp.headers['ETag'].strip('"'))
+
+    @patch('cos2.Session.do_request')
+    def test_put_bytes(self, do_request):
+        content = random_bytes(1024 * 1024 - 1)
+        req_info = RequestInfo()
+
+        do_request.auto_spec = True
+        do_request.side_effect = partial(do4put_object, req_info=req_info, data_type=DT_BYTES)
+
+        bucket().put_object('fake-key', content)
+
+        self.assertEqual(content, req_info.data)
+
+
+    @patch('cos2.Session.do_request')
+    def test_put_from_file(self, do_request):
+        size = 512 * 2 - 1
+        content = random_bytes(size)
+        filename = self.make_tempfile(content)
+
+        req_info = RequestInfo()
+        do_request.auto_spec = True
+        do_request.side_effect = partial(do4put, req_info=req_info, data_type=DT_FILE)
+
+        result = bucket().put_object_from_file('fake-key', filename)
+        self.assertEqual(result.request_id, req_info.resp.headers['x-cos-request-id'])
+        self.assertEqual(content, req_info.data)
+
+    @patch('cos2.Session.do_request')
+    def test_append(self, do_request):
+        size = 8192 * 2 - 1
+        content = random_bytes(size)
+
+        do_request.return_value = r4append(size)
+
+        result = bucket().append_object('fake-key', 0, content)
+        self.assertEqual(result.status, 200)
+        self.assertEqual(result.next_position, size)
+
+
+    @patch('cos2.Session.do_request')
+    def test_delete(self, do_request):
+        resp = r4delete()
+        do_request.return_value = resp
+
+        result = bucket().delete_object('fake-key')
+
+        self.assertEqual(result.request_id, resp.headers['x-cos-request-id'])
+        self.assertEqual(result.status, 204)
+
+    def test_batch_delete_empty(self):
+        self.assertRaises(cos2.exceptions.ClientError, bucket().batch_delete_objects, [])
+
+    @patch('cos2.Session.do_request')
+    def test_batch_delete(self, do_request):
+        body = '''<?xml version="1.0" encoding="UTF-8"?>
+        <DeleteResult>
+        <EncodingType>url</EncodingType>
+        <Deleted>
+            <Key>%E4%B8%AD%E6%96%87%21%40%23%24%25%5E%26%2A%28%29-%3D%E6%96%87%E4%BB%B6%0C-2.txt</Key>
+        </Deleted>
+        <Deleted>
+            <Key>%E4%B8%AD%E6%96%87%21%40%23%24%25%5E%26%2A%28%29-%3D%E6%96%87%E4%BB%B6%0C-3.txt</Key>
+        </Deleted>
+        <Deleted>
+            <Key>%3Chello%3E</Key>
+        </Deleted>
+        </DeleteResult>
+        '''
+
+        do_request.auto_spec = True
+        do_request.side_effect = partial(do4body, body=body, content_type='application/xml')
+
+        key_list = ['中文!@#$%^&*()-=文件\x0C-2.txt', u'中文!@#$%^&*()-=文件\x0C-3.txt', '<hello>']
+
+        result = bucket().batch_delete_objects(key_list)
+        self.assertEqual(result.deleted_keys, list(to_string(key) for key in key_list))
+
+    @patch('cos2.Session.do_request')
+    def test_copy_object(self, do_request):
+        req_info = RequestInfo()
+
+        do_request.auto_spec = True
+        do_request.side_effect = partial(do4copy, req_info=req_info)
+
+        in_headers = {'Content-Type': 'text/plain', 'x-cos-meta-key': 'value'}
+        result = bucket().update_object_meta('fake-key.js', in_headers)
+
+        self.assertEqual(req_info.req.headers['x-cos-copy-source'], '/' + BUCKET_NAME + '/fake-key.js')
+        self.assertEqual(req_info.req.headers['Content-Type'], 'text/plain')
+        self.assertEqual(req_info.req.headers['x-cos-meta-key'], 'value')
+
+        self.assertEqual(result.request_id, REQUEST_ID)
+        self.assertEqual(result.etag, ETAG)
+
+    @patch('cos2.Session.do_request')
+    def test_put_acl(self, do_request):
+        req_info = RequestInfo()
+
+        do_request.auto_spec = True
+        do_request.side_effect = partial(do4put, req_info=req_info)
+
+        for acl, expected in [(cos2.OBJECT_ACL_PRIVATE, 'private'),
+                              (cos2.OBJECT_ACL_PUBLIC_READ, 'public-read'),
+                              (cos2.OBJECT_ACL_PUBLIC_READ_WRITE, 'public-read-write'),
+                              (cos2.OBJECT_ACL_DEFAULT, 'default')]:
+            bucket().put_object_acl('fake-key', acl)
+            self.assertEqual(req_info.req.headers['x-cos-object-acl'], expected)
+
+    @patch('cos2.Session.do_request')
+    def test_get_acl(self, do_request):
+        template = '''<?xml version="1.0" encoding="UTF-8"?>
+        <AccessControlPolicy>
+          <Owner>
+            <ID>1047205513514293</ID>
+            <DisplayName>1047205513514293</DisplayName>
+          </Owner>
+          <AccessControlList>
+            <Grant>{0}</Grant>
+          </AccessControlList>
+        </AccessControlPolicy>
+        '''
+
+        for acl, expected in [(cos2.OBJECT_ACL_PRIVATE, 'private'),
+                              (cos2.OBJECT_ACL_PUBLIC_READ, 'public-read'),
+                              (cos2.OBJECT_ACL_PUBLIC_READ_WRITE, 'public-read-write'),
+                              (cos2.OBJECT_ACL_DEFAULT, 'default')]:
+            do_request.auto_spec = True
+            do_request.side_effect = partial(do4body, body=template.format(acl), content_type='application/xml')
+
+            result = bucket().get_object_acl('fake-key')
+            self.assertEqual(result.acl, expected)
+
+
+if __name__ == '__main__':
+    unittest.main()
