@@ -1,0 +1,119 @@
+#!/usr/bin/env python
+# PYTHON_ARGCOMPLETE_OK
+import argparse
+import os
+import argcomplete
+import yaml
+from argcomplete.completers import FilesCompleter
+import textwrap
+from musical_games import shell_utils
+from musical_games.dice_games.factory import DiceGameFactory
+from musical_games.dice_games.shell_utils import CompositionsCompleter, \
+    InstrumentsCompleter
+from musical_games.utils import write_lilypond_book
+
+__author__ = 'Robbert Harms'
+__date__ = "2015-08-18"
+__maintainer__ = "Robbert Harms"
+__email__ = "robbert.harms@maastrichtuniversity.nl"
+
+
+if __name__ == '__main__':
+
+    factory = DiceGameFactory()
+
+    def get_arg_parser():
+        """For autocomplete, please execute activate-global-python-argcomplete in your bash or zsh shell."""
+
+        description = textwrap.dedent("""
+            Generate a composition using one of the dice games.
+
+            You can either generate a random composition (with an optional seed) or give a list of measure indices
+            specifying per composition part and per staff the index to use.
+
+            This will write out a lilypond file for the given composition.
+        """)
+
+        epilog = textwrap.dedent("""
+            Examples of use:
+                mg-dg-measures-overview -o composition.ly -c Kirnberger -w Menuet\ Trio -i Piano
+                mg-dg-measures-overview -o composition.ly -c Kirnberger -w Menuet\ Trio -i Piano --random --seed 1001
+                mg-dg-measures-overview -o composition.ly -c Kirnberger -w Menuet\ Trio -i Piano
+                    --indices "{'Trio': {'Right hand': [8, 45, 67, 35, 43, 75, 10, 92, 40, 55, 66, 60, 25, 85, 27, 32],
+                                         'Left hand': [8, 45, 67, 35, 43, 75, 10, 92, 40, 55, 66, 60, 25, 85, 27, 32]},
+                                'Menuet': {'Right hand': [79, 54, 62, 31, 50, 89, 71, 73,
+                                                          55, 46, 80, 9, 45, 6, 82, 16],
+                                'Left hand': [79, 54, 62, 31, 50, 89, 71, 73, 55, 46, 80, 9, 45, 6, 82, 16]}}"
+        """)
+        parser = argparse.ArgumentParser(description=description, epilog=epilog,
+                                         formatter_class=argparse.RawTextHelpFormatter)
+
+        parser.add_argument('-o', '--output_file', required=True,
+                            action=shell_utils.get_argparse_extension_checker(['.ly']),
+                            help='the filename of the output file').completer = \
+            FilesCompleter(['ly'], directories=False)
+
+        parser.add_argument('-c', '--composer',
+                            required=True,
+                            choices=factory.get_composers(),
+                            help='Choose the composer',
+                            default=None)
+
+        parser.add_argument('-w', '--composition',
+                            required=True,
+                            help='Choose the composition',
+                            default=None).completer = CompositionsCompleter()
+
+        parser.add_argument('-i', '--instrument',
+                            required=True,
+                            nargs='+',
+                            help='Choose the instrument, either one or a list with one for each composition part.',
+                            default=None).completer = InstrumentsCompleter()
+
+        parser.add_argument('-s', '--seed',
+                            help='The seed to use when the random composition modus is selected',
+                            default=None)
+
+        parser.add_argument('--random', dest='random', action='store_true',
+                            help="Generate a random composition.")
+        parser.set_defaults(random=False)
+
+        parser.add_argument('--indices', dest='indices',
+                            help="Generate a random composition.",
+                            default=None)
+
+        return parser
+
+    parser = get_arg_parser()
+    argcomplete.autocomplete(parser)
+    args = parser.parse_args()
+
+    output_file = os.path.realpath(args.output_file)
+
+    if os.path.isfile(output_file):
+        os.remove(output_file)
+
+    composer = args.composer
+    composition = args.composition
+    instruments = args.instrument
+
+    composition = factory.get_composition(composer, composition, instruments)
+
+    if args.random and args.indices:
+        print('Please select either random or indices')
+        exit(-1)
+
+    indices = {}
+    if args.indices:
+        indices = yaml.load(args.indices)
+    else:
+        seed = int(args.seed)
+        dice_tables = composition.get_dice_tables()
+        for part, tables in dice_tables.items():
+            staffs = {}
+            for ind, (staff_name, table) in enumerate(tables.items()):
+                staffs.update({staff_name: table.random_indices(seed)})
+            indices.update({part: staffs})
+
+    book = composition.typeset_composition(indices)
+    write_lilypond_book(output_file, book)

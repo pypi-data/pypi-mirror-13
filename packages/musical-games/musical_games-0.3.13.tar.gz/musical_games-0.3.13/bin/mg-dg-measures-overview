@@ -1,0 +1,80 @@
+#!/usr/bin/env python
+# PYTHON_ARGCOMPLETE_OK
+import argparse
+import os
+import argcomplete
+from argcomplete.completers import FilesCompleter
+import textwrap
+from musical_games import shell_utils
+from musical_games.dice_games.factory import DiceGameFactory
+from musical_games.dice_games.shell_utils import CompositionsCompleter, \
+    InstrumentsCompleter
+from musical_games.utils import write_lilypond_book
+
+__author__ = 'Robbert Harms'
+__date__ = "2015-08-18"
+__maintainer__ = "Robbert Harms"
+__email__ = "robbert.harms@maastrichtuniversity.nl"
+
+
+if __name__ == '__main__':
+
+    factory = DiceGameFactory()
+
+    def get_arg_parser():
+        """For autocomplete, please execute activate-global-python-argcomplete in your bash or zsh shell."""
+
+        description = textwrap.dedent("""
+            Generate an overview of all the measures available in one of the dice game.
+
+            This will write out a lilypond file with all the measures concatenated.
+        """)
+
+        epilog = textwrap.dedent("""
+            Examples of use:
+                mg-dg-measures-overview -o overview.ly -c Kirnberger -w Menuet\ Trio -i Piano
+        """)
+
+        parser = argparse.ArgumentParser(description=description, epilog=epilog,
+                                         formatter_class=argparse.RawTextHelpFormatter)
+
+        parser.add_argument('-o', '--output_file', required=True,
+                            action=shell_utils.get_argparse_extension_checker(['.ly']),
+                            help='the filename of the output file').completer = \
+            FilesCompleter(['ly'], directories=False)
+
+        parser.add_argument('-c', '--composer',
+                            required=True,
+                            choices=factory.get_composers(),
+                            help='Choose the composer',
+                            default=None)
+
+        parser.add_argument('-w', '--composition',
+                            required=True,
+                            help='Choose the composition',
+                            default=None).completer = CompositionsCompleter()
+
+        parser.add_argument('-i', '--instrument',
+                            required=True,
+                            nargs='+',
+                            help='Choose the instrument, either one or a list with one for each composition part.',
+                            default=None).completer = InstrumentsCompleter()
+
+        return parser
+
+    parser = get_arg_parser()
+    argcomplete.autocomplete(parser)
+    args = parser.parse_args()
+
+    output_file = os.path.realpath(args.output_file)
+
+    if os.path.isfile(output_file):
+        os.remove(output_file)
+
+    composer = args.composer
+    composition = args.composition
+    instruments = args.instrument
+
+    composition = factory.get_composition(composer, composition, instruments)
+    book = composition.typeset_measure_overview()
+    write_lilypond_book(output_file, book)
