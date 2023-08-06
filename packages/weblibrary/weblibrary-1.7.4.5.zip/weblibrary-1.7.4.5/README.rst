@@ -1,0 +1,37 @@
+WebLibrary for RobotFramework
+==================================================
+
+Introduction
+------------
+
+WebLibrary is a web testing library for `Robot Framework`_ that leverages the `Selenium 2 (WebDriver)`_ libraries from the Selenium_ project.
+
+
+Installation
+------------
+
+Using ``pip``
+'''''''''''''
+
+The recommended installation method is using
+`pip <http://pip-installer.org>`__::
+
+    pip install weblibrary
+
+The main benefit of using ``pip`` is that it automatically installs all
+dependencies needed by the library. Other nice features are easy upgrading
+and support for un-installation::
+
+    pip install --upgrade weblibrary
+    pip uninstall weblibrary
+
+
+Project Contributors
+--------------------
+* `Dong Hao <longmazhanfeng@gmail.com>`_
+* `Wang Yangdan <wangyangdan@gmail.com>`_
+* `Xia Daqiang <joehisaishi1943@gmail.com>`_
+
+.. _Robot Framework: http://robotframework.org
+.. _Selenium 2 (WebDriver): http://seleniumhq.org/docs/03_webdriver.html
+.. _Selenium: http://selenium.openqa.org
