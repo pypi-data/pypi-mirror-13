@@ -1,0 +1,86 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block breadcrumbs %}
+    <div class="breadcrumbs">
+        <a href="{{ admin_index }}">{% trans 'Home' %}</a>
+        &rsaquo; <a href="{{ admin_app_list }}">Django Updater</a>
+        &rsaquo; {{ opts.verbose_name_plural|capfirst }}
+    </div>
+{% endblock %}
+
+{% block content %}
+    <h1>{% trans "Django Updater Status" %}</h1>
+    <h2>Registration</h2>
+    <div id="status">
+        <p>
+            Checking registration status <img src="{% static "updater/ajax-loader.gif" %}"/>
+        </p>
+    </div>
+
+    <div id="updates" style="display: none;">
+        <h2>Updates</h2>
+        <div id="updates-inner">
+            <p>
+                Getting updates <img src="{% static "updater/ajax-loader.gif" %}"/>
+            </p>
+        </div>
+    </div>
+{% endblock %}
+
+{% block extrahead %}
+    {% for js_file in js %}
+        <script type="text/javascript" src="{{ js_file }}"></script>
+    {% endfor %}
+    <script type="text/javascript">
+        (function ($) {
+            $(document).ready(function () {
+                getRegistrationStatus();
+            });
+
+            function getRegistrationStatus(){
+                $.ajax({
+                    url: '{{ registration_url }}',
+                    error: function(data){
+                        $("#status").html("<strong>Error</strong> An unknown error occurred.")
+                    },
+                    success: function(data){
+                        $("#status").html(data.content);
+                        if(!data.errors) {
+                            getUpdates();
+                        }
+                    }
+                })
+            }
+
+            function getUpdates() {
+                $("#updates").show();
+                var data = {
+                    "packages": {{ packages|safe }},
+                    "django_web_view": true
+                };
+                $.ajax({
+                    url: '{{ update_url }}',
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "json",
+                    data: JSON.stringify(data),
+                    type: 'POST',
+
+                    beforeSend: function (xhr) {
+                        xhr.setRequestHeader('Authorization', 'Token {{ token }}');
+                    },
+                    error: function (data) {
+                        console.log(data);
+                        $('#updates-inner').html('An unknown error occurred');
+                    },
+                    success: function (data) {
+                        console.log(data);
+
+                        $('#updates-inner').html(data.django_web_view);
+                    }
+
+                });
+            }
+        })(django.jQuery);
+    </script>
+{% endblock %}

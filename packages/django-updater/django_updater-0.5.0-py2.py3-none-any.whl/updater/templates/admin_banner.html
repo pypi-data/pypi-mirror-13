@@ -1,0 +1,77 @@
+<style>
+
+    .updater-insecure{
+      background: #ba2121 !important;
+    }
+
+    .updater-header{
+       width: 100%;
+      color: white;
+      overflow: hidden;
+      padding: 0px 10px 20px 40px;
+    }
+    .updater-header.dj-18{
+      padding: 0px 10px 10px 10px;
+    }
+
+    .updater-header a{
+      color: white;
+      text-decoration: underline;
+    }
+
+  </style>
+
+
+<script type="text/javascript">
+var a = new XMLHttpRequest();
+
+function check() {
+    var path = '{% url "admin:update-status" %}';
+    var httpRequest = new XMLHttpRequest();
+    httpRequest.onreadystatechange = function() {
+        if (httpRequest.readyState === 4) {
+            if (httpRequest.status === 200) {
+                var data = JSON.parse(httpRequest.responseText);
+                displayBanner(data);
+            }
+        }
+    };
+    httpRequest.open('GET', path);
+    httpRequest.send();
+}
+
+function displayBanner(data){
+  var header = document.getElementById("header");
+  var updaterHeader;
+  if(data.version){
+    updaterHeader = "updater-header";
+  }else{
+    updaterHeader = "updater-header dj-18";
+  }
+  if(data.status == "insecure"){
+    header.className += "updater-insecure";
+    header.outerHTML+='<div class="'+ updaterHeader +' updater-insecure">You are using an insecure version of Django (' + data.version +'). Please consult the <a href="https://www.djangoproject.com/weblog/">official blog</a> for more information.</div>';
+  }else if(data.status == "outdated"){
+    header.outerHTML+='<div class="'+ updaterHeader +'">You are using an outdated version of Django (' + data.version +').</div>';
+  }
+}
+
+{% if not request.session.updater_admin_run %}
+{# if we have no session, the check has to run #}
+check();
+{% else %}
+{# we have a previous run in a session. Check the date of the prev check if we need to run again #}
+var nextRunAt = new Date();
+nextRunAt.setTime({{ request.session.updater_admin_run.run_again_at }} * 1000);
+if(nextRunAt < Date.now()){
+  // result of the last run is outdated, check again
+  check();
+}else{
+  // result of the last run is still valid, use the data from the session to display the message
+  displayBanner({
+    "status": "{{ request.session.updater_admin_run.status }}",
+    "version": "{{ request.session.updater_admin_run.version }}"
+  });
+}
+{% endif %}
+</script>
