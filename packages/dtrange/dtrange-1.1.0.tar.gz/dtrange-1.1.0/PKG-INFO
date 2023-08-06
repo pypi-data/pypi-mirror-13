@@ -1,0 +1,101 @@
+Metadata-Version: 1.1
+Name: dtrange
+Version: 1.1.0
+Summary: Multi-calendar datetime, date, and time range iterators.
+Home-page: https://www.github.com/rsmz/dtrange
+Author: Remik Ziemlinski
+Author-email: first.last@gmail.com
+License: GPLv3
+Download-URL: https://github.com/rsmz/dtrange/archive/dtrange-1.1.0.tar.gz
+Description: Overview
+        ========
+        dtrange has multi-calendar datetime, date and time range iterators.
+        
+        Features
+        --------
+        * Half-open or closed bounds.
+        * Non-uniform step date units, such as leap years and months.
+        * Alternative calendars: 360, all-leap, no-leap, gregorian, julian
+        
+        Examples
+        ========
+        
+        Datetime
+        --------
+        
+            from datetime import datetime, timedelta
+            from dtrange import dtrange
+        
+            start = datetime(2000, 1, 1)
+            stop  = datetime(2020, 2, 1)
+            step = timedelta(1)
+        
+            for it in dtrange(start, stop, step, endpoint=True):
+                print(it)
+        
+            for units in ['y', 'm', 'w', 'd', 'h', 'min', 's', 'ms', 'us']:
+                for it in dtrange(start, stop, step=1, units=units):
+                    print(units,it)
+        
+            for it in dtrange(start, stop, n=10):
+                print(it)
+        
+            for it in dtrange(start, step, n=10):
+                print(it)
+        
+            for units in ['y', 'm', 'w', 'd', 'h', 'min', 's', 'ms', 'us']:
+                for it in dtrange(start, step=1, units=units, n=10):
+                    print(units,it)
+        
+        Date
+        ----
+            from datetime import date, timedelta
+            from dtrange import drange
+        
+            start = date(2000, 1, 1)
+            stop  = date(2005, 2, 1)
+            step = timedelta(days=1)
+        
+            for calendar in ['360', 'gregorian', 'julian', 'leap', 'noleap']:
+                for it in drange(start, stop, step, calendar=calendar):
+                    print(calendar,it)
+        
+        Time
+        ----
+            from datetime import time, timedelta
+            from dtrange import trange
+        
+            start = time(0, 0, 0)
+            stop  = time(0, 1, 0)
+            step = timedelta(seconds=1)
+        
+            for it in trange(start, stop, step):
+                print(it)
+        
+        
+        Testing
+        =======
+        
+            make test
+        
+        Installation
+        ============
+        
+        From PyPi.
+        
+            pip install dtrange
+        
+        From tarball.
+        
+            python setup.py install
+        
+        License
+        =======
+        
+        dtrange  Copyright (C) 2016  Remik Ziemlinski
+        
+        This program comes with ABSOLUTELY NO WARRANTY.
+        This is free software, and you are welcome to redistribute it under the
+        conditions of the GPLv3 license.
+        
+Platform: UNKNOWN
