@@ -1,0 +1,71 @@
+{% extends '_base.html' %}
+{% block html_body %}
+
+<h4>Hackulus Shell v0.1</h4>
+<select id='hck-shell-language'>
+	<option value='python' {% if language == 'python' %}selected{% endif %}>Python</option>
+	<option value='javascript' {% if language == 'javascript' %}selected{% endif %}>Javascript</option>
+	<option value='jokes' {% if language == 'jokes' %}selected{% endif %}>Jokes</option>
+</select>
+<div class='hck-shell'>
+	<div class='hck-shell-display'>
+	</div>
+	<div class='hck-shell-input'>
+		<input type='text' id='hck-input'>
+	</div>
+</div>
+<script>
+	var hck_command_history = ['']
+	var hck_command_history_cursor = 0
+	alert(window.location.hostname);
+	console.log(window.location);
+	var hck_shell_api = '/shell/{{language}}'
+	var hck_shell_enter = function(querystring){
+		hck_shell_display(' >> '+querystring);
+		
+		//API Call
+		var post_data = [{'name':'querystring', 'value':querystring}]
+		$.post(hck_shell_api, post_data, function(response){
+			console.log(response);
+			hck_shell_display(response.print);
+			
+			if (response.concat == true){
+				$('#hck-input').val('    ');
+			}
+		});
+	}
+	var hck_shell_display = function(printstr){
+		$('.hck-shell-display').append('<p>'+printstr+'</p>')
+		$('#hck-input').val('');
+		$('.hck-shell-display')[0].scrollTop = $('.hck-shell-display')[0].scrollHeight;
+	}
+	
+	$('#hck-shell-language').on('change', function(){
+		window.location.assign('/shell/'+$(this).val());
+	});
+
+	$('#hck-input').on('keyup', function(e){
+		if (e.which==13){
+			var new_command = $('#hck-input').val();
+			hck_shell_enter(new_command);
+			hck_command_history.push(new_command);
+			hck_command_history_cursor = hck_command_history.length - 1;
+		}
+		else if (e.which==38){
+			//up arrow
+			console.log(hck_command_history_cursor)
+			$('#hck-input').val(hck_command_history[hck_command_history_cursor]);
+			hck_command_history_cursor = (hck_command_history.length + hck_command_history_cursor - 1) % hck_command_history.length;
+			
+		}
+		else if (e.which==40){
+			//down arrow
+			console.log(hck_command_history_cursor)
+			$('#hck-input').val(hck_command_history[hck_command_history_cursor]);
+			hck_command_history_cursor = (hck_command_history.length + hck_command_history_cursor + 1) % hck_command_history.length;
+		}
+	});
+	$('#hck-input').focus();
+</script>
+	
+{% endblock %}
