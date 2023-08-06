@@ -1,0 +1,270 @@
+Metadata-Version: 1.0
+Name: penates
+Version: 0.2.0
+Summary: Suite 
+Home-page: http://penates.readthedocs.org/en/latest/
+Author: Matthieu Gallet
+Author-email: github@19pouces.net
+License: CeCILL-B
+Description: Penates
+        =======
+        
+        Group of Ansible tasks for configuring a basic private network with the following services:
+        
+          * PKI (openssl)
+          * LDAP (openldap)
+          * DHCP (isc-dhcp-server)
+          * DNS (powerdns)
+          * NTP (ntpd)
+          * Kerberos (MIT kerberos)
+          * webservices (PenatesServer)
+          * pkinit for users
+        
+        Processes
+        ---------
+        
+          * a new machine is installed:
+          
+            * register itself (create Kerberos principal, private key, certificate, PTR DNS record, A/AAAA DNS record, SSHFP DNS record) and get a host keytab
+                GET https://directory01.{{ domain }}/no-auth/get_host_keytab/<hostname>
+            * get private key and certificate
+                GET https://directory01.{{ domain }}/auth/get_host_certificate/
+            * register SSH keys
+                POST https://directory01.{{ domain }}/auth/set_ssh_pub/
+            * register its MAC address with its (primary) IP address
+                GET https://directory01.{{ domain }}/auth/set_dhcp/<mac_address>/
+        
+          * a new service is installed:
+           
+            * register itself (protocol://hostname:port/) with a description, register CNAME and SRV DNS records
+                GET https://directory01.{{ domain }}/auth/set_service/<scheme>/<hostname>/<port>/?keytab=<HTTP>&protocol=udp
+            * get private key and certificate
+                GET https://directory01.{{ domain }}/auth/get_service_certificate/<scheme>/<hostname>/<port>/?protocol=udp
+            * get keytab
+                GET https://directory01.{{ domain }}/auth/get_service_keytab/<scheme>/<hostname>/<port>/?protocol=udp
+            
+          * register a foreign domain name:
+                GET https://directory01.{{ domain }}/auth/set_extra_service/<hostname><?ip=<ip>
+            
+          * a new user is created by admin:
+          
+            * create password
+            * create certificate (email, authent)
+            * create ssh public key
+            * create private key
+        
+        
+        TODO
+        ====
+        
+        Step 1
+        ------
+        
+          * [OK] IP fixe
+          * [OK] set machine keytab/certificate/rsa ssh key
+          * [OK] NTP
+            * crypto authentication
+          * [OK] A/AAAA external records
+          * [OK] user creation
+          * [OK] group creation
+          * [OK] set user password
+          * [OK] get self certificate
+          * [OK] pkinit : kinit -X "X509_user_identity=FILE:${cert}" ${principal}  ; kinit -C FILE:${cert} ${principal}
+          * [OK] tests pour chaque étape
+          * [OK] DANE
+          * [OK] DNSSEC
+          * SMTP
+            * [OK] système (sans auth mais local uniquement)
+            * [OK] utilisateur (ldap)
+            * [OK] spamassassin
+            * [OK] dkim
+            * [OK] spf
+            * clamav
+            * utilisateur (kerberos)
+            
+          * [OK] IMAP4
+            * [OK] utilisateur (ldap)
+            * [OK] utilisateur (kerberos)
+        
+          * [OK] kerberos authent on machines
+          * [OK] revoke certificate
+          * [OK] sudo for admins
+          * [OK] LDAP autz on machines (netgroups)
+          * utiliser DNSSEC
+          * external DNS config
+        
+        Step 2
+        ------
+        
+          * fail2ban
+            * [OK] ssh
+            * [OK] dovecot
+            * opensmtpd
+            * kerberos
+          * [OK] logging
+            * [OK] centralization
+            * [OK] >= warning
+            * [OK] logrotate
+          * [OK] snmpd
+          * [OK] nrpe
+          * rkhunter
+          * [OK] ISO generation
+            * [OK] login
+            * [OK] name
+            * [OK] password1
+            * [OK] password2
+            * [OK] encrypt home
+            * [OK] configure LVM?
+          * [OK] CA generation
+          * supervision
+            * [OK] shinken
+            * [OK] nrpe
+            * graphite ?
+            * snmp ?
+        
+          * [OK] TFTP server
+          * [OK] ubuntu mirror
+          * [OK] moneta mirror
+          * pypi mirror
+        
+        Step 3
+        ------
+        
+          * [OK] XML profiles for iOS / OS X
+          * [OK] XMPP
+          * [OK] proxy HTTP + kerberos
+        
+        Step 4
+        ------
+        
+          * [OK] Plex
+          * Seafile
+          * IRC bouncer
+          * IRC server
+          
+        
+        Step 5
+        ------
+        
+          * Gitlab
+          * CardDAV & CalDAV
+          * Updoc
+          * Vagrant mirror
+          * Pypi mirror
+          * Asterisk
+          * Readthedocs
+          * iPython Notebook
+          
+        Step 6
+        ------
+        
+          * backup
+          * restauration depuis le backup
+          * VPN
+          * 802.1x
+          
+        Step 7
+        ------
+        
+          * création de packages Debian de façon automatique pour :
+        
+            * plugins Shinken
+            * penatesserver
+            * updoc
+            * moneta
+            * pycharm
+            * intellij
+        
+        Step 8
+        ------
+        
+          * infrastucture secondaire (LDAP, Kerberos, DNS, DHCP, NTP, SMTP)
+          * analyse de logs
+        
+        TODO
+        ----
+        
+          * récupération de la conf pour les DNS secondaires
+          * ajouter un password admin sur penatesserver (header/get ?)
+          
+          * serveur d'installation :
+          
+            * DHCP
+            * miroir Ubuntu
+            * miroir Moneta pour les paquets supplémentaires
+            * serveur TFTP
+            * génération des clefs
+            
+          * poste d'administration
+          * remove machine
+          * remove service
+          * remove external service
+          * disable user
+          
+          
+        Kerberos Heimdal : backend LDAP -> bug dans Heimdal 1.6
+        Mail : remplacer opensmtpd par postfix + kerberos
+        
+        Pour chaque service :
+        
+          * [OK] check nrpe pour vérifier que le process existe (1/h)
+          * [OK] check nrpe pour la validité du certificat (1/j)
+          * check nrpe pour la validité du keytab (+ groupe) (1/j)
+          * check nrpe firewall ouvert pour le port (1/j)
+          * check pour la qualité du SSL (1/j)
+          * enregistrement auprès de PenatesServer
+          * sauvegarde dans /var/backups
+          * logs dans syslog en ERROR
+          * fail2ban
+          * récupération de la sauvegarde à l'installation (+création d'un fichier pour ne le faire qu'une fois)
+        
+        Notes
+        -----
+        
+          ldapsearch -x '(&(objectClass=posixAccount)(memberof=cn=Administrators,ou=CoreGroups,dc=test,dc=example,dc=org))' -LLL
+          ldapsearch -x '(&(objectClass=posixAccount)(memberof=cn=Users,ou=CoreGroups,dc=test,dc=example,dc=org))' -LLL
+        
+        
+        bootstrap
+        =========
+        
+        Deux cas sont possibles pour l'initialisation :
+        
+          * serveur DHCP, accès internet et machine avec ansible
+          * machine avec ansible uniquement, sans accès internet
+            
+        Dans tous les cas, il est nécessaire de disposer d'une machine fonctionnelle avec Ubuntu. Cette machine sera également 
+        utilisée pour servir de miroir Ubuntu dans le cas 2. De plus, dans le cas 2, il est nécessaire de prévoir un moyen de 
+        stockage externe qui servira aux transferts des mises à jour.
+         
+         Procédure complète :
+          - préparation de la machine de bootstrap, qui contiendra les clefs
+         
+          - `generate_ca.yml` : prépare les clefs publiques et privées, ainsi que les certificats
+          - `generate_iso.yml` : prépare l'image d'installation 
+          - `bootstrap.yml` : prépare la machine d'abord connectée à l'ancien réseau puis qui permettra de créer le nouveau 
+        
+              * cas 1) 
+                  * regénère les différents paquets tierce-partie
+                  * installe Apache et fait un miroir Ubuntu avec les paquets tierce-partie
+              * cas 2) 
+                  * installe un serveur DHCP avec le netboot 
+                  * clone du miroir officiel Ubuntu (environ 700 Go à télécharger)
+                  * regénère les différents paquets tierce-partie
+                  * installe Apache avec la copie du miroir et fait un miroir Ubuntu avec les paquets tierce-partie
+        
+          - `common_pass_1.yml` 
+          installation de la machine qui servira de serveur principal avec comme sources.list la machine de bootstrap
+          
+          - installation du serveur d'installation
+        
+        Procédure de bootstrap
+        ----------------------
+        
+          * création d'un miroir complet sur une clef USB
+          * mise en place d'un DHCP facultatif
+          * si la clef est présente, on utilise ce miroir
+          * copie de la clef sur le miroir ubuntu quand il est défini
+          * miroir ubuntu sur internet ou clef USB
+        
+Platform: UNKNOWN
