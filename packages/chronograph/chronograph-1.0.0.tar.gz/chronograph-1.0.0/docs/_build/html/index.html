@@ -1,0 +1,393 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Chronograph &mdash; Chronograph 1.0.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="Chronograph 1.0.0 documentation" href="#" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="#">Chronograph 1.0.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="chronograph">
+<h1>Chronograph<a class="headerlink" href="#chronograph" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<p>Chronograph is a feature-packed timer/stopwatch/chronometer that makes it simple to time Python code and functions. Features include:</p>
+<blockquote>
+<div><ul class="simple">
+<li>support for named Chronographs and labeled splits</li>
+<li>reporting</li>
+<li>multiple verbosity levels</li>
+<li>built-in logging</li>
+<li>JSON-compatible output data, including timestamps of start/stop</li>
+<li>custom exceptions if desired</li>
+<li>pain-free global management of multiple Chronographs</li>
+<li>function decorators</li>
+<li>support of with() syntax</li>
+<li>cast to float gives total time</li>
+<li>unit tested</li>
+</ul>
+</div></blockquote>
+<p>See below for usage examples.</p>
+</div>
+<div class="section" id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
+<p>You can install via pip:</p>
+<div class="highlight-python"><div class="highlight"><pre>pip install Chronograph
+</pre></div>
+</div>
+<p>or easy_install:</p>
+<div class="highlight-python"><div class="highlight"><pre>pip install Chronograph
+</pre></div>
+</div>
+<p>or Github:</p>
+<div class="highlight-python"><div class="highlight"><pre>git clone git@github.com:computron/chronograph.git
+cd chronograph
+python setup.py install
+</pre></div>
+</div>
+<p>The Github page also contains the source code.</p>
+</div>
+<div class="section" id="ten-examples-of-how-to-use-chronograph">
+<h2>Ten Examples of How to Use Chronograph<a class="headerlink" href="#ten-examples-of-how-to-use-chronograph" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="example-1-simple-usage">
+<h3>Example 1: Simple usage<a class="headerlink" href="#example-1-simple-usage" title="Permalink to this headline">¶</a></h3>
+<p>Here is a straightforward usage example (note that Example #3 is even simpler):</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">from</span> <span class="nn">chronograph.chronograph</span> <span class="kn">import</span> <span class="n">Chronograph</span>
+
+<span class="n">cg</span> <span class="o">=</span> <span class="n">Chronograph</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&quot;Testing Chronograph&quot;</span><span class="p">)</span>
+
+<span class="n">cg</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="s">&quot;first section&quot;</span><span class="p">)</span>
+<span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>
+<span class="n">cg</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+
+<span class="n">cg</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="s">&quot;second section&quot;</span><span class="p">)</span>
+<span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.25</span><span class="p">)</span>
+<span class="n">cg</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>You can then print the output like this:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">cg</span><span class="o">.</span><span class="n">total_elapsed_time</span><span class="p">)</span>
+<span class="go">0.757287</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">cg</span><span class="p">))</span>
+<span class="go">0.757287</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">cg</span><span class="o">.</span><span class="n">last_split_time</span><span class="p">)</span>
+<span class="go">0.253046</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">cg</span><span class="o">.</span><span class="n">report</span><span class="p">())</span>
+<span class="go">Report for Testing Chronograph</span>
+<span class="go">Split first section: 0.504241</span>
+<span class="go">Split second section: 0.253046</span>
+<span class="go">Total elapsed time: 0.757287</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">cg</span><span class="o">.</span><span class="n">timing_data</span><span class="p">)</span>
+<span class="go">[{&#39;start&#39;: datetime.datetime(2016, 2, 8, 20, 12, 38, 170123), &#39;stop&#39;: datetime.datetime(2016, 2, 8, 20, 12, 38, 674364), &#39;label&#39;: &#39;first section&#39;}, {&#39;start&#39;: datetime.datetime(2016, 2, 8, 20, 12, 38, 674395), &#39;stop&#39;: datetime.datetime(2016, 2, 8, 20, 12, 38, 927441), &#39;label&#39;: &#39;second section&#39;}]</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="example-2-using-splits">
+<h3>Example 2: Using splits<a class="headerlink" href="#example-2-using-splits" title="Permalink to this headline">¶</a></h3>
+<p>The stop/start functionality of the code above can be condensed by using split():</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">from</span> <span class="nn">chronograph.chronograph</span> <span class="kn">import</span> <span class="n">Chronograph</span>
+
+<span class="n">cg</span> <span class="o">=</span> <span class="n">Chronograph</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&quot;Testing Chronograph&quot;</span><span class="p">)</span>
+
+<span class="n">cg</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="s">&quot;first section&quot;</span><span class="p">)</span>
+<span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>
+
+<span class="n">cg</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&quot;second section&quot;</span><span class="p">)</span>
+<span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.25</span><span class="p">)</span>
+<span class="n">cg</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+</pre></div>
+</div>
+<p><em>(see Example 1 for printing the output)</em></p>
+</div>
+<div class="section" id="example-3-starting-timing-quickly">
+<h3>Example 3: Starting timing quickly<a class="headerlink" href="#example-3-starting-timing-quickly" title="Permalink to this headline">¶</a></h3>
+<p>It is easy start timing quickly, for example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">from</span> <span class="nn">chronograph.chronograph</span> <span class="kn">import</span> <span class="n">Chronograph</span>
+
+<span class="n">cg</span> <span class="o">=</span> <span class="n">Chronograph</span><span class="p">(</span><span class="n">start_timing</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>
+<span class="n">cg</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+</pre></div>
+</div>
+<p><em>(see Example 1 for printing the output)</em></p>
+</div>
+<div class="section" id="example-4-controlling-verbosity">
+<h3>Example 4: Controlling verbosity<a class="headerlink" href="#example-4-controlling-verbosity" title="Permalink to this headline">¶</a></h3>
+<p>You can make the Chronograph verbose, e.g.:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">from</span> <span class="nn">chronograph.chronograph</span> <span class="kn">import</span> <span class="n">Chronograph</span>
+
+<span class="n">cg</span> <span class="o">=</span> <span class="n">Chronograph</span><span class="p">(</span><span class="n">verbosity</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">start_timing</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>
+<span class="n">cg</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+</pre></div>
+</div>
+<p><em>(see Example 1 for printing the output)</em></p>
+<p>During timing, this option will print out something like:</p>
+<div class="highlight-python"><div class="highlight"><pre>Chronograph: Split (1) started at: 2016-02-08 20:22:39.246814
+Chronograph: stopped at: 2016-02-08 20:22:39.246814
+Chronograph: Total elapsed time: 0.50099 s. Last split (1) time: 0.50099 s.
+</pre></div>
+</div>
+</div>
+<div class="section" id="example-5-integrating-with-a-logger">
+<h3>Example 5: Integrating with a logger<a class="headerlink" href="#example-5-integrating-with-a-logger" title="Permalink to this headline">¶</a></h3>
+<p>It is easy to integrate the Chronograph with a logger:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">from</span> <span class="nn">chronograph.chronograph</span> <span class="kn">import</span> <span class="n">Chronograph</span>
+
+<span class="c"># set up logger</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span>
+<span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>  <span class="c"># anything debug and above passes through to the handler level</span>
+<span class="n">fh</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">FileHandler</span><span class="p">(</span><span class="s">&quot;chronograph.log&quot;</span><span class="p">,</span> <span class="s">&quot;a&quot;</span><span class="p">)</span>
+<span class="n">fh</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
+<span class="n">logger</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">fh</span><span class="p">)</span>
+
+<span class="c"># start chronograph</span>
+<span class="n">cg</span> <span class="o">=</span> <span class="n">Chronograph</span><span class="p">(</span><span class="n">verbosity</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="n">logger</span><span class="p">,</span> <span class="n">log_lvl</span><span class="o">=</span><span class="s">&quot;INFO&quot;</span><span class="p">,</span> <span class="n">start_timing</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>
+<span class="n">cg</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+
+<span class="n">cg</span><span class="o">.</span><span class="n">report</span><span class="p">(</span><span class="n">printout</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="example-6-multiple-chronographs-with-global-scope">
+<h3>Example 6: Multiple chronographs with global scope<a class="headerlink" href="#example-6-multiple-chronographs-with-global-scope" title="Permalink to this headline">¶</a></h3>
+<p>Need to manage multiple Chronographs across multiple files and functions? You can use the <tt class="docutils literal"><span class="pre">get_chronograph()</span></tt> function to get a global Chronograph that can be accessed anywhere:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">from</span> <span class="nn">chronograph.chronograph</span> <span class="kn">import</span> <span class="n">get_chronograph</span>
+
+
+<span class="k">def</span> <span class="nf">func1</span><span class="p">():</span>
+    <span class="n">cg</span> <span class="o">=</span> <span class="n">get_chronograph</span><span class="p">(</span><span class="s">&quot;my first chronograph&quot;</span><span class="p">)</span>
+    <span class="n">cg</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>
+    <span class="n">cg</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+
+
+<span class="k">def</span> <span class="nf">func2</span><span class="p">():</span>
+    <span class="n">cg</span> <span class="o">=</span> <span class="n">get_chronograph</span><span class="p">(</span><span class="s">&quot;my second chronograph&quot;</span><span class="p">)</span>
+    <span class="n">cg</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.25</span><span class="p">)</span>
+    <span class="n">cg</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">cg1</span> <span class="o">=</span> <span class="n">get_chronograph</span><span class="p">(</span><span class="s">&quot;my first chronograph&quot;</span><span class="p">,</span> <span class="n">start_timing</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.75</span><span class="p">)</span>
+    <span class="n">cg1</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+    <span class="n">func1</span><span class="p">()</span>
+    <span class="n">func2</span><span class="p">()</span>
+    <span class="n">cg1</span><span class="o">.</span><span class="n">report</span><span class="p">(</span><span class="n">printout</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+    <span class="n">cg2</span> <span class="o">=</span> <span class="n">get_chronograph</span><span class="p">(</span><span class="s">&quot;my second chronograph&quot;</span><span class="p">)</span>
+    <span class="n">cg2</span><span class="o">.</span><span class="n">report</span><span class="p">(</span><span class="n">printout</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The first time you call <tt class="docutils literal"><span class="pre">get_chronograph()</span></tt>, it will be created and stored for future use. Note that you can set the initialization parameters for a Chronograph only on the first time that you call <tt class="docutils literal"><span class="pre">get_chronograph()</span></tt>.</p>
+</div>
+<div class="section" id="example-7-using-the-with-clause">
+<h3>Example 7: Using the with() clause<a class="headerlink" href="#example-7-using-the-with-clause" title="Permalink to this headline">¶</a></h3>
+<p>You can make the syntax of a Chronograph slightly more compact by using the <tt class="docutils literal"><span class="pre">with()</span></tt> clause:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">chronograph.chronograph</span> <span class="kn">import</span> <span class="n">get_chronograph</span>
+
+<span class="k">with</span> <span class="n">get_chronograph</span><span class="p">(</span><span class="s">&quot;hello&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="kn">import</span> <span class="nn">time</span>
+        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="k">print</span> <span class="n">get_chronograph</span><span class="p">(</span><span class="s">&quot;hello&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">total_elapsed_time</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="example-8-throwing-exceptions">
+<h3>Example 8: Throwing exceptions<a class="headerlink" href="#example-8-throwing-exceptions" title="Permalink to this headline">¶</a></h3>
+<p>Need to enforce correct usage? You can optionally throw exceptions:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">chronograph.chronograph</span> <span class="kn">import</span> <span class="n">Chronograph</span>
+
+<span class="n">cg</span> <span class="o">=</span> <span class="n">Chronograph</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&quot;TestCase&quot;</span><span class="p">,</span> <span class="n">throw_exceptions</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+<span class="n">cg</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+<span class="n">cg</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>  <span class="c"># can&#39;t start a Chronograph that&#39;s already started!</span>
+</pre></div>
+</div>
+<p>Since the <tt class="docutils literal"><span class="pre">throw_exceptions</span></tt> parameter was set to True, this will throw the exception: <tt class="docutils literal"><span class="pre">chronograph.chronograph.ChronographError:</span> <span class="pre">TestCase:</span> <span class="pre">Warning:</span> <span class="pre">Cannot</span> <span class="pre">start</span> <span class="pre">Chronograph</span> <span class="pre">while</span> <span class="pre">in</span> <span class="pre">current</span> <span class="pre">state!</span> <span class="pre">Stop</span> <span class="pre">or</span> <span class="pre">reset</span> <span class="pre">chronograph</span> <span class="pre">before</span> <span class="pre">starting.</span></tt></p>
+</div>
+<div class="section" id="example-9-function-decorators">
+<h3>Example 9: Function decorators<a class="headerlink" href="#example-9-function-decorators" title="Permalink to this headline">¶</a></h3>
+<p>If you decorate a function with the <tt class="docutils literal"><span class="pre">add_chronograph</span></tt> decorator, it will automatically time a split every time that function is called. By default, the name of the Chronograph will be the function name, but you can set any Chronograph initialization parameters (such as name) that you desire:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">from</span> <span class="nn">chronograph.chronograph</span> <span class="kn">import</span> <span class="n">add_chronograph</span><span class="p">,</span> <span class="n">get_chronograph</span>
+
+
+<span class="nd">@add_chronograph</span><span class="p">()</span>
+<span class="k">def</span> <span class="nf">func1</span><span class="p">():</span>
+    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>
+
+<span class="nd">@add_chronograph</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&quot;my func2 timer&quot;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">func2</span><span class="p">():</span>
+    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.25</span><span class="p">)</span>
+
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
+
+    <span class="n">func1</span><span class="p">()</span>
+    <span class="n">func1</span><span class="p">()</span>
+    <span class="n">func1</span><span class="p">()</span>
+    <span class="n">func2</span><span class="p">()</span>
+
+
+    <span class="n">cg1</span> <span class="o">=</span> <span class="n">get_chronograph</span><span class="p">(</span><span class="s">&quot;func1&quot;</span><span class="p">)</span>
+    <span class="n">cg1</span><span class="o">.</span><span class="n">report</span><span class="p">(</span><span class="n">printout</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+    <span class="k">print</span><span class="p">(</span><span class="s">&quot;&quot;</span><span class="p">)</span>
+
+    <span class="n">cg2</span> <span class="o">=</span> <span class="n">get_chronograph</span><span class="p">(</span><span class="s">&quot;my func2 timer&quot;</span><span class="p">)</span>
+    <span class="n">cg2</span><span class="o">.</span><span class="n">report</span><span class="p">(</span><span class="n">printout</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="example-10-json-output-and-accessing-split-data">
+<h3>Example 10: JSON output and accessing split data<a class="headerlink" href="#example-10-json-output-and-accessing-split-data" title="Permalink to this headline">¶</a></h3>
+<p>The following code demonstrates how to access the split data as well as how to serialize and deserialize to JSON:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">from</span> <span class="nn">bson</span> <span class="kn">import</span> <span class="n">json_util</span>
+<span class="kn">from</span> <span class="nn">chronograph.chronograph</span> <span class="kn">import</span> <span class="n">Chronograph</span><span class="p">,</span> <span class="n">get_split_time</span>
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
+
+    <span class="n">cg</span> <span class="o">=</span> <span class="n">Chronograph</span><span class="p">(</span><span class="n">start_timing</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.25</span><span class="p">)</span>
+    <span class="n">cg</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.75</span><span class="p">)</span>
+    <span class="n">cg</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+
+    <span class="c"># JSON compatible data</span>
+    <span class="k">print</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">cg</span><span class="o">.</span><span class="n">timing_data</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">json_util</span><span class="o">.</span><span class="n">default</span><span class="p">)</span>
+
+    <span class="c"># Iterate through timing data and get all splits</span>
+    <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">cg</span><span class="o">.</span><span class="n">timing_data</span><span class="p">:</span>
+        <span class="k">print</span> <span class="n">get_split_time</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="#">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Chronograph</a><ul>
+<li><a class="reference internal" href="#introduction">Introduction</a></li>
+<li><a class="reference internal" href="#installation">Installation</a></li>
+<li><a class="reference internal" href="#ten-examples-of-how-to-use-chronograph">Ten Examples of How to Use Chronograph</a><ul>
+<li><a class="reference internal" href="#example-1-simple-usage">Example 1: Simple usage</a></li>
+<li><a class="reference internal" href="#example-2-using-splits">Example 2: Using splits</a></li>
+<li><a class="reference internal" href="#example-3-starting-timing-quickly">Example 3: Starting timing quickly</a></li>
+<li><a class="reference internal" href="#example-4-controlling-verbosity">Example 4: Controlling verbosity</a></li>
+<li><a class="reference internal" href="#example-5-integrating-with-a-logger">Example 5: Integrating with a logger</a></li>
+<li><a class="reference internal" href="#example-6-multiple-chronographs-with-global-scope">Example 6: Multiple chronographs with global scope</a></li>
+<li><a class="reference internal" href="#example-7-using-the-with-clause">Example 7: Using the with() clause</a></li>
+<li><a class="reference internal" href="#example-8-throwing-exceptions">Example 8: Throwing exceptions</a></li>
+<li><a class="reference internal" href="#example-9-function-decorators">Example 9: Function decorators</a></li>
+<li><a class="reference internal" href="#example-10-json-output-and-accessing-split-data">Example 10: JSON output and accessing split data</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/index.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="#">Chronograph 1.0.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2015, Anubhav Jain.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>
