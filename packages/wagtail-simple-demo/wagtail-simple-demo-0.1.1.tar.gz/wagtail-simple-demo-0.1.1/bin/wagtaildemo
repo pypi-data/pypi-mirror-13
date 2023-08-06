@@ -1,0 +1,67 @@
+#!/usr/bin/env python
+from __future__ import absolute_import, print_function, unicode_literals
+
+import random
+import os
+import string
+import sys
+
+import django
+import django.core.management
+
+
+def out(*msg):
+    print(*msg)
+
+BASE_DIR = os.path.join(os.getcwd(), 'wagtaildemo')
+out('Using wagtaildemo from', BASE_DIR)
+
+
+settings_template = string.Template(
+"""
+import os
+import locale
+
+from wagtaildemo.settings.base import *
+
+# Store all files in the same directory as this settings file
+BASE_DIR = os.path.dirname(__file__)
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+    }
+}
+# Attempt to detect the users locale, falling back to english
+LANGUAGE_CODE = (locale.getdefaultlocale()[0] or 'en').replace('_', '-').lower()
+
+try:
+    with open('/etc/timezone', 'r') as tz_file:
+        TIME_ZONE = tz_file.read().strip()
+except IOError:
+    # I don't know how to do it on Windows, or other *nix types without an
+    # /etc/timezone.
+    TIME_ZONE = 'UTC'
+
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+SECRET_KEY = '$SECRET_KEY'
+
+DEBUG = True
+""")
+
+if not os.path.exists(BASE_DIR):
+    os.mkdir(BASE_DIR)
+    with open(os.path.join(BASE_DIR, 'settings.py'), 'w') as settings_file:
+        settings_file.write(settings_template.safe_substitute(
+            settings_template, SECRET_KEY=''.join(chr(random.randint(48, 125)))))
+
+sys.path.append(BASE_DIR)
+os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
+django.setup()
+
+django.core.management.call_command('migrate')
+django.core.management.call_command('demodata')
+django.core.management.call_command('runserver')
