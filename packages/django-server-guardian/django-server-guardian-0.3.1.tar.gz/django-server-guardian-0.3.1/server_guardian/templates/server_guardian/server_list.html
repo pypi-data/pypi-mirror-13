@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+
+{% block main %}
+
+  <h1>Server Guardian Server Status Dashboard</h1>
+  <p><a href="{% url "admin:server_guardian_server_add" %}">Add new server</a>
+  </p>
+  {% if object_list %}
+    <p>
+      <a href="{% url "admin:server_guardian_server_changelist" %}">Edit existing servers</a>
+    </p>
+  {% endif %}
+  <div data-class="guardian-reload-now" data-guardian-reload-url="{% url "server_guardian_reload" %}" style="display: none;">
+    {# There must be only one span and one a tag inside the wrapping div #}
+    <a href="#">Reload now</a>
+    <span></span>
+  </div>
+
+  {% for server in object_list %}
+    <h2>{{ server.name }}</h2>
+    <p>
+      <a href="{% url "admin:server_guardian_server_change" server.pk %}">Edit server</a>
+    </p>
+    <p>URL: {{ server.url }}</p>
+    <p>Last updated: {{ server.last_updated }}</p>
+    {% regroup server.get_latest_log by label as label_group %}
+    {% for label in label_group %}
+      <h3>{{ label.grouper }}</h3>
+      <table style="width: 100%;">
+        <thead>
+        <tr>
+          <th style="text-align: left;">Time</th>
+          <th style="text-align: left;">Status Code</th>
+          <th style="text-align: left;">Status</th>
+          <th colspan="4" style="text-align: left;">Info</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for metric in label.list %}
+          <tr>
+            <th style="text-align: left;">{{ metric.time_logged }}</th>
+            <th style="text-align: left;">{{ metric.status_code }}</th>
+            <td class="server-guardian-status-{{ metric.status }}">{{ metric.status }}</td>
+            <td colspan="4">{{ metric.content }}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    {% endfor %}
+  {% empty %}
+    <p>No servers added</p>
+  {% endfor %}
+
+{% endblock %}
+
+{% block extrajs %}
+  <script>
+    (function ($) {
+      var getCookie = function (name) {
+        var cookieValue = null;
+        if (document.cookie && document.cookie != '') {
+          var cookies = document.cookie.split(';');
+          for (var i = 0; i < cookies.length; i++) {
+            var cookie = jQuery.trim(cookies[i]);
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) == (name + '=')) {
+              cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+              break;
+            }
+          }
+        }
+        return cookieValue;
+      };
+
+      var csrfSafeMethod = function (method) {
+        // these HTTP methods do not require CSRF protection
+        return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+      };
+
+      var setState = function (data) {
+
+        if (data.STATUS == 'started') {
+          state = 1;
+        }
+        if (data.STATUS == 'finished') {
+          state = 0;
+          window.location.reload();
+        }
+        if (data.STATUS == 'error') {
+          state = 2;
+        }
+
+        reload_button_label.text(data.MESSAGE);
+
+      };
+
+      var cycleReload = function () {
+        window.setTimeout(function () {
+              console.log('tick');
+              reload_button_label.text('Loading...');
+              $.get(reload_url, undefined, function (data) {
+                setState(data);
+              });
+              if (state == 1) {
+                cycleReload()
+              }
+            },
+            1000
+        )
+      };
+
+      var csrftoken = getCookie('csrftoken');
+      var reload_button_wrapper = $('[data-class="guardian-reload-now"]');
+      var reload_button_a = reload_button_wrapper.find('a');
+      var reload_url = reload_button_wrapper.attr(
+          'data-guardian-reload-url');
+      var reload_button_label = reload_button_wrapper.find('span');
+
+      var state = 0; // 0 initial - 1 loading - 2 error
+
+      $.ajaxSetup({
+        beforeSend: function (xhr, settings) {
+          if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+            xhr.setRequestHeader("X-CSRFToken", csrftoken);
+          }
+        }
+      });
+
+      reload_button_wrapper.show();
+
+      reload_button_a.click(function (e) {
+        if (state == 0) {
+          reload_button_label.text('Loading...');
+          $.post(reload_url, undefined, function (data) {
+            setState(data);
+            cycleReload();
+          })
+        } else {
+          reload_button_label.text(
+              'Update command cannot be started again!'
+          );
+          e.preventDefault();
+        }
+      });
+    })($);
+  </script>
+{% endblock %}
