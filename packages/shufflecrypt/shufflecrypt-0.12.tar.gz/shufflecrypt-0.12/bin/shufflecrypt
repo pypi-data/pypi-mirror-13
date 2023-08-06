@@ -1,0 +1,83 @@
+#!/usr/bin/env python
+from PIL import Image,ImageDraw
+import random
+import numpy as np
+import argparse
+import sys
+import getpass
+
+def getinput(promp):
+        if sys.version_info[0]>2:
+                return input(promp)
+        else:
+                return raw_input(promp)
+
+
+def randomkey(i):
+	return random.random()
+parser = argparse.ArgumentParser(description='Converts text to robberers lang')
+parser.add_argument("-f","--input",help="input file default is in.png")
+parser.add_argument("-o","--output",help="output file default is out.png")
+parser.add_argument("-kf","--keyfile",help="use a file as a key.png")
+parser.add_argument("-d","--decrypt",help="Decrypt",action='store_true')
+parser.add_argument("-help","--showhelp",help="Displays help",action='store_true')
+args = vars(parser.parse_args())
+#print args
+if args["showhelp"]:
+	print ("---ShuffleCrypt---")
+	print ("ShuffleCrypt rearranges the pixels in a image with help of a key")
+	print ("-f/--input sets the input filepath, default is in.png")
+	print ("-o/--output sets the output filepath, default is out.png")
+	print ("-d/--decrypt decrypts a encrypted image")
+	print ("-kf/--keyfile use a file as a key")
+	print ("-help/--showhelp sets the input filepath default is in.png")
+	sys.exit()
+
+if args["keyfile"]!=None:
+	keyf=open(args["keyfile"],"r")
+	key=keyf.read()
+	keyf.close()
+else:
+	key=getpass.getpass("key:")
+
+
+
+if args["input"]==None:
+	inputfn="in.png"
+else:
+	inputfn=args["input"]
+
+if args["output"]==None:
+	outputfn="out.png"
+else:
+	outputfn=args["output"]
+#print outputfn
+random.seed(key)
+im = Image.open(inputfn)
+(w,h)=im.size
+dots=[]
+for i in range(w):
+	for j in range(h):
+		dots.append((i,j))
+dots.sort(key=randomkey)
+dotsset=set(dots)
+
+#print "dots"
+moves=[]
+for i in range(w):
+	for j in range(h):
+		tod=dotsset.pop()
+		moves.append([[i,j],tod])
+out=Image.new("RGB", (w,h), "green")
+
+draw=ImageDraw.Draw(out)
+#print "moveing"
+if not args["decrypt"]:
+	for move in moves:
+		rgb = im.getpixel((move[0][0], move[0][1]))
+		draw.point((move[1][0], move[1][1]),fill=rgb[:3])
+else:
+	for move in moves:
+		rgb = im.getpixel((move[1][0], move[1][1]))
+		draw.point((move[0][0], move[0][1]),fill=rgb[:3])
+out.save(outputfn)
