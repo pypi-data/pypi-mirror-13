@@ -1,0 +1,39 @@
+{% extends "meditations/base.html" %}
+
+{% load url from future %}
+{% load i18n %}
+{% load bootstrap %}
+
+{% block head_title %}{% trans "Meditations" %}{% endblock %}
+
+{% block content %}
+<div class="login-panel col-lg-12 col-lg-offset-0">
+    <h1>{% trans "Meditation Calendar" %}</h1>
+    
+    <div class="col-lg-4 box">
+        <h3>Today's meditation</h3>
+        <p>#{{meditation}} - {{meditation.text}}</p>
+        <p class="left"><a class="btn btn-success" href="{% url 'response-create' %}?meditation={{meditation.slug}}">Respond</a></p>
+        <hr class="block" />
+        <p class=""><a href="#">View all</a></p>
+    </div>
+    <div class="col-lg-6 box">
+        <h3>Latest response</h3>
+        {% for object in responses %}
+        {% if forloop.counter == 1 %}
+        <h3>To #{{object.meditation}}</h3>
+        <p class="well small">{{object.meditation.text}}</p>
+        <br />
+        <h4>Initial Response</h4>
+        <p>{{object.initial_response}}</p>
+        <h4>Notes</h4>
+        <p>{{object.notes}}</p>
+        <p class="small"><a href="{{object.get_absolute_url}}">permalink</a></p>
+        {% endif %}
+        {% endfor %}
+    </div>
+</div>
+
+{% endblock %}
+
+

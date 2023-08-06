@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block header %}
+<!-- Intro Header -->
+<header class="intro">
+    <div class="intro-body">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-8 col-md-offset-2">
+                    <h1 class="">Todays Meditation:</h1>
+                    <p class="intro-text">{{todays_meditation.text}}</p>
+                    <a href="#about" class="btn btn-circle page-scroll">
+                        <i class="fa fa-angle-double-down animated"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+{% endblock header %}
+
+{% block content %}
+        {% if not responded %}
+        <form method="POST" action="{% url 'response-create' %}">{% csrf_token %}
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2">
+                <h2>Initial Response</h2>
+                <p>What emotions would you first feel? It's okay if this is not how you'd like to respond. The point is to be honest with yourself.</p>
+                <p><input width="20" name="initial_response" type="text" />
+            </div>
+            <div class="col-lg-8 col-lg-offset-2">
+                <p class="justify">Work through the best way to respond, adhering a close as possible to the stoic principals of detachment from what you cannot change, and changing what you can.</p>
+                <p><textarea name="notes" cols="50" rows="10"></textarea></p>
+                {% if not user.is_authenticated %}
+                <p>Save your responses by <a href="{% url 'account_signup' %}">creating an account</a> or <a href="{% url 'account_login' %}">logging in</a> with your Github or Google profiles.</p>
+                {% else %}
+                <p><input class="btn btn-success" type="submit" value="Save" />
+                {% endif %}
+            </div>
+        </div>
+        <input type="hidden" name="meditation" value="{{todays_meditation.id}}" />
+        </form>
+        {% else %}
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2">
+                <h2>Thank you!</h2>
+                <p>You have already responded to today's meditation. If you would like to add a second response, please review your <a href="{% url 'meditation-list' %}">dashboard</a>.</p>
+            </div>
+        </div>
+        {% endif %}
+{% endblock %}
