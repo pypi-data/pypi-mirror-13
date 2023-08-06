@@ -1,0 +1,401 @@
+MiModD v0.1.7 - Release Notes 
+============================= 
+
+
+changes in 0.1.7.2:
+-------------------
+
+The major issue addressed by this second bug-fix release in the 0.1.7 series is 
+explicit rules for and handling of text encoding. In addition, some minor bugs 
+have been fixed and the sanitize tool has grown a new option.
+
+enhancements:
+.............
+- throughout MiModD input/output encoding follows clearly defined rules:
+all output is UTF-8 encoded, input is expected to be UTF-8 encoded, but where 
+permissible (fasta sequence titles, SAM/BAM comment lines), undecodeable lines 
+will trigger a fallback to a one character per byte encoding (latin-1).
+- a new -t/--truncate-at option has been added to the sanitize tool, which can 
+be used to provide a string at the first occurence of which fasta sequence 
+titles should be truncated.
+- the config tool will warn about non-existing directories in settings and tools
+relying on the tmpfiles directory will fail with a clear error message if the 
+folder does not exist.
+
+bug fixes:
+..........
+- installation does not fail with ASCII-incompatible platform encoding settings 
+  anymore
+- fixed a typo in the map tool command line interface
+- fixed a bug in the NacreousMap engine affecting incompletely determined 
+genotypes
+
+
+
+changes in 0.1.7.1:
+-------------------
+
+This first bug-fix release for the 0.1.7 series, mostly addresses problems 
+with the new map tool introduced in v0.1.7.0.
+
+enhancements:
+.............
+- the map tool, when run in VAF mode, used to count only variants that appeared 
+"pure" (i.e., no evidence for another allele was allowed) for the predominant 
+related sample allele, but this strict behavior of discarding nearly pure 
+variants caused poor performance when only few variants were available for 
+mapping. The algorithm has now been changed to weigh variants by their 
+pureness making it possible to use also information from not quite pure sites 
+(though they contribute less to an analysis). This has hardly any effect on 
+analyses with many thousands of variants, but significantly improves results 
+for analyses relying on less markers.
+- the map tool in VAF mode now skips plots of contigs for which there is no 
+  data
+- improved y-axis scaling for linkage plots produced by the map tool
+- in VAF mode a Loess span of zero can now be specified to indicate that no 
+  Loess lines should be calculated
+- the varcall tool gives nicer status messages
+
+bug-fixes:
+..........
+see also https://sourceforge.net/p/mimodd/tickets/milestone/0.1.7.1
+
+- restored Python 3.2 compatibility accidentally broken in previous releases
+- made MiModD compatible with OS X 10.11 El Capitan
+- made from source installation compatible with gcc/g++ versions 4.9 and higher
+- fixed a bug in the vcf-filter tool that caused a division-by-zero error with 
+  the --af option when any of the samples filtered for had zero coverage for 
+  any variant
+- the delcall tool verifies the identity of the sequence dictionaries provided 
+  by the bam and bcf input files (accidentally combining aligned reads with 
+  unrelated variant calls, thus, gives an early and clear error message)
+- tools relying on pysamtools.header give an appropriate error if their SAM/BAM 
+  input file does not exist
+- the map tool no longer fails with an error for empty vcf inputs or when the 
+  maximum bin count in a histogram plot is zero
+
+
+
+changes in 0.1.7:
+-----------------
+
+The single outstanding enhancement in this release is the incorporation of 
+linkage plotting functionality into the package.
+
+new features/enhancements:
+..........................
+- the previous cloudmap tool has been refactored and modified extensively. 
+  The resulting new map tool incorporates new code for producing linkage plots 
+  that look like (but feel much better than) those produced by CloudMap. 
+  To this end, we have entirely rewritten and restructured the original 
+  CloudMap EMS Variant Density and Hawaiian Variant Mapping tools code. The 
+  result of merging this code with MiModD's previous linkage analysis code 
+  is a new engine for mapping-by-sequencing analysis which we call NacreousMap.
+  Graphical output from the map tool requires R and rpy2, but in the absence of 
+  these dependencies the tool can produce text-based output for plotting with 
+  other software or on servers (e.g., http://cloudmap.vm.uni-freiburg.de:8080/). 
+
+bug-fixes:
+..........
+see also https://sourceforge.net/p/mimodd/tickets/milestone/0.1.7
+- the upgrade tool does not try to update the mimodd executable anymore,
+  which could previously disrupt the association of the executable script with 
+  the Python interpreter
+- the copy of the mimodd executable that in the package bin folder gets created
+  with a correct shebang line
+- the covstats tool no longer skips the last contig in its report
+- the sanitize tool can now be used as expected with the -b option
+- the snap tool has been fixed to parse the -C/--clipping option correctly
+
+
+
+changes in 0.1.6.1:
+-------------------
+
+This is the first bug-fix release for the 0.1.6 series, but also brings one 
+small new feature.
+
+new features/enhancements:
+..........................
+- the vcf-filter tool has acquired a new --af option enabling variant filtering 
+  by allelic fractions
+
+bug-fixes:
+..........
+see also https://sourceforge.net/p/mimodd/tickets/milestone/0.1.6.1/
+  
+- the internal version of the SNAP aligner bundled with MiModD can finally deal 
+  with fasta reference files written under Windows; the longstanding issue with 
+  Windows-style line endings has been fixed
+- realigning previously aligned data to a reference genome with different 
+  sequence names is now possible
+- sam/bam header parsing is now less strict than before: if any standard header 
+  line contains an unknown tag the header is no longer considered invalid, but 
+  the unknown tag is silently dropped; the GO tag has been added to the known 
+  tags of the @HD record type
+- vcf meta section handling and parsing has been improved eliminating a bug 
+  with RG information containing characters with special meaning inside vcf 
+- sequence names in reference genomes or user-provided through the reheader 
+  tool are now checked for characters incompatible with any analyses steps and 
+  the improved sanitize tool can be used to correct reference genome sequence 
+  names automatically
+- filtering vcfs now works even if some records do not specify all of the 
+  specified filter fields
+- sorting SAM files directly from the Galaxy interface has been enabled
+- the reheader Galaxy tool can now replace several read group IDs and sequence 
+  names at a time; a bug in the tool wrapper prevented this in previous 
+  versions
+- lots of error messages have been improved
+
+
+
+changes in 0.1.6:
+-----------------
+
+Lots of novel features have made it into this new release making MiModD more 
+efficient and simple to use.
+
+new features/enhancements:
+..........................
+
+- split-on-rgs has been added as a new parameter to the convert tool and 
+  enables by-read-group splitting into multiple output files during conversion
+- conversion from sam/bam files to fastq has been added to the convert tool
+- the cloudmap tool has been reworked: the user interface is more powerful now 
+  allowing for three-sample mapping analyses and the underlying algorithm for 
+  the detection of informative variants has been improved resulting in more 
+  robust analysis results
+- filtering out anomalous overlapping read pairs from paired-end alignments has 
+  been improved: in the snap tool, the old --max-mate-overlap option has been 
+  dropped in favour of a new --discard-overlapping-mates option, which allows 
+  more fine-grained control over which types of overlapping mates should be 
+  removed
+- aligning with the snap tool has been implemented more efficiently: 
+  runs should be between 10% - 40% faster depending on the system with more 
+  homogenous usage of cpu time and less temporary disk space usage
+- the command line parser has been cleaned up to include only fully tested 
+  tools for data analysis. 
+  Tools for managing the installation (the former subcommands config and 
+  enable-galaxy and the new upgrade tool) are now accesible exclusively via:
+  python3 -m MiModD.<tool name>
+  In addition, we are going to use this new command space to try out new tools 
+  before adding them to the analysis tool interface. The index tool added in 
+  the previous release is an example for such a tool and this version features:
+- a novel in-development tool: sanitize
+  available as python3 -m MiModD.sanitize, this tool is intended as a format 
+  sanitizer for the various input file formats supported by MiModD. Currently, 
+  its only functionality is to rewrite fasta files to ensure they are 
+  compatible with MiModD
+- MiModD now uses samtools 1.2 for variant calling resulting in somewhat more 
+  reliable calls
+- we have started to rework the exception hierarchy in the package, which 
+  should result in nicer and clearer error messages in the long run (you may 
+  observe some of the effects already)
+
+bug fixes:
+..........
+- we have substantially increased test coverage for the package
+- this has led to the discovery of a number of minor bugs, which have been 
+  fixed
+
+
+
+changes in 0.1.5.2:
+-------------------
+
+v0.1.5.2 is the second bug-fix release for the 0.1.5 series.
+
+new features/enhancements:
+..........................
+- bam files can be indexed using:
+    python3 -m MiModD.index <input bam>
+
+bug-fixes:
+..........
+see also https://sourceforge.net/p/mimodd/tickets/milestone/0.1.5.2/
+  
+- all tools can now deal with whitespace-containing arguments and the temporary 
+  files directory may now contain whitespace (and other special characters) in 
+  their path
+- added compatibility with SnpEff version 4.1
+- snap tool single-end reads alignment was broken in v0.1.5.1 and is now 
+  working again
+- fixed a bug in varextract that caused a rare error with pre-calculated vcf 
+  input
+- slightly more robust vcf header parsing and writing
+
+
+  
+changes in 0.1.5.1:
+-------------------
+
+v0.1.5.1 is our first bug-fix release for the 0.1.5 series.
+In addition, it brings a major enhancement in the cloudmap tool.
+
+new features/enhancements:
+..........................
+the cloudmap tool has been redesigned:
+- the former separate modes "VARIANT" and "HAWAIIAN" have been unified into a 
+  single "VAF" (variant allele frequency) mode. The underlying algorithms have 
+  also been merged to perform variant and Hawaiian mapping analysis 
+  simultaneously. The new tool is more powerful than the previous version and 
+  easier to use.
+- the former "EMS" mode has been renamed to "SVD" (simple variant density) mode, 
+  accordingly.
+
+bug fixes:
+..........
+  see https://sourceforge.net/p/mimodd/tickets/milestone/0.1.5.1/
+  
+
+    
+changes in 0.1.5:
+-----------------
+
+v0.1.5 is the first STABLE release of MiModD!
+
+new features/enhancements:
+..........................
+completely refactored variant calling:
+- the former varcall variant calling tool functionality is now distributed over 
+  three tools (varcall, varextract, covstats)
+- varcall now produces bcf output (including every reference base), from which 
+  varextract generates a vcf of just variant sites. covstats and delcall both 
+  use the bcf to extract coverage information and the former cov format has 
+  been removed
+- this change reduces IO overhead, increases individual tool speed and 
+  increases the overall pipeline efficiency because varextract, covstats and 
+  delcall can all work in parallel
+- the redesign also simplifies mapping-by-sequencing approaches and goes hand 
+  in hand with
+  
+improved CloudMap support through the new cloudmap tool (replacing the old 
+cm-seqdict)
+
+extended info tool
+- the tool can now report not only samples, but also most other 
+  meta-information encoded in supported formats
+- these formats now include bcf and fasta
+
+improved Galaxy interoperability
+- all MiModD tools now respect GALAXY_SLOTS settings
+- MiModD can now be configured via an environmental variable, which is very 
+  helpful for Galaxy Tool Shed installations (see the updated installation 
+  instructions for details
+- enable-galaxy now works with old (universe.wsgi.ini-based) and new 
+  (config/galaxy.ini-based) versions of Galaxy and does not copy its xml 
+  wrappers into Galaxy anymore, but links them in the .ini file
+
+SnpEff v4 compatibility
+
+bug fixes (incomplete list)
+...........................
+- snap bug that prevented the tool from working correctly on OS X Yosemite
+- a severe bug prevented the reheader tool from keeping its promise to produce 
+  valid output under all circumstances
+- header tags are now sorted when printing SAM headers
+
+
+
+changes in 0.1.4.1
+------------------
+new features/enhancements:
+..........................
+a version subcommand has been added
+
+annotated variants support hyperlinks for several new species
+
+improved command line interface for the new reheader tool
+
+
+
+changes in 0.1.4:
+-----------------
+
+v0.1.4 is the most significant "minor" release of MiModD yet and brings 
+several enhancements and numerous bug-fixes.
+
+new features/enhancements:
+..........................
+simplified installation (see the updated installation instructions for details):
+- MiModD is now pip installable
+- samtools, bcftools and snap have become integrated and need not be installed 
+  separately anymore
+
+up-to-date variant calling and SAM/BAM handling:
+- the variant calling engine has been upgraded to samtools/bcftools version 1.0
+- transition of SAM/BAM handling from samtools 0.1.19 to 1.0 has been initiated
+  (during the transition phase MiModD ships with both samtools versions)
+  
+substantially improved SAM/BAM header operations:
+- SAM/BAM header validation has been enhanced and error messages have become 
+  clearer
+- the reheader tool has been reworked completely to offer complementary 
+  functionality to samtools reheader
+- the header, convert and reheader tools all guarantee consistency of their 
+  results files including consistency between header and body sections.
+  In other words, it should be impossible to generate unprocessable SAM/BAM 
+  output from within MiModD
+- this fixes issue:
+  .................
+  #21 using custom headers with convert/reheader can result in inconsistent 
+      SAM/BAM files 
+
+bug fixes (incomplete list):
+............................
+- a bug in the deletion caller has been fixed that caused a sporadically 
+  occurring error during insert size sampling
+- SAM files generated by the header tool can now be converted to BAM format
+- issue #23: failure to autodetect the SnpEff data folder has been solved, so 
+  SnpEff integration finally works as advertised
+- issue #18: substitute temporary file names in tool output has been addressed 
+  making temporary file handling by MiModD truely transparent
+   
+
+
+changes in 0.1.3.1:
+-------------------
+This version makes MiModD fully compatible with systems with only the standard getopt() functionality (i.e. MacOS X).
+Earlier versions failed to run samtools view commands with file redirection.
+
+fixed issue:
+............
+#20 pysamtool.view generates non-canonical command line
+
+
+
+changes in 0.1.3:
+-----------------
+new features:
+.............
+snap tool: now writes MD5 tags for all reference contigs to aligned reads file 
+and this is used by the varcall tool to verify reference identity for variant calling.
+convert tool: can now convert fastq.gz input to SAM/BAM also from within Galaxy
+can convert multi-part fastq or fastq.gz input to single SAM/BAM in one step
+
+enhancements:
+.............
+snap tool: faster decompression of fastq.gz or bam input
+
+fixed issues:
+.............
+#13: delcall bugs
+#10: header tool compatibility with samtools
+
+
+
+changes in 0.1.2:
+-----------------
+added new option to varcall / Variant Calling tool to generate a report on 
+coverage statistics
+
+
+
+changes in 0.1.1: 
+----------------- 
+fixed issues: 
+#1: temporary file management caused error when input files and temporary file 
+    directory are on different physical devices 
+#2: TMPFILES_PATHs set via mimodd config -c --tmpfiles are now interpreted 
+    relative to the current working directory, i.e., 
+    mimodd config -c --tmpfiles tmp is extrapolated to TMPFILES_PATH : cwd/tmp 

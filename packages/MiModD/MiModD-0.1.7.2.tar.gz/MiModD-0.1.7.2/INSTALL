@@ -1,0 +1,445 @@
+Installation Instructions for MiModD and Additional Software
+************************************************************
+
+.. Note::
+
+   The most recent version of this document can be found online at:
+   http://mimodd.readthedocs.org/en/latest/INSTALL.html
+
+
+MiModD runs under Linux and Mac OS X (10.9 - 10.11).
+
+Additional software requirements are listed separately for the different 
+installation schemes below, hardware recommendations can be found `here 
+<http://mimodd.readthedocs.org/en/latest/hardware.html>`__.
+
+--------------
+
+.. _standard-installation:
+
+Standard Installation
+=====================
+
+Overview
+--------
+    
+- fast and flexible installation for full access to MiModD as a command line 
+  package
+    
+- easy to `integrate with a local Galaxy installation 
+  <http://mimodd.readthedocs.org/en/latest/install_galaxy.html>`__ at any time
+    
+- few installation requirements, in particular, on OS X 
+
+.. Hint::
+
+   Use it if you do not have a specific reason to prefer the 
+   `tool shed installation <tool-shed-installation_>`_ scheme.
+
+
+Detailed Instructions
+---------------------
+
+.. admonition:: Requirements
+
+   OS X - installation from precompiled archive:
+   
+   - Python 3.2+ including the *pip* installation tool
+   
+   Linux and other platforms - installation from source:
+   
+   - a C/C++ compiler (tested with gcc/g++ and Clang)
+   - the make utility
+   - zlib library version 1.2.5+ including header files
+   - Python 3.2+ including *pip* and the Python C header files
+
+   .. admonition:: see also:
+   
+      `Installation of required software 
+      <http://mimodd.readthedocs.org/en/latest/install_dependencies.html>`__ 
+      for more details.
+
+Open a terminal window and try executing (possibly with superuser 
+rights, i.e., with ``sudo`` prepended)::
+
+  python3 -m pip install MiModD
+ 
+By default, this will install MiModD from source on Linux systems and from a
+precompiled archive on compatible versions of OS X. For more complete 
+instructions that include installation of required software see our 
+`installation examples 
+<http://mimodd.readthedocs.org/en/latest/install_examples.html>`__.
+
+Depending on your environment and needs you may wish to append some of the 
+following options to the above command (for a full list of pip installation 
+options type ``python3 -m pip help install`` or read the `online documentation 
+<http://pip.readthedocs.org>`__):
+    
+``--user``
+    to install MiModD relative to the current user's home directory
+    
+    This option is ideal for single-user installs and does not require 
+    write permission in system-wide installation directories.
+
+``--no-use-wheel``
+    to force installation from source even if a precompiled archive is 
+    available for your system
+    
+    This option is relevant only for OS X, for which we provide precompiled 
+    installation files, and in the hopefully rare event that the precompiled 
+    archive that pip chooses to install on your system turns out to be 
+    incompatible with your platform architecture.
+    
+    Note that a source installation has an extended list of requirements (see 
+    above) compared to a wheel installation.
+
+The installation may take a few minutes, but after it is finished, you can 
+proceed to `configure MiModD for your system <configure-mimodd_>`_.
+
+
+------------------------------------------
+
+.. _tool-shed-installation:
+
+Galaxy Toolshed Installation
+=============================
+
+.. admonition:: Requirements
+
+   - a C/C++ compiler (tested with gcc/g++ and Clang)
+   - the make utility
+
+Direct installation from Tool Sheds is an increasingly popular way of adding 
+new tools to existing instances of Galaxy. Its main advantage is that Tool Shed 
+installs are encapsulated in and managed by Galaxy and do not require changes 
+to system directories. This approach is often chosen by administrators of 
+larger Galaxy servers for which system stability is a primary 
+concern. 
+
+MiModD is available from the `main Galaxy Tool Shed 
+<https://toolshed.g2.bx.psu.edu>`__. Use the `mimodd repository 
+<https://toolshed.g2.bx.psu.edu/view/wolma/mimodd>`__ for one-click 
+installation of the latest version.
+
+.. Note::
+
+   The Tool Shed Installation scheme never uses precompiled installation 
+   archives, but instead compiles all dependencies (including Python3) from 
+   source so you will need a C/C++ compiler even on OS X systems.
+   
+The installation process is the same as for any other Tool Shed tool, and is 
+described `here 
+<https://wiki.galaxyproject.org/Admin/Tools/AddToolFromToolShedTutorial>`__.
+
+.. Note::
+
+   After the installation, the complete Galaxy interface for all MiModD tools 
+   will be added to your Galaxy's Tools bar, but the order of the tools will 
+   be more or less random. This is one of the disadvantages of the Tool Shed 
+   installation scheme and you will have to manually edit your Galaxy's 
+   ``integrated_tool_panel.xml`` file to sort the items on the Tool bar.
+
+Like for the standard installation, you should configure MiModD before using 
+the package. However, for a Tool Shed installation of MiModD we recommend the 
+`environment variable-based configuration <env_>`_.
+
+
+------------------------------------------
+
+.. _platform-distros:
+
+Platform-specific distributions
+===============================
+
+For impatient users of selected platforms - currently OS X and Ubuntu 14.04 - 
+we are offering preconfigured ready-to-run `bundles of MiModD and Galaxy 
+<https://sourceforge.net/projects/mimodd/files/Platform-specific%20bundled%20distributions/>`__, that let you experience MiModD without any installation - 
+simply run a functional Galaxy with MiModD from the extracted download 
+archive.
+
+.. Note::
+
+   These distributions offer a simple way to get to know MiModD and to perform
+   some quick analyses, however, they are recommended for testing only (see 
+   also the disclaimer on the download page).
+   
+   
+------------------------------------------
+
+
+.. _configure-mimodd:
+
+Configuring MiModD for your system
+==================================
+
+The simplest way to configure MiModD is from the command line using the 
+`config tool <configuration_>`_, and if you have installed MiModD according 
+to the `standard installation scheme <standard-installation_>`_, you *MUST* 
+run the tool once before you can start using the freshly installed package.
+
+If you have installed MiModD from the Galaxy Tool Shed, you can, alternatively, 
+`configure the package through an environmental variable <env_>`_ recognized 
+by MiModD.
+
+In addition, all MiModD settings can be re-configured at any later time, using 
+either approach.
+    
+
+.. _configuration:
+
+The config tool
+---------------
+
+General usage::
+
+  python3 -m MiModD.config [--parameter VALUE] ...
+  
+.. Note::
+   Depending on your installation of MiModD, changes to the configuration file 
+   may require superuser rights, in which case you will have to prepend 
+   ``sudo`` to the invocation of the tool.
+
+   
+Initial configuration
+~~~~~~~~~~~~~~~~~~~~~
+
+For a fresh standard installation of MiModD use::
+
+    python3 -m MiModD.config
+    
+from the command line to bring up a dialog that will ask you for a setting for 
+each configurable parameter. Here is an example run of the tool::
+
+    % python3 -m MiModD.config
+    
+    Which folder should MiModD use to store temporary data? [/var/tmp]:
+    In which folder should MiModD look for SnpEff? [/not configured]:
+    Up to how many threads do you want to allow MiModD to use at a time? [4]:3
+    Up to how much memory in GB do you want to allow MiModD to use? [2]:6
+
+    All necessary information has been collected.
+    Hit <Enter> to store your settings and start using MiModD.
+
+    To change settings later, you can rerun this tool with new settings 
+    provided as command line options.
+
+
+    Settings for package MiModD in: /home/example/lib/python3.4/site-packages/MiModD
+
+    -----------------------
+	PARAMETER : VALUE
+	.......................
+	TMPFILES_PATH : /var/tmp
+	MAX_MEMORY : 6
+	SNPEFF_PATH : /not configured
+	MULTITHREADING_LEVEL : 3
+
+For each setting a default value is suggested in brackets, which you can accept 
+by hitting <ENTER> or overwrite by providing a different value. Finally, the 
+new settings are displayed as confirmation.
+
+If the reported settings look ok, you are ready to 
+`start using MiModD <use-it_>`_, otherwise read on how to change settings 
+once they have been configured.
+
+Inspect settings
+~~~~~~~~~~~~~~~~
+
+If you run the tool without options and MiModD has already been configured, it 
+will simply report the current settings as in the lower half of the above 
+output.
+
+Change settings
+~~~~~~~~~~~~~~~
+
+Running the config tool is also the standard way to **change** settings. Its 
+invocation pattern for this purpose is::
+
+  python3 -m MiModD.config [--tmpfiles PATH] [--snpeff PATH] [-t THREADS] [-m MEMORY]
+  
+So to set a new *TMPFILES_PATH* and to set *MAX_MEM* to 8 GB, you could use::
+
+  python3 -m MiModD.config --tmpfiles /var/tmp/mimodd_tmp -m 8
+
+
+Proceed to `Configuration Parameters <config-params_>`_ to learn more about the 
+settings that can be changed by the different options.
+
+
+.. _env:
+
+Configuration through an environment variable
+---------------------------------------------
+
+As an alternative to command line configuration, you can provide new settings 
+for the `configuration parameters <config-params_>`_ also through the 
+MiModD-specific environment variable ``$MIMODD_CONFIG_UPDATE``.
+
+The value of this variable has to be set to a ``:``-separated list of 
+*parameter=value* entries, for example::
+
+  export MIMODD_CONFIG_UPDATE=MAX_MEMORY=8:MULTITHREADING_LEVEL=4
+  
+The presence of the environment variable will be detected by MiModD at its next 
+run from the same terminal, and will be used to update the package settings 
+accordingly.
+
+You can also pass the variable exclusively to Galaxy by prepending 
+it to the start script and **this is the recommended approach to configure a 
+Galaxy Tool Shed installation of MiModD**::
+
+  MIMODD_CONFIG_UPDATE=MULTITHREADING_LEVEL=3:TMPFILES_PATH=home/galaxy/tmp/ sh run.sh
+
+With this, the MiModD settings will get updated when the first MiModD tool 
+gets executed from within the Galaxy instance.
+
+.. Note::
+   
+   Changes made through $MIMODD_CONFIG_UPDATE are persistent so the variable 
+   has to be found only once.
+   
+   To store the change *mimodd* needs to be executed with write privileges for 
+   the MiModD package directory. This should not be an issue with Tool Shed 
+   installations of MiModD, but can make this configuration scheme problematic 
+   in combination with Standard Installations in system directories.
+
+
+.. _config-params:
+
+Configuration parameters
+------------------------
+
+listed as pairs of
+
+PARAMETER : ``config options``
+    where PARAMETER can be used in the $MIMODD_CONFIG_UPDATE 
+    variable and the *config options* are used to set the same parameter using 
+    the ``python3 -m MiModD.config`` command.
+
+
+TMPFILES_PATH : ``--tmpfiles``, ``--tmpfiles-path``
+    the directory in which MiModD will store temporary files [default: /var/tmp]
+
+    In a typical analysis pipeline, MiModD may produce several GB of data
+    in this directory and remove them automatically again when the data is not 
+    any longer needed. Under exceptional circumstances, however, MiModD might 
+    fail to delete data files, so this directory is the first place you should 
+    look at if you notice reduced disk space. Also, any users of MiModD will 
+    require write permission in this directory.
+
+MULTITHREADING_LEVEL : ``-t``, ``--threads``
+    the maximum number of cores that a single MiModD command is supposed to use 
+    at any time [default: 4]
+    
+    Many MiModD commands take advantage of multiprocessing to speed up analyses.
+    These commands try to respect this setting if possible although some may 
+    use slightly more than their allocated CPU share.
+    
+MAX_MEMORY : ``-m``, ``--memory``
+    the maximum memory in GB that any single MiModD command should use [default: 2]
+    
+    WGS data files are often very large and some MiModD tools can operate on 
+    them more efficiently when allowed to hold a larger portion of such files 
+    in memory at once. Most of the time MiModD will consume less than 1 GB 
+    though.
+    The setting is adhered to relatively strictly by most tools with the 
+    exception of the SNAP aligner-based tools *mimodd snap index*, *mimodd 
+    snap*, *mimodd snap_batch* and the Galaxy *SNAP Read Alignment* tool.
+    Due to the nature of their underlying alignment algorithm these tools will 
+    require a fixed amount of memory that depends on the size of the reference 
+    genome and which may be significantly more than the configured setting.
+
+.. Tip::
+
+    MULTITHREADING\_LEVEL and MAX\_MEMORY will have a big effect on the
+    performance of MiModD, but also on the responsiveness of your system
+    during execution of MiModD commannds. As a rule of thumb, if you do not 
+    have special requirements, we recommend to set both parameters to between 
+    50 and 75 % of the available resources on your system, i.e., if you have 
+    8 threads and 16 GB of RAM on your system, you might set 
+    MULTITHREADING\_LEVEL to 4-6 and MAX\_MEM to 8-12.
+    
+    See also the section `MiModD Hardware Requirements 
+    <http://mimodd.readthedocs.org/en/latest/hardware.html>`__ for more notes 
+    on performance.
+
+SNPEFF_PATH : ``--snpeff``, ``--snpeff-path``
+    the path to the optional SnpEff variant annotation tool
+    
+    This parameter should be set to the directory that you installed SnpEff 
+    into (e.g., ~/snpEff if you followed the recommended installation steps). 
+    If you do not have SnpEff installed, keep the default setting, to have all 
+    SnpEff-dependent functionality of MiModD deactivated.
+
+
+------------------------------------------
+
+.. _use-it:
+
+Running MiModD
+==============
+
+To start using MiModD from the command line, after successful 
+`configuration of the package <configure-mimodd_>`_, execute::
+
+  mimodd --help
+  
+This should display general package information and an overview of available 
+tools.
+
+You can use ``mimodd <tool name> --help`` to get more detailed help on a 
+specific tool, e.g.::
+
+  mimodd annotate --help
+  
+.. Note::
+
+   If, instead of the expected output, you are getting a ``command not found`` 
+   or a similar error message, you should read our recipe for `adding the 
+   mimodd executable to the $PATH environment variable 
+   <http://mimodd.readthedocs.org/en/latest/recipes.html#mimodd-path>`__.
+   
+.. admonition:: see also:
+
+   - the `tutorial <http://mimodd.readthedocs.org/en/latest/tutorial.html>`__ 
+     for a guided tour through some example analyses with MiModD
+   - the complete `tool documentation 
+     <http://mimodd.readthedocs.org/en/latest/tool_doc.html>`__ for in-depth 
+     information about every tool
+   
+
+Extending MiModD
+================
+
+You can extend the functionality of MiModD by integrating it with additional 
+free software. The following sections in the online user guide should get you 
+started.
+
+   - `Galaxy installation 
+     <http://mimodd.readthedocs.org/en/latest/install_galaxy.html>`__
+   - `Installing SnpEff 
+     <http://mimodd.readthedocs.org/en/latest/install_snpeff.html>`__
+   - `Installation of R and rpy2 
+     <http://mimodd.readthedocs.org/en/latest/install_rpy.html>`__
+
+
+Keeping MiModD updated
+======================
+
+We are always trying to improve MiModD and release new package versions with 
+enhancements and bug-fixes regularly.
+
+In order to keep you informed about available new versions and facilitate 
+upgrades, MiModD features a dedicated upgrade tool. You can run (possibly with 
+a prepended ``sudo``)::
+
+    python3 -m MiModD.upgrade install
+
+anytime to upgrade to the latest available version.
+
+.. admonition:: see also:
+
+   `the upgrade tool description 
+   <http://mimodd.readthedocs.org/en/latest/tool_doc.html#upgrade>`__ for a 
+   complete description of available options
+
