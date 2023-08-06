@@ -1,0 +1,10 @@
+{% load moneta %}
+<repositories>
+    <repository>...</repository>
+    <repository>
+        <id>{{ repo.slug }}</id>
+        <name>{{ repo.name }}</name>
+        {% with view=repo|moneta_url:'browse' %}{% if state_slug %}<url>{{ absolute_url }}{% url view rid=repo.id repo_slug=repo.slug state_slug=state_slug %}</url>{% else %}<url>{{ absolute_url }}{% url view rid=repo.id repo_slug=repo.slug %}</url>{% endif %}{% endwith %}
+    </repository>
+    <repository>...</repository>
+</repositories>
