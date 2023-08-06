@@ -1,0 +1,56 @@
+#!/bin/sh
+# Start/stop/restart Slackware Update Notifier.
+
+PIDFILE=/var/run/sun_daemon.pid
+
+# Start sun:
+sun_start() {
+  if [ -x /usr/bin/sun_daemon ]; then
+    echo "Starting SUN daemon:  /usr/bin/sun_daemon"
+    /usr/bin/sun_daemon --pidfile $PIDFILE &
+  fi
+}
+
+# Stop sun:
+sun_stop() {
+  echo "Stoping SUN daemon:  /usr/bin/sun_daemon"
+  if [ -r /var/run/sun_daemon.pid ]; then
+    kill $(cat /var/run/sun_daemon.pid)
+  else
+    killall sun_daemon
+  fi
+}
+
+# Restart sun:
+sun_restart() {
+  sun_stop
+  sleep 1
+  sun_start
+}
+
+# Start sun paraller with gtk status icon
+sun_gtk() {
+  if [ -x /usr/bin/sun_daemon ]; then
+    echo "Starting SUN daemon:  /usr/bin/sun_daemon"
+    /usr/bin/sun_daemon --pidfile $PIDFILE &
+    echo "Starting gtk status icon: /usr/bin/sun_gtk"
+    /usr/bin/sun_gtk &
+  fi
+}
+
+case "$1" in
+'start')
+  sun_start
+  ;;
+'stop')
+  sun_stop
+  ;;
+'restart')
+  sun_restart
+  ;;
+'start--gtk')
+  sun_gtk
+  ;;
+*)
+  echo "usage $0 start|stop|restart"
+esac
