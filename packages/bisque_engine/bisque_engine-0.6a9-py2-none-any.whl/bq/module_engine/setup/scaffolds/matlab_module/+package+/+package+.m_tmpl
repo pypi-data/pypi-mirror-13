@@ -1,0 +1,13 @@
+function {{package}}(mex_url, access_token, varargin)
+    session = bq.Session(mex_url, access_token);
+    try
+        image_url = session.mex.findValue('//tag[@name="inputs"]/tag[@name="resource_url"]');
+
+    catch err
+        ErrorMsg = [err.message, 10, 'Stack:', 10];
+        for i=1:size(err.stack,1)
+            ErrorMsg = [ErrorMsg, '     ', err.stack(i,1).file, ':', num2str(err.stack(i,1).line), ':', err.stack(i,1).name, 10];
+        end
+        session.fail(ErrorMsg);
+    end
+end

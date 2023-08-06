@@ -1,0 +1,26 @@
+#  Module configuration file {{package}}
+#
+module_enabled = True
+# While this demo can run on condor it is slower
+# runtime.platforms=command,condor
+runtime.platforms=command
+
+[command]
+executable  = {{package}}
+
+[condor]
+# Condor needs a single executable in the local directory
+executable = {{package}}
+# Condor executions must use a staging directory for job files
+environments = Staged
+
+# We use bb-freeze to create a dist directory containing all needed python packages.
+# MetaData.sh is a helper script to call dist/MetaData
+files      = {{package}}, pydist
+
+
+
+
+
+
+
