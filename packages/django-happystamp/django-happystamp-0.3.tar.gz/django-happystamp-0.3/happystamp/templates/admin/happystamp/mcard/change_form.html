@@ -1,0 +1,43 @@
+{% extends "admin/change_form.html" %}
+{% load i18n staticfiles %}
+{% block content %}
+{% if card.id %}	
+<div id="change-container">
+	<div id="card-container">
+	{{ block.super }}
+	</div>
+	<div id="actions-container">
+		<div class="module search">
+        	<h2>{% trans "Actions" %}</h2>
+	        <div id="toolbar">
+	            <h2 class="card-credit">{{ card.credit }} {% trans "Points" %}</h2>
+				{% if can_redeem %}		
+				<form class="row" method="post" action="redeem" %}">
+					{% csrf_token %}
+					<button type="submit" class="redeem-btn">{% trans "Reedem" %}</button>	
+				</form>  			
+				{% endif %}
+				{% if rewards|length > 0 and can_redeem %}
+				<h3 class="card-credit row">{% trans "Or" %}</h3>
+				{% endif %}
+				{% if rewards|length > 0 %}
+				{% for step in rewards %}
+				<form class="row" method="post" action="reward">
+					{% csrf_token %}
+					<input type="hidden" name="step" value="{{ step.id}}"/>						
+					<button type="submit" class="reward-btn">
+					 <img class="reward-logo" src="{{ step.reward_logo.url }}"/>
+					 <span class="reward-title">{{step.reward}}</span>
+					</button>
+				</form>  				
+				{% endfor %}
+				{% endif %}
+		    </div>
+    	</div>
+	</div>
+</div>
+{% else %}	
+{{ block.super }}
+{% endif %}	
+
+{% endblock %}

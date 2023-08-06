@@ -1,0 +1,83 @@
+{% extends "admin/base_site.html" %}
+{% load i18n staticfiles %}
+
+{% block extrahead %}
+{{ block.super }}
+<script type="text/javascript" src="//code.jquery.com/jquery-1.11.0.min.js"></script>
+<script type="text/javascript" src="//cdn.jsdelivr.net/jquery.slick/1.5.7/slick.min.js"></script>
+<link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/jquery.slick/1.5.7/slick.css"/>		
+<link href="{% static 'css/admin/mprogram.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+	<div id="content-main">
+		<div id="preview-container">
+			<div id="preview">
+			    <div id="device-carousel">
+		            <div class="item">
+	                    <h4>{% trans "Card List Display" %}</h4>
+	                    <div class="device-display">
+	                        <div class="card-list-preview" >
+							    <div class="merchant-logo">
+							    	<img src="{{ merchant.brand_logo.url|default_if_none:"" }}"></img>
+							    </div>
+							
+							    <div class="program-description">
+							        <h5 class="merchant-title">{{ merchant.name|default_if_none:"" }}</h5>        
+							        <p>                    
+							            {{ program.description|default_if_none:"" }}
+							        </p>
+							    </div>    
+							</div>
+	                    </div>                    
+		            </div>
+			
+		            <div class="item">
+	                    <h4>{% trans "Card Zoom" %}</h4>
+	                    <div class="device-display">
+	                        <div class="card-front-preview" >
+							    <h5 class="merchant-title">{{ merchant.name|default_if_none:"" }}</h5> 
+							    <div class="reward">
+							        <p>
+							        {% if steps %}	        
+								        {% for step in steps %}
+								        	{{ step.redeem }} {% trans "Points" %} = {{ step.reward }} <br/>
+								        {% endfor %}
+							        {% endif %}                                
+							        </p>
+							    </div>
+							</div>
+	                    </div>                    
+		            </div>
+			
+		            <div class="item">
+	                    <h4>{% trans "Card Background" %}</h4>
+	                    <div class="device-display">
+	                        <div class="card-back-preview" >   
+							    <div class="card-back">
+							    	<img src="{{ program.program_logo.url|default_if_none:"" }}"/>
+							    </div>
+							</div>
+	                    </div>                    
+		            </div>		              
+			    </div>    
+			</div>
+		</div>		
+	</div>
+	<script type="text/javascript">
+    	$(document).ready(function(){	     
+	       $('#device-carousel').slick({
+	      	infinite: true,
+  			slidesToShow: 1,
+  			slidesToScroll: 1
+	      });
+	      
+    	});
+  </script>
+{% endblock %}
+
+
+
+ 
+
+

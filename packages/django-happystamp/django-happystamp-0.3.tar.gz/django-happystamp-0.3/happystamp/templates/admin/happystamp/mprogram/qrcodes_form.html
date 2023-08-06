@@ -1,0 +1,53 @@
+{% extends "admin/base_site.html" %}
+{% load i18n staticfiles %}
+
+{% block extrahead %}
+{{ block.super }}
+<script type="text/javascript" src="//code.jquery.com/jquery-1.11.0.min.js"></script>
+<script type="text/javascript" src="//cdn.jsdelivr.net/jquery.slick/1.5.7/slick.min.js"></script>
+<link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/jquery.slick/1.5.7/slick.css"/>		
+<link href="{% static 'css/admin/mprogram.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+	<div id="content-main">
+		<div id="qrcodes-container">
+			<div id="qrcodes">
+				<div class="app-sticker">            
+		    		<img src="{{ program.enroll_rq_url }}" class="center-block img-thumbnail"/>        	  		                       
+		    	</div>
+		    	                    
+				<div id="cards-carousel">
+		            <div class="item">
+	                    <div class="card-form-wrapper">
+					        <img src="{{ program.redeem_rq_url }}" class="center-block img-thumbnail"/>						                              
+	                    </div>
+		            </div>
+		            {% for step in steps %}
+	    			<div class="item">
+	                    <div class="card-form-wrapper">
+					        <img src="{{ step.reward_rq_url }}" class="center-block img-thumbnail"/>                        
+	                    </div>
+		            </div>	
+	    			{% endfor %}		            				            	          
+			    </div>          						
+		    </div>
+		</div>
+	</div>
+	<script type="text/javascript">
+    	$(document).ready(function(){
+	       $('#cards-carousel').slick({
+	      	infinite: true,
+  			slidesToShow: 1,
+  			slidesToScroll: 1
+	      });
+	      
+    	});
+  </script>
+{% endblock %}
+
+
+
+ 
+
+

@@ -1,0 +1,32 @@
+{% load i18n staticfiles %}
+
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>Smile Portal</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">      
+        <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css" rel="stylesheet">
+        <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet">
+        <link href="{% static 'css/customer/style.css' %}" rel="stylesheet">        
+        
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+        <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>        
+    </head>
+
+    <body id="customer-notifications">
+	    <div class="col-md-12">
+		{% for gcm_notification in notifications  %}
+			<h4 class="merchant-name"> 
+				<img src="{{ gcm_notification.merchant.brand_logo.url }}" class="logo"> 
+				{{ gcm_notification.merchant.name }}
+			</h4>
+			<div class="col-md-12 notification-content">
+				{{ gcm_notification.notification.content|safe }}
+			</div>
+			<div class="col-md-12 notification-footer">
+				{{ gcm_notification.notification.publish_date }}
+			</div>			
+		{% endfor %}
+		</div>    
+    </body>
+</html>
