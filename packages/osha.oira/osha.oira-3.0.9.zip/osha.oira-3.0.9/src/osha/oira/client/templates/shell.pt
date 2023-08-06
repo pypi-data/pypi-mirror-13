@@ -1,0 +1,178 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:i18n="http://xml.zope.org/namespaces/i18n"
+      xmlns:tal="http://xml.zope.org/namespaces/tal"
+      xmlns:meta="http://xml.zope.org/namespaces/meta"
+      xmlns:metal="http://xml.zope.org/namespaces/metal"
+      meta:interpolation="true"
+      metal:define-macro="shell"
+      i18n:domain="euphorie"
+      tal:define="webhelpers nocall:context/@@webhelpers;
+                  splash_message webhelpers/splash_message;
+                  client nocall:request/client;
+                  base_url client/++resource++osha.oira.resources;
+                  page_section webhelpers/get_phase;
+                  sidebar_default python:page_section in ['identification', 'actionplan'] and 'sidebar-on' or 'sidebar-off';
+                  came_from_param webhelpers/came_from_param;
+                  tools context/@@tools">
+
+<head>
+    <title i18n:translate="title_tool">OiRA - Online interactive Risk Assessment</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/png" href="${client/++resource++euphorie.media}/favicon.png" />
+
+    <tal:block condition="webhelpers/debug_mode">
+        <script type="text/javascript" src="${base_url}/oira.js"></script>
+    </tal:block>
+    <tal:block condition="not:webhelpers/debug_mode">
+        <!-- TODO: this must be minified -->
+        <script type="text/javascript" src="${base_url}/oira.js"></script>
+    </tal:block>
+
+    <tal:block condition="webhelpers/debug_mode">
+        <link rel="stylesheet" href="${base_url}/screen.css" type="text/css" />
+    </tal:block>
+    <tal:block condition="not:webhelpers/debug_mode">
+        <!-- TODO: needs to be minified -->
+        <link rel="stylesheet" href="${base_url}/screen.css" type="text/css" />
+    </tal:block>
+
+    <metal:javascriptslot define-slot="javascript_head_slot" />
+    <metal:styleslot define-slot="style_slot" />
+</head>
+
+<body class="${python:'splash-on-' + splash_message['id'] if not is_anonymous and not webhelpers.is_guest_account and splash_message and not page_section else ''} osh-on test-session osc-on osc-s-off focus-sidebar ${sidebar_default}" i18n:domain="euphorie" tal:define="is_anonymous webhelpers/anonymous; is_outside_of_survey webhelpers/is_outside_of_survey; survey_url webhelpers/survey_url; base_url webhelpers/base_url">
+    <div id="main">
+        <header id="toolbar">
+            <a href="#osc" class="icon-menu pat-toggle"
+               data-pat-toggle="selector: body; value: osc-on osc-off; store: local &amp;&amp; selector: body; value: osc-s-on osc-s-off; store: local"
+               id="burger"
+               title="Show/hide menu">
+                Menu
+            </a>
+            <metal:include tal:define="id string:hamburger" use-macro="context/@@includes/macros/osh"/>
+
+            <button class="icon-left pat-switch pat-inject" data-pat-switch="selector: body; remove: focus-*; add: focus-sidebar" tal:content="webhelpers/get_survey_title">Private Security EU</button>
+            <button id="osh-toggle" class="osh-toggle pat-toggle" data-pat-toggle="selector: body; value: osh-on osh-off; store: local">?</button>
+
+            <tal:if_anon condition="python:is_anonymous or webhelpers.is_guest_account">
+                <a href="${base_url}/login_form?${came_from_param}#document-content" class="pat-modal login" data-pat-modal="class: large" i18n:translate="header_login">Login</a>
+                <a href="${base_url}/register" class="registration" i18n:translate="header_register">Register</a>
+            </tal:if_anon>
+            <tal:if_not_anon condition="python: not is_anonymous and not webhelpers.is_guest_account">
+                <a href="${webhelpers/session_overview_url}/user-menu.html#content"
+                   class="user-status pat-tooltip icon-user dropdown"
+                   data-pat-tooltip="source: ajax; class: medium; position-list: tr">${webhelpers/get_username}</a>
+            </tal:if_not_anon>
+        </header>
+        <div id="content">
+            <p tal:condition="webhelpers/is_guest_account" id="warning-bar">
+                <tal:testsession i18n:translate="info_testsession">This is a test session. <tal:name i18n:name="link_sign_in"><a href="${base_url}/login_form?${came_from_param}#document-content" class="registration" i18n:translate="link_sign_in">Sign in</a></tal:name> to save your data.</tal:testsession><a href="${base_url}/tooltips#test-session-active" class="icon-help-circle iconified pat-tooltip" data-pat-tooltip="source: ajax; position-list: lt; class: rich info" i18n:translate="Info">Info</a>
+            </p>
+            <tal:statusmsg tal:repeat="message webhelpers/messages">
+                <p class="pat-notification" data-pat-notification="type: banner; class: ${message/type}; close-text: ${webhelpers/closetext}" id="${message/id}-body" tal:content="message/message | nothing">Status message</p>
+                </tal:statusmsg>
+
+            <metal:block define-slot="content"/>
+        </div>
+    </div>
+
+    <aside id="osc">
+        <header id="osc-header">
+            <tal:if condition="is_anonymous">
+
+                <a tal:condition="is_outside_of_survey" href="${base_url}/new-session-test.html?${came_from_param}#document-content" id="button-new-session"
+                    data-pat-modal="class: large" class="pat-modal icon-plus-circle" i18n:attributes="title" title="Start test session" i18n:translate="">Start test session</a>
+                <a tal:condition="not:is_outside_of_survey" href="${base_url}/@@tryout?${came_from_param}#document-content" title="Start a new test session" id="button-new-session" class="icon-plus-circle" i18n:translate="">Start test session</a>
+            </tal:if>
+
+            <tal:if condition="not:is_anonymous">
+                <tal:if condition="not:is_outside_of_survey">
+                    <a href="${webhelpers/country_url}/view#content" class="dropdown pat-tooltip" id="button-sessions"
+                        data-pat-tooltip="source: ajax; class: large; position-list: tl" title="Select an earlier session to complete or review" i18n:attributes="title header_select_session" tal:content="webhelpers/get_survey_title">Private Security EU</a>
+                </tal:if>
+                <a href="${webhelpers/session_overview_url}/new-session.html#document-content" id="button-new-session-quick"
+                    data-pat-modal="class: large" class="no-label pat-modal iconified icon-plus-circle" title="Start a new session" i18n:attributes="title" i18n:translate="New">New</a>
+            </tal:if>
+            <metal:include tal:define="id string:session-menu" use-macro="context/@@includes/macros/osh"/>
+        </header>
+
+        <metal:include tal:define="id string:menu" use-macro="context/@@includes/macros/osh"/>
+
+        <ol id="steps" class="pat-switch" data-pat-switch="selector: body; remove: osc-s-*; add: osc-s-off; store: local">
+            <tal:if_not_anon condition="not:is_anonymous" define="tree view/tree|nothing">
+                <li id="step-1" tal:define="active python:page_section == 'preparation' and 'active' or '';  disabled python:page_section == ''" tal:attributes="class python:(active and 'active') or (disabled and 'disabled') or ''">
+                    <a href="${survey_url}/start#content" data-pat-inject="history: record; source: #content; target: #content &amp;&amp; source: #osc; target: #osc"
+                        class="preparation pat-switch pat-inject" i18n:translate="label_preparation"
+                        data-pat-switch="selector: body; remove: focus-*; add: focus-document &amp;&amp; selector: body; remove: sidebar-on; add: sidebar-off">Preparation</a>
+                </li>
+                <li id="step-2" tal:define="active python:page_section == 'identification'; disabled python:page_section in ('', 'preparation')" tal:attributes="class python:(active and 'active') or (disabled and 'disabled') or ''">
+                    <a tal:condition="not:disabled" href="${survey_url}/identification" data-pat-inject="history: record; source: #content; target: #content &amp;&amp; source: #osc; target: #osc"
+                        class="identification pat-switch pat-inject"
+                        data-pat-switch="selector: body; remove: focus-*; add: focus-document &amp;&amp; selector: body; remove: sidebar-off; add: sidebar-on"><tal:identification i18n:translate="label_identification">Identification</tal:identification> + <tal:evaluation i18n:translate="label_evaluation">Evaluation</tal:evaluation></a>
+                    <a tal:condition="disabled" class="identification"><tal:identification i18n:translate="label_identification">Identification</tal:identification> + <tal:evaluation i18n:translate="label_evaluation">Evaluation</tal:evaluation></a>
+
+                    <tal:block condition="python: active and tree">
+                      <metal:call use-macro="webhelpers/macros/survey_tree" />
+                    </tal:block>
+
+                </li>
+                <li id="step-4" tal:define="active python:page_section == 'actionplan'; disabled python:page_section in ('', 'preparation')" tal:attributes="class python:(active and 'active') or (disabled and 'disabled') or ''">
+                    <!-- The tree for the action section uses the same structure as the identification tree, with the only differences that only risks and their parent modules are shown and that the entire tree is expanded. -->
+                    <a tal:condition="not:disabled" href="${survey_url}/actionplan" data-pat-inject="history: record; source: #content; target: #content &amp;&amp; source: #osc; target: #osc" i18n:translate="label_action_plan"
+                       class="action-plan pat-switch pat-inject" data-pat-switch="selector: body; remove: focus-*; add: focus-document &amp;&amp; selector: body; add: sidebar-on; remove: sidebar-off">Action Plan</a>
+                    <a tal:condition="disabled" i18n:translate="label_action_plan"
+                       class="action-plan">Action Plan</a>
+
+                    <tal:block condition="python: active and tree">
+                      <metal:call use-macro="webhelpers/macros/survey_tree" />
+                    </tal:block>
+                </li>
+
+                <li id="step-5" tal:define="active python:page_section == 'report'; disabled python:page_section in ('', 'preparation')" tal:attributes="class python:(active and 'active') or (disabled and 'disabled') or ''">
+                    <!-- TODO: check if guest -->
+                    <a tal:condition="not:disabled" href="${survey_url}/report" class="report pat-switch pat-inject"
+                       data-pat-inject="history: record; source: #content; target: #content &amp;&amp; source: #osc; target: #osc" i18n:translate="label_report"
+                       data-pat-switch="selector: body; remove: focus-*; add: focus-document &amp;&amp; selector: body; remove: sidebar-on; add: sidebar-off">Report</a>
+                    <a tal:condition="disabled" class="report" i18n:translate="label_report">Report</a>
+                </li>
+
+
+                <li id="status" tal:define="active python: page_section == 'status' and 'active' or ''; disabled python:page_section in ('', 'preparation')" tal:attributes="class python:(active and 'active') or (disabled and 'disabled') or ''">
+                    <a href="${survey_url}/status#content" data-pat-inject="history: record; source: #content; target: #content &amp;&amp; source: #osc; target: #osc" i18n:translate="navigation_status"
+                        class="status pat-switch pat-inject" data-pat-switch="selector: body; remove: focus-*; add: focus-document &amp;&amp; selector: body; remove: sidebar-on; add: sidebar-off">Check your progress</a>
+                </li>
+            </tal:if_not_anon>
+            <li id="help" tal:attributes="class python:page_section == 'help'  and 'active' or ''">
+                <a href="${base_url}/help#content" data-pat-inject="history: record; source: #content; target: #content &amp;&amp; source: #osc; target: #osc" i18n:translate="navigation_help"
+                    class="help pat-switch pat-inject" data-pat-switch="selector: body; remove: focus-*; add: focus-document &amp;&amp; selector: body; remove: sidebar-on; add: sidebar-off">Help</a>
+            </li>
+        </ol>
+
+        <a href="${webhelpers/client_url}" id="organisation-logo" tal:define="sector_logo webhelpers/get_sector_logo" tal:attributes="class python:sector_logo and 'alien' or 'native'">
+            <tal:native condition="not:nocall:sector_logo">
+                <!-- In case the organisation has not changed the logo, the link tag gets a class 'native' instead of 'alien' and the following markup applies: -->
+                <figure>
+                    <img src="${base_url}/++resource++oira.media/oira-logo.svg" alt="" />
+                    <figcaption>
+                        <tal:oi i18n:translate="oira_name_line_1">Online interactive</tal:oi><br/>
+                        <tal:ra i18n:translate="oira_name_line_2">Risk Assessment</tal:ra>
+                    </figcaption>
+                </figure>
+            </tal:native>
+            <tal:alien condition="nocall:sector_logo">
+                <!-- In case of on organisation that uploaded a logo, no figure tag needs to be there: -->
+                <img src="${sector_logo/url}" alt="" />
+            </tal:alien>
+        </a>
+    </aside>
+    <tal:block replace="tile:client-analytics"/>
+
+    <metal:splashmessageslot define-slot="splash_message_slot" />
+    <metal:call use-macro="webhelpers/macros/webstats_js" />
+
+</body>
+</html>
