@@ -1,0 +1,1056 @@
+2016-02-22 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Updates for 1.5 release
+    
+    
+2016-02-22 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Update spec file to match Fedora
+    
+    
+2016-02-22 Matthew Booth  <mbooth@redhat.com>
+    
+    Add --deps option to changes and all todo commands
+    
+    
+2016-02-22 Matthew Booth  <mbooth@redhat.com>
+    
+    Add change dependency output to ReportChangeList
+    
+    
+2016-02-22 Matthew Booth  <mbooth@redhat.com>
+    
+    Refactor common code for changelist reports
+    
+    
+2016-02-22 Matthew Booth  <mbooth@redhat.com>
+    
+    Consolidate arguments to ToDo commands
+    
+    
+2016-02-22 Matthew Booth  <mbooth@redhat.com>
+    
+    Add support for fetching dependencies from gerrit
+    
+    
+2016-02-22 Matthew Booth  <mbooth@redhat.com>
+    
+    Make ReportOutputTable support hierarchical data
+    Rows can have children. Sorting is per level.
+    
+    XML:    Rows with children have a 'children' element containing all child
+    rows sequentially.
+    JSON:   Rows with children have a 'children' field containing a list of
+    child rows.
+    Text:   The initial field of each row is indented wrt its parent.
+    CSV:    Display is flat: parent/child relationship is not represented.
+    
+    
+2016-02-17 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Cast cache lifetimes to ints after reading from config
+    Also fix config parameter name for longlifetime cache
+    
+    Fixes bug #18
+    
+    
+2016-02-17 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Don't include your own changes in todo lists
+    The todo lists are for identifying various changes that you
+    may be interested in reviewing. People don't review their
+    own changes, so these should all be filtered out.
+    
+    Fixes bug #25
+    
+    
+2016-02-17 Lars Kellogg-Stedman  <lars@redhat.com>
+    
+    add support for getting gerrit server from git remote
+    With this change, you can configure your `.gerrymander` file like
+    this:
+    
+    [server]
+    remote = gerrit
+    
+    And gerrymander will read the user, host, and port from the named
+    remote in whatever git repository you happen to be using at the time.
+    This is especially convenient when your work environment includes
+    projects hosted at multiple gerrit sites.
+    
+    
+2016-02-17 Guido Günther  <agx@sigxcpu.org>
+    
+    reports: Don't fail on int types
+    The reports can contain integers so don't try to use encode on them:
+    
+    $ gerrymander patchreviewstats --project puppet
+    Traceback (most recent call last):
+    File "/usr/bin/gerrymander", line 22, in <module>
+    sys.exit(CommandTool().execute(sys.argv[1:]))
+    File "/usr/lib/python2.7/dist-packages/gerrymander/commands.py", line 1078, in execute
+    options.func(config, options)
+    File "/usr/lib/python2.7/dist-packages/gerrymander/commands.py", line 219, in execute
+    self.run(config, client, options)
+    File "/usr/lib/python2.7/dist-packages/gerrymander/commands.py", line 550, in run
+    return super(CommandPatchReviewStats, self).run(config, client, options)
+    File "/usr/lib/python2.7/dist-packages/gerrymander/commands.py", line 513, in run
+    report.display(options.mode)
+    File "/usr/lib/python2.7/dist-packages/gerrymander/reports.py", line 370, in display
+    output.display(mode)
+    File "/usr/lib/python2.7/dist-packages/gerrymander/reports.py", line 86, in display
+    stream.write(self.to_text())
+    File "/usr/lib/python2.7/dist-packages/gerrymander/reports.py", line 125, in to_text
+    blocks.append(report.to_text())
+    File "/usr/lib/python2.7/dist-packages/gerrymander/reports.py", line 324, in to_text
+    data.append(col.get_value(self, row))
+    File "/usr/lib/python2.7/dist-packages/gerrymander/reports.py", line 60, in get_value
+    val = val.encode('utf-8')
+    AttributeError: 'int' object has no attribute 'encode'
+    
+    
+2016-02-01 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Handle --start parameter for new gerrit
+    New gerrit >= 2.9 does not provide the sort key for filtering results,
+    so we must pass --start instead.
+    
+    
+2016-02-01 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Don't loop forever if sort key is missing in results
+    The newer gerrit versions no longer report a sort key field
+    in results. This would cause the code to loop forever when
+    no limit was set, or when a limit was set and the result
+    count exceeded the limit.
+    
+    
+2015-01-15 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Only match filenames on current patch version
+    The current filename matching code looks for matches on any
+    historic version of a change. This can cause confusion if
+    the current version no longer modifies the file in question.
+    Only match on the current patch version to more closely
+    match normal user expectations.
+    
+    
+2014-10-22 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Honour 'files' parameter in todo-noones command
+    
+    
+2014-09-03 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Updates for 1.4 release
+    
+    
+2014-09-03 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Force install of python3 script in RPM
+    
+    
+2014-09-03 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Re-add shebang line to script so it gets transformed by distutils
+    
+    
+2014-09-03 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Add a 'todo-expirable' command reporting old changes with -ve feedback
+    Add a 'todo-expirable' command that attempts to identify changes on
+    review which can be marked as abandoned. The criteria are that the
+    most recent version of a change has had a -1 or -2 applied to it
+    for more than 28 days. The day count is tunable via the --age
+    parameter
+    
+    
+2014-08-27 Tiago Mello  <tmello@linux.vnet.ibm.com>
+    
+    Adds support to filter by topic
+    
+    
+2014-08-27 Jon Grimm  <jgrimm@linux.vnet.ibm.com>
+    
+    Fix keyfile in example config
+    The SSH key should refer to private key, not public, as it
+    gets passed along as -i <identify_file> to ssh.
+    
+    
+2014-08-27 Jon Grimm  <jgrimm@linux.vnet.ibm.com>
+    
+    Fix blowup on unicode string.
+    Otherwise will see a 'UnicodeEncodeError'.
+    
+    
+2014-08-27 Kashyap Chamarthy  <kchamart@redhat.com>
+    
+    Remove hardcoded python3 interpreter from scripts/gerrymander
+    
+    
+2014-08-27 Kashyap Chamarthy  <kchamart@redhat.com>
+    
+    Remove hardcoded python3 interpreter from __init__.py
+    
+    
+2014-08-27 Kashyap Chamarthy  <kchamart@redhat.com>
+    
+    spec: Make the package architecture independent
+    Since `gerrymander` doesn't create any binaries, make the spec
+    architecture indepdendent.
+    
+    
+    
+2014-08-27 Kashyap Chamarthy  <kchamart@redhat.com>
+    
+    Add BuildRequres for python3-devel
+    Without this, Python3 RPM builds fail due to missing macros:
+    
+    %{__python3}  %{python3_sitelib}/
+    
+    With this BuildRequires in place, Python3 RPMs build successfully.
+    
+    
+    
+2014-08-27 Russell Bryant  <russell@russellbryant.net>
+    
+    Fix a trivial README typo
+    s/on one/no one/
+    
+    
+2014-08-27 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Allow todo list commands to filter based on filename
+    
+    
+2014-08-21 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Add command to reporting potentially approvable patches
+    Add a 'gerrymander todo-approvable' command which allows
+    a core team reviewer to identify patches which they have
+    not commented on before, which are candidates for being
+    approved to merge.
+    
+    A patch is potentially approvable if it has at least one
+    +2 vote already and does not have a -2, or a workflow
+    vote of -1 or +1. To be very strict it is possible to
+    also ignore any patches with a vote of -1, though it is
+    valid to ignore -1 code review votes, so make this filter
+    optional via a '--strict' flag.
+    
+    
+    
+2014-07-30 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Update for release 1.3
+    
+    
+2014-07-30 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Run ssh in non-interactive batchmode
+    Pass flags to ssh to ensure it doesn't try to use the tty or
+    otherwise interact with the user. This avoids it hanging
+    when the host key is not known.
+    
+    
+    
+2014-07-30 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Ensure cache is unlinked on I/O error
+    If interrupting the SSH client (eg Ctrl-C) the cache file would
+    still be created, zero length or worse with bad data. Ensure
+    that we catch any exception and unlink the cache file.
+    
+    
+2014-07-30 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Avoid exception from unexpected approval types
+    When a merge fails, gerrit reports an approval with a type
+    of SUBM, which is not handled when print out approvals in
+    reports.
+    
+    
+2014-07-29 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Reprioritize summary of votes
+    Instead of merely using numerical order to decide the most
+    important vote, ensure that we consider -2 and +2 higher
+    priority than -1 or +1.
+    
+    
+    
+2014-07-22 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Filter todo lists based on branch
+    Add --branch option to todo commands for filtering per branch
+    
+    
+    
+2014-07-22 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Change way votes are presented
+    Instead of displaying an 'Approvals' column listing each individual
+    vote, have three columns 'Test', 'Review' and 'Workflow' each showing
+    the lowest score. The 'Approvals' column is still available for those
+    who want to customize output column list.
+    
+    
+    
+2014-07-15 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Fix calculation of total review rate
+    
+    
+2014-07-15 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Expand patch review rate command to cover 52 weeks
+    
+    
+2014-07-15 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Add patchreviewrate report/command
+    Add a command that can report on the number of patches reviewed
+    per day, averaging over the course of a week. Display results
+    for 24 months previous.
+    
+    
+2014-07-15 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Add CSV output format
+    
+    
+2014-07-15 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Filter todo list to exclude own changes
+    
+    
+2014-07-03 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Update for 1.2 release
+    
+    
+2014-07-03 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Fix name of constant when formatting approvals
+    
+    
+2014-07-03 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Don't run pager for 'watch' command
+    The 'watch' command is supposed to be a continuous live stream
+    of events, so putting it through the pager is inappropriate.
+    
+    
+    
+2014-06-28 Joshua Harlow  <harlowja@gmail.com>
+    
+    Use a preexec function to stop signals in subprocess
+    To avoid the subprocess from getting the signals that are
+    meant for the parent process by ensuring that the created
+    process is its own process group (which ensurse that it will
+    not get signals targeted for the calling process).
+    
+    Fixes #16
+    
+    
+2014-06-16 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Update colourization of votes
+    Change colourization of votes so that it distinguishes more
+    options
+    
+    - Bold green for +2s
+    - Blue for stuff merging
+    - Magenta for self-nacked WIP
+    - Bold red for -2s
+    
+    
+    
+2014-06-10 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Properly handle None for change/user in events
+    
+    
+2014-06-10 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Handle ref-updated, reviewer-added & topic-changed events
+    Add data model handling for further gerrit events
+    
+    
+    
+2014-06-10 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Fix association of comments with patchsets
+    A string prefix on the patch set number fails when we
+    get more than 10 patchsets because '2' is a prefix
+    of '21'. Ensure we match the complete patchset number.
+    
+    
+    
+2014-06-10 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Flush stdout/stderr before closing pager process
+    Ensure all output is sent to the pager by flushing stdout
+    and stderr before closing the pipe to the pager process.
+    
+    
+    
+2014-06-04 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Add support for automatically running a pager
+    Automatically send stdout via a pager (eg less) so it doesn't
+    scroll off the screen before being read.
+    
+    It can be disabled by setting GERRYMANDER_PAGER=cat
+    
+    
+    
+2014-06-03 Łukasz Oleś  <loles@mirantis.com>
+    
+    Print possible options for `changes` command in help message.
+    
+    
+2014-06-03 Christian Berendt  <berendt@b1-systems.de>
+    
+    change assertEquals to assertEqual
+    According to http://docs.python.org/2/library/unittest.html
+    assertEquals is a deprecated alias of assertEqual.
+    
+    
+2014-05-20 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Ensure we capture 'Restored' comments
+    The 'Restored' comments don't have any 'Patch Set N' prefix
+    on them, so we must play games to associate them with the
+    corect patch set by tracking the prior 'Abandoned' message.
+    
+    
+    
+2014-05-15 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Update for 1.1 release
+    
+    
+2014-05-15 Guido Günther  <agx@sigxcpu.org>
+    
+    Expand user for config file value as well
+    This makes the config value consistent with the default
+    
+    
+2014-05-15 Guido Günther  <agx@sigxcpu.org>
+    
+    Expand '~' in config file name
+    This allows things like gerrymander --config=~/myproject.conf
+    
+    
+2014-05-15 Guido Günther  <agx@sigxcpu.org>
+    
+    Avoid duplicate authors
+    Convert list to set so individual authors aren't listed several times
+    
+    
+2014-05-15 Guido Günther  <agx@sigxcpu.org>
+    
+    help: Make example config match the code
+    get_command_alias_help looks for help not description. Otherwise you
+    see:
+    
+    Traceback (most recent call last):
+    File "scripts/gerrymander", line 22, in <module>
+    sys.exit(CommandTool().execute(sys.argv[1:]))
+    File "/var/scratch/src/gerrymander/gerrymander/gerrymander/commands.py", line 871, in execute
+    self.add_config_commands(subparser, config)
+    File "/var/scratch/src/gerrymander/gerrymander/gerrymander/commands.py", line 844, in add_config_commands
+    help = config.get_command_alias_help(alias)
+    File "/var/scratch/src/gerrymander/gerrymander/gerrymander/commands.py", line 162, in get_command_alias_help
+    return self.config.get(section, "help")
+    File "/usr/lib/python3.3/configparser.py", line 765, in get
+    raise NoOptionError(option, section)
+    configparser.NoOptionError: No option 'help' in section: 'alias-foo-changes'
+    
+    
+2014-05-13 Guido Günther  <agx@sigxcpu.org>
+    
+    Fix tests
+    The values changed with 892d84563467af677c3291842ce9c78032c2ca63
+    
+    
+2014-05-13 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Fix typo in CommandOpenReviewStats
+    
+    
+2014-05-13 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Temporarily ignore 'review-added' status update
+    
+    
+2014-05-12 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Fix review actions for new gerrit version
+    
+    
+2014-05-12 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Fix handling of 'usecolor' param in ReportPatchReviewStats
+    
+    
+2014-05-12 Gerard Ryan  <gerard@ryan.lt>
+    
+    Fix typo in help output for 'todo-noones' command
+    s/on/no/ in help output.
+    
+    
+2014-05-12 Gerard Ryan  <gerard@ryan.lt>
+    
+    Use user@host for SSH instead of -u
+    There is no -u option for ssh username, instead you must use
+    the user@host syntax.
+    
+    
+2014-05-09 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Add NEWS file for release notes
+    
+    
+2014-05-09 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Fix json indent
+    
+    
+2014-05-01 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Fix comments command wrt change in OperationQuery constructor
+    The comments command relied on the 'patches' arg to OperationQuery
+    having a fixed position. This changed when the 'rawquery' arg was
+    added, so fix by using a named parameter instead.
+    
+    
+    
+2014-05-01 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Improve error reporting when commands fail
+    Previously we'd only return a single line from stderr when
+    a command fails. This made it hard to diagnose some SSH
+    failures which output a line of '*' as the first line of
+    stderr.
+    
+    
+    
+2014-04-24 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Convert from distutils to setuptools
+    To get better pip install compatibility convert to use
+    setuptools.
+    
+    
+    
+2014-04-17 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Allow rawquery passthrough for 'changes' command
+    
+    
+2014-04-17 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Raise an exception if the gerrit command exits with non-zero status
+    
+    
+2014-04-17 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Colourize approvals in tables
+    To make it easier to spot changes which are ready to be +A'd
+    or those which are already nacked, add colourization for all
+    commands.
+    
+    
+    
+2014-04-17 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Implement a 'openreviewstats' command
+    Provide a 'openreviewstats' command to provide information
+    about changes that are waiting for reviewer attention.
+    
+    
+    
+2014-04-17 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Split format_date function for a separate format_delta function
+    
+    
+2014-04-17 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Add support for compound report output with titles
+    Add support for generating compound output sections with
+    titles and use this with the patchreviewstats command
+    
+    
+    
+2014-04-17 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Remove assumption that a report generates a single table
+    Introduce a ReportOutput class for outputting report results
+    in text/json/xml. Add a ReportTable subclass for tabular
+    data and adapt all existing reports to use this new approach.
+    
+    
+    
+2014-04-17 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Ensure table values are always strings
+    
+    
+2014-04-17 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Fix format string when print comments
+    
+    
+2014-04-16 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Fix bug parsing change-restored/abandoned events
+    The change-restored/change-abandoned events don't include
+    any patch information in the JSON doc..
+    
+    
+    
+2014-04-16 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Add ability to filter watch command based on project
+    
+    
+2014-04-16 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Actually display useful data for the 'watch' command
+    
+    
+2014-04-16 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Include username in comment output and only highlight name
+    
+    
+2014-04-16 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Add helper API to ModelEvent for checking username in list
+    
+    
+2014-04-16 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Fix filter of changes report based on filename.
+    
+    
+2014-04-16 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Filter 'todo-anyones' report to exclude own comments
+    The 'todo-anyones' report should report changes where any
+    non-bot has commented, but not things you have commented
+    on the current version.
+    
+    
+    
+2014-04-16 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Add '--current' and '--patch' flags to "comment" command
+    Allow the set of patch numbers displayed to be changed
+    via '--current' (only most recent patch) or '--patch N'
+    (the Nth patch number)
+    
+    
+    
+2014-04-16 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Add '--all' option to "comments" command
+    Add a '--all' option which tells the comments command not
+    to strip comments from bots.
+    
+    
+    
+2014-04-16 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Add 'comments' command for displaying comments on a change
+    The 'comments' command will display all comments on a change,
+    grouping comments on the change to be against the patch they
+    are associated with. It will strip out 'Foo uploaded patch N'
+    comments, and strip out any by automated bots.
+    
+    
+    
+2014-04-16 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Make Change/Patch models parse comment information.
+    
+    
+2014-04-16 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Add option to OperationQuery for return of comments
+    
+    
+2014-04-16 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Add format_color helper API for ANSI terminal colouring
+    
+    
+2014-04-16 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Change to use multiple inheritance
+    Instead of forcing the hiearchy
+    
+    CommandCaching -> CommandReport -> CommandProject
+    
+    switch to use multiple inheritance. ie subclasses will
+    decide exactly which of these 3 parent classes they wish
+    to use. This allows reuse of the CommandProject class
+    for things which are not reports or which dont want to
+    be cached.
+    
+    
+    
+2014-04-16 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Change to super(ClassName, self) syntax for parent invocation
+    The super(ClassName, self) syntax for invoking methods in
+    parent classes is required to support multiple inheritance
+    correctly.
+    
+    
+    
+2014-04-15 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Add a better README file describing usage
+    
+    
+2014-04-15 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Switch over to a multi-command script
+    Instead of having a separate script for each command, use a
+    single script and define sub-commands. Also get rid of the
+    '--profile' flag and instead all the config file to define
+    new subcommands
+    
+    
+    
+2014-04-15 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Add missing import of 're' module for file matching
+    
+    
+2014-04-15 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Explicitly pass in argv to commands
+    Instead of assuming use of sys.argv, explicitly pass argv
+    into commands.
+    
+    
+    
+2014-04-15 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Convert from optparse to argparse
+    
+    
+2014-04-15 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Convert approvals value to string for output
+    
+    
+2014-04-14 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Introduce start of a test suite using nose for invocation.
+    
+    
+2014-04-14 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Parse approval value as an integer instead of string
+    
+    
+2014-04-14 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Parse description from approval json
+    
+    
+2014-04-14 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Remove stay comma at end of line
+    
+    
+2014-04-14 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Ensure change number is an integer
+    
+    
+2014-04-14 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Allow patch review stats to be filtered by day count
+    
+    
+2014-04-14 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Introduce two cache buckets with different lifetimes
+    Some heavy reports can be cached for a long time (1 day)
+    where as others can only be cached a short time (5 minutes)
+    
+    
+    
+2014-04-14 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Add some scripts for reporting on todoo lists
+    Add four "todo list" scripts / reports
+    
+    - mine - any change where I've previously commented, but not on latest
+    - others - any change where people except me and bots have commented
+    - anyones - any change where anyone except bots have commented
+    - noones - any change where noone except bots have commented
+    
+    
+    
+2014-04-14 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Introduce common subclass for reports dealing with projects
+    Move the --projects, --groups, --all-groups flags into a new
+    CommandProject class, so that the base CommandReport class is
+    more generic.
+    
+    
+    
+2014-04-14 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Add config file option for listing robot accounts
+    
+    
+2014-04-14 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Add config file example for cache settings.
+    
+    
+2014-04-14 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Add flag to force refresh of the cache
+    Add a --refresh command line option that says to refresh
+    the cached client data even if not otherwise outdated.
+    
+    
+    
+2014-04-14 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Allow the cache to be disabled from command line flag
+    Remove use of client cache from base command class and
+    add a separate CommandCaching class which includes a
+    --no-cache command line flag.
+    
+    
+    
+2014-04-14 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Split ReportChanges into two classes
+    Allow reuse of some code from ReportChanges by splitting out
+    the column definitions into a base class ReportBaseChange
+    
+    
+    
+2014-04-14 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Add support for negating terms in query clauses
+    
+    
+2014-04-14 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Fix detection of error response from gerrit
+    The error response has a key   type='error', not a
+    key called 'error'.
+    
+    
+    
+2014-04-14 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Fix bogus status constants for open/closed
+    It isn't possible to query open/closed status by using a
+    list of other status codes. We must treat open/closed as
+    proper constants in the their right.
+    
+    
+    
+2014-04-14 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Add helper APIs to check if a change has been reviewed by users
+    Add some helper APIs to the Change/Patch/Approvals model classes
+    to check whether they've got approvals including/excluding a list
+    of user names
+    
+    
+    
+2014-04-14 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Use full filepath when unlinking from cache
+    
+    
+2014-04-14 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Let gerrit filter on reviewer directly
+    There's no need to re-implement filtering on reviewers client
+    side when gerrit can do it for us.
+    
+    
+    
+2014-04-14 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Fix number of keys in lambda map functions
+    
+    
+2014-04-14 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Cast hash keys to list object for python 3
+    The hash.keys() method no longer returns a list() object in
+    python3, so must be cast before we can sort it.
+    
+    
+    
+2014-04-14 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Remove accidental debug print statements
+    
+    
+2014-04-14 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Add execute permission to gerrymander-changes script
+    
+    
+2014-04-11 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Add example configuration file
+    
+    
+2014-04-11 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Use team members to annotate patch review stats report
+    Place one or more '*' after each user name depending on
+    their team membership.
+    
+    
+    
+2014-04-11 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Pass report object into sort & map functions
+    
+    
+2014-04-11 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Change to use '-' instead of ':' in config file
+    The ':' character can't be used as an ini file key.
+    
+    
+    
+2014-04-11 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Make project take priority over group rather than union of both
+    
+    
+2014-04-11 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Add --sort and --field parameters for customizing reports
+    
+    
+2014-04-11 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Fix minor typos in report class
+    
+    
+2014-04-11 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Cope with error returned from gerrit command
+    
+    
+2014-04-11 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Add log message about args used for cache lookup
+    
+    
+2014-04-11 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Remove hardcoded limit in query class
+    Don't artificially limit the result count by default, always
+    return the full result set
+    
+    
+    
+2014-04-11 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Add general purpose command for querying changes
+    
+    
+2014-04-11 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Ignore .pyc files
+    
+    
+2014-04-11 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Add a 'format' module for providing string formatters
+    
+    
+2014-04-11 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Validate sort column in report constructor
+    
+    
+2014-04-11 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Avoid generating empty query terms
+    If the list of values for a term is empty, skip generation
+    of the query string for that term rather than emitting ()
+    
+    
+    
+2014-04-11 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Ensure dates in model are of int type, not strings
+    
+    
+2014-04-11 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Cope with --limit flag not being set
+    
+    
+2014-04-11 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Add --all-groups option to patch review stats command
+    
+    
+2014-04-11 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Fix return type of organization team/groups config values
+    The organization team/group config values should be lists
+    not strings.
+    
+    
+    
+2014-04-11 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Add ability to purge the cache of json docs
+    
+    
+2014-04-11 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Improve cacheability of patch review stats data
+    Instead of query data for all projects at once, query each
+    project in turn. This means that if the command is re-run
+    multiple times with different, overlapping, project sets
+    then we hit the cache more frequently.
+    
+    
+    
+2014-04-11 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Add ability to resolve groups from the config file
+    
+    
+2014-04-11 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Allow multi-level override of cli options from config
+    Add a '--profile NAME' flag which allows you to configure
+    multiple different profiles for each command. So for a
+    tool 'foo#, first look for defaults in a config section
+    'command:foo:$PROFILE', then look in 'command:foo'
+    
+    
+    
+2014-04-11 Daniel P. Berrange  <berrange@redhat.com>
+    
+    Initial commit
+    

@@ -1,0 +1,82 @@
+
+Summary:       The gerrymander gerrit client tools
+Name:          gerrymander
+Version:       @PY_VERSION@
+Release:       1%{?dist}
+Source0:       https://pypi.python.org/packages/source/g/%{name}/%{name}-%{version}.tar.gz
+URL:           https://pypi.python.org/pypi/gerrymander
+License:       ASL 2.0
+Group:         Development/Libraries
+
+BuildArch:     noarch
+BuildRequires: python2-devel
+BuildRequires: python-nose
+
+BuildRequires: python3-nose
+BuildRequires: python3-devel
+Requires:      python3-gerrymander
+Requires:      python-prettytable
+
+%package -n python-gerrymander
+Summary: The gerrymander gerrit python2 client
+License: GPLv2+
+Group: Development/Libraries
+
+%package -n python3-gerrymander
+Summary: The gerrymander gerrit python3 client
+License: GPLv2+
+Group: Development/Libraries
+
+%description
+The gerrymander package provides a set of command line tools
+for interacting with Gerrit
+
+%description -n python-gerrymander
+The python2-gerrymander package provides a set of python2
+modules for interacting with Gerrit.
+
+%description -n python3-gerrymander
+The python3-gerrymander package provides a set of python3
+modules for interacting with Gerrit.
+
+%prep
+%setup -q
+
+rm -rf %{py3dir}
+cp -a . %{py3dir}
+find %{py3dir} -name '*.py' | xargs sed -i '1s|^#!python|#!%{__python3}|'
+
+# Remove any egg info (as of submitting this review, there's no bundled
+# egg info)
+rm -rf *.egg-info
+
+%build
+%{__python2} setup.py build
+
+%{__python3} setup.py build
+
+%install
+%{__python2} setup.py install --skip-build --root=%{buildroot}
+
+%{__python3} setup.py install --skip-build --root=%{buildroot}
+
+%check
+%{__python2} setup.py test
+
+%{__python3} setup.py test
+
+%files
+%doc conf/gerrymander.conf-example
+%{_bindir}/gerrymander
+
+%files -n python-gerrymander
+%doc README LICENSE
+%{python2_sitelib}/gerrymander/
+%{python2_sitelib}/%{name}-%{version}-py2.7.egg-info
+
+%files -n python3-gerrymander
+%doc README LICENSE
+%{python3_sitelib}/gerrymander/
+%{python3_sitelib}/%{name}-%{version}-py3.*.egg-info
+
+%changelog
