@@ -1,0 +1,47 @@
+Metadata-Version: 1.1
+Name: gamerec
+Version: 0.0.2
+Summary: Library to process 2 players' games recordings (only chess now)
+Home-page: https://github.com/gwierzchowski/gamerec
+Author: Grzegorz Wierzchowski
+Author-email: gwierzchowski@wp.pl
+License: LGPLv3
+Description: **gamerec** is Python package intended to help process game recordings for 2 payers' games.  
+        File with game records can be loaded to Python collection object, be manipulated by user Python code,
+        and then be saved back to file. Current very limited version of package only supports Chess game 
+        and only .pgn file meta-data. 
+        
+        Below is an example of package use to save games from .pgn file to SQLite database:
+        ```python
+        from gamerec.storage.pgnfile.chess import ChessGameCollection as PGNChessGC
+        from gamerec.storage.sqlite.chess import ChessGameCollection as SQLiteChessGC
+        
+        PGNFile = sys.argv[1]
+        SQLFile = sys.argv[2]
+        
+        pgngc = PGNChessGC()
+        pgngc.load(PGNFile)
+        sqlgc = SQLiteChessGC()
+        sqlgc.data = pgngc.data
+        sqlgc.coding = "utf_8"
+        sqlgc.save(SQLFile)
+        ```
+        
+        Consider installing [normalizePGN](https://pypi.python.org/pypi/normalizePGN) which is an example of
+        how this package may be used.
+        
+        For more information see files README.md and Changelog.md included in source-ball or 
+        in typical installation using pip deployed to folders:
+        - /usr/local/share/doc/gamerec (Linux)
+        - C:\Python35\doc\gamerec (Windows) or
+        - <USER>\AppData\Local\Programs\Python\Python35-32\Doc\gamerec
+        
+Platform: any
+Classifier: Development Status :: 4 - Beta
+Classifier: Intended Audience :: Other Audience
+Classifier: License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 3 :: Only
+Classifier: Topic :: Games/Entertainment :: Board Games
+Classifier: Topic :: Software Development :: Libraries :: Python Modules
