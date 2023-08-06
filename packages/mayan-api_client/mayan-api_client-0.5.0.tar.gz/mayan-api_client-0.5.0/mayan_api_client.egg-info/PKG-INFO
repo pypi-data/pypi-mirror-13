@@ -1,0 +1,163 @@
+Metadata-Version: 1.1
+Name: mayan-api-client
+Version: 0.5.0
+Summary: Python client for the Mayan EDMS REST API.
+Home-page: https://github.com/rosarior/mayan_api_client
+Author: Roberto Rosario
+Author-email: roberto.rosario@mayan-edms.com
+License: ISCL
+Description: ===============================
+        Mayan API Client
+        ===============================
+        
+        .. image:: https://img.shields.io/pypi/v/mayan_api_client.svg
+                :target: https://pypi.python.org/pypi/mayan_api_client
+        
+        Python client for the Mayan EDMS REST API.
+        
+        * Free software: ISC license
+        
+        Installation
+        ------------
+        
+        Install from PyPI::
+        
+            pip install mayan-api_client
+        
+        
+        Usage
+        -----
+        
+        This is a thin wrapper of the `slumber` API client. Use the
+        <app>.<resource>.<verb> nomeclature.
+        
+        Examples::
+        
+            from mayan_api_client import API
+        
+            api = API(host='http://127.0.0.1:8000', username='admin', password='password')
+        
+        Show general information of the connected Mayan EDMS server::
+        
+            api._info
+        
+            {u'contact': u'roberto.rosario@mayan-edms.com',
+             u'description': u'Free Open Source Document Management System.',
+             u'license': u'Apache 2.0',
+             u'licenseUrl': u'http://www.apache.org/licenses/LICENSE-2.0.html',
+             u'title': u'Mayan EDMS API Documentation'}
+        
+        Show a list of all available apps::
+        
+            api._apps
+        
+            [u'checkouts',
+             u'document_indexing',
+             u'documents',
+             u'dynamic_search',
+             u'folders',
+             u'metadata',
+             u'ocr',
+             u'permissions',
+             u'rest',
+             u'sources',
+             u'tags',
+             u'user_management']
+        
+        Create a document type::
+        
+            api.documents.document_types.post({'label': 'new document type'})
+        
+            {u'delete_time_period': 30,
+             u'delete_time_unit': u'days',
+             u'documents': u'http://127.0.0.1:8000/api/documents/document_types/2/documents/',
+             u'documents_count': 0,
+             u'id': 2,
+             u'label': u'new document type',
+             u'trash_time_period': None,
+             u'trash_time_unit': None,
+             u'url': u'http://127.0.0.1:8000/api/documents/document_types/2/'}
+        
+        Upload a new document::
+        
+            with open('/tmp/test_document.pdf') as file_object:
+                response = api.documents.documents.post({'document_type': 2}, files={'file': file_object})
+        
+            print response
+        
+            {u'label': u'test_document.pdf', u'document_type': 2, u'description': u'', u'language': u'eng', u'id': 2}
+        
+        Get a list of all documents::
+        
+            api.documents.documents.get()
+        
+            {u'count': 1,
+             u'next': u'http://127.0.0.1:8000/api/documents/documents/?page=2',
+             u'previous': None,
+             u'results': [{u'date_added': u'2016-02-02T23:06:44.880732Z',
+               u'description': u'',
+               u'document_type': u'http://127.0.0.1:8000/api/documents/document_types/2/',
+               u'document_type_label': u'Default',
+               u'id': 2,
+               u'label': u'test_document.pdf',
+               u'language': u'eng',
+               u'latest_version': {u'checksum': u'452a6e59f3320f99bfe88b5f7efb0b9323df20457c19c320efce2b9404b96d82',
+                u'comment': u'',
+                u'document': u'http://127.0.0.1:8000/api/documents/documents/2/',
+                u'encoding': u'binary',
+                u'file': u'1a8b87de-bca9-416a-beb2-49d817625d56',
+                u'mimetype': u'application/pdf',
+                u'pages': [{u'document_version': u'http://127.0.0.1:8000/api/documents/document_version/2/',
+                  u'image': u'http://127.0.0.1:8000/api/documents/document_page/2/image/',
+                  u'page_number': 1,
+                  u'url': u'http://127.0.0.1:8000/api/documents/document_page/2/'}],
+                u'revert': u'http://127.0.0.1:8000/api/documents/document_version/2/revert/',
+                u'timestamp': u'2016-02-02T23:06:45.318494Z',
+                u'url': u'http://127.0.0.1:8000/api/documents/document_version/2/'},
+               u'url': u'http://127.0.0.1:8000/api/documents/documents/2/',
+               u'uuid': u'b1973f42-41f2-41e7-b812-07fa929689ec',
+               u'versions': u'http://127.0.0.1:8000/api/documents/documents/19/versions/'},]
+            }
+        
+        Get second page of a list of all documents::
+        
+            api.documents.documents.get(page=2)
+        
+        Get documents by id::
+        
+            api.documents.documents(2).get()
+        
+        Add a document to a folder::
+        
+            api.folders.folders(1).documents.post({'document': 2})
+        
+            {u'document': 2}
+        
+        Credits
+        ---------
+        
+        Roberto Rosario
+        
+        
+        =======
+        History
+        =======
+        
+        0.5.0 (2016-1-22)
+        ------------------
+        
+        * Initial release.
+        
+Keywords: mayan_api_client
+Platform: UNKNOWN
+Classifier: Development Status :: 2 - Pre-Alpha
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: ISC License (ISCL)
+Classifier: Natural Language :: English
+Classifier: Programming Language :: Python :: 2
+Classifier: Programming Language :: Python :: 2.6
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.3
+Classifier: Programming Language :: Python :: 3.4
+Classifier: Programming Language :: Python :: 3.5
