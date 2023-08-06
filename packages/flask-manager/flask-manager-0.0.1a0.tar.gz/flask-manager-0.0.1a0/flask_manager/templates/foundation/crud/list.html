@@ -1,0 +1,97 @@
+{% extends "crud/common.html" %}
+
+{% import 'crud/macros/utils.html' as Utils %}
+{% import 'crud/macros/pagination.html' as Pagination %}
+{% import 'crud/macros/roles.html' as Roles %}
+{% import 'crud/macros/table.html' as Table %}
+{% import 'crud/macros/form.html' as Form %}
+
+{# Macros #}
+{% macro select_as_links(field) %}
+    {% for value, name in field.choices %}
+        <li>
+            <a class="input-select-link {% if field.data == value %}active{% endif %}"
+                    data-field="{{ field.id }}"
+                    data-value="{{ value }}">
+                {{ name or 'All' }}
+            </a>
+        </li>
+    {% endfor %}
+{% endmacro %}
+
+{% macro dropdown_form(form, skip=()) %}
+    {% for field in form if field.id not in skip %}
+        {% if not loop.first %}
+            <hr class="dropdown-menu-line" />
+        {% endif %}
+        <strong>{{ field.name|title }}</strong>
+        <ul class="dropdown-menu-link">
+            {{ select_as_links(field) }}
+        </ul>
+    {% endfor %}
+{% endmacro %}
+
+{% macro hidden_form_fields(form, skip=()) %}
+    {% for field in form if field.id not in skip %}
+        {{ field(style='display: none;') }}
+    {% endfor %}
+{% endmacro %}
+
+{% macro filter_widget() %}
+    <div class="large-5 large-offset-1 column">
+        {% if 'search' in filter_form %}
+            {{ filter_form.search(class='left', style='width: 300px; height: 33px;') }}
+        {% endif %}
+        {% call Utils.dropdown(name='Filter by', right=True) %}
+            {{ dropdown_form(filter_form, skip=['search']) }}
+        {% endcall %}
+    </div>
+{% endmacro %}
+
+{% macro action_widget() %}
+    <div class="large-2 column">
+        {% call Utils.dropdown(name='With selected') %}
+            {{ dropdown_form(action_form, skip=['ids']) }}
+        {% endcall %}
+    </div>
+{% endmacro %}
+
+
+{# Body #}
+{% block content %}
+    <div class="row">
+        <div class="large-4 column">
+            {{ Roles.buttons_create(roles) }}
+        </div>
+        {% if show_action_form %} {{ action_widget() }} {% endif %}
+        {% if show_filter_form %} {{ filter_widget() }} {% endif %}
+    </div>
+    <hr />
+    <div class="row">
+        <div class="large-11 column large-centered">
+            {{ Pagination.render(page, pages, total, url_generator) }}
+        </div>
+    </div>
+    <div class="row">
+        <div class="large-12 column">
+            {% call Form.render_form(method='GET') %}
+                {{ hidden_form_fields(filter_form, skip=['search']) }}
+            {% endcall %}
+            {% call Form.render_form() %}
+                {{ hidden_form_fields(action_form, skip=['ids']) }}
+                {% call Table.render_table(rules.columns, url_generator=url_generator, current=order_by) %}
+                    {% for item in items %}
+                        {% call Table.render_row(item, roles=roles) %}
+                            {{ rules(item) }}
+                        {% endcall %}
+                    {% endfor %}
+                {% endcall %}
+            {% endcall %}
+        </div>
+    </div>
+    <div class="row">
+        <div class="large-11 column large-centered">
+            {{ Pagination.render(page, pages, total, url_generator) }}
+        </div>
+    </div>
+{% endblock %}
