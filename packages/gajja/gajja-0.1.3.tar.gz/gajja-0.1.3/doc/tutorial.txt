@@ -1,0 +1,249 @@
+Gajja tutorial
+##############
+
+:Author: Ben Finney <ben+python@benfinney.id.au>
+:Updated: 2016-02-14
+
+
+Faking a file's size
+====================
+
+Fake content with `io.BytesIO`
+------------------------------
+
+Sometimes you will need to test a program which responds differently
+depending on some file's content::
+
+    >>> class BatchingReader:
+    ...     """ A reader which batches its input. """
+    ...     batch_size = 200
+    ...     def __init__(self, infile):
+    ...         self.infile = infile
+    ...     def read(self):
+    ...         data = self.infile.read(self.batch_size)
+    ...         return data
+
+You start by writing a test case that will assert the `read` method on
+a large input file returns no more than `batch_size` bytes::
+
+    >>> import unittest
+
+    >>> class CachingReader_TestCase(unittest.TestCase):
+    ...     """ Test cases for `CachingReader` class. """
+    ...     def setUp(self):
+    ...         """ Set up test fixtures. """
+    ...         self.test_infile = make_fake_file("Lorem ipsum", 100000)
+    ...     def test_single_read_returns_batch_size_bytes(self):
+    ...         """ A single read should return only `batch_size` bytes. """
+    ...         reader = BatchingReader(self.test_infile)
+    ...         read_bytes = reader.read()
+    ...         self.assertLessEqual(len(read_bytes), reader.batch_size)
+
+How to make that fake input file? To fake the file content you can use
+a `io.BytesIO`::
+
+    >>> import io
+
+    >>> def make_fake_file(line_text, num_lines, encoding="utf-8"):
+    ...     """ Make a fake file of `num_lines` lines, each `line_text`. """
+    ...     test_content = "".join([line_text + "\n"] * num_lines)
+    ...     fake_file = io.BytesIO(test_content.encode(encoding))
+    ...     return fake_file
+
+    >>> test_case = CachingReader_TestCase(
+    ...         'test_single_read_returns_batch_size_bytes')
+    >>> test_case.run()
+    <unittest.result.TestResult run=1 errors=0 failures=0>
+
+For programs which accept any file-like object, this is often enough.
+
+
+Fake buffers don't have a corresponding filesystem entry
+--------------------------------------------------------
+
+Many programs, though, will not just read the input file, but also
+interrogate the corresponding filesystem entry. If our program uses
+`os.stat` to request the file size::
+
+    >>> import os
+
+    >>> class BatchingReader:
+    ...     """ A reader which batches its input. """
+    ...     batch_size = 200
+    ...     def __init__(self, infile):
+    ...         self.infile = infile
+    ...     def read(self):
+    ...         data = self.infile.read(self.batch_size)
+    ...         return data
+    ...     def estimate_batch_count(self):
+    ...         infile_stat = os.stat(self.infile.name)
+    ...         infile_size = infile_stat.st_size
+    ...         batch_count = infile_size / self.batch_size
+    ...         return batch_count
+
+A normal call to `os.stat` with the path of a real file will return a
+stat result object. The file size is one of the attributes::
+
+    >>> import sys
+    >>> os.path.exists(sys.executable)
+    True
+
+    >>> stat_result = os.stat(sys.executable)
+    >>> stat_result.st_size > 1000
+    True
+
+For testing that `BatchingReader.estimate_batch_count` method, the
+`io.BytesIO` instance won't help. It doesn't have a filesystem entry
+name, so interrogating its name will fail::
+
+    >>> test_file = io.BytesIO("Lorem ipsum".encode("utf-8"))
+    >>> reader = BatchingReader(test_file)
+
+    >>> reader.estimate_batch_count()
+    Traceback (most recent call last):
+      ...
+    AttributeError: '_io.BytesIO' object has no attribute 'name'
+
+We can give a unique name to our fake file, using `tempfile.mktemp`
+because we don't actually want to create the filesystem object. But
+then, the lack of a corresponding filesystem entry will make `os.stat`
+fail::
+
+    >>> import tempfile
+
+    >>> test_file.name = tempfile.mktemp()
+    >>> reader = BatchingReader(test_file)
+
+    >>> reader.estimate_batch_count()
+    ... # doctest: +ELLIPSIS
+    Traceback (most recent call last):
+      ...
+    FileNotFoundError: [Errno 2] No such file or directory: '...'
+
+
+Testing with real files is a bad answer
+---------------------------------------
+
+We want to keep using `io.BytesIO` to offer read and write.
+
+An `io.BytesIO` exists only in program memory and never needs to touch
+slower storage. Using the real filesystem for temporary test files
+will be slower. By using real files in unit tests, we would create a
+disincentive to perform as many file-related test cases as we need.
+
+Using the real filesystem will be more complex. Real files need to be
+properly created, handled, and cleaned up after use.
+
+Using the real filesystem introduces more possibilities for unrelated,
+intermittent test failure. If a temporary test file is accessible when
+it should not be, or is not accessible when it should be, or has
+different properties at some time during a test, or in any other way
+behaves not as the test author expects, the test failure will be
+needlessly difficult to diagnose.
+
+We need to keep using in-memory fake files with constructed content,
+*and* be able to construct the filesystem access behaviour of a fake
+file.
+
+
+Solution: `gajja.FileDouble`
+----------------------------
+
+The `gajja` library provides test doubles we need for substituting
+behaviour for specific fake files::
+
+    >>> import gajja
+
+    >>> fake_file = make_fake_file("Lorem ipsum", 100000)
+    >>> fake_file_path = tempfile.mktemp()
+    >>> file_double = gajja.FileDouble(fake_file_path, fake_file)
+
+The `FileDouble` instance maintains the behaviour for a fake
+filesystem entry. You can omit the `path` argument; it will default to
+``None``. You can omit the `fake_file` argument; it will default to an
+empty file-like object::
+
+    >>> file_double = gajja.FileDouble(path=fake_file_path)
+    >>> file_double.fake_file.read()
+    ''
+    >>> file_double.fake_file.name == fake_file_path
+    True
+
+    >>> file_double = gajja.FileDouble(fake_file=fake_file)
+    >>> file_double.path is None
+    True
+    >>> file_double.fake_file.name is None
+    True
+
+For our example `CachingReader` test cases, we don't care about the
+filesystem path of the double, but we still need to make our own fake
+file object to control its contents.
+
+We construct a file double, specify the fake file with its test
+content, and arrange for `os.stat` to pay attention to Gajja's special
+handling per filesystem path::
+
+    >>> class CachingReader_TestCase(unittest.TestCase):
+    ...     """ Test cases for `CachingReader` class. """
+    ...     def setUp(self):
+    ...         """ Set up test fixtures. """
+    ...         # Patch `os.stat` for this test case.
+    ...         gajja.patch_os_stat(self)
+    ...         # Determine the properties of the fake file.
+    ...         test_infile = make_fake_file("Lorem ipsum", 100000)
+    ...         # Make the `FileDouble` instance and register it.
+    ...         self.infile_double = gajja.FileDouble(fake_file=test_infile)
+    ...         self.infile_double.register_for_testcase(self)
+    ...     def test_estimate_batch_count_returns_expected_result(self):
+    ...         """ `estimate_batch_count` should return expected count. """
+    ...         reader = BatchingReader(self.infile_double.fake_file)
+    ...         result = reader.estimate_batch_count()
+    ...         fake_file_size = len(self.infile_double.fake_file.getvalue())
+    ...         expected_result = fake_file_size / reader.batch_size
+    ...         self.assertEqual(result, expected_result)
+
+When the test cases run, and the program calls `os.stat` with the
+filesystem path of our file double, the stat result's `st_size` is the
+length of the fake file's content. The program will then act on that
+fake file size::
+
+    >>> test_case = CachingReader_TestCase(
+    ...         'test_estimate_batch_count_returns_expected_result')
+    >>> test_case.run()
+    <unittest.result.TestResult run=1 errors=0 failures=0>
+
+Other calls to `os.stat` outside our test cases, or with different
+file paths, will be handed to the real `os.stat` and behave as
+expected::
+
+    >>> os.stat(tempfile.mktemp())
+    ... # doctest: +ELLIPSIS
+    Traceback (most recent call last):
+      ...
+    FileNotFoundError: [Errno 2] No such file or directory: '...'
+
+
+..
+    This document is written using `reStructuredText`_ markup, and can
+    be rendered with `Docutils`_ to other formats.
+
+    ..  _Docutils: http://docutils.sourceforge.net/
+    ..  _reStructuredText: http://docutils.sourceforge.net/rst.html
+
+..
+    This is free software: you may copy, modify, and/or distribute this work
+    under the terms of the GNU General Public License as published by the
+    Free Software Foundation; version 3 of that license or any later version.
+    No warranty expressed or implied. See the file ‘LICENSE.GPL-3’ for details.
+
+..
+    Local variables:
+    coding: utf-8
+    mode: text
+    mode: rst
+    time-stamp-format: "%:y-%02m-%02d"
+    time-stamp-start: "^:Updated:[         ]+"
+    time-stamp-end: "$"
+    time-stamp-line-limit: 20
+    End:
+    vim: fileencoding=utf-8 filetype=rst :
