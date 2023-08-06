@@ -1,0 +1,156 @@
+#!/usr/bin/env python
+
+"""
+IPython local kernel management utility.
+"""
+
+# Copyright (c) 2015-2016, Lev Givon
+# All rights reserved.
+# Distributed under the terms of the BSD license:
+# http://www.opensource.org/licenses/bsd-license
+
+import argparse
+import glob
+import os
+import sys
+import time
+
+from concurrent.futures import ThreadPoolExecutor
+import IPython
+if IPython.version_info < (4, 0, 0):
+    from IPython import start_ipython
+    from IPython.kernel import BlockingKernelClient
+    from IPython.kernel.zmq.kernelapp import IPKernelApp
+else:
+    from jupyter_console.app import launch_new_instance as start_ipython
+    from jupyter_client import BlockingKernelClient
+    from ipykernel.kernelapp import IPKernelApp
+from setproctitle import setproctitle
+import six.moves
+from six.moves.queue import Empty
+
+class SilentIPKernelApp(IPKernelApp):
+    def log_connection_info(self):
+        # Suppress startup message:
+        self.ports = dict(shell=self.shell_port,
+            iopub=self.iopub_port,
+            stdin=self.stdin_port,
+            hb=self.hb_port,
+            control=self.control_port)
+
+def wait_for_kernel(kc, timeout=None):
+    # Adapted from IPython/terminal/console/interactiveshell.py in IPython source
+    tic = time.time()
+    while True:
+        msg_id = kc.kernel_info()
+        reply = None
+        while True:
+            try:
+                reply = kc.get_shell_msg(timeout=1)
+            except Empty:
+                break
+            else:
+                if reply['parent_header'].get('msg_id') == msg_id:
+                    return True
+        if timeout is not None \
+           and (time.time()-tic) > timeout and not kc.hb_channel.is_beating():
+            return False
+    return True
+
+def get_alive_kernels(kernel_json_dir, max_workers=5):
+    # Look for kernel files:
+    if IPython.version_info < (4, 0, 0):
+        kernel_files = glob.glob(os.path.join(kernel_json_dir, '*', 'security', 'kernel*json'))
+    else:
+        kernel_files = glob.glob(os.path.join(kernel_json_dir, 'kernel*json'))
+   
+    def check_kernel(file_name):
+        # If an exception occurs for some reason, silently skip over the kernel file:
+        try:
+            kc = BlockingKernelClient(connection_file=file_name)
+            kc.load_connection_file()
+            kc.start_channels()
+            kc.hb_channel.unpause()
+
+            if wait_for_kernel(kc, kc.hb_channel.time_to_dead+1.0):
+                return {'file_name': file_name, 'kc': kc}
+        except:
+            return None
+
+    with ThreadPoolExecutor(max_workers) as pool:
+        return {i:result for i, result in \
+                enumerate(pool.map(check_kernel, kernel_files)) \
+                if result is not None}
+
+def connect_to(n, kernel_json_dir):
+    kf_dict = get_alive_kernels(kernel_json_dir)
+    try:
+        setproctitle('ipyk -c %s' % n)
+        start_ipython(['console', '--existing',
+                       str(kf_dict[n]['file_name']),
+                       '--TerminalInteractiveShell.banner2=Type Ctrl-\ to disconnect from kernel.\n'])
+    except KeyError:
+        print('invalid kernel number')
+        sys.exit(1)
+    
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description="Manage local IPython kernels.")
+    parser.add_argument('-s', '--start',
+                        help='start new kernel with specified profile',
+                        metavar='PROFILE',
+                        type=str, nargs='?', const='default')
+    parser.add_argument('-k', '--kill',
+                        help='terminate kernel',
+                        metavar='KERNEL',
+                        type=int)
+    parser.add_argument('-c', '--connect',
+                        help='connect to kernel (default=0)',
+                        metavar='KERNEL',
+                        type=int, nargs='?', const=0)
+    parser.add_argument('-l', '--list', help='list running kernels', action='store_true')
+    if IPython.version_info < (4, 0, 0):
+        try:
+            kernel_json_dir = os.environ['IPYTHONDIR']
+        except:
+            kernel_json_dir = '~/.ipython'
+        kernel_json_dir = os.path.expanduser(kernel_json_dir)
+    else:
+        try:
+            kernel_json_dir = os.environ['JUPYTER_RUNTIME_DIR']
+        except:
+            kernel_json_dir = os.path.join(os.environ['XDG_RUNTIME_DIR'],
+                                           'jupyter')
+    args = parser.parse_args()
+    if args.list:
+        kf_dict = get_alive_kernels(kernel_json_dir)
+        for k, v in six.iteritems(kf_dict):
+            print('%s: %s' % (k, v['file_name']))
+    elif args.connect is not None:
+        connect_to(args.connect, kernel_json_dir)
+    elif args.start:
+        pid = os.fork()
+        if pid == 0:
+            setproctitle('ipython kernel')
+            # Need to blank the arguments to prevent them from being used
+            # by the kernel app instance:
+            sys.argv[1:] = []
+            SilentIPKernelApp.profile = args.start
+            try:
+                k = SilentIPKernelApp.instance()
+                k.initialize()
+                k.start()
+            except:
+                print('error starting kernel')
+                sys.exit(1)
+    elif args.kill is not None:
+        kf_dict = get_alive_kernels(kernel_json_dir)
+        try:
+            msg_id = kf_dict[args.kill]['kc'].shutdown()
+            reply = kf_dict[args.kill]['kc'].shell_channel.get_msg()
+            if reply['content']['status'] == 'error':
+                sys.exit(1)
+        except KeyError:
+            print('must specify valid kernel number')
+            sys.exit(1)
+    else:
+        parser.print_help()
