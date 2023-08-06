@@ -1,0 +1,232 @@
+Metadata-Version: 2.0
+Name: pathlib-revised
+Version: 0.1.0
+Summary: pathlib_revised is a enhanced version of pathlib
+Home-page: https://github.com/jedie/pathlib_revised
+Author: Jens Diemer
+Author-email: UNKNOWN
+License: GNU General Public License (GNU GPL v3 or above)
+Keywords: pathlib Windows Linux
+Platform: UNKNOWN
+Classifier: Development Status :: 4 - Beta
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: GNU General Public License (GPL)
+Classifier: Programming Language :: Python :: 3.4
+Classifier: Programming Language :: Python :: 3.5
+Classifier: Programming Language :: Python :: 3 :: Only
+Classifier: Operating System :: OS Independent
+Classifier: Topic :: Software Development
+Classifier: Topic :: Software Development :: Libraries
+Classifier: Topic :: Software Development :: Libraries :: Python Modules
+Requires-Dist: scandir; python_version=="3.4"
+
+---------------
+pathlib_revised
+---------------
+
+Expand the origin Python `pathlib <https://docs.python.org/3/library/pathlib.html>`_ module:
+
+* work-a-round for Windows MAX_PATH limit, by adding ``\\?\`` path prefix
+
+* add missing stuff, like: ``makedirs``, ``utime``, ``scandir`` etc.
+
+There is also the class, called `DirEntryPath <https://github.com/jedie/pathlib_revised/blob/master/pathlib_revised/dir_entry_path.py>`_ that holds more cached information than `os.DirEntry <https://docs.python.org/3/library/os.html#os.DirEntry>`_
+
+* python 3.4 or newer only
+
+* Beta state
+
+Please, try, fork and contribute! ;)
+
++--------------------------------------+-----------------------------------------------------------+
+| |Build Status on travis-ci.org|      | `travis-ci.org/jedie/pathlib_revised`_                    |
++--------------------------------------+-----------------------------------------------------------+
+| |Build Status on appveyor.com|       | `ci.appveyor.com/project/jedie/pathlib_revised`_          |
++--------------------------------------+-----------------------------------------------------------+
+| |Coverage Status on coveralls.io|    | `coveralls.io/r/jedie/pathlib_revised`_                   |
++--------------------------------------+-----------------------------------------------------------+
+| |Requirements Status on requires.io| | `requires.io/github/jedie/pathlib_revised/requirements/`_ |
++--------------------------------------+-----------------------------------------------------------+
+
+.. |Build Status on travis-ci.org| image:: https://travis-ci.org/jedie/pathlib_revised.svg
+.. _travis-ci.org/jedie/pathlib_revised: https://travis-ci.org/jedie/pathlib_revised/
+.. |Build Status on appveyor.com| image:: https://ci.appveyor.com/api/projects/status/py5sl38ql3xciafc?svg=true
+.. _ci.appveyor.com/project/jedie/pathlib_revised: https://ci.appveyor.com/project/jedie/pathlib_revised/history
+.. |Coverage Status on coveralls.io| image:: https://coveralls.io/repos/jedie/pathlib_revised/badge.svg
+.. _coveralls.io/r/jedie/pathlib_revised: https://coveralls.io/r/jedie/pathlib_revised
+.. |Requirements Status on requires.io| image:: https://requires.io/github/jedie/pathlib_revised/requirements.svg?branch=master
+.. _requires.io/github/jedie/pathlib_revised/requirements/: https://requires.io/github/jedie/pathlib_revised/requirements/
+
+Windows MAX_PATH
+================
+
+There is a limit in the Windows API: Path can't be longer than 259 characters (called: "MAX_PATH").
+The work-a-round is to add the prefix ``\\?\`` to every absolute path, see:
+
+* `https://msdn.microsoft.com/en-us/library/aa365247.aspx#maxpath <https://msdn.microsoft.com/en-us/library/aa365247.aspx#maxpath>`_
+
+The **Path2()** class has the additional property **extended_path**:
+
+::
+
+    >>> from pathlib_revised import Path2
+    >>> p=Path2("c:\foo\bar")
+    >>> p.extended_path
+    '\\?\c:\foo\bar'
+
+All existing methods of **Path2()** will internally use **extended_path**, so that the **MAX_PATH** limit is not longer a problem.
+
+**extended_path** exist also under Posix-Systems, but it's the same as **path**:
+
+::
+
+    >>> p=Path2("/foo/bar")
+    >>> p.path
+    '/foo/bar'
+    >>> p.extended_path
+    '/foo/bar'
+
+Additional methods
+==================
+
+* os.**`listdir() <https://docs.python.org/3/library/os.html#os.listdir>`_**
+
+<pre>
+>>> Path2("/").listdir()
+['sbin', 'boot', 'tmp', 'sys', 'var', 'dev', 'usr', 'root', 'home', ..., 'initrd.img', 'vmlinuz']
+</pre> * shutil.**`copyfile() <https://docs.python.org/3/library/shutil.html#shutil.copyfile>`_**
+
+<pre>
+>>> Path2("a_file.txt").copyfile(Path2("a_file_copy.txt"))
+</pre> * os.path.**`expanduser() <https://docs.python.org/3/library/os.path.html#os.path.expanduser>`_**
+
+<pre>
+>>> p=Path2("~", "sub", "dir")
+>>> p
+PosixPath2('~/sub/dir')
+>>> p.expanduser()
+PosixPath2('/home/username/sub/dir')
+</pre> * os.**`link() <https://docs.python.org/3/library/os.html#os.link>`_**
+
+<pre>
+>>> Path2("source.txt").link(Path2("hardlinked.txt"))
+</pre> * os.**`makedirs() <https://docs.python.org/3/library/os.html#os.makedirs>`_**
+
+<pre>
+>>> Path2("a", "new", "path").makedirs()
+</pre> * os.**`utime() <https://docs.python.org/3/library/os.html#os.utime>`_**
+
+<pre>
+>>> mtime = 111111111 # UTC: 1973-07-10 00:11:51
+>>> atime = 222222222 # UTC: 1977-01-16 01:23:42
+
+>>> p.Path2("dir/or/file")
+>>> p.utime(times=(atime, mtime))
+>>> stat = p.stat()
+>>> stat.st_atime
+222222222
+>>> stat.st_mtime
+111111111
+</pre> * os.**`scandir() <https://docs.python.org/3/library/os.html#os.scandir()>`_**
+
+<pre>
+>>> p=Path2("/foo/bar")
+>>> for dir_item in p.scandir():
+...     print(dir_item)
+...
+<PosixDirEntry: 'filename'>
+<PosixDirEntry: 'directory'>
+<PosixDirEntry: '...'>
+</pre> It's a generator that yields os.**`DirEntry <https://docs.python.org/3/library/os.html#os.DirEntry>`_** instances.
+**scandir** is new in Python 3.5, but in Path2() is will fall-back to the external `scandir <https://pypi.python.org/pypi/scandir>`_ module.
+
+You miss a method? Please, fork, implement, add tests and send a pull request! ;)
+
+misc
+====
+
+Path2() hat the **.path** property, that is normally new in Python 3.4.5 and 3.5.2
+So you can use it with older Python Version, too.
+
+------------
+DirEntryPath
+------------
+
+The `DirEntryPath`_ holds more cached information:
+
++----------------------------+-------------------------------------------------------------------------+
+| *instance***.dir_entry**   | os.DirEntry() instance                                                  |
++----------------------------+-------------------------------------------------------------------------+
+| *instance***.path**        | str or bytes of the path, from: *os.DirEntry()***.path**                |
++----------------------------+-------------------------------------------------------------------------+
+| *instance***.is_symlink    | bool from *os.DirEntry()***.is_symlink()**                              |
++----------------------------+-------------------------------------------------------------------------+
+| *instance***.is_file       | bool from *os.DirEntry()***.is_file(follow_symlinks=False)**            |
++----------------------------+-------------------------------------------------------------------------+
+| *instance***.is_dir        | bool from *os.DirEntry()***.is_dir(follow_symlinks=False)**             |
++----------------------------+-------------------------------------------------------------------------+
+| *instance***.stat          | bool from *os.DirEntry()***.stat(follow_symlinks=False)**               |
++----------------------------+-------------------------------------------------------------------------+
+| *instance***.path_instance | **Path2()** instance                                                    |
++----------------------------+-------------------------------------------------------------------------+
+| *instance***.resolved_path | **Path2()** instance from **.resolve()** (If resolve errored: **None**) |
++----------------------------+-------------------------------------------------------------------------+
+| *instance***.resolve_error | The error Instance, if .resolve() failed.                               |
++----------------------------+-------------------------------------------------------------------------+
+
+Create a instance by feeding a `os.DirEntry`_ instance, e.g.:
+
+::
+
+    >>> from pathlib_revised import Path2, DirEntryPath
+    >>> src_path = Path2("foo/")
+    >>> for dir_entry in src_path.scandir():
+    ...     dir_entry_path = DirEntryPath(dir_entry)
+    ...     print(dir_entry_path.pformat())
+     *** <DirEntryPath foo/file1> :
+    path.......: 'foo/file1'
+    path instance..: PosixPath2('foo/file1')
+    resolved path..: PosixPath2('/home/bar/foo/file1')
+    resolve error..: None
+    different path.: True
+    is symlink.....: False
+    is file........: False
+    is dir.........: True
+    stat.size......: 38
+     *** <DirEntryPath foo/BrokenSymlink.ext> :
+    path.......: 'foo/BrokenSymlink.ext'
+    path instance..: PosixPath2('foo/BrokenSymlink.ext')
+    resolved path..: None
+    resolve error..: FileNotFoundError(2, 'No such file or directory')
+    different path.: True
+    is symlink.....: True
+    is file........: False
+    is dir.........: False
+    stat.size......: 15
+     *** <DirEntryPath foo/README.creole> :
+    path.......: 'foo/README.creole'
+    path instance..: PosixPath2('foo/README.creole')
+    resolved path..: PosixPath2('/home/bar/foo/README.creole')
+    resolve error..: None
+    different path.: True
+    is symlink.....: False
+    is file........: True
+    is dir.........: False
+    stat.size......: 4802
+
+-------
+History
+-------
+
+* 08.02.2016 - v0.1.0
+
+    * code cleanup + more tests
+
+    * move files form `PyHardLinkBackup <https://github.com/jedie/PyHardLinkBackup/tree/bb29eda6a0724c060f0e39773bdaecc325e9fea2>`_
+
+-----
+Links
+-----
+
+* `https://pypi.python.org/pypi/pathlib_revised/ <https://pypi.python.org/pypi/pathlib_revised/>`_
+
