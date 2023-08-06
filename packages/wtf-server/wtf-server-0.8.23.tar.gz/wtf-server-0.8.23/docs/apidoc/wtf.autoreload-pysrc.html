@@ -1,0 +1,371 @@
+<?xml version="1.0" encoding="ascii"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>wtf.autoreload</title>
+  <link rel="stylesheet" href="epydoc.css" type="text/css" />
+  <script type="text/javascript" src="epydoc.js"></script>
+</head>
+
+<body bgcolor="white" text="black" link="blue" vlink="#204080"
+      alink="#204080">
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+  <!-- Home link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="wtf-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            ><a href="http://opensource.perlig.de/wtf/">Visit WTF Online</a></th>
+          </tr></table></th>
+  </tr>
+</table>
+<table width="100%" cellpadding="0" cellspacing="0">
+  <tr valign="top">
+    <td width="100%">
+      <span class="breadcrumbs">
+        <a href="wtf-module.html">Package&nbsp;wtf</a> ::
+        Module&nbsp;autoreload
+      </span>
+    </td>
+    <td>
+      <table cellpadding="0" cellspacing="0">
+        <!-- hide/show private -->
+        <tr><td align="right"><span class="options">[<a href="javascript:void(0);" class="privatelink"
+    onclick="toggle_private();">hide&nbsp;private</a>]</span></td></tr>
+        <tr><td align="right"><span class="options"
+            >[<a href="frames.html" target="_top">frames</a
+            >]&nbsp;|&nbsp;<a href="wtf.autoreload-pysrc.html"
+            target="_top">no&nbsp;frames</a>]</span></td></tr>
+      </table>
+    </td>
+  </tr>
+</table>
+<h1 class="epydoc">Source Code for <a href="wtf.autoreload-module.html">Module wtf.autoreload</a></h1>
+<pre class="py-src">
+<a name="L1"></a><tt class="py-lineno">  1</tt>  <tt class="py-line"><tt class="py-comment"># -*- coding: ascii -*-</tt> </tt>
+<a name="L2"></a><tt class="py-lineno">  2</tt>  <tt class="py-line"><tt class="py-comment">#</tt> </tt>
+<a name="L3"></a><tt class="py-lineno">  3</tt>  <tt class="py-line"><tt class="py-comment"># Copyright 2007-2012</tt> </tt>
+<a name="L4"></a><tt class="py-lineno">  4</tt>  <tt class="py-line"><tt class="py-comment"># Andr\xe9 Malo or his licensors, as applicable</tt> </tt>
+<a name="L5"></a><tt class="py-lineno">  5</tt>  <tt class="py-line"><tt class="py-comment">#</tt> </tt>
+<a name="L6"></a><tt class="py-lineno">  6</tt>  <tt class="py-line"><tt class="py-comment"># Licensed under the Apache License, Version 2.0 (the "License");</tt> </tt>
+<a name="L7"></a><tt class="py-lineno">  7</tt>  <tt class="py-line"><tt class="py-comment"># you may not use this file except in compliance with the License.</tt> </tt>
+<a name="L8"></a><tt class="py-lineno">  8</tt>  <tt class="py-line"><tt class="py-comment"># You may obtain a copy of the License at</tt> </tt>
+<a name="L9"></a><tt class="py-lineno">  9</tt>  <tt class="py-line"><tt class="py-comment">#</tt> </tt>
+<a name="L10"></a><tt class="py-lineno"> 10</tt>  <tt class="py-line"><tt class="py-comment">#     http://www.apache.org/licenses/LICENSE-2.0</tt> </tt>
+<a name="L11"></a><tt class="py-lineno"> 11</tt>  <tt class="py-line"><tt class="py-comment">#</tt> </tt>
+<a name="L12"></a><tt class="py-lineno"> 12</tt>  <tt class="py-line"><tt class="py-comment"># Unless required by applicable law or agreed to in writing, software</tt> </tt>
+<a name="L13"></a><tt class="py-lineno"> 13</tt>  <tt class="py-line"><tt class="py-comment"># distributed under the License is distributed on an "AS IS" BASIS,</tt> </tt>
+<a name="L14"></a><tt class="py-lineno"> 14</tt>  <tt class="py-line"><tt class="py-comment"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</tt> </tt>
+<a name="L15"></a><tt class="py-lineno"> 15</tt>  <tt class="py-line"><tt class="py-comment"># See the License for the specific language governing permissions and</tt> </tt>
+<a name="L16"></a><tt class="py-lineno"> 16</tt>  <tt class="py-line"><tt class="py-comment"># limitations under the License.</tt> </tt>
+<a name="L17"></a><tt class="py-lineno"> 17</tt>  <tt class="py-line"><tt class="py-docstring">"""</tt> </tt>
+<a name="L18"></a><tt class="py-lineno"> 18</tt>  <tt class="py-line"><tt class="py-docstring">Autoreload of python code</tt> </tt>
+<a name="L19"></a><tt class="py-lineno"> 19</tt>  <tt class="py-line"><tt class="py-docstring">=========================</tt> </tt>
+<a name="L20"></a><tt class="py-lineno"> 20</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L21"></a><tt class="py-lineno"> 21</tt>  <tt class="py-line"><tt class="py-docstring">This module provides logic to implemented the autoreload mechanism. This is</tt> </tt>
+<a name="L22"></a><tt class="py-lineno"> 22</tt>  <tt class="py-line"><tt class="py-docstring">implemented by forking early, remembering the module's mtimes and dealing</tt> </tt>
+<a name="L23"></a><tt class="py-lineno"> 23</tt>  <tt class="py-line"><tt class="py-docstring">with changed mtimes by going back right before the fork point.</tt> </tt>
+<a name="L24"></a><tt class="py-lineno"> 24</tt>  <tt class="py-line"><tt class="py-docstring">"""</tt> </tt>
+<a name="L25"></a><tt class="py-lineno"> 25</tt>  <tt class="py-line"><tt class="py-name">__author__</tt> <tt class="py-op">=</tt> <tt class="py-string">u"Andr\xe9 Malo"</tt> </tt>
+<a name="L26"></a><tt class="py-lineno"> 26</tt>  <tt class="py-line"><tt class="py-name">__docformat__</tt> <tt class="py-op">=</tt> <tt class="py-string">"restructuredtext en"</tt> </tt>
+<a name="L27"></a><tt class="py-lineno"> 27</tt>  <tt class="py-line"> </tt>
+<a name="L28"></a><tt class="py-lineno"> 28</tt>  <tt class="py-line"><tt class="py-keyword">import</tt> <tt class="py-name">os</tt> <tt class="py-keyword">as</tt> <tt class="py-name">_os</tt> </tt>
+<a name="L29"></a><tt class="py-lineno"> 29</tt>  <tt class="py-line"><tt class="py-keyword">import</tt> <tt class="py-name">sys</tt> <tt class="py-keyword">as</tt> <tt class="py-name">_sys</tt> </tt>
+<a name="L30"></a><tt class="py-lineno"> 30</tt>  <tt class="py-line"><tt class="py-keyword">import</tt> <tt class="py-name">time</tt> <tt class="py-keyword">as</tt> <tt class="py-name">_time</tt> </tt>
+<a name="L31"></a><tt class="py-lineno"> 31</tt>  <tt class="py-line"> </tt>
+<a name="L32"></a><tt class="py-lineno"> 32</tt>  <tt class="py-line"> </tt>
+<a name="ReloadRequested"></a><div id="ReloadRequested-def"><a name="L33"></a><tt class="py-lineno"> 33</tt> <a class="py-toggle" href="#" id="ReloadRequested-toggle" onclick="return toggle('ReloadRequested');">-</a><tt class="py-line"><tt class="py-keyword">class</tt> <a class="py-def-name" href="wtf.autoreload.ReloadRequested-class.html">ReloadRequested</a><tt class="py-op">(</tt><tt class="py-base-class">SystemExit</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="ReloadRequested-collapsed" style="display:none;" pad="+++" indent="++++"></div><div id="ReloadRequested-expanded"><a name="L34"></a><tt class="py-lineno"> 34</tt>  <tt class="py-line">    <tt class="py-docstring">"""</tt> </tt>
+<a name="L35"></a><tt class="py-lineno"> 35</tt>  <tt class="py-line"><tt class="py-docstring">    Reload requested exception</tt> </tt>
+<a name="L36"></a><tt class="py-lineno"> 36</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L37"></a><tt class="py-lineno"> 37</tt>  <tt class="py-line"><tt class="py-docstring">    :CVariables:</tt> </tt>
+<a name="L38"></a><tt class="py-lineno"> 38</tt>  <tt class="py-line"><tt class="py-docstring">     - `CODE`: Exit code for the child process</tt> </tt>
+<a name="L39"></a><tt class="py-lineno"> 39</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L40"></a><tt class="py-lineno"> 40</tt>  <tt class="py-line"><tt class="py-docstring">    :Types:</tt> </tt>
+<a name="L41"></a><tt class="py-lineno"> 41</tt>  <tt class="py-line"><tt class="py-docstring">     - `CODE`: ``int``</tt> </tt>
+<a name="L42"></a><tt class="py-lineno"> 42</tt>  <tt class="py-line"><tt class="py-docstring">    """</tt> </tt>
+<a name="L43"></a><tt class="py-lineno"> 43</tt>  <tt class="py-line">    <tt id="link-0" class="py-name" targets="Variable wtf.autoreload.ReloadRequested.CODE=wtf.autoreload.ReloadRequested-class.html#CODE"><a title="wtf.autoreload.ReloadRequested.CODE" class="py-name" href="#" onclick="return doclink('link-0', 'CODE', 'link-0');">CODE</a></tt> <tt class="py-op">=</tt> <tt class="py-number">9</tt> </tt>
+<a name="L44"></a><tt class="py-lineno"> 44</tt>  <tt class="py-line"> </tt>
+<a name="ReloadRequested.__init__"></a><div id="ReloadRequested.__init__-def"><a name="L45"></a><tt class="py-lineno"> 45</tt> <a class="py-toggle" href="#" id="ReloadRequested.__init__-toggle" onclick="return toggle('ReloadRequested.__init__');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="wtf.autoreload.ReloadRequested-class.html#__init__">__init__</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="ReloadRequested.__init__-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="ReloadRequested.__init__-expanded"><a name="L46"></a><tt class="py-lineno"> 46</tt>  <tt class="py-line">        <tt class="py-docstring">""" Initialization """</tt> </tt>
+<a name="L47"></a><tt class="py-lineno"> 47</tt>  <tt class="py-line">        <tt class="py-name">SystemExit</tt><tt class="py-op">.</tt><tt id="link-1" class="py-name" targets="Method wtf.app.Application.__init__()=wtf.app.Application-class.html#__init__,Method wtf.app.cookie.BaseCookieCodec.__init__()=wtf.app.cookie.BaseCookieCodec-class.html#__init__,Method wtf.app.cookie.CookieCodecFactoryInterface.__init__()=wtf.app.cookie.CookieCodecFactoryInterface-class.html#__init__,Method wtf.app.decorators.Method.__init__()=wtf.app.decorators.Method-class.html#__init__,Method wtf.app.dispatcher.Dispatcher.__init__()=wtf.app.dispatcher.Dispatcher-class.html#__init__,Method wtf.app.http_response.HTTPResponse.__init__()=wtf.app.http_response.HTTPResponse-class.html#__init__,Method wtf.app.request.CookieCollection.__init__()=wtf.app.request.CookieCollection-class.html#__init__,Method wtf.app.request.ParameterWrapper.__init__()=wtf.app.request.ParameterWrapper-class.html#__init__,Method wtf.app.request.Request.__init__()=wtf.app.request.Request-class.html#__init__,Method wtf.app.request.Uploads.__init__()=wtf.app.request.Uploads-class.html#__init__,Method wtf.app.resolver.MapResolver.__init__()=wtf.app.resolver.MapResolver-class.html#__init__,Method wtf.app.response.HeaderCollection.__init__()=wtf.app.response.HeaderCollection-class.html#__init__,Method wtf.app.response.Response.__init__()=wtf.app.response.Response-class.html#__init__,Method wtf.app.services._crash_tb.DebugRender.__init__()=wtf.app.services._crash_tb.DebugRender-class.html#__init__,Method wtf.app.services._crash_tb.Namespace.__init__()=wtf.app.services._crash_tb.Namespace-class.html#__init__,Method wtf.app.services._crash_tb.PythonParser.__init__()=wtf.app.services._crash_tb.PythonParser-class.html#__init__,Method wtf.app.services.config.ConfigService.__init__()=wtf.app.services.config.ConfigService-class.html#__init__,Method wtf.app.services.crash.CrashService.__init__()=wtf.app.services.crash.CrashService-class.html#__init__,Method wtf.app.services.crash.Iterator.__init__()=wtf.app.services.crash.Iterator-class.html#__init__,Method wtf.app.services.crash.Middleware.__init__()=wtf.app.services.crash.Middleware-class.html#__init__,Method wtf.app.services.log.LogService.__init__()=wtf.app.services.log.LogService-class.html#__init__,Method wtf.app.services.memcache.ExceptionWrapper.__init__()=wtf.app.services.memcache.ExceptionWrapper-class.html#__init__,Method wtf.app.services.memcache.GlobalMemcache.__init__()=wtf.app.services.memcache.GlobalMemcache-class.html#__init__,Method wtf.app.services.memcache.MemcacheDecorator.__init__()=wtf.app.services.memcache.MemcacheDecorator-class.html#__init__,Method wtf.app.services.memcache.MemcacheService.__init__()=wtf.app.services.memcache.MemcacheService-class.html#__init__,Method wtf.app.services.memcache.MemcacheWrapper.__init__()=wtf.app.services.memcache.MemcacheWrapper-class.html#__init__,Method wtf.app.services.memcache.TransparentCacheDecorator.__init__()=wtf.app.services.memcache.TransparentCacheDecorator-class.html#__init__,Method wtf.app.services.resources.FileResource.__init__()=wtf.app.services.resources.FileResource-class.html#__init__,Method wtf.app.services.resources.GlobalResources.__init__()=wtf.app.services.resources.GlobalResources-class.html#__init__,Method wtf.app.services.resources.Locator.__init__()=wtf.app.services.resources.Locator-class.html#__init__,Method wtf.app.services.resources.ResourceService.__init__()=wtf.app.services.resources.ResourceService-class.html#__init__,Method wtf.app.services.session.GlobalSession.__init__()=wtf.app.services.session.GlobalSession-class.html#__init__,Method wtf.app.services.session.Middleware.__init__()=wtf.app.services.session.Middleware-class.html#__init__,Method wtf.app.services.session.Session.__init__()=wtf.app.services.session.Session-class.html#__init__,Method wtf.app.services.session.SessionFactory.__init__()=wtf.app.services.session.SessionFactory-class.html#__init__,Method wtf.app.services.session.SessionService.__init__()=wtf.app.services.session.SessionService-class.html#__init__,Method wtf.app.services.session.StorageAdapter.__init__()=wtf.app.services.session.StorageAdapter-class.html#__init__,Method wtf.app.services.session.StorageFactoryInterface.__init__()=wtf.app.services.session.StorageFactoryInterface-class.html#__init__,Method wtf.app.services.session_storage.sharedance.BoundSharedanceStorage.__init__()=wtf.app.services.session_storage.sharedance.BoundSharedanceStorage-class.html#__init__,Method wtf.app.services.session_storage.sharedance.SessionCookieCodec.__init__()=wtf.app.services.session_storage.sharedance.SessionCookieCodec-class.html#__init__,Method wtf.app.services.session_storage.sharedance.SharedanceStorage.__init__()=wtf.app.services.session_storage.sharedance.SharedanceStorage-class.html#__init__,Method wtf.app.services.static.Controller.__init__()=wtf.app.services.static.Controller-class.html#__init__,Method wtf.app.services.static.GlobalStatic.__init__()=wtf.app.services.static.GlobalStatic-class.html#__init__,Method wtf.app.services.static.Middleware.__init__()=wtf.app.services.static.Middleware-class.html#__init__,Method wtf.app.services.static.MimeTypes.__init__()=wtf.app.services.static.MimeTypes-class.html#__init__,Method wtf.app.services.static.ResponseFactory.__init__()=wtf.app.services.static.ResponseFactory-class.html#__init__,Method wtf.app.services.static.StaticService.__init__()=wtf.app.services.static.StaticService-class.html#__init__,Method wtf.autoreload.Autoreload.__init__()=wtf.autoreload.Autoreload-class.html#__init__,Method wtf.autoreload.ReloadRequested.__init__()=wtf.autoreload.ReloadRequested-class.html#__init__,Method wtf.cmdline._OptionParser.__init__()=wtf.cmdline._OptionParser-class.html#__init__,Method wtf.config.Config.__init__()=wtf.config.Config-class.html#__init__,Method wtf.config.ParseError.__init__()=wtf.config.ParseError-class.html#__init__,Method wtf.config.Parser.__init__()=wtf.config.Parser-class.html#__init__,Method wtf.config.RecursiveIncludeError.__init__()=wtf.config.RecursiveIncludeError-class.html#__init__,Method wtf.config.Section.__init__()=wtf.config.Section-class.html#__init__,Method wtf.ext.db._decorators.WTFConnection.__init__()=wtf.ext.db._decorators.WTFConnection-class.html#__init__,Method wtf.ext.db._service.DBService.__init__()=wtf.ext.db._service.DBService-class.html#__init__,Method wtf.ext.memcache.Memcache.__init__()=wtf.ext.memcache.Memcache-class.html#__init__,Method wtf.ext.memcache.MemcacheConnection.__init__()=wtf.ext.memcache.MemcacheConnection-class.html#__init__,Method wtf.ext.memcache.MemcacheConnectionPool.__init__()=wtf.ext.memcache.MemcacheConnectionPool-class.html#__init__,Method wtf.ext.sharedance.Sharedance.__init__()=wtf.ext.sharedance.Sharedance-class.html#__init__,Method wtf.ext.sharedance.SharedanceConnector.__init__()=wtf.ext.sharedance.SharedanceConnector-class.html#__init__,Method wtf.httputil.CookieMaker.__init__()=wtf.httputil.CookieMaker-class.html#__init__,Method wtf.impl.ServerInterface.__init__()=wtf.impl.ServerInterface-class.html#__init__,Method wtf.impl._connection.Connection.__init__()=wtf.impl._connection.Connection-class.html#__init__,Method wtf.impl._gateway.Gateway.__init__()=wtf.impl._gateway.Gateway-class.html#__init__,Method wtf.impl._gateway.ResponseStarter.__init__()=wtf.impl._gateway.ResponseStarter-class.html#__init__,Method wtf.impl._util.ContentLengthReader.__init__()=wtf.impl._util.ContentLengthReader-class.html#__init__,Method wtf.impl.http._request.BaseState.__init__()=wtf.impl.http._request.BaseState-class.html#__init__,Method wtf.impl.http._request.HTTPRequest.__init__()=wtf.impl.http._request.HTTPRequest-class.html#__init__,Method wtf.impl.http._request.RequestHeadersReadyState.__init__()=wtf.impl.http._request.RequestHeadersReadyState-class.html#__init__,Method wtf.impl.http._request.ResponseHeadersWaitState.__init__()=wtf.impl.http._request.ResponseHeadersWaitState-class.html#__init__,Method wtf.impl.http._server.HTTPServer.__init__()=wtf.impl.http._server.HTTPServer-class.html#__init__,Method wtf.impl.http._server._TimeOuts.__init__()=wtf.impl.http._server._TimeOuts-class.html#__init__,Method wtf.impl.http._util.ChunkedReader.__init__()=wtf.impl.http._util.ChunkedReader-class.html#__init__,Method wtf.impl.http._util.ChunkedWriter.__init__()=wtf.impl.http._util.ChunkedWriter-class.html#__init__,Method wtf.impl.http._util.ExpectationReader.__init__()=wtf.impl.http._util.ExpectationReader-class.html#__init__,Method wtf.impl.http._util.HTTPConnection.__init__()=wtf.impl.http._util.HTTPConnection-class.html#__init__,Method wtf.impl.http._util.ParseError.__init__()=wtf.impl.http._util.ParseError-class.html#__init__,Method wtf.impl.scgi.Gateway.__init__()=wtf.impl.scgi.Gateway-class.html#__init__,Method wtf.impl.scgi.SCGIConnection.__init__()=wtf.impl.scgi.SCGIConnection-class.html#__init__,Method wtf.impl.scgi.SCGIRequest.__init__()=wtf.impl.scgi.SCGIRequest-class.html#__init__,Method wtf.impl.scgi.SCGIServer.__init__()=wtf.impl.scgi.SCGIServer-class.html#__init__,Method wtf.opi.OPIInterface.__init__()=wtf.opi.OPIInterface-class.html#__init__,Method wtf.opi.daemon.DaemonOPI.__init__()=wtf.opi.daemon.DaemonOPI-class.html#__init__,Method wtf.opi.daemon.DetachedRunner.__init__()=wtf.opi.daemon.DetachedRunner-class.html#__init__,Method wtf.opi.daemon.Pidfile.__init__()=wtf.opi.daemon.Pidfile-class.html#__init__,Method wtf.opi.daemon.Runner.__init__()=wtf.opi.daemon.Runner-class.html#__init__,Method wtf.opi.daemon._DeferredStreamSetup.__init__()=wtf.opi.daemon._DeferredStreamSetup-class.html#__init__,Method wtf.opi.listener.Acceptor.__init__()=wtf.opi.listener.Acceptor-class.html#__init__,Method wtf.opi.listener.InetSocket.__init__()=wtf.opi.listener.InetSocket-class.html#__init__,Method wtf.opi.listener.ListenerSocket.__init__()=wtf.opi.listener.ListenerSocket-class.html#__init__,Method wtf.opi.listener.SocketDecorator.__init__()=wtf.opi.listener.SocketDecorator-class.html#__init__,Method wtf.opi.listener.UnixSocket.__init__()=wtf.opi.listener.UnixSocket-class.html#__init__,Method wtf.opi.listener._AdapterInterface.__init__()=wtf.opi.listener._AdapterInterface-class.html#__init__,Method wtf.opi.listener._PollAdapter.__init__()=wtf.opi.listener._PollAdapter-class.html#__init__,Method wtf.opi.listener._SelectAdapter.__init__()=wtf.opi.listener._SelectAdapter-class.html#__init__,Method wtf.opi.worker.WorkerInterface.__init__()=wtf.opi.worker.WorkerInterface-class.html#__init__,Method wtf.opi.worker.single.Flags.__init__()=wtf.opi.worker.single.Flags-class.html#__init__,Method wtf.opi.worker.single.SingleWorker.__init__()=wtf.opi.worker.single.SingleWorker-class.html#__init__,Method wtf.opi.worker.single.Worker.__init__()=wtf.opi.worker.single.Worker-class.html#__init__,Method wtf.opi.worker.threaded.Flags.__init__()=wtf.opi.worker.threaded.Flags-class.html#__init__,Method wtf.opi.worker.threaded.JobWorkerQueue.__init__()=wtf.opi.worker.threaded.JobWorkerQueue-class.html#__init__,Method wtf.opi.worker.threaded.TaskRunner.__init__()=wtf.opi.worker.threaded.TaskRunner-class.html#__init__,Method wtf.opi.worker.threaded.ThreadPool.__init__()=wtf.opi.worker.threaded.ThreadPool-class.html#__init__,Method wtf.opi.worker.threaded.ThreadedWorker.__init__()=wtf.opi.worker.threaded.ThreadedWorker-class.html#__init__,Method wtf.opi.worker.threaded.WorkerChild.__init__()=wtf.opi.worker.threaded.WorkerChild-class.html#__init__,Method wtf.services.ServiceInterface.__init__()=wtf.services.ServiceInterface-class.html#__init__,Method wtf.services.ServiceManager.__init__()=wtf.services.ServiceManager-class.html#__init__,Method wtf.stream.MinimalSocketStream.__init__()=wtf.stream.MinimalSocketStream-class.html#__init__,Method wtf.util.BaseDecorator.__init__()=wtf.util.BaseDecorator-class.html#__init__,Method wtf.util.BasePool.__init__()=wtf.util.BasePool-class.html#__init__,Method wtf.util.Version.__init__()=wtf.util.Version-class.html#__init__,Method wtf.webutil.Query.__init__()=wtf.webutil.Query-class.html#__init__,Method wtf.webutil.URL.__init__()=wtf.webutil.URL-class.html#__init__"><a title="wtf.app.Application.__init__
+wtf.app.cookie.BaseCookieCodec.__init__
+wtf.app.cookie.CookieCodecFactoryInterface.__init__
+wtf.app.decorators.Method.__init__
+wtf.app.dispatcher.Dispatcher.__init__
+wtf.app.http_response.HTTPResponse.__init__
+wtf.app.request.CookieCollection.__init__
+wtf.app.request.ParameterWrapper.__init__
+wtf.app.request.Request.__init__
+wtf.app.request.Uploads.__init__
+wtf.app.resolver.MapResolver.__init__
+wtf.app.response.HeaderCollection.__init__
+wtf.app.response.Response.__init__
+wtf.app.services._crash_tb.DebugRender.__init__
+wtf.app.services._crash_tb.Namespace.__init__
+wtf.app.services._crash_tb.PythonParser.__init__
+wtf.app.services.config.ConfigService.__init__
+wtf.app.services.crash.CrashService.__init__
+wtf.app.services.crash.Iterator.__init__
+wtf.app.services.crash.Middleware.__init__
+wtf.app.services.log.LogService.__init__
+wtf.app.services.memcache.ExceptionWrapper.__init__
+wtf.app.services.memcache.GlobalMemcache.__init__
+wtf.app.services.memcache.MemcacheDecorator.__init__
+wtf.app.services.memcache.MemcacheService.__init__
+wtf.app.services.memcache.MemcacheWrapper.__init__
+wtf.app.services.memcache.TransparentCacheDecorator.__init__
+wtf.app.services.resources.FileResource.__init__
+wtf.app.services.resources.GlobalResources.__init__
+wtf.app.services.resources.Locator.__init__
+wtf.app.services.resources.ResourceService.__init__
+wtf.app.services.session.GlobalSession.__init__
+wtf.app.services.session.Middleware.__init__
+wtf.app.services.session.Session.__init__
+wtf.app.services.session.SessionFactory.__init__
+wtf.app.services.session.SessionService.__init__
+wtf.app.services.session.StorageAdapter.__init__
+wtf.app.services.session.StorageFactoryInterface.__init__
+wtf.app.services.session_storage.sharedance.BoundSharedanceStorage.__init__
+wtf.app.services.session_storage.sharedance.SessionCookieCodec.__init__
+wtf.app.services.session_storage.sharedance.SharedanceStorage.__init__
+wtf.app.services.static.Controller.__init__
+wtf.app.services.static.GlobalStatic.__init__
+wtf.app.services.static.Middleware.__init__
+wtf.app.services.static.MimeTypes.__init__
+wtf.app.services.static.ResponseFactory.__init__
+wtf.app.services.static.StaticService.__init__
+wtf.autoreload.Autoreload.__init__
+wtf.autoreload.ReloadRequested.__init__
+wtf.cmdline._OptionParser.__init__
+wtf.config.Config.__init__
+wtf.config.ParseError.__init__
+wtf.config.Parser.__init__
+wtf.config.RecursiveIncludeError.__init__
+wtf.config.Section.__init__
+wtf.ext.db._decorators.WTFConnection.__init__
+wtf.ext.db._service.DBService.__init__
+wtf.ext.memcache.Memcache.__init__
+wtf.ext.memcache.MemcacheConnection.__init__
+wtf.ext.memcache.MemcacheConnectionPool.__init__
+wtf.ext.sharedance.Sharedance.__init__
+wtf.ext.sharedance.SharedanceConnector.__init__
+wtf.httputil.CookieMaker.__init__
+wtf.impl.ServerInterface.__init__
+wtf.impl._connection.Connection.__init__
+wtf.impl._gateway.Gateway.__init__
+wtf.impl._gateway.ResponseStarter.__init__
+wtf.impl._util.ContentLengthReader.__init__
+wtf.impl.http._request.BaseState.__init__
+wtf.impl.http._request.HTTPRequest.__init__
+wtf.impl.http._request.RequestHeadersReadyState.__init__
+wtf.impl.http._request.ResponseHeadersWaitState.__init__
+wtf.impl.http._server.HTTPServer.__init__
+wtf.impl.http._server._TimeOuts.__init__
+wtf.impl.http._util.ChunkedReader.__init__
+wtf.impl.http._util.ChunkedWriter.__init__
+wtf.impl.http._util.ExpectationReader.__init__
+wtf.impl.http._util.HTTPConnection.__init__
+wtf.impl.http._util.ParseError.__init__
+wtf.impl.scgi.Gateway.__init__
+wtf.impl.scgi.SCGIConnection.__init__
+wtf.impl.scgi.SCGIRequest.__init__
+wtf.impl.scgi.SCGIServer.__init__
+wtf.opi.OPIInterface.__init__
+wtf.opi.daemon.DaemonOPI.__init__
+wtf.opi.daemon.DetachedRunner.__init__
+wtf.opi.daemon.Pidfile.__init__
+wtf.opi.daemon.Runner.__init__
+wtf.opi.daemon._DeferredStreamSetup.__init__
+wtf.opi.listener.Acceptor.__init__
+wtf.opi.listener.InetSocket.__init__
+wtf.opi.listener.ListenerSocket.__init__
+wtf.opi.listener.SocketDecorator.__init__
+wtf.opi.listener.UnixSocket.__init__
+wtf.opi.listener._AdapterInterface.__init__
+wtf.opi.listener._PollAdapter.__init__
+wtf.opi.listener._SelectAdapter.__init__
+wtf.opi.worker.WorkerInterface.__init__
+wtf.opi.worker.single.Flags.__init__
+wtf.opi.worker.single.SingleWorker.__init__
+wtf.opi.worker.single.Worker.__init__
+wtf.opi.worker.threaded.Flags.__init__
+wtf.opi.worker.threaded.JobWorkerQueue.__init__
+wtf.opi.worker.threaded.TaskRunner.__init__
+wtf.opi.worker.threaded.ThreadPool.__init__
+wtf.opi.worker.threaded.ThreadedWorker.__init__
+wtf.opi.worker.threaded.WorkerChild.__init__
+wtf.services.ServiceInterface.__init__
+wtf.services.ServiceManager.__init__
+wtf.stream.MinimalSocketStream.__init__
+wtf.util.BaseDecorator.__init__
+wtf.util.BasePool.__init__
+wtf.util.Version.__init__
+wtf.webutil.Query.__init__
+wtf.webutil.URL.__init__" class="py-name" href="#" onclick="return doclink('link-1', '__init__', 'link-1');">__init__</a></tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">,</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-2" class="py-name"><a title="wtf.autoreload.ReloadRequested.CODE" class="py-name" href="#" onclick="return doclink('link-2', 'CODE', 'link-0');">CODE</a></tt><tt class="py-op">)</tt> </tt>
+</div></div><a name="L48"></a><tt class="py-lineno"> 48</tt>  <tt class="py-line"> </tt>
+<a name="L49"></a><tt class="py-lineno"> 49</tt>  <tt class="py-line"> </tt>
+<a name="Autoreload"></a><div id="Autoreload-def"><a name="L50"></a><tt class="py-lineno"> 50</tt> <a class="py-toggle" href="#" id="Autoreload-toggle" onclick="return toggle('Autoreload');">-</a><tt class="py-line"><tt class="py-keyword">class</tt> <a class="py-def-name" href="wtf.autoreload.Autoreload-class.html">Autoreload</a><tt class="py-op">(</tt><tt class="py-base-class">object</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="Autoreload-collapsed" style="display:none;" pad="+++" indent="++++"></div><div id="Autoreload-expanded"><a name="L51"></a><tt class="py-lineno"> 51</tt>  <tt class="py-line">    <tt class="py-docstring">""" Autoreload logic container """</tt> </tt>
+<a name="L52"></a><tt class="py-lineno"> 52</tt>  <tt class="py-line">    <tt id="link-3" class="py-name" targets="Variable wtf.autoreload.Autoreload._check_mtime=wtf.autoreload.Autoreload-class.html#_check_mtime"><a title="wtf.autoreload.Autoreload._check_mtime" class="py-name" href="#" onclick="return doclink('link-3', '_check_mtime', 'link-3');">_check_mtime</a></tt><tt class="py-op">,</tt> <tt id="link-4" class="py-name" targets="Variable wtf.autoreload.Autoreload._before=wtf.autoreload.Autoreload-class.html#_before"><a title="wtf.autoreload.Autoreload._before" class="py-name" href="#" onclick="return doclink('link-4', '_before', 'link-4');">_before</a></tt> <tt class="py-op">=</tt> <tt class="py-name">None</tt><tt class="py-op">,</tt> <tt class="py-name">None</tt> </tt>
+<a name="L53"></a><tt class="py-lineno"> 53</tt>  <tt class="py-line"> </tt>
+<a name="Autoreload.__init__"></a><div id="Autoreload.__init__-def"><a name="L54"></a><tt class="py-lineno"> 54</tt> <a class="py-toggle" href="#" id="Autoreload.__init__-toggle" onclick="return toggle('Autoreload.__init__');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="wtf.autoreload.Autoreload-class.html#__init__">__init__</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">config</tt><tt class="py-op">,</tt> <tt class="py-param">opts</tt><tt class="py-op">,</tt> <tt class="py-param">args</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="Autoreload.__init__-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="Autoreload.__init__-expanded"><a name="L55"></a><tt class="py-lineno"> 55</tt>  <tt class="py-line">        <tt class="py-docstring">"""</tt> </tt>
+<a name="L56"></a><tt class="py-lineno"> 56</tt>  <tt class="py-line"><tt class="py-docstring">        Initialization</tt> </tt>
+<a name="L57"></a><tt class="py-lineno"> 57</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L58"></a><tt class="py-lineno"> 58</tt>  <tt class="py-line"><tt class="py-docstring">        :Parameters:</tt> </tt>
+<a name="L59"></a><tt class="py-lineno"> 59</tt>  <tt class="py-line"><tt class="py-docstring">         - `config`: Configuration</tt> </tt>
+<a name="L60"></a><tt class="py-lineno"> 60</tt>  <tt class="py-line"><tt class="py-docstring">         - `opts`: Command line options</tt> </tt>
+<a name="L61"></a><tt class="py-lineno"> 61</tt>  <tt class="py-line"><tt class="py-docstring">         - `args`: Positioned command line arguments</tt> </tt>
+<a name="L62"></a><tt class="py-lineno"> 62</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L63"></a><tt class="py-lineno"> 63</tt>  <tt class="py-line"><tt class="py-docstring">        :Types:</tt> </tt>
+<a name="L64"></a><tt class="py-lineno"> 64</tt>  <tt class="py-line"><tt class="py-docstring">         - `config`: `wtf.config.Config`</tt> </tt>
+<a name="L65"></a><tt class="py-lineno"> 65</tt>  <tt class="py-line"><tt class="py-docstring">         - `opts`: ``optparse.OptionContainer``</tt> </tt>
+<a name="L66"></a><tt class="py-lineno"> 66</tt>  <tt class="py-line"><tt class="py-docstring">         - `args`: ``list``</tt> </tt>
+<a name="L67"></a><tt class="py-lineno"> 67</tt>  <tt class="py-line"><tt class="py-docstring">        """</tt> </tt>
+<a name="L68"></a><tt class="py-lineno"> 68</tt>  <tt class="py-line">        <tt id="link-5" class="py-name" targets="Module wtf.autoreload=wtf.autoreload-module.html"><a title="wtf.autoreload" class="py-name" href="#" onclick="return doclink('link-5', 'autoreload', 'link-5');">autoreload</a></tt> <tt class="py-op">=</tt> <tt id="link-6" class="py-name" targets="Module wtf.app.services.config=wtf.app.services.config-module.html,Module wtf.config=wtf.config-module.html,Function wtf.init.config()=wtf.init-module.html#config"><a title="wtf.app.services.config
+wtf.config
+wtf.init.config" class="py-name" href="#" onclick="return doclink('link-6', 'config', 'link-6');">config</a></tt><tt class="py-op">.</tt><tt id="link-7" class="py-name" targets="Package wtf=wtf-module.html"><a title="wtf" class="py-name" href="#" onclick="return doclink('link-7', 'wtf', 'link-7');">wtf</a></tt><tt class="py-op">(</tt><tt class="py-string">'autoreload'</tt><tt class="py-op">,</tt> <tt class="py-name">False</tt><tt class="py-op">)</tt> </tt>
+<a name="L69"></a><tt class="py-lineno"> 69</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt id="link-8" class="py-name"><a title="wtf.autoreload" class="py-name" href="#" onclick="return doclink('link-8', 'autoreload', 'link-5');">autoreload</a></tt><tt class="py-op">:</tt> </tt>
+<a name="L70"></a><tt class="py-lineno"> 70</tt>  <tt class="py-line">            <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-9" class="py-name"><a title="wtf.autoreload.Autoreload._check_mtime" class="py-name" href="#" onclick="return doclink('link-9', '_check_mtime', 'link-3');">_check_mtime</a></tt> <tt class="py-op">=</tt> <tt class="py-name">_time</tt><tt class="py-op">.</tt><tt class="py-name">time</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L71"></a><tt class="py-lineno"> 71</tt>  <tt class="py-line">            <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-10" class="py-name"><a title="wtf.autoreload.Autoreload._before" class="py-name" href="#" onclick="return doclink('link-10', '_before', 'link-4');">_before</a></tt> <tt class="py-op">=</tt> <tt id="link-11" class="py-name" targets="Method wtf.app.response.HeaderCollection.set()=wtf.app.response.HeaderCollection-class.html#set,Method wtf.app.services.memcache.MemcacheWrapper.set()=wtf.app.services.memcache.MemcacheWrapper-class.html#set,Method wtf.app.services.memcache.NoMemcacheWrapper.set()=wtf.app.services.memcache.NoMemcacheWrapper-class.html#set,Method wtf.app.services.session.StorageAdapter.set()=wtf.app.services.session.StorageAdapter-class.html#set,Method wtf.app.services.session.StorageInterface.set()=wtf.app.services.session.StorageInterface-class.html#set,Method wtf.app.services.session_storage.sharedance.BoundSharedanceStorage.set()=wtf.app.services.session_storage.sharedance.BoundSharedanceStorage-class.html#set,Method wtf.ext.memcache.Memcache.set()=wtf.ext.memcache.Memcache-class.html#set"><a title="wtf.app.response.HeaderCollection.set
+wtf.app.services.memcache.MemcacheWrapper.set
+wtf.app.services.memcache.NoMemcacheWrapper.set
+wtf.app.services.session.StorageAdapter.set
+wtf.app.services.session.StorageInterface.set
+wtf.app.services.session_storage.sharedance.BoundSharedanceStorage.set
+wtf.ext.memcache.Memcache.set" class="py-name" href="#" onclick="return doclink('link-11', 'set', 'link-11');">set</a></tt><tt class="py-op">(</tt><tt class="py-name">_sys</tt><tt class="py-op">.</tt><tt class="py-name">modules</tt><tt class="py-op">.</tt><tt class="py-name">iterkeys</tt><tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+<a name="L72"></a><tt class="py-lineno"> 72</tt>  <tt class="py-line">            <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-12" class="py-name" targets="Method wtf.ext.sharedance.Sharedance.check()=wtf.ext.sharedance.Sharedance-class.html#check,Method wtf.ext.sharedance.SharedanceConnector.check()=wtf.ext.sharedance.SharedanceConnector-class.html#check"><a title="wtf.ext.sharedance.Sharedance.check
+wtf.ext.sharedance.SharedanceConnector.check" class="py-name" href="#" onclick="return doclink('link-12', 'check', 'link-12');">check</a></tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-13" class="py-name" targets="Method wtf.autoreload.Autoreload._check()=wtf.autoreload.Autoreload-class.html#_check"><a title="wtf.autoreload.Autoreload._check" class="py-name" href="#" onclick="return doclink('link-13', '_check', 'link-13');">_check</a></tt> </tt>
+<a name="L73"></a><tt class="py-lineno"> 73</tt>  <tt class="py-line">        <tt class="py-keyword">else</tt><tt class="py-op">:</tt> </tt>
+<a name="L74"></a><tt class="py-lineno"> 74</tt>  <tt class="py-line">            <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-14" class="py-name"><a title="wtf.ext.sharedance.Sharedance.check
+wtf.ext.sharedance.SharedanceConnector.check" class="py-name" href="#" onclick="return doclink('link-14', 'check', 'link-12');">check</a></tt> <tt class="py-op">=</tt> <tt class="py-keyword">lambda</tt><tt class="py-op">:</tt> <tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L75"></a><tt class="py-lineno"> 75</tt>  <tt class="py-line"> </tt>
+<a name="Autoreload._check"></a><div id="Autoreload._check-def"><a name="L76"></a><tt class="py-lineno"> 76</tt> <a class="py-toggle" href="#" id="Autoreload._check-toggle" onclick="return toggle('Autoreload._check');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="wtf.autoreload.Autoreload-class.html#_check">_check</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="Autoreload._check-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="Autoreload._check-expanded"><a name="L77"></a><tt class="py-lineno"> 77</tt>  <tt class="py-line">        <tt class="py-docstring">"""</tt> </tt>
+<a name="L78"></a><tt class="py-lineno"> 78</tt>  <tt class="py-line"><tt class="py-docstring">        Check the need of reloading in case autoreload has been turned on</tt> </tt>
+<a name="L79"></a><tt class="py-lineno"> 79</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L80"></a><tt class="py-lineno"> 80</tt>  <tt class="py-line"><tt class="py-docstring">        This method takes a snapshot of the current sys.modules, mtimes</tt> </tt>
+<a name="L81"></a><tt class="py-lineno"> 81</tt>  <tt class="py-line"><tt class="py-docstring">        are compared with an older snapshot and on differences true is</tt> </tt>
+<a name="L82"></a><tt class="py-lineno"> 82</tt>  <tt class="py-line"><tt class="py-docstring">        returned. False otherwise.</tt> </tt>
+<a name="L83"></a><tt class="py-lineno"> 83</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L84"></a><tt class="py-lineno"> 84</tt>  <tt class="py-line"><tt class="py-docstring">        :return: Names of the changed modules (empty if nothing's changed)</tt> </tt>
+<a name="L85"></a><tt class="py-lineno"> 85</tt>  <tt class="py-line"><tt class="py-docstring">        :rtype: ``iterable``</tt> </tt>
+<a name="L86"></a><tt class="py-lineno"> 86</tt>  <tt class="py-line"><tt class="py-docstring">        """</tt> </tt>
+<a name="L87"></a><tt class="py-lineno"> 87</tt>  <tt class="py-line">        <tt class="py-name">check_mtime</tt><tt class="py-op">,</tt> <tt class="py-name">changed</tt> <tt class="py-op">=</tt> <tt class="py-name">_time</tt><tt class="py-op">.</tt><tt class="py-name">time</tt><tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">,</tt> <tt class="py-op">[</tt><tt class="py-op">]</tt> </tt>
+<a name="L88"></a><tt class="py-lineno"> 88</tt>  <tt class="py-line">        <tt class="py-keyword">for</tt> <tt id="link-15" class="py-name" targets="Variable wtf._wtf_cstream.GenericStream.name=wtf._wtf_cstream.GenericStream-class.html#name,Variable wtf._wtf_cstream.MinimalSocketStream.name=wtf._wtf_cstream.MinimalSocketStream-class.html#name,Variable wtf.opi.daemon.Pidfile.name=wtf.opi.daemon.Pidfile-class.html#name,Variable wtf.stream.GenericStream.name=wtf.stream.GenericStream-class.html#name,Variable wtf.stream.MinimalSocketStream.name=wtf.stream.MinimalSocketStream-class.html#name"><a title="wtf._wtf_cstream.GenericStream.name
+wtf._wtf_cstream.MinimalSocketStream.name
+wtf.opi.daemon.Pidfile.name
+wtf.stream.GenericStream.name
+wtf.stream.MinimalSocketStream.name" class="py-name" href="#" onclick="return doclink('link-15', 'name', 'link-15');">name</a></tt><tt class="py-op">,</tt> <tt class="py-name">mod</tt> <tt class="py-keyword">in</tt> <tt class="py-name">_sys</tt><tt class="py-op">.</tt><tt class="py-name">modules</tt><tt class="py-op">.</tt><tt class="py-name">items</tt><tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L89"></a><tt class="py-lineno"> 89</tt>  <tt class="py-line">            <tt class="py-keyword">if</tt> <tt class="py-name">mod</tt> <tt class="py-keyword">is</tt> <tt class="py-name">None</tt> <tt class="py-keyword">or</tt> <tt id="link-16" class="py-name"><a title="wtf._wtf_cstream.GenericStream.name
+wtf._wtf_cstream.MinimalSocketStream.name
+wtf.opi.daemon.Pidfile.name
+wtf.stream.GenericStream.name
+wtf.stream.MinimalSocketStream.name" class="py-name" href="#" onclick="return doclink('link-16', 'name', 'link-15');">name</a></tt> <tt class="py-keyword">in</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-17" class="py-name"><a title="wtf.autoreload.Autoreload._before" class="py-name" href="#" onclick="return doclink('link-17', '_before', 'link-4');">_before</a></tt><tt class="py-op">:</tt> </tt>
+<a name="L90"></a><tt class="py-lineno"> 90</tt>  <tt class="py-line">                <tt class="py-keyword">continue</tt> </tt>
+<a name="L91"></a><tt class="py-lineno"> 91</tt>  <tt class="py-line">            <tt class="py-name">mtime</tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-18" class="py-name" targets="Method wtf.autoreload.Autoreload._mtime()=wtf.autoreload.Autoreload-class.html#_mtime"><a title="wtf.autoreload.Autoreload._mtime" class="py-name" href="#" onclick="return doclink('link-18', '_mtime', 'link-18');">_mtime</a></tt><tt class="py-op">(</tt><tt class="py-name">mod</tt><tt class="py-op">)</tt> </tt>
+<a name="L92"></a><tt class="py-lineno"> 92</tt>  <tt class="py-line">            <tt class="py-keyword">if</tt> <tt class="py-name">mtime</tt> <tt class="py-keyword">is</tt> <tt class="py-name">None</tt><tt class="py-op">:</tt> </tt>
+<a name="L93"></a><tt class="py-lineno"> 93</tt>  <tt class="py-line">                <tt class="py-keyword">continue</tt> </tt>
+<a name="L94"></a><tt class="py-lineno"> 94</tt>  <tt class="py-line">            <tt class="py-keyword">if</tt> <tt class="py-name">mtime</tt> <tt class="py-op">&gt;</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-19" class="py-name"><a title="wtf.autoreload.Autoreload._check_mtime" class="py-name" href="#" onclick="return doclink('link-19', '_check_mtime', 'link-3');">_check_mtime</a></tt><tt class="py-op">:</tt> </tt>
+<a name="L95"></a><tt class="py-lineno"> 95</tt>  <tt class="py-line">                <tt class="py-name">changed</tt><tt class="py-op">.</tt><tt class="py-name">append</tt><tt class="py-op">(</tt><tt id="link-20" class="py-name"><a title="wtf._wtf_cstream.GenericStream.name
+wtf._wtf_cstream.MinimalSocketStream.name
+wtf.opi.daemon.Pidfile.name
+wtf.stream.GenericStream.name
+wtf.stream.MinimalSocketStream.name" class="py-name" href="#" onclick="return doclink('link-20', 'name', 'link-15');">name</a></tt><tt class="py-op">)</tt> </tt>
+<a name="L96"></a><tt class="py-lineno"> 96</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-21" class="py-name"><a title="wtf.autoreload.Autoreload._check_mtime" class="py-name" href="#" onclick="return doclink('link-21', '_check_mtime', 'link-3');">_check_mtime</a></tt> <tt class="py-op">=</tt> <tt class="py-name">check_mtime</tt> </tt>
+<a name="L97"></a><tt class="py-lineno"> 97</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-name">changed</tt> </tt>
+</div><a name="L98"></a><tt class="py-lineno"> 98</tt>  <tt class="py-line"> </tt>
+<a name="Autoreload._mtime"></a><div id="Autoreload._mtime-def"><a name="L99"></a><tt class="py-lineno"> 99</tt> <a class="py-toggle" href="#" id="Autoreload._mtime-toggle" onclick="return toggle('Autoreload._mtime');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="wtf.autoreload.Autoreload-class.html#_mtime">_mtime</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">mod</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="Autoreload._mtime-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="Autoreload._mtime-expanded"><a name="L100"></a><tt class="py-lineno">100</tt>  <tt class="py-line">        <tt class="py-docstring">"""</tt> </tt>
+<a name="L101"></a><tt class="py-lineno">101</tt>  <tt class="py-line"><tt class="py-docstring">        Determine the mtime of a module</tt> </tt>
+<a name="L102"></a><tt class="py-lineno">102</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L103"></a><tt class="py-lineno">103</tt>  <tt class="py-line"><tt class="py-docstring">        :Parameters:</tt> </tt>
+<a name="L104"></a><tt class="py-lineno">104</tt>  <tt class="py-line"><tt class="py-docstring">         - `mod`: The module to inspect</tt> </tt>
+<a name="L105"></a><tt class="py-lineno">105</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L106"></a><tt class="py-lineno">106</tt>  <tt class="py-line"><tt class="py-docstring">        :Types:</tt> </tt>
+<a name="L107"></a><tt class="py-lineno">107</tt>  <tt class="py-line"><tt class="py-docstring">         - `mod`: ``module``</tt> </tt>
+<a name="L108"></a><tt class="py-lineno">108</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L109"></a><tt class="py-lineno">109</tt>  <tt class="py-line"><tt class="py-docstring">        :return: The mtime or ``None`` if it couldn't be determined (``float``</tt> </tt>
+<a name="L110"></a><tt class="py-lineno">110</tt>  <tt class="py-line"><tt class="py-docstring">                 or ``int``, depending on the ``os.stat_float_times`` setting)</tt> </tt>
+<a name="L111"></a><tt class="py-lineno">111</tt>  <tt class="py-line"><tt class="py-docstring">        :rtype: number</tt> </tt>
+<a name="L112"></a><tt class="py-lineno">112</tt>  <tt class="py-line"><tt class="py-docstring">        """</tt> </tt>
+<a name="L113"></a><tt class="py-lineno">113</tt>  <tt class="py-line">        <tt class="py-name">filename</tt> <tt class="py-op">=</tt> <tt class="py-name">getattr</tt><tt class="py-op">(</tt><tt class="py-name">mod</tt><tt class="py-op">,</tt> <tt class="py-string">'__file__'</tt><tt class="py-op">,</tt> <tt class="py-name">None</tt><tt class="py-op">)</tt> </tt>
+<a name="L114"></a><tt class="py-lineno">114</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt class="py-name">filename</tt> <tt class="py-keyword">is</tt> <tt class="py-keyword">not</tt> <tt class="py-name">None</tt><tt class="py-op">:</tt> </tt>
+<a name="L115"></a><tt class="py-lineno">115</tt>  <tt class="py-line">            <tt class="py-keyword">try</tt><tt class="py-op">:</tt> </tt>
+<a name="L116"></a><tt class="py-lineno">116</tt>  <tt class="py-line">                <tt class="py-keyword">if</tt> <tt class="py-name">filename</tt><tt class="py-op">.</tt><tt class="py-name">endswith</tt><tt class="py-op">(</tt><tt class="py-string">'.pyo'</tt><tt class="py-op">)</tt> <tt class="py-keyword">or</tt> <tt class="py-name">filename</tt><tt class="py-op">.</tt><tt class="py-name">endswith</tt><tt class="py-op">(</tt><tt class="py-string">'.pyc'</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L117"></a><tt class="py-lineno">117</tt>  <tt class="py-line">                    <tt class="py-name">newname</tt> <tt class="py-op">=</tt> <tt class="py-name">filename</tt><tt class="py-op">[</tt><tt class="py-op">:</tt><tt class="py-op">-</tt><tt class="py-number">1</tt><tt class="py-op">]</tt> </tt>
+<a name="L118"></a><tt class="py-lineno">118</tt>  <tt class="py-line">                    <tt class="py-keyword">return</tt> <tt class="py-name">_os</tt><tt class="py-op">.</tt><tt class="py-name">stat</tt><tt class="py-op">(</tt><tt class="py-name">newname</tt><tt class="py-op">)</tt><tt class="py-op">.</tt><tt class="py-name">st_mtime</tt> </tt>
+<a name="L119"></a><tt class="py-lineno">119</tt>  <tt class="py-line">                <tt class="py-keyword">raise</tt> <tt class="py-name">OSError</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L120"></a><tt class="py-lineno">120</tt>  <tt class="py-line">            <tt class="py-keyword">except</tt> <tt class="py-name">OSError</tt><tt class="py-op">:</tt> </tt>
+<a name="L121"></a><tt class="py-lineno">121</tt>  <tt class="py-line">                <tt class="py-keyword">try</tt><tt class="py-op">:</tt> </tt>
+<a name="L122"></a><tt class="py-lineno">122</tt>  <tt class="py-line">                    <tt class="py-keyword">return</tt> <tt class="py-name">_os</tt><tt class="py-op">.</tt><tt class="py-name">stat</tt><tt class="py-op">(</tt><tt class="py-name">filename</tt><tt class="py-op">)</tt><tt class="py-op">.</tt><tt class="py-name">st_mtime</tt> </tt>
+<a name="L123"></a><tt class="py-lineno">123</tt>  <tt class="py-line">                <tt class="py-keyword">except</tt> <tt class="py-name">OSError</tt><tt class="py-op">:</tt> </tt>
+<a name="L124"></a><tt class="py-lineno">124</tt>  <tt class="py-line">                    <tt class="py-keyword">pass</tt> </tt>
+<a name="L125"></a><tt class="py-lineno">125</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-name">None</tt> </tt>
+</div></div><a name="L126"></a><tt class="py-lineno">126</tt>  <tt class="py-line"> </tt><script type="text/javascript">
+<!--
+expandto(location.href);
+// -->
+</script>
+</pre>
+<br />
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+  <!-- Home link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="wtf-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            ><a href="http://opensource.perlig.de/wtf/">Visit WTF Online</a></th>
+          </tr></table></th>
+  </tr>
+</table>
+
+<script type="text/javascript">
+  <!--
+  // Private objects are initially displayed (because if
+  // javascript is turned off then we want them to be
+  // visible); but by default, we want to hide them.  So hide
+  // them unless we have a cookie that says to show them.
+  checkCookie();
+  // -->
+</script>
+</body>
+</html>

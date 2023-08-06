@@ -1,0 +1,378 @@
+<?xml version="1.0" encoding="ascii"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>wtf.app.services.memcache</title>
+  <link rel="stylesheet" href="epydoc.css" type="text/css" />
+  <script type="text/javascript" src="epydoc.js"></script>
+</head>
+
+<body bgcolor="white" text="black" link="blue" vlink="#204080"
+      alink="#204080">
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+  <!-- Home link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="wtf-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            ><a href="http://opensource.perlig.de/wtf/">Visit WTF Online</a></th>
+          </tr></table></th>
+  </tr>
+</table>
+<table width="100%" cellpadding="0" cellspacing="0">
+  <tr valign="top">
+    <td width="100%">
+      <span class="breadcrumbs">
+        <a href="wtf-module.html">Package&nbsp;wtf</a> ::
+        <a href="wtf.app-module.html">Package&nbsp;app</a> ::
+        <a href="wtf.app.services-module.html">Package&nbsp;services</a> ::
+        Module&nbsp;memcache
+      </span>
+    </td>
+    <td>
+      <table cellpadding="0" cellspacing="0">
+        <!-- hide/show private -->
+        <tr><td align="right"><span class="options">[<a href="javascript:void(0);" class="privatelink"
+    onclick="toggle_private();">hide&nbsp;private</a>]</span></td></tr>
+        <tr><td align="right"><span class="options"
+            >[<a href="frames.html" target="_top">frames</a
+            >]&nbsp;|&nbsp;<a href="wtf.app.services.memcache-module.html"
+            target="_top">no&nbsp;frames</a>]</span></td></tr>
+      </table>
+    </td>
+  </tr>
+</table>
+<!-- ==================== MODULE DESCRIPTION ==================== -->
+<h1 class="epydoc">Module memcache</h1><p class="nomargin-top"><span class="codelink"><a href="wtf.app.services.memcache-pysrc.html">source&nbsp;code</a></span></p>
+<p>The service provides configuration and construction of memcache connectors.</p>
+<div class="rst-section" id="rst-configuration">
+<h1 class="heading">Configuration</h1>
+<p>You need to configure the memcache service to be loaded
+(<tt class="rst-docutils literal">wtf.app.services.memcache.MemcacheService</tt>) in the services section). This
+requires the following additional configuration:</p>
+<pre class="rst-literal-block">
+[memcache]
+servers = host[:port] ...
+
+# pool failover/maintenance options
+# ---------------------------------
+#grace_time = [int] Grace time on dead pools until they're backuped
+#             (Default: 30)
+#retry_time = [int] Retry interval after they're backuped (Default: 60)
+
+# storage options
+#compress_threshold = [int] Min size for value compression (Default: 128)
+#padded = [bool] Use padding for small values (&lt; 16 bytes)? (Default: yes)
+#prefix = [str] Prefix keys with some arbitrary string (intended for
+#         developers using the same memcache) (Default: ``''``)
+#split = [bool] Allow splitting of values if they are bigger than the
+#        largest slab? See largest_slab option below. (Default: yes)
+#largest_slab = [int] Size of the largest slab in bytes. The value is
+#               directly connected to the memcache implementation.
+#               (Default: 1MB)
+
+# global defaults
+#max_age = [int] expire time (max age) per item
+#          (Default: no default max_age)
+
+# default values *per server*
+#maxconn = [int] hard connection maximum (Default: 0 == unlimited)
+#maxcached = [int] max cached connections (Default: 0)
+#weight = [int] relative weight, compared to the other servers. The higher
+#         the more requests it gets. (Default: 1)
+#timeout = [float] communication timeout in seconds. (Default: 2.6)
+
+# You can refine various settings per server with optional sections:
+#[memcache host[:port]]
+# set specific settings per server here
+# (maxconn, maxcached, weight, timeout)
+</pre>
+</div>
+<div class="rst-section" id="rst-usage">
+<h1 class="heading">Usage</h1>
+<p>Now you can import <tt class="rst-docutils literal">__svc__.wtf.memcache</tt> and take the <tt class="rst-docutils literal">connection</tt>
+decorator from there. It will inject you an <tt class="rst-docutils literal">mc</tt> keyword into the argument
+list:</p>
+<pre class="rst-literal-block">
+from __svc__.wtf import memcache
+
+&#64;memcache.connection
+def foo(..., mc=None):
+    mc.set(...)
+</pre>
+<p>The decorator takes optional arguments, <tt class="rst-docutils literal">max_age</tt>, <tt class="rst-docutils literal">nocache</tt>,
+<tt class="rst-docutils literal">prepare</tt> and <tt class="rst-docutils literal">exceptions</tt>. <tt class="rst-docutils literal">max_age</tt> defines the default max age for
+this connector (overriding the configured one).</p>
+<p><tt class="rst-docutils literal">nocache</tt> determines whether the <tt class="rst-docutils literal">nocache</tt> call argument should be
+evaluated. The value can be <tt class="rst-docutils literal">False</tt> (<tt class="rst-docutils literal">0</tt>), <tt class="rst-docutils literal">True</tt> (<tt class="rst-docutils literal">1</tt>), <tt class="rst-docutils literal">2</tt> or
+<tt class="rst-docutils literal"><span class="pre">-1</span></tt>. If it evaluates to <tt class="rst-docutils literal">False</tt>, no special handling will be applied.
+Otherwise the  function (keyword) argument <tt class="rst-docutils literal">nocache</tt> will be checked as
+boolean. If the caller supplies a true value, the memcache connector will
+behave like the memcache was not available. If the decorator <tt class="rst-docutils literal">nocache</tt>
+argument is <tt class="rst-docutils literal">2</tt> (<tt class="rst-docutils literal">&gt; 1</tt>), the <tt class="rst-docutils literal">nocache</tt> function call argument will be
+passed through, otherwise it's been swallowed by the decorator. If it's
+<tt class="rst-docutils literal"><span class="pre">-1</span></tt>, the nocache parameter is swallowed but not evaluated. Default is
+<tt class="rst-docutils literal">False</tt>. Now this all sounds confusing, I guess. Here's an example:</p>
+<pre class="rst-literal-block">
+&#64;memcache.connection(nocache=True)
+def foo(..., mc=None):
+  ...
+
+foo(nocache=True)
+</pre>
+<p>The call to <tt class="rst-docutils literal">foo</tt> causes every memcache operation inside <tt class="rst-docutils literal">foo</tt> like
+the memcache was not running, without any change on <tt class="rst-docutils literal">foo</tt>. For a more
+complex handling, you can define:</p>
+<pre class="rst-literal-block">
+&#64;memcache.connection(nocache=2)
+def foo(..., nocache=None, mc=None):
+  ...
+
+foo(nocache=True)
+</pre>
+<p>This call to <tt class="rst-docutils literal">foo</tt> causes the same &quot;oblivion&quot; of the memcache connector, but
+passes the nocache value to the <tt class="rst-docutils literal">foo</tt> function for further evaluation.</p>
+<p>One further note: If the connector is passed from outside, like:</p>
+<pre class="rst-literal-block">
+&#64;memcache.connection(nocache=True)
+def foo(..., mc=None):
+  ...
+
+&#64;memcache.connection(nocache=False)
+def bar(..., mc=None):
+  foo(..., mc=mc)
+</pre>
+<p>The &quot;inside&quot; settings (here: <tt class="rst-docutils literal">foo</tt>'s decorator's parameters) are ignored.</p>
+<p><tt class="rst-docutils literal">prepare</tt> defines a key preparation callable (overriding the default one,
+which MD5s the keys). This callables takes a key and returns a key (at least
+the returned value must be a <tt class="rst-docutils literal">str</tt>):</p>
+<pre class="rst-literal-block">
+# identify preparation. Note that a configured prefix is still applied to
+# the result.
+prepare = lambda x: x
+
+&#64;memcache.connection(prepare=prepare)
+def foo(..., mc=None):
+    mc.set(...)
+</pre>
+<p><tt class="rst-docutils literal">exceptions</tt> determines whether the memcache user wants to see memcache
+exceptions or not. If <tt class="rst-docutils literal">True</tt> the exceptions are passed through. If
+<tt class="rst-docutils literal">False</tt>, they're swallowed and treated as failed memcache response.</p>
+</div>
+
+<hr />
+<div class="fields">      <p><strong>Author:</strong>
+        Andr&#233; Malo
+      </p>
+</div><!-- ==================== CLASSES ==================== -->
+<a name="section-Classes"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Classes</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-Classes"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="wtf.app.services.memcache.TransparentCacheDecorator-class.html" class="summary-name">TransparentCacheDecorator</a><br />
+      Decorator which transparently memoizes a function call
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="wtf.app.services.memcache.MemcacheDecorator-class.html" class="summary-name">MemcacheDecorator</a><br />
+      Memcache decorator
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="wtf.app.services.memcache.NoMemcacheWrapper-class.html" class="summary-name">NoMemcacheWrapper</a><br />
+      Dummy connector, which does nothing actually, but provide the API
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="wtf.app.services.memcache.ExceptionWrapper-class.html" class="summary-name">ExceptionWrapper</a><br />
+      Exception catching wrapper
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="wtf.app.services.memcache.MemcacheWrapper-class.html" class="summary-name">MemcacheWrapper</a><br />
+      <a href="wtf.ext.memcache.Memcache-class.html" class="link">Memcache</a> wrapper, applying default max age
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="wtf.app.services.memcache.GlobalMemcache-class.html" class="summary-name">GlobalMemcache</a><br />
+      Actual global memcache service object
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="wtf.app.services.memcache.MemcacheService-class.html" class="summary-name">MemcacheService</a><br />
+      Memcache service
+    </td>
+  </tr>
+</table>
+<!-- ==================== FUNCTIONS ==================== -->
+<a name="section-Functions"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Functions</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-Functions"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="memcached"></a><span class="summary-sig-name">memcached</span>(<span class="summary-sig-arg">keygen</span>,
+        <span class="summary-sig-arg">**kwargs</span>)</span><br />
+      Failsafe memcached decorator (against missing service)</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="wtf.app.services.memcache-pysrc.html#memcached">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="connection"></a><span class="summary-sig-name">connection</span>(<span class="summary-sig-arg">*args</span>,
+        <span class="summary-sig-arg">**kwargs</span>)</span><br />
+      Failsafe connection decorator (against missing service)</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="wtf.app.services.memcache-pysrc.html#connection">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+</table>
+<!-- ==================== VARIABLES ==================== -->
+<a name="section-Variables"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Variables</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-Variables"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="__package__"></a><span class="summary-name">__package__</span> = <code title="'wtf.app.services'"><code class="variable-quote">'</code><code class="variable-string">wtf.app.services</code><code class="variable-quote">'</code></code>
+    </td>
+  </tr>
+</table>
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+  <!-- Home link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="wtf-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            ><a href="http://opensource.perlig.de/wtf/">Visit WTF Online</a></th>
+          </tr></table></th>
+  </tr>
+</table>
+
+<script type="text/javascript">
+  <!--
+  // Private objects are initially displayed (because if
+  // javascript is turned off then we want them to be
+  // visible); but by default, we want to hide them.  So hide
+  // them unless we have a cookie that says to show them.
+  checkCookie();
+  // -->
+</script>
+</body>
+</html>
