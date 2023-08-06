@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block content %}
+<p>
+  Please sign:
+</p>
+{{page|safe}}{% comment %}
+             It is ok to use a safe here. We load the .md file from disk.
+             {% endcomment %}
+
+<form method="post" action=".{% if next %}?next={{ next }}{% endif %}">
+  {{ form.as_ul }}
+  {% csrf_token %}
+  <input type="submit" value="I Agree" />
+</form>
+{% endblock %}

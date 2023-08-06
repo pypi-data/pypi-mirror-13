@@ -1,0 +1,56 @@
+{% load saas_tags %}
+
+{% regroup invoicables by subscription.plan as invoicables_by_plan %}
+
+<fieldset id="invoicables">
+  <table>
+    {% for plan_group in invoicables_by_plan %}
+    <tbody data-plan="{{plan_group.grouper}}">
+      <tr>
+        <td colspan="3">
+          <em>{{plan_group.grouper.title}} from {{plan_group.grouper.organization.printable_name}}</em>
+        </td>
+      </tr>
+      {% for entry in plan_group.list %}
+      {% for line in entry.lines %}
+      <tr class="invoice-item">
+        <td></td>
+        <td>{{line.dest_amount|humanize_money:line.dest_unit}}</td>
+        <td>{{line.descr}}
+        </td>
+      </tr>
+      {% endfor %}
+      {% for line in entry.options %}
+      <tr>
+        <td><input type="radio" name="{{entry.name}}" value="{{line.dest_amount}}" {% if forloop.first %}checked="1"{% endif %}></input></td>
+        <td>{{line.dest_amount|humanize_money:line.dest_unit}}</td>
+        <td>{{line.descr}}
+        </td>
+      </tr>
+      {% endfor %}
+      {% endfor %}
+      {% if is_bulk_buyer %}
+      {% comment %}
+      XXX We rely on the code in views/billing.py to insure there are lines
+      and no options when bulk_buyer is ``True``.
+      {% endcomment %}
+      <tr class="seat">
+        <td colspan="3">
+          <input class="seat-first-name" type="text" placeholder="First Name" />
+          <input class="seat-last-name" type="text" placeholder="Last Name" />
+          <input class="seat-email" type="text" placeholder="Email" />
+          <button type="button" class="add-seat" type="button">Add</button>
+        </td>
+      </tr>
+      {% endif %}
+    </tbody>
+    {% endfor %}
+    <tfooter>
+      <tr>
+        <th></th>
+        <th class="total-amount">{{lines_amount|humanize_money:lines_unit}}</th>
+        <th>Charged Today</th>
+      </tr>
+    </tfooter>
+  </table>
+</fieldset>

@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% load saas_tags %}
+
+{% block localheader %}
+{{block.super}}
+{% include "saas/_payment_head.html" %}
+{% endblock %}
+
+{% block content %}
+{% if invoicables %}
+{% include "saas/_invoiceables.html" %}
+{% else %}
+<p>You have no balance due.</p>
+{% endif %}
+<section id="charge">
+{% if not last_charge %}
+A charge of {{lines_amount|humanize_money:lines_unit}} will be created
+on your card. Thank you.
+{% else %}
+{% with last_charge as charge %}
+{% if charge.is_failed or charge.is_disputed %}
+<p>
+On {{charge.created_at}} we attempted to charge your card
+</p>
+<div>
+    <dl>
+        <dt>card</dt>
+        <dd>{{charge.last4}}</dd>
+    </dl>
+    <dl>
+        <dt>expires</dt>
+        <dd>{{charge.exp_date}}</dd>
+    </dl>
+</div>
+<p>
+The charge
+{% if charge.is_failed %}failed
+{% else %}
+{% if charge.is_disputed %}was disputed
+{% endif %}
+{% endif %}
+(ref: {{charge.processor_key}}).
+</p>
+<p>
+Please enter a valid credit card. A new charge of
+{{lines_amount|humanize_money:lines_unit}} will be created. Thank you.
+</p>
+{% endif %}
+{% endwith %}
+{% endif %}
+</section>
+{% include "saas/_card_use.html" with title="Pay Now" %}
+{% endblock %}
+
+{% block bodyscripts %}
+{{block.super}}
+{% include "saas/_payment_body.html" %}
+{% endblock %}

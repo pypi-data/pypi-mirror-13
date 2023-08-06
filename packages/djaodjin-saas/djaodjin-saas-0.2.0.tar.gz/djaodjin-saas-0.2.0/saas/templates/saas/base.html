@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% load saas_tags %}
+{% load static from staticfiles %}
+
+{% block content %}
+<div>
+  <div>
+    {% block sidebar %}
+    {% if organization|is_current_provider %}
+    {% comment %}
+    We are dealing with the site owner.
+    {% endcomment %}
+    <div>
+      <a id="saas_manager_list" href="{% url 'saas_role_list' organization 'managers' %}">managers</a>
+      | <a id="saas_contributor_list" href="{% url 'saas_role_list' organization 'contributors' %}">contributors</a>
+      | <a id="saas_coupon_list" href="{% url 'saas_coupon_list' organization %}">coupons</a>
+      | <a id="saas_transfer_info" href="{% url 'saas_transfer_info' organization %}">funds</a>
+      | <a id="saas_metrics_summary" href="{% url 'saas_metrics_summary' organization %}">revenue</a>
+      | <a id="saas_metrics_plans" href="{% url 'saas_metrics_plans' organization %}">plans</a>
+      | <a id="saas_subscriber_list" href="{% url 'saas_subscriber_list' organization %}">subscribers</a></li>
+    </div>
+    {% endif %}
+    {% comment %}
+    Subscriptions for the organization
+    {% endcomment %}
+    <div>
+      <a id="saas_dashboard" href="{% url 'saas_dashboard' organization %}">Dashboard</a>
+      | <a id="saas_provider_profile" href="{% url 'saas_organization_profile' organization %}">profile</a>
+      | <a id="saas_billing_info" href="{% url 'saas_billing_info' organization %}">billing</a>
+      | <a id="saas_subscription_list" href="{% url 'saas_subscription_list' organization %}">subscriptions</a>
+    </div>
+    {% endblock %}
+  </div>
+  <div>
+    {% block saas_content %}{% endblock %}
+  </div>
+</div>
+{% endblock %}
+
+{% block bodyscripts %}
+<script type="text/javascript" charset="utf-8" src="{% static 'vendor/js/moment.js' %}"></script>
+<script type="text/javascript" charset="utf-8" src="{% static 'vendor/js/angular.js' %}"></script>
+<script type="text/javascript" charset="utf-8" src="{% static 'vendor/js/angular-touch.js' %}"></script>
+<script type="text/javascript" charset="utf-8" src="{% static 'vendor/js/angular-animate.js' %}"></script>
+<script type="text/javascript" charset="utf-8" src="{% static 'vendor/js/angular-resource.js' %}"></script>
+<script type="text/javascript" charset="utf-8" src="{% static 'vendor/js/angular-route.js' %}"></script>
+<script type="text/javascript" charset="utf-8" src="{% static 'vendor/js/ui-bootstrap-tpls-0.11.0.js' %}"></script>
+<script type="text/javascript" charset="utf-8" src="{% static 'js/djaodjin-saas-angular.js' %}"></script>
+<script type="text/javascript" charset="utf-8" src="{% static 'js/djaodjin-saas.js'%}"></script>
+<script type="text/javascript" charset="utf-8" src="{% static 'js/djaodjin-saas-resources.js'%}"></script>
+<script type="text/javascript" charset="utf-8" src="{% static 'js/djaodjin-postal.js' %}"></script>
+{% block saas_bodyscripts %}
+{% endblock %}
+{% endblock %}

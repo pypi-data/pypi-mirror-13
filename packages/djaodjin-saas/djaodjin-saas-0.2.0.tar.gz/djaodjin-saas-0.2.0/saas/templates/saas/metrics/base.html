@@ -1,0 +1,57 @@
+{% extends "saas/base.html" %}
+{% load saas_tags %}
+
+{% block saas_content %}
+<section id="metrics_table" ng-app="metricsApp" ng-cloak>
+  <div ng-controller="metricsCtrl" ng-init="prefetch()">
+    <div>
+      <span>To</span>
+      <span>[[ends_at | date : mediumDate]]</span>
+    </div>
+    <div ng-repeat="table in tables">
+      <a href="#[[table.key]]" ng-click="tabClicked($event)"><h2>[[table.key]]</h2></a>
+      <table>
+        <tr>
+          <td></td>
+          <td ng-repeat="col in table.data[0].values">[[col[0] | monthHeading]]</td>
+        </tr>
+        <tr ng-repeat="row in table.data">
+          <td>[[row.key]]</td>
+          <td ng-repeat="col in row.values">[[col[1]|humanizeCell : table.unit : table.scale]]</td>
+        </tr>
+      </table>
+    </div>
+    <div id="metrics-chart">
+    </div>
+  </div>
+  {% block metrics_extra_data %}
+  {% endblock metrics_extra_data %}
+</section>
+{% endblock %}
+
+{% block saas_bodyscripts %}
+<script type="text/javascript">
+function updateChart(container, data, unit, dataScale, extra) {
+    $(container).text(JSON.stringify(data));
+}
+
+function updateBarChart(container, data, unit, dataScale, extra) {
+    $(container).text(JSON.stringify(data));
+}
+
+var app = angular.module('metricsApp');
+app.config(['$interpolateProvider', '$httpProvider',
+           function($interpolateProvider, $httpProvider) {
+    /* Makes it easier to separate between django and angularjs templates */
+    $interpolateProvider.startSymbol('[[');
+    $interpolateProvider.endSymbol(']]');
+}]);
+app.constant('urls', {
+    plan: "{% url 'saas_api_plan' organization %}"
+});
+
+{% autoescape off %}
+app.constant('tables', {{tables}});
+{% endautoescape %}
+</script>
+{% endblock %}

@@ -1,0 +1,20 @@
+{% extends "saas/base.html" %}
+
+{% block localheader %}
+{{block.super}}
+{% include "saas/_payment_head.html" %}
+{% endblock %}
+
+{% block saas_content %}
+<h1>Withdraw funds to your bank account</h1>
+
+<form method="post" id="bank-form"
+      action=".{% if next %}/?next={{ next }}{% endif %}">
+      {% csrf_token %}
+      <fieldset>
+        <legend>Amount to transfer</legend>
+        {{form.as_p}}
+      </fieldset>
+      {% include "saas/_bank_use.html" with title="Withdraw" %}
+</form>
+{% endblock %}

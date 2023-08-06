@@ -1,0 +1,134 @@
+{% extends "saas/base.html" %}
+{% load saas_tags %}
+{% load static from staticfiles %}
+
+{% block saas_content %}
+<style>
+.hidden{
+display:none;
+}
+</style>
+<div id="{{charge}}">
+  <h1>Charge Receipt</h1>
+  <section id="status">
+      <p>
+        On {{charge.created_at}}, we attempted to charge your card for
+        the amount of {{charge.amount|humanize_money:charge.unit}}.
+      </p>
+      <p class="charge-status"
+         data-charge-done="The charge succeeded."
+         data-charge-failed="The charge failed."
+         data-charge-disputed="The charge was disputed."
+         data-charge-created="The charge is in progress...">
+        {% if charge.is_paid %}
+        The charge succeeded.
+        {% elif charge.is_failed %}
+        The charge failed.
+        {% elif charge.is_disputed %}
+        The charge was disputed.
+        {% elif charge.is_progress %}
+        The charge is in progress... <i class="fa fa-spin"></i>
+        {% endif %}
+      </p>
+  </section>
+  <section id="info">
+    <dl>
+      <dt>REFERENCE</dt>
+      <dd>#{{ charge.processor_key }}</dd>
+    </dl>
+    <dl>
+      <dt>amount</dt>
+      <dd id="amount-info">{{charge.amount|humanize_money:charge.unit}}</dd>
+    </dl>
+    <dl>
+      <dt>card</dt>
+      <dd>**** - {{charge.last4}}</dd>
+    </dl>
+    <dl>
+      <dt>expires</dt>
+      <dd>{{charge.exp_date}}</dd>
+    </dl>
+  </section>
+  <section id="invoiced_items">
+    <table>
+      <thead>
+        <tr>
+          <th>Amount</th>
+          <th>Description</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for line in charge_items %}
+        <tr>
+          <td>{{line.invoiced.dest_amount|humanize_money:line.invoiced.dest_unit}}</td>
+          <td>{{line.invoiced|describe}}</td>
+          <td>
+            {% if line.invoiced|refund_enable:user %}
+            <button class="charge-refund"
+                    data-toggle="modal" data-target="#charge-refund"
+                    data-available-amount="{{line.invoiced.dest_amount}}"
+                    data-linenum="{{forloop.counter0}}">Refund</button>
+            {% endif %}
+          </td>
+        </tr>
+        {% for refund in line.refunded %}
+        <tr>
+          <td>-{{refund.orig_amount|humanize_money:refund.orig_unit}}</td>
+          <td>{{refund|describe}}</td>
+          <td>
+          </td>
+        </tr>
+        {% endfor %}
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+</div>
+  {% if next_url %}
+  <div>
+    <a href="{{next_url}}">Next &gt;</a>
+  </div>
+  {% endif %}
+</div>
+<!-- modal dialog for Refunds -->
+<div id="charge-refund">
+  <h4>Refund</h4>
+  <input class="form-control form-control" name="amount" maxlength="32"
+         type="text" value="0" />
+  <p>
+Please specify the amount you would like refunded.
+  </p>
+  <button type="submit" class="submit-refund">OK</button>
+</div>
+<!-- end of modal dialog for Refunds -->
+{% endblock %}
+
+{% block bodyscripts %}
+<script type="text/javascript" src="{% static 'js/djaodjin-saas-resources.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/djaodjin-saas.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/djaodjin-stripe.js' %}"></script>
+<script type="text/javascript">
+$(document).ready(function() {
+    $(".charge-refund").click(function () {
+        var self = $(this);
+        $("#charge-refund").refund({
+            availableAmount: self.attr("data-available-amount"),
+            linenum: self.attr("data-linenum"),
+            saas_api_charge_refund: "{% url 'saas_api_charge_refund' charge %}",
+            refundButton: self
+        });
+    });
+    $("#email-charge-receipt").chargeEmailReceipt({
+        initialState: "{{charge.get_state_display}}",
+        saas_api_email_charge_receipt:
+            "{% url 'saas_api_email_charge_receipt' charge %}"
+    });
+
+    $("#{{charge}}").chargeMonitor({
+       initialState: "{{charge.get_state_display}}",
+       saas_api_charge: "{% url 'saas_api_charge' charge %}"
+    });
+});
+</script>
+{% endblock %}

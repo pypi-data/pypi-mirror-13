@@ -1,0 +1,22 @@
+{% extends "saas/base.html" %}
+
+{% block localheader %}
+{{block.super}}
+{% include "saas/_payment_head.html" %}
+{% endblock %}
+
+{% block saas_content %}
+<section id="update_card">
+    <h1>Update Card for {{ organization }}</h1>
+    <form method="post" id="payment-form"
+          action=".{% if next %}/?next={{ next }}{% endif %}">
+        {% csrf_token %}
+        {% include "saas/_card_use.html" with title="Update" update_mode=True %}
+    </form>
+</section>
+{% endblock %}
+
+{% block bodyscripts %}
+{{block.super}}
+{% include "saas/_payment_body.html" with update_mode=True %}
+{% endblock %}
