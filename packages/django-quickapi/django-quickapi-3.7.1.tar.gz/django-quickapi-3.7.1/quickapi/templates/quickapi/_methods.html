@@ -1,0 +1,83 @@
+{% comment %}<!--
+ 
+    Copyright 2012-2015 Grigoriy Kramarenko <root@rosix.ru>
+
+    This file is part of QuickAPI.
+
+    QuickAPI is free software: you can redistribute it and/or
+    modify it under the terms of the GNU Affero General Public License
+    as published by the Free Software Foundation, either version 3 of
+    the License, or (at your option) any later version.
+
+    QuickAPI is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public
+    License along with QuickAPI. If not, see
+    <http://www.gnu.org/licenses/>.
+-->
+{% endcomment %}{% load i18n quickapi_base %}
+
+<div id="methods">
+    <legend><h1>{% trans 'Methods' %}</h1></legend>
+
+    {% if test_method_doc %}
+        <div id="method-quickapitest" class="method-head text-danger">
+            <h2></h2>
+            <h2>
+                <span> quickapi.test </span>
+                <small>
+                    <a href="#method-quickapitest" class="paragraph">
+                        <i class="fa fa-paragraph"></i>
+                    </a>
+                </small>
+            </h2>
+        </div>
+
+        <div class="panel panel-primary">
+            <div class="panel-body">
+                {{ test_method_doc|formatdoc|safe }}
+            </div>
+        </div>
+
+    {% endif %}
+
+
+{% regroup methods by namespace as namespace_list %}
+
+    {% for ns in namespace_list %}
+
+        {% if ns.grouper and ns.list|length > 1 %}
+        <div id="method-namespace-{{ ns.grouper|slugify }}" class="method-head text-primary">
+            <h1>{% trans 'Namespace' %} <code><strong>{{ ns.grouper }}</strong></code></h1>
+        </div> 
+        {% endif %}
+
+        {% for m in ns.list %}
+            <div id="method-{{ m.name|slugify }}" class="method-head text-danger">
+                <h2 title="{% trans 'Method name' %}">
+                    <span> {{ m.name }} </span>
+                    <small>
+                        <a href="#method-{{ m.name|slugify }}" class="paragraph">
+                            <i class="fa fa-paragraph"></i>
+                        </a>
+                    </small>
+                </h2>
+            </div> 
+
+            <div class="panel panel-{{ m.doc|yesno:'primary,danger' }}">
+                <div class="panel-body">
+                {% if m.doc %}
+                    <div>{{ m.doc|formatdoc|safe }}</div>
+                {% else %}
+                    <h4 class="text-muted"><i class="fa fa-clock-o fa-lg"></i> {% trans 'no description available' %}</h4>
+                {% endif %}
+                </div>
+            </div> 
+        {% endfor %}
+
+    {% endfor %}
+</div>
+
