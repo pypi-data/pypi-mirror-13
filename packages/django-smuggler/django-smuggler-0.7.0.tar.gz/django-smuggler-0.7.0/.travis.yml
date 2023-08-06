@@ -1,0 +1,23 @@
+# Config file for automatic testing at travis-ci.org
+language: python
+python:
+  - 2.7
+  - 3.4
+env:
+  - DJANGO_VERSION=\>=1.7,\<1.8
+  - DJANGO_VERSION=\>=1.8,\<1.9
+  - DJANGO_VERSION=\>=1.9rc2,\<1.10
+install:
+  - pip install --upgrade pip
+  - pip install Django$DJANGO_VERSION --upgrade
+  - django-admin.py --version
+  - pip install -q -e .
+  - pip install -q -r test-requirements.txt
+script:
+  - coverage run --source smuggler --branch manage.py test
+after_success:
+  - coveralls
+branches:
+  only:
+    - master
+sudo: false
