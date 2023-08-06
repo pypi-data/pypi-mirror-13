@@ -1,0 +1,161 @@
+#!/usr/bin/python
+#
+# Copyright 2016 Michael Sparks
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+from __future__ import print_function
+from __future__ import absolute_import
+
+import pprint
+import sys
+
+from pyxie.core import parse_file
+from pyxie.core import analyse_file
+from pyxie.core import compile_file
+from pyxie.core import codegen_phase
+from pyxie.core import compilation_tests
+from pyxie.core import compile_testfile
+from pyxie.core import parsing_tests
+from pyxie.core import parse_testfile
+
+from pyxie.core import testprogs_dir
+
+# This is to support compilation profiles. This may or may not turn out to
+# be a good approach.  (#3/#3.x)
+profile = "default"
+
+class BadArguments(Exception):
+    pass
+
+# The purpose of this command line dispatcher is to simplify options handling at the
+# expense of being a bit pickier about it.
+
+class CommandLineDispatcher(object):
+    @classmethod
+    def handles(klass, command):
+        return  command.replace("-","_") in [ x for x in dir(klass) if not(x.startswith("_"))]
+    #
+    @classmethod
+    def handle(klass, command, *args):
+        f = getattr(klass, command.replace("-","_"))
+        f(*args)
+
+class TestsLauncher(CommandLineDispatcher):
+    @staticmethod
+    def run_tests():
+        """Run all tests"""
+        parsing_tests()
+        compilation_tests(profile)
+
+    @staticmethod
+    def parse_tests():
+        """Just run parse tests"""
+        parsing_tests()
+
+    @staticmethod
+    def compile_tests():
+        """Just run compile tests"""
+        compilation_tests(profile)
+
+    @staticmethod
+    def parse(filename):
+        """Parses a given test given a certain filename"""
+        AST = parse_testfile(testprogs_dir, filename)
+        pprint.pprint(AST)
+        pprint.pprint(AST.__json__())
+
+    @staticmethod
+    def compile(filename):
+        """Parses a given test given a certain filename"""
+        compile_testfile(testprogs_dir, filename, profile)
+
+
+class StandardOptions(CommandLineDispatcher):
+    @staticmethod
+    def parse(filename):
+        """parses the given filename, outputs result to console"""
+        AST = parse_file(filename)
+        pprint.pprint(AST)
+        pprint.pprint(AST.__json__())
+        if 0:
+            import json
+            print("Also writing a copy to ", filename+".json")
+            f = open(filename+".json", "w")
+            f.write(json.dumps(AST.__json__()))
+            f.close()
+
+    @staticmethod
+    def analyse(filename):
+        """parses and analyse the given filename, outputs result to console"""
+        analyse_file(filename)
+
+    @staticmethod
+    def codegen(filename, result_filename=None):
+        """parses, analyse and generate code for the given filename, outputs result to console. Does not attempt compiling"""
+        codegen_phase(filename, result_filename, profile)
+
+    @staticmethod
+    def compile(filename, result_filename=None):
+        """compiles the given file to path/to/filename -- result_filename can be provide an alternative output name"""
+        compile_file(filename, profile, result_filename)
+
+def main(argv):
+    global profile
+    if len(argv) < 2:
+        raise BadArguments()
+
+    # If a profile is pulled in/defined, use that
+    if argv[1] == "--profile" and len(argv)> 2:
+        profile = argv[2]
+        argv[1:3] = []
+
+    if argv[1] == "--test":
+        command = argv[2]
+        if TestsLauncher.handles(command):
+            return TestsLauncher.handle(command, *(argv[3:]))
+
+    else:
+        command = argv[1]
+        if StandardOptions.handles(command):
+            return StandardOptions.handle(command, *(argv[2:]))
+
+    # Not handled by anything
+    raise BadArguments("Bad Arguments")
+
+def show_help():
+    print("""\npyxie -- A little python compiler\nUsage:\n
+    pyxie -- show runtime arguments
+    pyxie --test run-tests -- Run all tests
+    pyxie --test parse-tests -- Just run parse tests
+    pyxie --test compile-tests -- Just run compile tests
+    pyxie --test parse filename -- Parses a given test given a certain filename
+    pyxie --test compile filename -- Parses a given test given a certain filename
+    pyxie parse filename -- parses the given filename, outputs result to console
+    pyxie analyse filename -- parses and analyse the given filename, outputs result to console
+    pyxie codegen filename -- parses, analyse and generate code for the given filename, outputs result to console. Does not attempt compiling
+    pyxie [--profile arduino] compile path/to/filename.suffix -- compiles the given file to path/to/filename
+    pyxie [--profile arduino] compile path/to/filename.suffix  path/to/other/filename -- compiles the given file to the destination filename
+""")
+
+
+if __name__ == "__main__":
+    try:
+        main(argv = sys.argv[:])
+    except BadArguments:
+        show_help()
+    except TypeError as e:
+        print("USAGE ERROR: (see end)")
+        show_help()
+        print("USAGE ERROR:", e)
+        print
