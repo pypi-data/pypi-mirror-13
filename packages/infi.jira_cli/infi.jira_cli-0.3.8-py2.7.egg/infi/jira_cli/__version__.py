@@ -1,0 +1,11 @@
+__version__ = "0.3.8"
+__git_commiter_name__ = "Guy Rozendorn"
+__git_commiter_email__ = "guy@rzn.co.il"
+__git_branch__ = '(HEAD detached at v0.3.8)'
+__git_remote_tracking_branch__ = '(No remote tracking)'
+__git_remote_url__ = '(Not remote tracking)'
+__git_head_hash__ = '617e837d2fe6e1ae06bc3af9c9f262fc330d1fea'
+__git_head_subject__ = 'Finished Release v0.3.8'
+__git_head_message__ = '* develop:\n  history - fixing previous commit\n  history - fixing previous commit\n  history'
+__git_dirty_diff__ = ''
+__git_commit_date__ = '2016-02-15 14:00:09'
