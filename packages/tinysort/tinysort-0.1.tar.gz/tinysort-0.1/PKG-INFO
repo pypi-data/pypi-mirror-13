@@ -1,0 +1,189 @@
+Metadata-Version: 1.1
+Name: tinysort
+Version: 0.1
+Summary: Sort large amounts of Python objects that are larger than available memory but smaller than available disk.
+Home-page: https://github.com/geowurster/tinysort
+Author: Kevin Wurster
+Author-email: wursterk@gmail.com
+License: New BSD
+Description: ========
+        tinysort
+        ========
+        
+        Sort large amounts of Python objects that are larger than available memory but
+        smaller than available disk.
+        
+        .. image:: https://travis-ci.org/geowurster/tinysort.svg?branch=master
+            :target: https://travis-ci.org/geowurster/tinysort?branch=master
+        
+        .. image:: https://coveralls.io/repos/geowurster/tinysort/badge.svg?branch=master
+            :target: https://coveralls.io/r/geowurster/tinysort?branch=master
+        
+        
+        Overview
+        --------
+        
+        ``tinysort`` operates on large streams of data by breaking it up into small
+        chunks, each of which is passed to a ``multiprocessing`` job where it is sorted
+        and dumped into an intermediary tempfile.  These tempfiles are combined with
+        ``heapq.merge()`` and converted into a stream of sorted data.  See
+        ``help(tinysort)`` for information about limitations, optimizations, and future
+        plans.
+        
+        
+        API
+        ---
+        
+        Additional documentation can be found with ``help(tinysort)`` and
+        ``help(tinysort._sort)``, but here are the most most important functions:
+        
+        
+        tinysort.stream2stream()
+        ~~~~~~~~~~~~~~~~~~~~~~~~
+        
+        Sort a stream of data in situ:
+        
+        .. code-block:: python
+        
+            import tinysort
+            import random
+        
+            # Generate a bunch of random values
+            values = list(range(1000000))
+            random.shuffle(values)
+        
+            # Sort values in parallel with 4 cores and iterate over the results
+            for item in tinysort.stream2stream(values, jobs=4):
+                pass
+        
+        
+        tinysort.file2file()
+        ~~~~~~~~~~~~~~~~~~~~
+        
+        Sort a file into a new file:
+        
+        .. code-block:: python
+        
+            import tinysort
+            import tinysort.io
+        
+            # We use this class for reading + writing data
+            # See the section on data serialization for more info
+            serializer = tinysort.io.Pickle()
+        
+            # Generate some random values and write to a file
+            values = list(range(1000000))
+            random.shuffle(values)
+            with serializer.open('data.pickle', 'w') as f:
+                for v in values:
+                    f.write(v)
+        
+            # Sort from 1 file into another in parallel across 4 cores
+            tinysort.file2file(
+                'data.pickle',
+                'sorted-data.pickle',
+                reader=serializer,
+                writer=serializer,
+                jobs=4)
+        
+        
+        Other Functions
+        ~~~~~~~~~~~~~~~
+        
+        The various other combinations of working with streams and files also exist:
+        
+        - ``file2stream()`` - Read a file and sort it.
+        - ``files2stream()`` - Merge and sort a bunch of files into a single sorted stream.
+        - ``stream2file()`` - Sort a stream and write it to a file.
+        
+        
+        Data Serialization
+        ------------------
+        
+        ``tinysort`` operates by sorting its inputs in chunks, serializing to disk, and
+        using ``heapq.merge()`` to produce a final sorted stream of data.  The
+        ``tinysort.io`` module contains several data serialization classes that operate
+        like:
+        
+        .. code-block:: python
+        
+            import tinysort.io
+        
+            serializer = tinysort.io.Pickle()
+        
+            with serializer.open('data.pickle', 'w') as f:
+                f.write({'key': 'value'})
+        
+            with serializer.open('data.pickle') as f:
+                for item in f:
+                    pass
+        
+        By default ``Pickle()`` is used for tempfiles as it can handle a large variety
+        of objects.
+        
+        Other formats include ``DelimitedText()``, and ``NewlineJSON()``.  The newline
+        JSON serializer requires the `newlinejson <https://github.com/geowurster/NewlineJSON>`_
+        library, which is not installed as a requirement.
+        
+        
+        Terminology and Sorter kwargs
+        -----------------------------
+        
+        See ``help(tinysort.io)`` for a more detailed explanation.
+        
+        The serializers in ``tinysort.io`` are given to the sort functions under one of
+        three names: ``reader``, ``writer``, and ``serializer``.  All take the same kind
+        of thing, but serve different purposes.  ``reader`` is used when reading from
+        an input file, and ``writer`` is used when writing to an output file, and
+        ``serializer`` for writing to and reading from itnermediary tempfiles.
+        
+        The sort functions all take a generic ``**kwargs``.  For more information see
+        ``help(tinysort._sort)``, but these arguments are generally ``chunksize``,
+        ``jobs``, and keyword arguments for Python's ``sorted()`` and/or ``heapq.merge()``.
+        
+        
+        ``heapq`` Module
+        ----------------
+        
+        Python 2's ``heapq.merge()`` doesn't accept a ``key`` argument, so this module
+        contains a copy of the ``heapq`` module in ``tinysort._backport_heapq`` from
+        somewhere between Python 3.5 and 3.6.  This code is largely unchanged, except
+        for a few small Python 2 compatibility changes, and retains its original
+        license.  There is a unittest that only runs on the CI server that compares
+        a snapshot of the original source code to the current source code and fails if
+        any changes occur, which shouldn't happen too often.
+        
+        
+        Developing
+        ----------
+        
+        .. code-block:: console
+        
+            $ git clone https://github.com/geowurster/tinysort.git
+            $ cd tinysort
+            $ pip install -e .\[dev\]
+            $ py.test tests --cov tinysort --cov-report term-missing
+        
+        
+        License
+        -------
+        
+        See ``LICENSE.txt``
+        
+        
+        Changelog
+        ---------
+        
+        See ``CHANGES.md``
+Keywords: sorting tools memory
+Platform: UNKNOWN
+Classifier: Topic :: Utilities
+Classifier: Intended Audience :: Developers
+Classifier: Development Status :: 3 - Alpha
+Classifier: License :: OSI Approved :: BSD License
+Classifier: Topic :: Software Development :: Libraries
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Programming Language :: Python :: 3.3
+Classifier: Programming Language :: Python :: 3.4
+Classifier: Programming Language :: Python :: 3.5
+Classifier: Programming Language :: Python :: Implementation :: PyPy
