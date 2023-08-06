@@ -1,0 +1,51 @@
+<?xml version="1.0"?>
+<tryton>
+    <data>
+        <record model="ir.ui.view" id="party_view_form">
+            <field name="model">party.party</field>
+            <field name="inherit" ref="party.party_view_form"/>
+            <field name="name">party_form</field>
+        </record>
+        <record model="ir.ui.view" id="badge_view_tree">
+            <field name="model">access.control.badge</field>
+            <field name="type">tree</field>
+            <field name="name">badge_tree</field>
+        </record>
+        <record model="ir.ui.view" id="badge_view_form">
+            <field name="model">access.control.badge</field>
+            <field name="type">form</field>
+            <field name="name">badge_form</field>
+        </record>
+
+        <record model="ir.action.act_window" id="act_badge_window">
+            <field name="name">Badges</field>
+            <field name="res_model">access.control.badge</field>
+        </record>
+        <record model="ir.action.act_window.view" id="act_badge_view1">
+            <field name="sequence" eval="10" />
+            <field name="view" ref="badge_view_tree"/>
+            <field name="act_window" ref="act_badge_window"/>
+        </record>
+        <record model="ir.action.act_window.view" id="act_badge_view2">
+            <field name="sequence" eval="10" />
+            <field name="view" ref="badge_view_form"/>
+            <field name="act_window" ref="act_badge_window"/>
+        </record>
+
+        <menuitem name="Badges" parent="party.menu_party" sequence="10"  
+             action="act_badge_window" id="menu_badge_tree" icon="tryton-list"/>
+
+        <record model="ir.cron" id="cron_enable_badge_on">
+            <field name="name">Update Badges that need to be enabled</field>
+            <field name="request_user" ref="res.user_admin"/>
+            <field name="user" ref="res.user_trigger"/>
+            <field name="active" eval="True"/>
+            <field name="interval_number">1</field>
+            <field name="interval_type">days</field>
+            <field name="number_calls">-1</field>
+            <field name="repeat_missed" eval="False"/>
+            <field name="model">access.control.badge</field>
+            <field name="function">enablebadges</field>
+        </record>
+    </data>
+</tryton>
