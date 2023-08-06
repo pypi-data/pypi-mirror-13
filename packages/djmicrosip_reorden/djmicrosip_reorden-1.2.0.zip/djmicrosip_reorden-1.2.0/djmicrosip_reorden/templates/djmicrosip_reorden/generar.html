@@ -1,0 +1,87 @@
+{% extends "djmicrosip_reorden\base.html" %}
+{% block title %}Inicio{% endblock %}
+
+<!-- CSS Code -->
+{% block style_css %}{% endblock %}
+
+<!-- JavaScript Code -->
+{% block js_code %}
+	<script src="{{STATIC_URL}}djmicrosip_reorden/js/genera_orden.js"></script>
+{% endblock %}
+
+{% block breadcrumb %}{{ block.super }} <li class="active">Generacion de orden</li>{% endblock %}
+{% block content %}
+<div id="header" style="background-color: white; padding-right:0;padding-left:0">
+    <h3>Generacion de Orden de Compra
+    	{% if articulos_dic %}
+    	<button id="cambiar_proveedor" type="button" class="btn" data-toggle="modal" data-target="#modal_proveedor" style="display:none;">Asignar Proveedor</button>
+    	<button id="generar_ordenes" class="btn">Generar Ordenes de Compra</button> {% endif %} </h3>
+</div>
+<input type="hidden" id="almacen_id" value="{{almacen_id}}">
+<br>
+<br>
+<br>
+<br>
+<br>
+{% if not articulos_dic %}
+<form method="post" class="form-horizontal" action="" enctype='multipart/form-data'>{% csrf_token %}
+{{ form.errors }}
+    <button class="btn">Generar</button>
+    <div class="row">
+      <div class="col-md-4">Almacen{{ form.almacen }}</div>
+      <div class="col-md-4">Estatus de Articulos {{ form.estatus }}</div>
+      <div class="col-md-4">Nivel de Resurtido {{ form.nivel }}</div>
+    </div>
+</form>
+{% else %}
+	{% for proveedor,articulos in articulos_dic.items %}
+		<table class="table" id="table_{{articulos.0.9}}">
+			<caption>{{proveedor}}</caption>
+			<thead>
+				<tr>
+					<th><input type="hidden" id="id_proveedor" value="{{articulos.0.9}}"></th>
+					<th>Articulo</th>
+					<th>Disponible</th>
+					<th>Por Recibir</th>
+					<th>Por Surtir</th>
+					<th>Nivel Resurtir</th>
+					<th>Ordenar</th>
+				</tr>
+			</thead>
+			<tbody>
+				{% for articulo in articulos %}
+				<tr>
+					<td><input type="checkbox" class="select_detail id_articulo" value="{{articulo.0.id}}"></td>
+					<td>{{articulo.0.nombre}}</td>
+					<td>{{articulo.3}}</td>
+					<td>{{articulo.4}}</td>
+					<td>{{articulo.5}}</td>
+					<td>{{articulo.6}}</td>
+					<td><input type="text" value="{{articulo.7}}" class="form-control unidades"></td>
+				</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+	{% endfor %}
+{% endif %}
+
+<div class="modal fade bs-example-modal-md in" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel" id="modal_proveedor">
+    <div class="modal-dialog modal-md">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+          <h4 class="modal-title" id="mySmallModalLabel">Asignar a otro Proveedor</h4>
+        </div>
+        <div class="modal-body">
+          Asignar a: 
+          <select name="" id="nuevo_proveedor">
+          	{% for proveedor in proveedores %}
+          		<option value="{{proveedor.id}}">{{proveedor.nombre}}</option>
+          	{% endfor %}
+          </select>
+          <button id="btn_nuevo_proveedor" class="btn">Asignar</button>
+        </div>
+      </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+  </div>
+{% endblock %}
