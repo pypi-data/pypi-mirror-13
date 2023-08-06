@@ -1,0 +1,237 @@
+{
+  "type": "object",
+  "class": "fastr.core.tool.Tool",
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "required": [
+    "authors",
+    "command",
+    "id",
+    "name",
+    "version"
+  ],
+  "description": "Definition of the data structure of a Tool object",
+  "definitions": {
+    "author": {
+      "type": "object",
+      "format": "dict",
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "Email address of the author"
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the author"
+        },
+        "url": {
+          "default": "",
+          "type": "string",
+          "description": "URL of the website of the author"
+        }
+      }
+    }
+  },
+  "properties": {
+    "authors": {
+      "type": "array",
+      "minItems": 0,
+      "uniqueItems": true,
+      "description": "List of authors of the Tools wrapper",
+      "items": {
+        "$ref": "#/definitions/author"
+      }
+    },
+    "cite": {
+      "default": "",
+      "type": "string",
+      "description": "Bibtext of the Citation(s) to reference when using this Tool for a publication"
+    },
+    "command": {
+      "type": "object",
+      "format": "dict",
+      "required": [
+        "authors",
+        "targets",
+        "version"
+      ],
+      "description": "Description of the underlying command",
+      "properties": {
+        "authors": {
+          "type": "array",
+          "minItems": 0,
+          "uniqueItems": true,
+          "required": [
+            "name"
+          ],
+          "description": "List of authors of the underlying Tool (not the wrapper!)",
+          "items": {
+            "$ref": "#/definitions/author"
+          }
+        },
+        "description": {
+          "description": "Description of the Tool",
+          "type": ["null", "string"]
+        },
+        "license": {
+          "description": "License of the Tool, either full license or a clear name (e.g. LGPL, GPL v2)",
+          "type": ["null", "string"]
+        },
+        "targets": {
+          "description": "Description of the target binary/script of this Tool",
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "description": "Interface to use for this Tool",
+            "type": "object",
+            "required": [
+              "arch",
+              "os"
+            ],
+            "properties": {
+              "arch": {
+                "description": "Architecture targetted 32bit, 64bit or * (for any)",
+                "type": "string",
+                "enum": [
+                  "*",
+                  "32bit",
+                  "64bit"
+                ]
+              },
+              "os": {
+                "description": "OS targetted (windows, linux, darwin, etc or * (for any)",
+                "type": "string",
+                "enum": [
+                  "*",
+                  "windows",
+                  "linux",
+                  "darwin",
+                  "java",
+                  "sunos",
+                  "freebsd",
+                  "openbsd"
+                ]
+              }
+            }
+          }
+        },
+        "url": {
+          "default": "",
+          "description": "Website where the tools that is wrapped can be obtained",
+          "type": "string"
+        },
+        "version": {
+          "$ref": "fastr:///common.schema.json#/definitions/version"
+        }
+      }
+    },
+    "help": {
+      "default": "",
+      "description": "A help text explaining the use of the Tool",
+      "type": "string"
+    },
+    "filename": {
+      "type": "string"
+    },
+    "hash": {
+      "type": "string"
+    },
+    "id": {
+      "description": "The id of this Tool (used internally in fastr)",
+      "type": "string"
+    },
+    "class": {
+      "description": "The class of the Node to use for this Tool",
+      "type": "string",
+      "default": "Node"
+    },
+    "name": {
+      "description": "The name of the Tool, for human readability",
+      "type": "string"
+    },
+    "interface": {
+      "description": "Interface to use for this Tool",
+      "type": "object",
+      "properties": {}
+    },
+    "tags": {
+      "type": "array",
+      "description": "List of tags describing the Tool",
+      "default": [],
+      "items": {
+        "type": "string"
+      }
+    },
+    "url": {
+      "default": null,
+      "description": "The url of the Tool wrapper",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "version": {
+      "$ref": "fastr:///common.schema.json#/definitions/version"
+    },
+    "requirements": {
+      "type": "null",
+      "default": null
+    },
+    "references": {
+      "type": "array",
+      "items": {},
+      "default": []
+    },
+    "tests": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "input",
+          "command"
+        ],
+        "properties": {
+          "input": {
+            "type": "object",
+            "patternProperties": {
+              ".*": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "command": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "output": {
+            "type": "object",
+            "default": {},
+            "patternProperties": {
+              ".*": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "default": []
+    },
+    "description": {
+      "default": "",
+      "description": "Description of the Tool Wrapper",
+      "type": "string"
+    }
+  }
+}

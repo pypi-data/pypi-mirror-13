@@ -1,0 +1,81 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema",
+    "definitions": {
+        "input": {
+            "type": "object",
+            "class": "fastr.core.inputoutput.Input",
+            "required": ["id", "input_group"],
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "input_group": {
+                    "type": "string"
+                },
+                "datatype": {
+                    "type": "string"
+                }
+            }
+        },
+        "constantinput": {
+            "type": "object",
+            "properties": {
+                "_data": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "_datatype": {
+                    "type": "string"
+                }
+            },
+            "allOf": [
+                {"$ref": "#/definitions/input"}
+            ]
+        },
+        "output": {
+            "type": "object",
+            "class": "fastr.core.inputoutput.Output",
+            "required": ["id"],
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "preferred_types": {
+                    "type": "array",
+                    "items": {"type": "string"}
+                },
+                "datatype": {
+                    "type": "string"
+                },
+                "suboutputs": {
+                    "type": "array",
+                    "items": {"$ref": "#/definitions/suboutput"}
+                }
+            }
+        },
+        "suboutput": {
+            "type": "object",
+            "class": "fastr.core.inputoutput.SubOutput",
+            "required": ["id", "index"],
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "index": {
+                    "type": "string"
+                },
+                "suboutputs": {
+                    "type": "array",
+                    "items": {"$ref": "#/definitions/suboutput"}
+                }
+            }
+        },
+        "version": {
+            "description": "A version number",
+            "type":"string",
+            "pattern": "^v?([0-9]+)\\.([0-9]+)((?:\\.[0-9]+)+)?([_\\-\\.])?(a(?=[0-9])|b(?=[0-9])|alpha(?=[0-9])|beta(?=[0-9])|rc(?=[0-9])|r(?=[0-9]))?([0-9]+)?([a-zA-Z0-9\\-_\\.]*)$"
+        }
+    }
+}
