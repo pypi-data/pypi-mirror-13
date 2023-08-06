@@ -1,0 +1,47 @@
+{% extends wrapper_template %}
+{% block content %}
+
+<div class="container">
+
+    
+    <div class="user-service">
+    
+        <div class="user-service-heading"><i class="fa fa-user"></i> Hello, {{ original_user }}.</div>
+        
+        
+        {% if override_user %}
+        <div style="margin: 0 auto;">
+            <div class="user-service-sub-heading">You are overriding as:&nbsp;&nbsp;<span class="text-danger user-service-override-user">{{ override_user }} </span>
+</div>
+            <form action="{% url 'userservice.views.support' %}" method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="clear_override" value="1"/>
+            <button class="btn btn-block btn-danger" type="submit" value="Clear override">Clear Override</button>
+            </form>
+        </div>
+        {% endif %}
+        
+        <div class="user-service-sub-heading">Override as:</div> 
+        
+        <div style="margin: 0 auto;">
+        
+            <form action="{% url 'userservice.views.support' %}" method="POST">
+            {% csrf_token %}
+            
+            <input type="text" name="override_as" class="form-control" placeholder="Netid" autocorrect="off" autocapitalize="off" spellcheck="false">
+            <button class="btn btn-block btn-primary" type="submit">Submit</button>
+            </form>
+            
+            {% if override_error_msg %}
+            <div style="margin:1em 0;"><p class="text-danger">{{ override_error_msg }}{{ override_error_username }}</p></div>
+            {% endif %}
+            
+        </div>
+        
+    </div>
+
+</div>
+
+{% endblock %}
+
+
