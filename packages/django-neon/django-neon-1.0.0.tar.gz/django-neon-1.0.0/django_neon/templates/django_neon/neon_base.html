@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<title>{% block title %}neon_base.html{% endblock %}</title>
+	{% block meta %}{% endblock %}
+	{% block css %}{% endblock %}
+	{% block header_scripts %}{% endblock %}
+</head>
+<body>
+    {% block body %}
+
+    {% block root_pages %}
+        <nav id="root_pages">
+            <p>Root Pages:</p>
+            <ul>
+            {% for root_page in root_pages %}
+                <li><a href="{{ root_page.url }}">{{ root_page.name }}</a></li>
+            {% endfor %}
+            </ul>
+        </nav>
+    {% endblock %}
+
+    {% block breadcrumbs %}
+        <nav id="breadcrumbs">
+            breadcrumbs:
+            {% for item in page.breadcrumbs %}
+                <span><a href="{{ item.url }}">{{ item.name }}</a></span>
+                {% if not forloop.last %}
+                    &nbsp;>>&nbsp;
+                {% endif %}
+            {% endfor %}
+        </nav>
+    {% endblock %}
+
+    {% block sub_pages %}
+        <nav id="sub_pages">
+            <p>Sub-Pages:</p>
+            <ul>
+            {% for sub_page in  page.children %}
+                <li><a href="{{ sub_page.url }}">{{ sub_page.name }}</a></li>
+            {% endfor %}
+            </ul>
+        </nav>
+    {% endblock %}
+
+    {% block content %}
+        <p>{{ sections }}</p>
+        {% for name, pane_contents in sections.items %}
+            <section id="{{ name }}">
+                <p>section: {{ name }}</p>
+                {% for content in pane_contents %}
+                    {{ content }}
+                {% endfor %}
+            </section>
+        {% endfor %}
+    {% endblock %}
+
+    {% endblock body %}
+</body>
+{% block footer_scripts %}{% endblock %}
+</html>
