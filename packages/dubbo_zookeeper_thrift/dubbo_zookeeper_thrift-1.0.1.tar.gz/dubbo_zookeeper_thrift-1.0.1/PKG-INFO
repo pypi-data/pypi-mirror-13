@@ -1,0 +1,297 @@
+Metadata-Version: 1.1
+Name: dubbo_zookeeper_thrift
+Version: 1.0.1
+Summary: a python liberaries  for dubbo_zookeeper_thrift tutorial.
+Home-page: http://www.rocyuan.com
+Author: rocyuan
+Author-email: admin@rocyuan.com
+License: MIT
+Description: ======================================================
+        
+        dubbo_zookeeper_thrift :
+        
+        thriftServerManager = ThriftServerManager("127.0.0.1:2181");
+        thriftServerManager.getServiceServiceInfo("thrift:userService");
+        
+        ======================================================
+        
+        
+        what is inside
+        ==============================
+        
+        python_zookeeper_thrift
+        ::
+         * 为了dubbo而写的
+         * python setup.py register; python setup.py sdist upload
+         * 主要是从zookeeper中拿到服务器节点信息 (ip:port:serviceName)
+         * 使得客户端的调用只需要 serviceName即可
+        
+         * `以 工厂方法替换了iportal里的 make_client过程,即动态生成thrift 里的 make_client()产生的实例`
+        
+         * ` 将 client实例静态缓存,应该可以加快iportal的访问效率 `
+        
+        
+        
+        
+         * 这个项目所做的事 其实就是把dubbo源码里的这部分代码 用python 实现了而已,从而使得python的thrift客户端的调用
+           可以脱离IP而存在,不在去管提供服务提供者的IP和端口还有是否停止提供服务
+        
+        
+        what is next
+        ==============================
+        
+        ::
+        
+            public class ZookeeperRegistry extends FailbackRegistry {
+        
+                private final static Logger logger = LoggerFactory.getLogger(ZookeeperRegistry.class);
+        
+                private final static int DEFAULT_ZOOKEEPER_PORT = 2181;
+        
+                private final static String DEFAULT_ROOT = "dubbo";
+        
+                private final String        root;
+        
+                private final Set<String> anyServices = new ConcurrentHashSet<String>();
+        
+                private final ConcurrentMap<URL, ConcurrentMap<NotifyListener, ChildListener>> zkListeners = new ConcurrentHashMap<URL, ConcurrentMap<NotifyListener, ChildListener>>();
+        
+                private final ZookeeperClient zkClient;
+        
+                public ZookeeperRegistry(URL url, ZookeeperTransporter zookeeperTransporter) {
+                    super(url);
+                    if (url.isAnyHost()) {
+                        throw new IllegalStateException("registry address == null");
+                    }
+                    String group = url.getParameter(Constants.GROUP_KEY, DEFAULT_ROOT);
+                    if (! group.startsWith(Constants.PATH_SEPARATOR)) {
+                        group = Constants.PATH_SEPARATOR + group;
+                    }
+                    this.root = group;
+                    zkClient = zookeeperTransporter.connect(url);
+                    zkClient.addStateListener(new StateListener() {
+                        public void stateChanged(int state) {
+                            if (state == RECONNECTED) {
+                                try {
+                                    recover();
+                                } catch (Exception e) {
+                                    logger.error(e.getMessage(), e);
+                                }
+                            }
+                        }
+                    });
+                }
+        
+                public boolean isAvailable() {
+                    return zkClient.isConnected();
+                }
+        
+                public void destroy() {
+                    super.destroy();
+                    try {
+                        zkClient.close();
+                    } catch (Exception e) {
+                        logger.warn("Failed to close zookeeper client " + getUrl() + ", cause: " + e.getMessage(), e);
+                    }
+                }
+        
+                protected void doRegister(URL url) {
+                    try {
+                        zkClient.create(toUrlPath(url), url.getParameter(Constants.DYNAMIC_KEY, true));
+                    } catch (Throwable e) {
+                        throw new RpcException("Failed to register " + url + " to zookeeper " + getUrl() + ", cause: " + e.getMessage(), e);
+                    }
+                }
+        
+                protected void doUnregister(URL url) {
+                    try {
+                        zkClient.delete(toUrlPath(url));
+                    } catch (Throwable e) {
+                        throw new RpcException("Failed to unregister " + url + " to zookeeper " + getUrl() + ", cause: " + e.getMessage(), e);
+                    }
+                }
+        
+                protected void doSubscribe(final URL url, final NotifyListener listener) {
+                    try {
+                        if (Constants.ANY_VALUE.equals(url.getServiceInterface())) {
+                            String root = toRootPath();
+                            ConcurrentMap<NotifyListener, ChildListener> listeners = zkListeners.get(url);
+                            if (listeners == null) {
+                                zkListeners.putIfAbsent(url, new ConcurrentHashMap<NotifyListener, ChildListener>());
+                                listeners = zkListeners.get(url);
+                            }
+                            ChildListener zkListener = listeners.get(listener);
+                            if (zkListener == null) {
+                                listeners.putIfAbsent(listener, new ChildListener() {
+                                    public void childChanged(String parentPath, List<String> currentChilds) {
+                                        for (String child : currentChilds) {
+                                            child = URL.decode(child);
+                                            if (! anyServices.contains(child)) {
+                                                anyServices.add(child);
+                                                subscribe(url.setPath(child).addParameters(Constants.INTERFACE_KEY, child,
+                                                        Constants.CHECK_KEY, String.valueOf(false)), listener);
+                                            }
+                                        }
+                                    }
+                                });
+                                zkListener = listeners.get(listener);
+                            }
+                            zkClient.create(root, false);
+                            List<String> services = zkClient.addChildListener(root, zkListener);
+                            if (services != null && services.size() > 0) {
+                                for (String service : services) {
+                                    service = URL.decode(service);
+                                    anyServices.add(service);
+                                    subscribe(url.setPath(service).addParameters(Constants.INTERFACE_KEY, service,
+                                            Constants.CHECK_KEY, String.valueOf(false)), listener);
+                                }
+                            }
+                        } else {
+                            List<URL> urls = new ArrayList<URL>();
+                            for (String path : toCategoriesPath(url)) {
+                                ConcurrentMap<NotifyListener, ChildListener> listeners = zkListeners.get(url);
+                                if (listeners == null) {
+                                    zkListeners.putIfAbsent(url, new ConcurrentHashMap<NotifyListener, ChildListener>());
+                                    listeners = zkListeners.get(url);
+                                }
+                                ChildListener zkListener = listeners.get(listener);
+                                if (zkListener == null) {
+                                    listeners.putIfAbsent(listener, new ChildListener() {
+                                        public void childChanged(String parentPath, List<String> currentChilds) {
+                                            ZookeeperRegistry.this.notify(url, listener, toUrlsWithEmpty(url, parentPath, currentChilds));
+                                        }
+                                    });
+                                    zkListener = listeners.get(listener);
+                                }
+                                zkClient.create(path, false);
+                                List<String> children = zkClient.addChildListener(path, zkListener);
+                                if (children != null) {
+                                    urls.addAll(toUrlsWithEmpty(url, path, children));
+                                }
+                            }
+                            notify(url, listener, urls);
+                        }
+                    } catch (Throwable e) {
+                        throw new RpcException("Failed to subscribe " + url + " to zookeeper " + getUrl() + ", cause: " + e.getMessage(), e);
+                    }
+                }
+        
+                protected void doUnsubscribe(URL url, NotifyListener listener) {
+                    ConcurrentMap<NotifyListener, ChildListener> listeners = zkListeners.get(url);
+                    if (listeners != null) {
+                        ChildListener zkListener = listeners.get(listener);
+                        if (zkListener != null) {
+                            zkClient.removeChildListener(toUrlPath(url), zkListener);
+                        }
+                    }
+                }
+        
+                public List<URL> lookup(URL url) {
+                    if (url == null) {
+                        throw new IllegalArgumentException("lookup url == null");
+                    }
+                    try {
+                        List<String> providers = new ArrayList<String>();
+                        for (String path : toCategoriesPath(url)) {
+                                List<String> children = zkClient.getChildren(path);
+                                if (children != null) {
+                                    providers.addAll(children);
+                                }
+                        }
+                        return toUrlsWithoutEmpty(url, providers);
+                    } catch (Throwable e) {
+                        throw new RpcException("Failed to lookup " + url + " from zookeeper " + getUrl() + ", cause: " + e.getMessage(), e);
+                    }
+                }
+        
+                private String toRootDir() {
+                    if (root.equals(Constants.PATH_SEPARATOR)) {
+                        return root;
+                    }
+                    return root + Constants.PATH_SEPARATOR;
+                }
+        
+                private String toRootPath() {
+                    return root;
+                }
+        
+                private String toServicePath(URL url) {
+                    String name = url.getServiceInterface();
+                    if (Constants.ANY_VALUE.equals(name)) {
+                        return toRootPath();
+                    }
+                    return toRootDir() + URL.encode(name);
+                }
+        
+                private String[] toCategoriesPath(URL url) {
+                    String[] categroies;
+                    if (Constants.ANY_VALUE.equals(url.getParameter(Constants.CATEGORY_KEY))) {
+                        categroies = new String[] {Constants.PROVIDERS_CATEGORY, Constants.CONSUMERS_CATEGORY,
+                                Constants.ROUTERS_CATEGORY, Constants.CONFIGURATORS_CATEGORY};
+                    } else {
+                        categroies = url.getParameter(Constants.CATEGORY_KEY, new String[] {Constants.DEFAULT_CATEGORY});
+                    }
+                    String[] paths = new String[categroies.length];
+                    for (int i = 0; i < categroies.length; i ++) {
+                        paths[i] = toServicePath(url) + Constants.PATH_SEPARATOR + categroies[i];
+                    }
+                    return paths;
+                }
+        
+                private String toCategoryPath(URL url) {
+                    return toServicePath(url) + Constants.PATH_SEPARATOR + url.getParameter(Constants.CATEGORY_KEY, Constants.DEFAULT_CATEGORY);
+                }
+        
+                private String toUrlPath(URL url) {
+                    return toCategoryPath(url) + Constants.PATH_SEPARATOR + URL.encode(url.toFullString());
+                }
+        
+                private List<URL> toUrlsWithoutEmpty(URL consumer, List<String> providers) {
+                    List<URL> urls = new ArrayList<URL>();
+                    if (providers != null && providers.size() > 0) {
+                        for (String provider : providers) {
+                            provider = URL.decode(provider);
+                            if (provider.contains("://")) {
+                                URL url = URL.valueOf(provider);
+                                if (UrlUtils.isMatch(consumer, url)) {
+                                    urls.add(url);
+                                }
+                            }
+                        }
+                    }
+                    return urls;
+                }
+        
+                private List<URL> toUrlsWithEmpty(URL consumer, String path, List<String> providers) {
+                    List<URL> urls = toUrlsWithoutEmpty(consumer, providers);
+                    if (urls == null || urls.isEmpty()) {
+                        int i = path.lastIndexOf('/');
+                        String category = i < 0 ? path : path.substring(i + 1);
+                        URL empty = consumer.setProtocol(Constants.EMPTY_PROTOCOL).addParameter(Constants.CATEGORY_KEY, category);
+                        urls.add(empty);
+                    }
+                    return urls;
+                }
+        
+                static String appendDefaultPort(String address) {
+                    if (address != null && address.length() > 0) {
+                        int i = address.indexOf(':');
+                        if (i < 0) {
+                            return address + ":" + DEFAULT_ZOOKEEPER_PORT;
+                        } else if (Integer.parseInt(address.substring(i + 1)) == 0) {
+                            return address.substring(0, i + 1) + DEFAULT_ZOOKEEPER_PORT;
+                        }
+                    }
+                    return address;
+                }
+        
+            }
+        
+        
+        ```
+Keywords: python wechat dubbo_zookeeper_thrift api
+Platform: UNKNOWN
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python
+Classifier: Intended Audience :: Developers
+Classifier: Operating System :: OS Independent
