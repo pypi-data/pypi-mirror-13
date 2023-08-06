@@ -1,0 +1,10 @@
+
+# Copyright (C) 2014-2015 LiuLang <gsushzhsosgsu@gmail.com>
+# Use of this source code is governed by GPLv3 license that can be found
+# in http://www.gnu.org/licenses/gpl-3.0.html
+
+import logging
+import os
+import sys
+
+logger = logging.getLogger('bcloud')
