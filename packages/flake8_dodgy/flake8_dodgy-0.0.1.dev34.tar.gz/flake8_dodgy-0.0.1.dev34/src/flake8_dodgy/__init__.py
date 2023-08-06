@@ -1,0 +1,6 @@
+__description__ = ''
+__license__ = 'MIT'
+__uri__ = 'https://github.com/dbarbar/flake8_dodgy'
+__version__ = '0.0.1.dev34'
+__author__ = 'David Barbarisi'
+__email__ = 'davidbarbarisi@gmail.com'
