@@ -1,0 +1,43 @@
+#!/usr/bin/env python
+"""Simple calculator leveraging the greatness of the python ecosystem.
+"""
+from __future__ import print_function
+from __future__ import unicode_literals
+from __future__ import division
+from __future__ import absolute_import
+
+import argparse
+import sys
+from pycalc import *  # pylint: disable=wildcard-import, unused-wildcard-import
+
+
+def setup_arg_parser():
+    """Setup the argument parser
+    """
+    parser = argparse.ArgumentParser(
+        description='Pycalc: A simple command line calculator')
+    parser.add_argument('expression',
+                        metavar='EXP',
+                        type=str,
+                        nargs='?',
+                        default='',
+                        help='Python expression')
+    parser.add_argument('-i',
+                        '--interactive',
+                        action='store_true')
+
+    return parser.parse_args()
+
+def main(args):
+    """The main function
+    """
+    if not args.expression == '':
+        print(eval(args.expression))  # pylint: disable=eval-used
+
+    if args.expression == '' or args.interactive:
+        from IPython import embed
+        embed(banner1='Welcome to pycalc...')
+
+if __name__ == '__main__':
+    args = setup_arg_parser()
+    main(args)
