@@ -1,0 +1,117 @@
+Metadata-Version: 1.1
+Name: coralogix
+Version: 0.2.6.0
+Summary: Coralogix Python SDK
+Home-page: http://www.coralogix.com/
+Author: Coralogix Ltd.
+Author-email: info@coralogix.com
+License: Apache Software License v2.0
+Description: Coralogix - Logs in Action
+        ------------------------------
+        Coralogix is a software analytics SaaS platform that drastically improves the delivery & maintenance process for software providers. Using proprietary machine learning algorithms, Coralogix helps over 100 businesses reduce their issue resolution time, increase system uptime, improve customer satisfaction and decrease maintenance costs.
+        
+        Learn more at http://www.coralogix.com.
+        
+        
+        Contents
+        ---------------
+        This package includes all Coralogix Python SDK files and settings required for sending logs to Coralogix Cloud.
+        
+          
+        tl;dr:
+        ---------------
+        
+          $ pip install coralogix
+        
+          >>> from coralogix import CoralogixHTTPSHandler
+        
+          >>> handler = CoralogixHTTPSHandler(company_id, private_key, application, subsystem, computer_name)
+        
+          >>> logger.addHandler(handler)
+        
+          >>> logger.setLevel(logging.DEBUG)
+        
+          
+        Installation
+        ---------------
+        Coralogix SDK can be directly installed using pip package manager:
+            $ pip install coralogix
+        
+        Please confirm that you have the latest pip package manager beforehand:
+            $ pip install pip --upgrade
+        
+        If you are upgrading coralogix from an older version, you may need to add the upgrade flag:
+            $ pip install coralogix --upgrade
+        
+        
+        Alternatively, Coralogix SDK can be installed from source by extracting the files and executing:
+            $ python setup.py install
+        
+          
+        Usage
+        ---------------
+        After installing the coralogix module, import CoralogixHTTPSHandler and add it to the logging.Logger object you are currently using. If you're new to Python logging, a detailed explanation can be found for:
+          
+        Python 2 - https://docs.python.org/2/library/logging.html
+          
+        Python 3 - https://docs.python.org/3/library/logging.html
+          
+          
+        Instructions
+        ---------------
+        Using Coralogix SDK requires four mandatory parameters and one optional parameter:
+        
+        company_id (Integer): A unique ID which represents your company. This ID will be sent to your mail once you register to Coralogix.
+        
+        private_key (String): The private key is the password for your company, used to validate your authenticity. This key will be sent to your mail once you register to Coralogix.
+        
+        application (String): The name of your main application. For example, a company named Startup which develops app_1 and app_2 can use "Startup app_1" and "Startup app_2" for this parameter; or if they want to debug their test environment they might insert the "Startup app_1 - Test" or "Startup app_1 - Staging".
+        
+        subsystem (String): The name of your sub-system. Your application probably has multiple sub-systems, e.g. "Backend servers", "Middleware", "Frontend servers", "Database servers" etc. In order to help you examine only the data you need, inserting the subsystem parameter is vital.
+        
+        computer_name (String): Optional. When several servers run the same application/sub-system, you will enjoy the full power of Coralogix if you use a different computer_name per server.
+        
+        1. Prepare your company_id and private_key (provided to you in advance). They can also be found under "Send Your Logs" in the "Settings & Info" tab. e.g.
+            >>> company_id = 173 ; private_key = "2b03ed7f-210c-492a-b035-549c0020e91f"
+        
+        2. Import CoralogixHTTPSHandler. e.g.
+            >>> from coralogix import CoralogixHTTPSHandler
+        
+        3. Instantiate a CoralogixHTTPSHandler object with company_id, private_key, app_name, sub_system_name and computer_name. CoralogixHTTPSHandler will immediately try to connect to Coralogix with the data provided. e.g.
+            >>> handler = CoralogixHTTPSHandler(173, "2b03ed7f-210c-492a-b035-549c0020e91f", application, subsystem, computer_name)
+        
+           You may instantiate several CoralogixHTTPSHandlers for different applications and sub-systems in the same process. To avoid data duplication, please ensure that loggers of the same logging tree don't propagate across many CoralogixHTTPSHandlers (logger.propagate=False)
+        
+        4. Add the handler to your existing logging.Logger object. e.g.
+            >>> logger.addHandler(handler)
+        
+        5. You're up and ready. Any log record accepted by your logging.Logger object will now also be sent to Coralogix Cloud.
+        
+        6. It is recommended to set your logging.Logger level to logging.DEBUG to get the maximum value from your data. e.g.
+            >>> logger.setLevel(logging.DEBUG)
+          
+          
+          
+        License
+        ---------------
+        
+        Copyright 2015 Coralogix Ltd.
+        
+        	Licensed under the Apache License, Version 2.0 (the "License");
+        	you may not use this file except in compliance with the License.
+        	You may obtain a copy of the License at
+        
+        		http://www.apache.org/licenses/LICENSE-2.0
+        
+        	Unless required by applicable law or agreed to in writing, software
+        	distributed under the License is distributed on an "AS IS" BASIS,
+        	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+        	See the License for the specific language governing permissions and
+        	limitations under the License.
+        
+Platform: UNKNOWN
+Classifier: Programming Language :: Python
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: Topic :: Utilities
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: Apache Software License
