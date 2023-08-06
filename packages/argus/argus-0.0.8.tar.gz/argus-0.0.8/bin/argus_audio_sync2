@@ -1,0 +1,119 @@
+#!/usr/bin/env python
+"""
+Takes 4 minute slices from the each movie listed in movies.csv
+and applies an FFT-based cross correlation to find the time offset
+between each movie and the first (0) movie in the list. 
+"""
+
+import argparse
+import logging
+import os
+import scipy.io.wavfile
+import argus
+import pandas as pd
+import numpy as np
+import cv2
+import tempfile
+
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="find time offset between movies",epilog=__doc__)
+    parser.add_argument("movies",nargs="+",
+                        help="movie(s) to process")
+    parser.add_argument("--ofile",default=None,
+                        help="output table filename, default table_offsets.csv")
+    #parser.add_argument("--ofile",default=None,
+    #                    help="output offsets filename, default offsets.csv")
+    parser.add_argument("--verbose",action="store_true",
+                        help="toggle verbosity")
+    args = parser.parse_args()
+
+    if args.verbose:
+        logging.basicConfig(level=logging.DEBUG)
+        logging.debug("running in verbose mode")
+    else:
+        logging.basicConfig(level=logging.INFO)
+
+    if args.ofile is None:
+        args.ofile = "table_offsets.csv"
+    #if args.ofile is None:
+    #    args.ofile = "offsets.csv"
+
+
+
+    logging.debug("getting offsets from {0}".format(args.movies))
+
+    #logging.debug("creating temp directory")
+    # this should probably use a "correct" temp directory location
+    #os.system("mkdir ./argus_audiosync2_temp")
+    tempdir = tempfile.mkdtemp()
+    logging.debug("created temporary directory {0}".format(tempdir))
+
+    logging.debug("stripping audio from videos")
+    signals = list()
+    for index,eachmovie in enumerate(args.movies):
+        # this uses avconv to strip the audio
+        # Ty wants us to switch to ffmpeg
+        wavfilename = os.path.join(tempdir,
+                                   "audio{0}.wav".format(index))
+        call = "avconv -y -i {0} -ac 1 -t 00:04:00 {1}".format(eachmovie,wavfilename)
+        logging.info(call)
+        os.system(call)
+        rate, signal = scipy.io.wavfile.read(wavfilename)
+        signals.append(signal)
+        
+    logging.debug("computing correlations and offsets")
+
+    # initialize result
+    result = dict()
+    result['filename'] = list()
+    result['offset_s'] = list()
+    result['offset_f'] = list()
+    result['integer_offset'] = list()
+    result['maxcorr'] = list()
+
+    # write 0th movie to results
+    result['filename'].append(args.movies[0])
+    result['offset_s'].append(0.)
+    result['offset_f'].append(0.)
+    result['integer_offset'].append(int(0))
+    result['maxcorr'].append(1.)
+
+    # write the other movies to result
+    for index in range(1,len(args.movies)):
+        off_s,off_f,int_off,maxcorr = argus.find_offset(signals[0],
+                                                        signals[index])
+        result['filename'].append(args.movies[index])
+        result['offset_s'].append(off_s)
+        result['offset_f'].append(off_f)
+        result['integer_offset'].append(int_off)
+        result['maxcorr'].append(maxcorr)
+
+    # and output the frame and time offsets
+    logging.debug("writing results to {0}".format(args.ofile))
+    result = pd.DataFrame(result)
+    result[['integer_offset']] = result[['integer_offset']].astype(int)
+    result = result[['filename','offset_s','offset_f','integer_offset','maxcorr']]
+    result.to_csv(args.ofile,index=False,na_rep="NaN")
+
+
+    # make dltdv5 compatible offsets file
+    #movie = cv2.VideoCapture(args.movies[0])
+    #nframes = int(movie.get(cv2.cv.CV_CAP_PROP_FRAME_COUNT))
+    #ncams = len(args.movies)
+    #etc = np.empty((nframes,ncams),dtype=np.uint32)
+    #etc[:,0] = 0
+    #for a in range(1,len(args.movies)):
+    #    etc[:,a] = result.integer_offset.iloc[a]
+    #etc = pd.DataFrame(etc)
+    #etc.to_csv(args.ofile,index=False,na_rep="NaN")
+
+
+
+    logging.debug("cleaning up")
+    logging.debug("removing temporary directory {0}".format(tempdir))
+    os.system("rm -rf {0}".format(tempdir))
+    
+
+

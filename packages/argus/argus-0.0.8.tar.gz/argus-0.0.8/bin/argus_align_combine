@@ -1,0 +1,97 @@
+#!/usr/bin/env python
+"""
+filenames must be passed in the same order as the cameras are given
+in offsets. 
+"""
+
+import argparse
+import logging
+import pandas as pd
+import string
+
+
+
+
+if __name__ == "__main__":
+
+    parser = argparse.ArgumentParser(description="combine detected points into one aligned file",epilog=__doc__)
+    parser.add_argument("ifiles",nargs="+",
+                        help="list of filenames with detected points")
+    parser.add_argument("--offsets",default="table_offsets.csv",
+                        help="file containing offsets, default table_offsets.csv")
+    parser.add_argument("--ofile",default="xypts.csv",
+                        help="output filename, default xypts.csv")
+    parser.add_argument("--hedrickize",default=None,
+                        help="hedrickize the y coordinate")
+    parser.add_argument("--verbose",action="store_true",
+                        help="toggle verbosity")
+    args = parser.parse_args()
+    if args.verbose:
+        logging.basicConfig(level=logging.DEBUG)
+        logging.debug("running in verbose mode")
+    else:
+        logging.basicConfig(level=logging.INFO)
+
+
+
+    # open the offsets
+    logging.info("reading offsets from {0}".format(args.offsets))
+    offsets = pd.read_csv(args.offsets)
+    
+    # initialize result
+    result = pd.DataFrame()
+
+    # get points, align and merge
+    for ix,eachfile in enumerate(args.ifiles):
+       
+        # load the data
+        logging.info("reading points from {0}".format(eachfile))
+        data = pd.read_csv(eachfile)
+        
+        # adjust the frames
+        logging.debug("adjusting frames by offsets")
+        data['frame'] = data.frame + offsets['integer_offset'].iloc[ix]
+        data['frame'] = data.frame.astype(int)
+
+
+        # rename the columns
+        foo = data.columns.values.tolist()
+        for a in range(1,len(foo)):
+            bar = foo[a].split("_")
+            foo[a] = string.join([bar[0],'cam{0}'.format(ix+1),bar[1]],'_')
+        data.columns = foo
+        logging.debug("renamed columns to {0}".format(foo))
+            
+        # set the index and merge with result
+        logging.debug("merging with result")
+        data = data.set_index('frame')
+        result = pd.concat([result,data],axis=1)
+
+
+    # optionally hedrickize
+    if args.hedrickize is not None:
+        logging.info("hedrickizing, height {0} pixels".format(args.hedrickize))
+        for a in range(1,len(result.columns),2):
+            result[result.columns[a]] = float(args.hedrickize)-result[result.columns[a]]
+
+    # reorder columns to match DLTdv5
+    # it should be:
+    # pt1_cam1_X pt1_cam1_Y pt1_cam2_X pt1_cam2_Y etc... 
+    ncams = len(args.ifiles)
+    npts = result.shape[1]/2/ncams
+    neworder = list()
+    for pt in xrange(npts):
+        for cam in xrange(ncams):
+            neworder.append(u'pt{0}_cam{1}_X'.format(pt+1,cam+1))
+            neworder.append(u'pt{0}_cam{1}_Y'.format(pt+1,cam+1))
+    #print result.columns
+    #print neworder
+    result = result[neworder]
+
+    # reset the index and output to file
+    logging.info("writing result to {0}".format(args.ofile))
+    result = result.reset_index()
+    # next line debugging for Dylan
+    result = result.drop('frame',axis=1)
+    result.to_csv(args.ofile,index=False,na_rep="NaN")
+

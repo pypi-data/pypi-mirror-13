@@ -1,0 +1,59 @@
+#!/usr/bin/env python
+"""
+ravels an xypts.csv-like file for use in easyWand as background points,
+also removing nan rows
+
+this can be used to auto-construct a large number of background points
+in conjunction with argus_detect_patterns2 or the other detect scripts,
+or to ravel a manually constructed dataset for use in bootstrapping a 
+calibration with easyWand5. 
+"""
+
+import argparse
+import logging
+import pandas as pd
+
+if __name__ == "__main__":
+
+    # get arguments
+    parser = argparse.ArgumentParser(description="create background points for easyWand5 use",epilog=__doc__)
+    parser.add_argument("ifile",
+                        help="input file to process, like xypts.csv")
+    parser.add_argument("--ofile",default="bkgpts.csv",
+                        help="output filename, default bkgpts.csv")
+    parser.add_argument("--verbose",action="store_true",
+                        help="toggle verbosity")
+    args = parser.parse_args()
+    if args.verbose:
+        logging.basicConfig(level=logging.DEBUG)
+        logging.debug("running in verbose mode")
+    else:
+        logging.basicConfig(level=logging.INFO)
+
+
+
+    # load the data
+    df = pd.read_csv(args.ifile)
+    df['frame'] = df.index
+    
+    # melt it and extract pt, cam, and XY
+    melted = pd.melt(df,id_vars=['frame'])
+    melted['pt'] = [X.split('_')[0] for X in melted.variable.tolist()]
+    melted['cam'] = [X.split('_')[1] for X in melted.variable.tolist()]
+    melted['XY'] = [X.split('_')[2] for X in melted.variable.tolist()]
+    melted['newvariable'] = 'pt1_'+melted.cam+'_'+melted.XY
+
+    # cast it using pivot_table equivalent of cast
+    result = pd.pivot_table(melted,
+                            values=['value'],
+                            index = ['frame','pt'],
+                            columns='newvariable')
+
+    result = result.reset_index(drop=True)
+    result.columns = sorted(melted.newvariable.unique().tolist())
+    result = result.dropna(how='all')
+    logging.info("got this:\n{0}".format(result.head()))
+
+    # save it
+    logging.info("writing result to {0}".format(args.ofile))
+    result.to_csv(args.ofile,index=False,na_rep="NaN")

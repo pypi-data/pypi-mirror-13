@@ -1,0 +1,216 @@
+#!/usr/bin/env python
+"""
+This script provides a basic auto-detector for wands constructed with 
+color-coded balls.  It gives decent performance indoors under fluorescent
+lights (as might be seen in a lab) with 1.25" / 3.2 cm styrofoam balls 
+painted with Krylon 3105 glowing cerise and Krylon 3101 red glowing orange.
+
+It is possible to modify this for use with other colored wands; see the 
+comments within the body of the code. Automatic segmentation in general
+can be sensitive to lighting, color, shape, etc and so each application 
+may require modification to the template here. 
+"""
+
+import argparse
+import logging
+import cv2
+import pandas as pd
+import numpy as np
+
+
+
+
+
+
+if __name__ == "__main__":
+
+    # get arguments
+    parser = argparse.ArgumentParser(description="find Dunkin Donut colored wands",epilog=__doc__)
+    parser.add_argument("ifile",
+                        help="input movie to process")
+    parser.add_argument("--ofile",default="wandpts.csv",
+                        help="output filename for result, default wandpts.csv")
+    parser.add_argument("--mask",nargs=4,
+                        help="take pixels only inside [xmin xmax ymin ymax]")
+    parser.add_argument("--frames",nargs=2,
+                        help="take frames only inside [start finish]")
+    parser.add_argument("--display",action="store_true",
+                        help="display while working")
+    parser.add_argument("--verbose",action="store_true",
+                        help="toggle verbosity")
+    args = parser.parse_args()
+    if args.verbose:
+        logging.basicConfig(level=logging.DEBUG)
+        logging.debug("running in verbose mode")
+    else:
+        logging.basicConfig(level=logging.INFO)
+
+
+
+    # open movie
+    movie = cv2.VideoCapture(args.ifile)
+    n_frames = int(movie.get(cv2.cv.CV_CAP_PROP_FRAME_COUNT))
+    height = int(movie.get(cv2.cv.CV_CAP_PROP_FRAME_HEIGHT))
+    width = int(movie.get(cv2.cv.CV_CAP_PROP_FRAME_WIDTH))
+
+    # initialize stuff
+    result = dict()
+    result['frame'] = list()
+    result['pt1_X'] = list()
+    result['pt1_Y'] = list()
+    result['pt2_X'] = list()
+    result['pt2_Y'] = list()
+
+    # mask optional
+    if args.mask is not None:
+        mask = np.zeros((height,width,3),dtype=np.uint8)
+        xmin = int(args.mask[0])
+        xmax = int(args.mask[1])
+        ymin = int(args.mask[2])
+        ymax = int(args.mask[3])
+        mask[ymin:ymax,xmin:xmax,:] = 255
+    else:
+        mask = None
+
+    # frame optional
+    if args.frames is not None:
+        frames = [int(args.frames[0]),int(args.frames[1])]
+    else:
+        frames = [0,n_frames]
+
+    # initialize display window
+    if args.display:
+        cv2.namedWindow('argus_detect_wands',cv2.WINDOW_NORMAL)
+
+    # go through frame by frame
+    logging.info("processing frame by frame")
+    for frame in xrange(n_frames):
+        retval, raw = movie.read()
+        red = None
+        orange = None
+
+        result['frame'].append(frame)
+
+        if (retval and 
+            (frame >= frames[0]) and
+            (frame < frames[1])):
+            hsv = cv2.cvtColor(raw,cv2.COLOR_BGR2HSV)
+
+            # apply mask (optional)
+            if mask is not None:
+                hsv = cv2.bitwise_and(hsv,mask)
+
+            # get redball h 170-180 s>200 v>100        
+            # if you want to use a different color here, supply
+            # lower and upper bounds in hsv coordinates...
+            # h hue between 0 and 180
+            # s saturation between 0 and 255
+            # v value between 0 and 255 
+            redball = cv2.inRange(hsv,
+                                  lowerb=(170,200,100),
+                                  upperb=(180,255,255))
+            working = redball.copy()
+            contours, _ = cv2.findContours(working,
+                                           mode = cv2.cv.CV_RETR_LIST,
+                                           method = cv2.cv.CV_CHAIN_APPROX_NONE)
+            if len(contours)>0:
+                contours = sorted(contours,
+                                  key = lambda c:cv2.moments(c)['m00'],
+                                  reverse=True)
+                probable = contours[0]
+                moments = cv2.moments(probable)
+                # the following line only accepts blobs between area 0 
+                # and 200. if you have abnormally large balls, change the
+                # acceptance threshold accordingly. 
+                if ((moments['m00']>0.**2.) and
+                    (moments['m00']<200.**2.)):
+                    red = (moments['m10']/moments['m00'],
+                          moments['m01']/moments['m00'])
+                    result['pt1_X'].append(red[0])
+                    result['pt1_Y'].append(red[1])
+                    # NB: If getting uniform illumination is a problem, 
+                    # you may wish to fit the detected blob to a circle 
+                    # and use that instead of the centroid taken here. 
+                    # This can be done using Hough circles, for example. 
+                else:
+                    red = None
+                    result['pt1_X'].append(np.nan)
+                    result['pt1_Y'].append(np.nan)
+            else:
+                red = None
+                result['pt1_X'].append(np.nan)
+                result['pt1_Y'].append(np.nan)
+
+
+
+
+            # get orangeball h 0-10 s>200 v>100
+            # similar to red; you can change the color here. 
+            orangeball = cv2.inRange(hsv,
+                                     lowerb=(0,200,100),
+                                     upperb=(10,255,255))
+            working = orangeball.copy()
+            contours, _ = cv2.findContours(working,
+                                           mode = cv2.cv.CV_RETR_LIST,
+                                           method = cv2.cv.CV_CHAIN_APPROX_NONE)
+            if len(contours)>0:
+                contours = sorted(contours,
+                                  key = lambda c:cv2.moments(c)['m00'],
+                                  reverse=True)
+                probable = contours[0]
+                moments = cv2.moments(probable)
+                if ((moments['m00']>0.**2.) and
+                    (moments['m00']<200.**2.)):
+                    orange = (moments['m10']/moments['m00'],
+                              moments['m01']/moments['m00'])
+                    result['pt2_X'].append(orange[0])
+                    result['pt2_Y'].append(orange[1])
+                else:
+                    orange = None
+                    result['pt2_X'].append(np.nan)
+                    result['pt2_Y'].append(np.nan)
+            else:
+                orange = None
+                result['pt2_X'].append(np.nan)
+                result['pt2_Y'].append(np.nan)
+
+            if args.display:
+                draw = cv2.cvtColor(raw,cv2.COLOR_BGR2GRAY)
+                draw = cv2.cvtColor(draw,cv2.COLOR_GRAY2BGR)
+                if red:
+                    cv2.circle(draw,(int(round(red[0])),int(round(red[1]))),
+                               2,(131,59,236),2)
+                    cv2.putText(draw,'PT1 DETECTED',
+                                (10,50),cv2.FONT_HERSHEY_SIMPLEX,1,
+                                (131,59,236),3)
+                if orange:
+                    cv2.circle(draw,(int(round(orange[0])),
+                                     int(round(orange[1]))),
+                               2,(0,69,255),2)
+                    cv2.putText(draw,'PT2 DETECTED',
+                                (10,100),cv2.FONT_HERSHEY_SIMPLEX,1,
+                                (0,69,255),3)
+
+                cv2.imshow('argus_detect_wands',draw)
+                cv2.waitKey(1)
+
+        else:
+            result['pt1_X'].append(np.nan)
+            result['pt1_Y'].append(np.nan)
+            result['pt2_X'].append(np.nan)
+            result['pt2_Y'].append(np.nan)
+
+
+    
+    # output results
+    logging.info("writing result to {0}".format(args.ofile))
+    result = pd.DataFrame(result)
+    result = result[['frame','pt1_X','pt1_Y','pt2_X','pt2_Y']]
+    result.to_csv(args.ofile,index=False)
+
+    # cleanup
+    logging.info("done, cleaning up")
+    movie = None
+    if args.display:
+        cv2.destroyAllWindows()
+
