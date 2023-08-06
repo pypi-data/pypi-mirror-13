@@ -1,0 +1,143 @@
+import json
+import logging
+
+from trosnoth.messages import AchievementUnlockedMsg
+from trosnoth.utils.twist import WeakLoopingCall
+from trosnoth.utils.utils import timeNow
+
+from trosnoth.gamerecording.achievementlist import availableAchievements
+
+log = logging.getLogger(__name__)
+
+
+class PlayerAchievements(object):
+    '''Tracks achievements for a single player.'''
+    achievementDefs = availableAchievements
+
+    def __init__(self, manager, player):
+        self.manager = manager
+        self.player = player
+        self.world = manager.world
+        self.achievements = {
+            c.idstring: c(player, self.world)
+            for c in self.achievementDefs.perPlayer
+        }
+
+    def rejoined(self, player):
+        self.player = player
+        for achievement in self.achievements.itervalues():
+            achievement.rejoined(player)
+
+    def start(self):
+        for achievement in self.achievements.itervalues():
+            achievement.onUnlocked.addListener(
+                self.manager.achievementUnlocked)
+            achievement.start()
+
+    def stop(self):
+        for achievement in self.achievements.itervalues():
+            achievement.stop()
+            achievement.onUnlocked.removeListener(
+                self.manager.achievementUnlocked)
+
+    def saveProgress(self):
+        if self.player.user is not None:
+            self.player.user.saveProgressAchievements(
+                self.achievements.itervalues())
+
+    def __str__(self):
+        return str(self.achievements.values)
+
+
+class AchievementManager(object):
+    SAVE_PERIOD = 20
+
+    achievementDefs = availableAchievements
+
+    def __init__(self, game, filename):
+        self.game = game
+        self.world = world = game.world
+        self.filename = filename.replace('replace-this', 'players')
+        self.lastSave = timeNow()
+
+        self._metaSave(filename.replace('replace-this', 'definitions'))
+
+        # All players recorded this game, indexed by user id.
+        self.allPlayers = {}
+
+        defs = self.achievementDefs
+        self.oncePerGameAchievements = [c(world) for c in defs.oncePerGame]
+        self.oncePerTeamPerGameAchievements = [
+            c(world, team)
+            for c in defs.oncePerTeamPerGame
+            for team in world.teams
+        ]
+
+        self.loop = WeakLoopingCall(self, 'save')
+
+    def _metaSave(self, filename):
+        '''
+        Saves information about the achievements themselves to a JSON file.
+        This is so the achievement info can be accessed by external
+        applications (such as the camp website).
+        '''
+
+        allAchievements = {}
+
+        for classType in self.achievementDefs.all:
+            allAchievements.update(classType.describe())
+
+        with open(filename, 'w') as f:
+            json.dump(allAchievements, f, indent=4)
+
+    def save(self):
+        for playerAchievements in self.allPlayers.itervalues():
+            playerAchievements.saveProgress()
+
+    def start(self):
+        for player in self.world.players:
+            self.playerAdded(player)
+
+        self.world.onPlayerAdded.addListener(self.playerAdded)
+        self.loop.start(self.SAVE_PERIOD)
+
+        for a in self.oncePerGameAchievements:
+            a.onUnlocked.addListener(self.achievementUnlocked)
+            a.start()
+        for a in self.oncePerTeamPerGameAchievements:
+            a.start()
+            a.onUnlocked.addListener(self.achievementUnlocked)
+
+    def stop(self):
+        self.world.onPlayerAdded.removeListener(self.playerAdded)
+        self.save()
+        for a in self.oncePerGameAchievements:
+            a.stop()
+            a.onUnlocked.removeListener(self.achievementUnlocked)
+        for a in self.oncePerTeamPerGameAchievements:
+            a.stop()
+            a.onUnlocked.removeListener(self.achievementUnlocked)
+        for p in self.allPlayers.itervalues():
+            p.stop()
+
+    def playerAdded(self, player):
+        name = player.identifyingName
+        if name not in self.allPlayers:
+            a = PlayerAchievements(self, player)
+            self.allPlayers[name] = a
+            a.start()
+        else:
+            self.allPlayers[name].rejoined(player)
+
+    def triggerAchievement(self, player, achievementId):
+        '''
+        Called from stats manager to trigger a stats-related achievement.
+        '''
+        a = self.allPlayers[player.identifyingName].achievements[achievementId]
+        a.achievementTriggered()
+
+    def achievementUnlocked(self, achievement, player):
+        if player.user is not None:
+            player.user.achievementUnlocked(achievement.idstring)
+        self.game.sendServerCommand(
+            AchievementUnlockedMsg(player.id, achievement.idstring.encode()))
