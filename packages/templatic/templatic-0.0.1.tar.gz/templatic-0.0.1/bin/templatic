@@ -1,0 +1,32 @@
+#!/usr/bin/env python
+import os
+from argparse import ArgumentParser
+from jinja2 import FileSystemLoader, Environment, ChoiceLoader
+from yaml import load
+
+
+def parse_cli_args():
+    parser = ArgumentParser()
+    parser.add_argument('filename', help='template file')
+    parser.add_argument('--templatePaths', help='add a template path', default=['.'], nargs='*')
+    parser.add_argument('--propertyFiles', help='add a property file', default=[], nargs='*')
+
+    return parser.parse_args()
+
+
+args = parse_cli_args()
+
+template_loaders = [FileSystemLoader(template_path) for template_path in args.templatePaths]
+
+template_vars = {}
+for propertyFile in args.propertyFiles:
+    stream = open(propertyFile, 'r')
+    yaml_content = load(stream)
+    template_vars.update(yaml_content)
+
+template_vars.update(os.environ)
+
+env = Environment(loader=ChoiceLoader(template_loaders))
+template = env.get_template(args.filename)
+
+print(template.render(template_vars))
