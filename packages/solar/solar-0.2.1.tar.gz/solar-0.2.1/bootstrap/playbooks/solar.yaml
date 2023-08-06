@@ -1,0 +1,85 @@
+---
+
+- hosts: all
+  sudo: yes
+  vars:
+    ssh_ip_mask: "10.*.*.*"
+  tasks:
+    # upgrade pbr first, old version throws strange errors
+    - shell: pip install pbr -U
+    # Setup development env for solar
+    - shell: pip install -e . chdir=/vagrant
+    - shell: pip install git+git://github.com/Mirantis/solar-agent.git
+    - include: tasks/ssh_conf.yaml
+
+- hosts: all
+  tasks:
+    #  setup solar-resources
+    # change to openstack/solar-resources later
+    - git: repo=https://github.com/Mirantis/solar-resources.git version=0.2.0 dest=/vagrant/solar-resources update=no
+
+    - shell: 'mount|grep " /vagrant"'
+      register: vagrant_mounted
+      ignore_errors: True
+    - file: path=/vagrant/solar-resources owner=vagrant group=vagrant recurse=yes
+      when: vagrant_mounted|failed
+
+    - shell: pip install gevent
+    # set default config location
+    - lineinfile:
+        dest: /home/vagrant/.bashrc
+        line: export SOLAR_CONFIG="/vagrant/.config"
+        state: present
+
+    # create custom config file /vagrant/.solar_config_override for vagrant env
+    - file: path=/.solar_config_override state=touch mode=0644
+    - lineinfile:
+        dest: /.solar_config_override
+        line: "solar_db: riak://127.0.0.1:8087"
+        state: present
+        create: yes
+    - lineinfile:
+        dest: /.solar_config_override
+        line: "log_file: /var/log/solar/solar.log"
+        state: present
+        create: yes
+    - lineinfile:
+        dest: /.solar_config_override
+        line: "counter_bucket_type: counters"
+        state: present
+        create: yes
+    - lineinfile:
+        dest: /home/vagrant/.bashrc
+        line: export PYTHONWARNINGS="ignore"
+        state: present
+    # make riak default on vagrant env
+    - lineinfile:
+        dest: /home/vagrant/.bashrc
+        line: export SOLAR_CONFIG_OVERRIDE="/.solar_config_override"
+        state: present
+    - lineinfile:
+        dest: /home/vagrant/.bashrc
+        line: eval "$(_SOLAR_COMPLETE=source solar)"
+        state: present
+
+    - file: path=/var/lib/solar/repositories state=directory owner=vagrant
+    - file: src=/vagrant/solar-resources/resources dest=/var/lib/solar/repositories/resources state=link owner=vagrant
+    - file: src=/vagrant/solar-resources/templates dest=/var/lib/solar/repositories/templates state=link owner=vagrant
+
+    - name: start riak container
+      docker:
+        name: vagrant_riak_1
+        image: solarproject/riak
+        volumes:
+            - /vagrant/utils/riak/app.config:/etc/riak/app.config
+        ports:
+          - 8087:8087
+          - 8098:8098
+    # preconfigure docker container
+    # add counters datatype etc.
+    - shell: timeout 60 docker exec vagrant_riak_1 riak-admin wait_for_service riak_kv
+    - shell: timeout 10 docker exec vagrant_riak_1 riak-admin bucket-type create counters '{"props":{"datatype":"counter"}}'
+      ignore_errors: yes
+    - shell: timeout 10 docker exec vagrant_riak_1 riak-admin bucket-type activate counters
+
+    - include: tasks/worker_upstart.yaml

@@ -1,0 +1,73 @@
+[console_scripts]
+solar = solar.cli.main:run
+solar-worker = solar.orchestration:main
+
+[solar.computable_inputs]
+j2 = solar.computable_inputs.ci_jinja:JinjaProcessor
+jinja = solar.computable_inputs.ci_jinja:JinjaProcessor
+jinja2 = solar.computable_inputs.ci_jinja:JinjaProcessor
+lua = solar.computable_inputs.ci_lua:LuaProcessor
+py = solar.computable_inputs.ci_python:PyProcessor
+python = solar.computable_inputs.ci_python:PyProcessor
+
+[solar.handlers]
+ansible = solar.core.handlers.ansible_template:AnsibleTemplate
+ansible_local = solar.core.handlers.ansible_template_local:AnsibleTemplateLocal
+ansible_playbook = solar.core.handlers.ansible_playbook:AnsiblePlaybook
+ansible_playbook_local = solar.core.handlers.ansible_playbook_local:AnsiblePlaybookLocal
+naive_sync = solar.core.handlers.naive_sync:NaiveSync
+none = solar.core.handlers.base:Empty
+puppet = solar.core.handlers.puppet:Puppet
+puppetv2 = solar.core.handlers.puppet:PuppetV2
+shell = solar.core.handlers.shell:Shell
+
+[solar.orchestration.constructors]
+scheduler = solar.orchestration:construct_scheduler
+system_log = solar.orchestration:construct_system_log
+tasks = solar.orchestration:construct_tasks
+
+[solar.orchestration.drivers.scheduler]
+solar = solar.orchestration.workers.scheduler:Scheduler
+
+[solar.orchestration.drivers.system_log]
+solar = solar.orchestration.workers.system_log:SystemLog
+
+[solar.orchestration.drivers.tasks]
+solar = solar.orchestration.workers.tasks:Tasks
+
+[solar.orchestration.executors]
+zerorpc = solar.orchestration.executors.zerorpc_executor
+
+[solar.orchestration.extensions]
+scheduler = solar.orchestration.extensions:scheduler
+system_log = solar.orchestration.extensions:system_log
+tasks = solar.orchestration.extensions:tasks
+
+[solar.orchestration.extensions_clients]
+scheduler = solar.orchestration.extensions:scheduler_client
+system_log = solar.orchestration.extensions:system_log_client
+tasks = solar.orchestration.extensions:tasks_client
+
+[solar.orchestration.hooks.scheduler.construct]
+session_sub = solar.orchestration:wrap_session
+
+[solar.orchestration.hooks.system_log.construct]
+session_sub = solar.orchestration:wrap_session
+
+[solar.orchestration.hooks.tasks.construct]
+scheduler_sub = solar.orchestration.workers.scheduler:tasks_subscribe
+system_log_sub = solar.orchestration.workers.system_log:tasks_subscribe
+
+[solar.orchestration.runners]
+gevent = solar.orchestration.runners.gevent_runner:run_all
+
+[solar.transports.run]
+solar_agent = solar.core.transports.solar_agent_transport:SolarAgentRunTransport
+ssh = solar.core.transports.ssh_raw:RawSSHRunTransport
+
+[solar.transports.sync]
+rsync = solar.core.transports.rsync:RsyncSyncTransport
+solar_agent = solar.core.transports.solar_agent_transport:SolarAgentSyncTransport
+ssh = solar.core.transports.ssh:SSHSyncTransport
+torrent = solar.core.transports.torrent:TorrentSyncTransport
+
