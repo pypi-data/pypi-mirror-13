@@ -1,0 +1,184 @@
+Metadata-Version: 1.1
+Name: SuRF
+Version: 0.1.8
+Summary: Object RDF Mapper
+Home-page: http://code.google.com/p/surfrdf/
+Author: Cosmin Basca
+Author-email: cosmin.basca at google.com
+License: New BSD SOFTWARE
+Download-URL: http://pypi.python.org/pypi/SuRF/
+Description: *SuRF* is a Python library for working with RDF data in an Object-Oriented manner.
+        In SuRF, RDF nodes (subjects and objects) are represented as Python objects and
+        RDF edges (predicates) as their attributes. *SuRF* is an Object RDF Mapper (ORM),
+        similar in concept to Object Relational Mappers like *SQLAlchemy*.
+        
+        
+        Install
+        =======
+        
+        Install SuRF:
+        
+        ```sh
+        $ # with easy_install ... 
+        $ easy_install -U surf
+        
+        $ # or with pip ... 
+        $ pip install --upgrade surf
+        ```
+        
+        
+        You'll need one of the following plugins (also installable by easy_install):
+        
+          * _surf.sparql_protocol_,
+            for stores with a SPARQL Protocol endpoint (e.g. Virtuoso)
+          * _surf.allegro_franz_,
+            for the AllegroGraph RDFStore
+          * _surf.sesame2_,
+            for stores with a Sesame2 HTTP API
+          * _surf.rdflib_,
+            for the experimental store implementation of rdflib (via rdfextras)
+        
+        
+        Example
+        =======
+        
+        The example below shows how to query a resource using the rdflib in-memory
+        backend:
+        
+        ```python
+        >>> from surf import *
+        >>> store = Store(reader='rdflib',
+        ...               writer='rdflib',
+        ...               rdflib_store='IOMemory')
+        >>> session = Session(store)
+        >>> store.load_triples(source='http://www.w3.org/People/Berners-Lee/card.rdf')
+        True
+        >>> Person = session.get_class(ns.FOAF.Person)
+        >>> all_persons = Person.all()
+        >>> for person in all_persons:
+        ...     print person.foaf_name.first
+        ...
+        Timothy Berners-Lee
+        ```
+        
+        Documentation
+        =============
+        
+        You can read the documentation online at http://packages.python.org/SuRF/ 
+        
+        To build the documentation yourself, install sphinx and run the build step::
+        
+        ```sh
+            $ pip install sphinx
+            $ python setup.py build_sphinx
+        ```
+        
+        Unit tests
+        ==========
+        
+        Run unit tests from the source directory:
+        
+        ```sh
+            $ python setup.py test
+        ```
+        
+        Test plugins from their respective source directory, e.g.:
+        
+        ```sh
+            $ cd plugins/surf.sparql_protocol/
+            $ python setup.py test
+        ```
+        
+        News / Changelog
+        ================
+        
+        Version 1.1.6
+        -------------
+        
+          * new module added: log (centralized logging for surf)
+          * new LogMixin superclass for Store and Plugin,
+          * support for deprecation
+          * deprecated methods enable_logging and is_logging_enabled (use LogMixin facilities)
+          * deprecated the use of only_direct where defined, use direct_only - this feature will be removed by 1.2.0!
+        
+        Version 1.1.5
+        -------------
+        
+          * Issue 54 - fixed
+          * Issue 45 - SuRF can be installed from source with pip (FIXME: python chesse shop)
+          * Issue 40 - (could not reproduce locally, however rdflib 3.2.1 was used and worked surf + surf.rdflib)
+          * Issue 27 - fixed
+          * Small changes in version API (see __version__.py)
+        
+        Version 1.1.4
+        -------------
+        
+          * Changes to support rdflib 3.1.0
+          * plugin-wide execute_sparql(), fix JSON result format, better SPARQL ASK
+            query support
+          * Descending ordering of results
+          * Updated Sesame2 & AllegroGraph support
+          * many bug fixes
+          * Dropped dependency on old & buggy cjson
+          * More unit tests
+          * Tests are shipped with the source code
+        
+        
+        Version 1.1.3
+        -------------
+        
+          * Fixed bug on plugin manager for running SuRF in embedded mode (bundled with an application)
+          * Single version control point (see, __version__.py)
+        
+        
+        Version 1.1.2
+        -------------
+        
+          * Support for loading plugins directly from folder if specified
+          * Introduced the plugin manager module
+        
+        
+        Version 1.1.1
+        -------------
+        
+          * Changes to support Python 2.4
+          * Added new vocabularies to the default namespace manager
+          * Bug fixes
+        
+        
+        Version 1.1.0
+        -------------
+        
+          * Class mapping based on rdf:type in session
+          * Query builder allows min, max, avg aggregate functions
+          * get_by accepts Resource instances as values, uses their subjects
+          * ResultValue supports "in" (if some_person in person.foaf_knows: ...)
+          * "single" descriptor for easy access to attributes with single value
+          * Fixed multiple bugs in sesame2 plugin
+          * Default namespace can be specified for autogenerated resource URIs
+        
+        
+        Version 1.0.0
+        -------------
+        
+          * Improved resource and attribute querying:
+              * filter resources by attribute values 
+              * filter resources using SPARQL filter expressions 
+              * limit, offset, order ascending/descending 
+              * specify graph/context where resources should be loaded from and later 
+                saved to 
+              * eager-load resource attributes 
+          * More documentation and examples
+        
+        
+        
+Keywords: Python SPARQL RDF resource mapper ORM query Semantic Web RDFS rdflib Object-Oriented
+Platform: any
+Classifier: Development Status :: 4 - Beta
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: BSD License
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python :: 2.5
+Classifier: Programming Language :: Python :: 2.6
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Topic :: Software Development :: Libraries :: Python Modules
