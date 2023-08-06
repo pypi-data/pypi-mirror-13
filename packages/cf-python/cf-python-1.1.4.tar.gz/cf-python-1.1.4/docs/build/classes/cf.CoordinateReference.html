@@ -1,0 +1,1087 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>cf.CoordinateReference &mdash; Documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/copybutton.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="Documentation" href="../index.html" />
+    <link rel="up" title="Classes of the cf module" href="../class.html" />
+    <link rel="next" title="cf.Data" href="cf.Data.html" />
+    <link rel="prev" title="cf.CoordinateBounds.where" href="../generated/cf.CoordinateBounds.where.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="cf.Data.html" title="cf.Data"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../generated/cf.CoordinateBounds.where.html" title="cf.CoordinateBounds.where"
+             accesskey="P">previous</a> |</li>
+  <li><a target="_blank" href="http://cfpython.bitbucket.org">cf-python 1.1</a> &raquo;</li>
+<!--
+  <li><a target="_blank" href="http://cfpython.bitbucket.org">cf-python</a> &raquo;</li>
+  <li><select onchange="location = this.options[this.selectedIndex].value;">
+
+      <option value="../../1.0/index.html">1.0
+
+      <option value="../../0.9.9/index.html">0.9.9
+
+      <option value="../../0.9.8.3/index.html">0.9.8.3
+
+      <option value="../../archive.html">Archive
+
+      </select>
+  </li>
+-->
+  
+        <li><a href="../index.html">Documentation</a> &raquo;</li>
+
+          <li><a href="../reference.html" >Reference manual</a> &raquo;</li>
+          <li><a href="../class.html" accesskey="U">Classes of the <tt class="docutils literal"><span class="pre">cf</span></tt> module</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="cf-coordinatereference">
+<h1>cf.CoordinateReference<a class="headerlink" href="#cf-coordinatereference" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="cf.CoordinateReference">
+<em class="property">class </em><tt class="descclassname">cf.</tt><tt class="descname">CoordinateReference</tt><big>(</big><em>name=None</em>, <em>crtype=None</em>, <em>coords=None</em>, <em>coord_terms=None</em>, <em>**kwargs</em><big>)</big><a class="reference external" href="https://bitbucket.org/cfpython/cf-python/src/v1.1/cf/__init__.py"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cf.CoordinateReference" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">cf.utils.Dict</span></tt></p>
+<p>A CF coordinate reference construct.</p>
+<p>A coordinate reference construct relates the field&#8217;s coordinate values
+to locations in a planetary reference frame.</p>
+<p>The coordinate reference object is associated with a coordinate system
+and contains links to the dimension or auxiliary coordinate constructs
+to which it applies; and any additional terms, such as parameter
+values and field objects which define a datum and coordinate
+conversion, i.e. a formula for converting coordinate values taken from
+the dimension or auxiliary coordinate objects to a different
+coordinate system.</p>
+<p><strong>Accessing terms</strong></p>
+<p>The coordinate reference object behaves like a dictionary when it
+comes to accessing its terms and their values: For example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">c</span> <span class="o">=</span> <span class="n">cf</span><span class="o">.</span><span class="n">CoordinateReference</span><span class="p">(</span><span class="s">&#39;azimuthal_equidistant&#39;</span><span class="p">,</span> 
+<span class="gp">... </span>                            <span class="n">longitude_of_projection_origin</span><span class="o">=</span><span class="mf">80.5</span><span class="p">,</span>
+<span class="gp">... </span>                            <span class="n">latitude_of_projection_origin</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> 
+<span class="gp">... </span>                            <span class="n">false_easting</span><span class="o">=</span><span class="n">cf</span><span class="o">.</span><span class="n">Data</span><span class="p">(</span><span class="o">-</span><span class="mi">200</span><span class="p">,</span> <span class="s">&#39;km&#39;</span><span class="p">),</span>
+<span class="gp">... </span>                            <span class="n">false_northing</span><span class="o">=</span><span class="n">cf</span><span class="o">.</span><span class="n">Data</span><span class="p">(</span><span class="o">-</span><span class="mi">100</span><span class="p">,</span> <span class="s">&#39;km&#39;</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+<span class="go">[&#39;false_easting&#39;,</span>
+<span class="go"> &#39;latitude_of_projection_origin&#39;,</span>
+<span class="go"> &#39;false_northing&#39;,</span>
+<span class="go"> &#39;longitude_of_projection_origin&#39;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+<span class="go">[(&#39;false_easting&#39;, &lt;CF Data: -200 km&gt;),</span>
+<span class="go"> (&#39;latitude_of_projection_origin&#39;, 5),</span>
+<span class="go"> (&#39;false_northing&#39;, &lt;CF Data: -100 km&gt;),</span>
+<span class="go"> (&#39;longitude_of_projection_origin&#39;, 80.5)]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="p">[</span><span class="s">&#39;latitude_of_projection_origin&#39;</span><span class="p">]</span>
+<span class="go">5</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="p">[</span><span class="s">&#39;latitude_of_projection_origin&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mf">75.25</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="p">[</span><span class="s">&#39;latitude_of_projection_origin&#39;</span><span class="p">]</span>
+<span class="go">-75.25</span>
+</pre></div>
+</div>
+<p><strong>Attributes</strong></p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="21%" />
+<col width="79%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Attribute</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><tt class="xref py py-obj docutils literal"><span class="pre">name</span></tt></td>
+<td>The identity of the coordinate reference.</td>
+</tr>
+<tr class="row-odd"><td><tt class="xref py py-obj docutils literal"><span class="pre">type</span></tt></td>
+<td>The CF type of the coordinate reference.</td>
+</tr>
+<tr class="row-even"><td><tt class="xref py py-obj docutils literal"><span class="pre">coords</span></tt></td>
+<td>The identities of the dimension and auxiliary
+coordinate objects of the which apply to this
+coordinate reference.</td>
+</tr>
+<tr class="row-odd"><td><tt class="xref py py-obj docutils literal"><span class="pre">coord_terms</span></tt></td>
+<td>The terms of the coordinate conversion which refer to
+dimension or auxiliary coordinate objects.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Initialization</strong></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt>name <span class="classifier-delimiter">:</span> <span class="classifier">str, optional</span></dt>
+<dd><p class="first">A name which describes the nature of the coordinate
+conversion. This is usually a CF grid_mapping name or the
+standard name of a CF dimensionless vertical coordinate, but
+is not restricted to these.</p>
+<blockquote class="last">
+<div><p>Example: To create a polar stereographic coordinate
+reference: <tt class="docutils literal"><span class="pre">name='polar_stereographic'</span></tt>. To create
+coordinate reference for an ocean sigma over z coordinate:
+<tt class="docutils literal"><span class="pre">name='ocean_sigma_z_coordinate'</span></tt>. To create new type of
+coordinate reference: <tt class="docutils literal"><span class="pre">name='my_new_type'</span></tt>.</p>
+</div></blockquote>
+</dd>
+<dt>crtype <span class="classifier-delimiter">:</span> <span class="classifier">str, optional</span></dt>
+<dd><p class="first">The CF type of the coordinate reference. This is either
+<tt class="docutils literal"><span class="pre">'grid_mapping'</span></tt> or <tt class="docutils literal"><span class="pre">'formula_terms'</span></tt>. By default the type
+is inferred from the <em>name</em>, if possible. For example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">c</span> <span class="o">=</span> <span class="n">cf</span><span class="o">.</span><span class="n">CoordinateReference</span><span class="p">(</span><span class="s">&#39;transverse_mercator&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">type</span>
+<span class="go">&#39;grid_mapping&#39;</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">c</span> <span class="o">=</span> <span class="n">cf</span><span class="o">.</span><span class="n">CoordinateReference</span><span class="p">(</span><span class="s">&#39;my_new_type&#39;</span><span class="p">,</span> <span class="n">crtype</span><span class="o">=</span><span class="s">&#39;formula_terms&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">type</span>
+<span class="go">&#39;formula_terms&#39;</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">c</span> <span class="o">=</span> <span class="n">cf</span><span class="o">.</span><span class="n">CoordinateReference</span><span class="p">(</span><span class="s">&#39;my_new_type&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">c</span><span class="o">.</span><span class="n">type</span>
+<span class="go">None</span>
+</pre></div>
+</div>
+<div class="last highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">c</span> <span class="o">=</span> <span class="n">cf</span><span class="o">.</span><span class="n">CoordinateReference</span><span class="p">(</span><span class="s">&#39;my_new_type&#39;</span><span class="p">,</span> <span class="n">crtype</span><span class="o">=</span><span class="s">&#39;grid_mapping&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">c</span><span class="o">.</span><span class="n">type</span>
+<span class="go">&#39;grid_mapping&#39;</span>
+</pre></div>
+</div>
+</dd>
+<dt>coords <span class="classifier-delimiter">:</span> <span class="classifier">sequence of str, optional</span></dt>
+<dd><p class="first">Identify the dimension and auxiliary coordinate objects which
+apply to this coordinate reference. By default the standard
+names of those expected by the CF conventions are used. For
+example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">c</span> <span class="o">=</span> <span class="n">cf</span><span class="o">.</span><span class="n">CoordinateReference</span><span class="p">(</span><span class="s">&#39;transverse_mercator&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">coords</span>
+<span class="go">{&#39;latitude&#39;, &#39;longitude&#39;, &#39;projection_x_coordinate&#39;, &#39;projection_y_coordinate&#39;}</span>
+</pre></div>
+</div>
+<div class="last highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">c</span> <span class="o">=</span> <span class="n">cf</span><span class="o">.</span><span class="n">CoordinateReference</span><span class="p">(</span><span class="s">&#39;transverse_mercator&#39;</span><span class="p">,</span> <span class="n">coords</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;ncvar:lat&#39;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">coords</span>
+<span class="go">{&#39;ncvar:lat&#39;}</span>
+</pre></div>
+</div>
+</dd>
+<dt>coord_terms <span class="classifier-delimiter">:</span> <span class="classifier">sequence of str, optional        </span></dt>
+<dd><p class="first">The terms of the coordinate conversion which refer to
+dimension or auxiliary coordinate objects. For example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">c</span> <span class="o">=</span> <span class="n">cf</span><span class="o">.</span><span class="n">CoordinateReference</span><span class="p">(</span><span class="s">&#39;lambert_conformal_conic&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">coord_terms</span>
+<span class="go">set()</span>
+</pre></div>
+</div>
+<div class="last highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">c</span> <span class="o">=</span> <span class="n">cf</span><span class="o">.</span><span class="n">CoordinateReference</span><span class="p">(</span><span class="s">&#39;atmosphere_hybrid_height_coordinate&#39;</span><span class="p">,</span>
+<span class="gp">... </span>                           <span class="n">coord_terms</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;a&#39;</span><span class="p">,</span> <span class="s">&#39;b&#39;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">coord_terms</span>
+<span class="go">{&#39;a&#39;, &#39;b&#39;}</span>
+</pre></div>
+</div>
+</dd>
+<dt>kwargs <span class="classifier-delimiter">:</span> <span class="classifier"><em>optional</em></span></dt>
+<dd><p class="first">The terms of the coordinate conversion and their values. A
+term&#8217;s values may be one of the following:</p>
+<blockquote>
+<div><ul class="simple">
+<li>A number or size one numeric array.</li>
+<li>A string containing a coordinate object&#8217;s identity.</li>
+<li>A Field.</li>
+<li><a class="reference external" href="http://docs.python.org/2.7/library/constants.html#None" title="(in Python v2.7)"><tt class="xref py py-obj docutils literal"><span class="pre">None</span></tt></a>, indicating that the term exists but is unset.</li>
+</ul>
+</div></blockquote>
+<p>For example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">c</span> <span class="o">=</span> <span class="n">cf</span><span class="o">.</span><span class="n">CoordinateReference</span><span class="p">(</span><span class="s">&#39;orthographic&#39;</span><span class="p">,</span> 
+<span class="gp">... </span>                           <span class="n">grid_north_pole_latitude</span><span class="o">=</span><span class="mi">70</span><span class="p">,</span>
+<span class="gp">... </span>                           <span class="n">grid_north_pole_longitude</span><span class="o">=</span><span class="n">cf</span><span class="o">.</span><span class="n">Data</span><span class="p">(</span><span class="mi">120</span><span class="p">,</span> <span class="s">&#39;degreesE&#39;</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="p">[</span><span class="s">&#39;grid_north_pole_longitude&#39;</span><span class="p">]</span>
+<span class="go">&lt;CF Data: 120 degreesE&gt;</span>
+</pre></div>
+</div>
+<div class="last highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">orog_field</span>
+<span class="go">&lt;CF Field: surface_altitude(latitude(73), longitude(96)) m&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span> <span class="o">=</span> <span class="n">cf</span><span class="o">.</span><span class="n">CoordinateReference</span><span class="p">(</span><span class="s">&#39;atmosphere_hybrid_height_coordinate&#39;</span><span class="p">,</span>
+<span class="gp">... </span>                           <span class="n">a</span><span class="o">=</span><span class="s">&#39;long_name:ak&#39;</span><span class="p">,</span>
+<span class="gp">... </span>                           <span class="n">b</span><span class="o">=</span><span class="s">&#39;long_name:bk&#39;</span><span class="p">,</span>
+<span class="gp">... </span>                           <span class="n">orog</span><span class="o">=</span><span class="n">orog_field</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="cf.CoordinateReference.__init__">
+<tt class="descname">__init__</tt><big>(</big><em>name=None</em>, <em>crtype=None</em>, <em>coords=None</em>, <em>coord_terms=None</em>, <em>**kwargs</em><big>)</big><a class="reference external" href="https://bitbucket.org/cfpython/cf-python/src/v1.1/cf/coordinatereference.py#cl-145"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cf.CoordinateReference.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p><strong>Initialization</strong></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt>name <span class="classifier-delimiter">:</span> <span class="classifier">str, optional</span></dt>
+<dd><p class="first">A name which describes the nature of the coordinate
+conversion. This is usually a CF grid_mapping name or the
+standard name of a CF dimensionless vertical coordinate, but
+is not restricted to these.</p>
+<blockquote class="last">
+<div><p>Example: To create a polar stereographic coordinate
+reference: <tt class="docutils literal"><span class="pre">name='polar_stereographic'</span></tt>. To create
+coordinate reference for an ocean sigma over z coordinate:
+<tt class="docutils literal"><span class="pre">name='ocean_sigma_z_coordinate'</span></tt>. To create new type of
+coordinate reference: <tt class="docutils literal"><span class="pre">name='my_new_type'</span></tt>.</p>
+</div></blockquote>
+</dd>
+<dt>crtype <span class="classifier-delimiter">:</span> <span class="classifier">str, optional</span></dt>
+<dd><p class="first">The CF type of the coordinate reference. This is either
+<tt class="docutils literal"><span class="pre">'grid_mapping'</span></tt> or <tt class="docutils literal"><span class="pre">'formula_terms'</span></tt>. By default the type
+is inferred from the <em>name</em>, if possible. For example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">c</span> <span class="o">=</span> <span class="n">cf</span><span class="o">.</span><span class="n">CoordinateReference</span><span class="p">(</span><span class="s">&#39;transverse_mercator&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">type</span>
+<span class="go">&#39;grid_mapping&#39;</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">c</span> <span class="o">=</span> <span class="n">cf</span><span class="o">.</span><span class="n">CoordinateReference</span><span class="p">(</span><span class="s">&#39;my_new_type&#39;</span><span class="p">,</span> <span class="n">crtype</span><span class="o">=</span><span class="s">&#39;formula_terms&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">type</span>
+<span class="go">&#39;formula_terms&#39;</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">c</span> <span class="o">=</span> <span class="n">cf</span><span class="o">.</span><span class="n">CoordinateReference</span><span class="p">(</span><span class="s">&#39;my_new_type&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">c</span><span class="o">.</span><span class="n">type</span>
+<span class="go">None</span>
+</pre></div>
+</div>
+<div class="last highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">c</span> <span class="o">=</span> <span class="n">cf</span><span class="o">.</span><span class="n">CoordinateReference</span><span class="p">(</span><span class="s">&#39;my_new_type&#39;</span><span class="p">,</span> <span class="n">crtype</span><span class="o">=</span><span class="s">&#39;grid_mapping&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">c</span><span class="o">.</span><span class="n">type</span>
+<span class="go">&#39;grid_mapping&#39;</span>
+</pre></div>
+</div>
+</dd>
+<dt>coords <span class="classifier-delimiter">:</span> <span class="classifier">sequence of str, optional</span></dt>
+<dd><p class="first">Identify the dimension and auxiliary coordinate objects which
+apply to this coordinate reference. By default the standard
+names of those expected by the CF conventions are used. For
+example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">c</span> <span class="o">=</span> <span class="n">cf</span><span class="o">.</span><span class="n">CoordinateReference</span><span class="p">(</span><span class="s">&#39;transverse_mercator&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">coords</span>
+<span class="go">{&#39;latitude&#39;, &#39;longitude&#39;, &#39;projection_x_coordinate&#39;, &#39;projection_y_coordinate&#39;}</span>
+</pre></div>
+</div>
+<div class="last highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">c</span> <span class="o">=</span> <span class="n">cf</span><span class="o">.</span><span class="n">CoordinateReference</span><span class="p">(</span><span class="s">&#39;transverse_mercator&#39;</span><span class="p">,</span> <span class="n">coords</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;ncvar:lat&#39;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">coords</span>
+<span class="go">{&#39;ncvar:lat&#39;}</span>
+</pre></div>
+</div>
+</dd>
+<dt>coord_terms <span class="classifier-delimiter">:</span> <span class="classifier">sequence of str, optional        </span></dt>
+<dd><p class="first">The terms of the coordinate conversion which refer to
+dimension or auxiliary coordinate objects. For example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">c</span> <span class="o">=</span> <span class="n">cf</span><span class="o">.</span><span class="n">CoordinateReference</span><span class="p">(</span><span class="s">&#39;lambert_conformal_conic&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">coord_terms</span>
+<span class="go">set()</span>
+</pre></div>
+</div>
+<div class="last highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">c</span> <span class="o">=</span> <span class="n">cf</span><span class="o">.</span><span class="n">CoordinateReference</span><span class="p">(</span><span class="s">&#39;atmosphere_hybrid_height_coordinate&#39;</span><span class="p">,</span>
+<span class="gp">... </span>                           <span class="n">coord_terms</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;a&#39;</span><span class="p">,</span> <span class="s">&#39;b&#39;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">coord_terms</span>
+<span class="go">{&#39;a&#39;, &#39;b&#39;}</span>
+</pre></div>
+</div>
+</dd>
+<dt>kwargs <span class="classifier-delimiter">:</span> <span class="classifier"><em>optional</em></span></dt>
+<dd><p class="first">The terms of the coordinate conversion and their values. A
+term&#8217;s values may be one of the following:</p>
+<blockquote>
+<div><ul class="simple">
+<li>A number or size one numeric array.</li>
+<li>A string containing a coordinate object&#8217;s identity.</li>
+<li>A Field.</li>
+<li><a class="reference external" href="http://docs.python.org/2.7/library/constants.html#None" title="(in Python v2.7)"><tt class="xref py py-obj docutils literal"><span class="pre">None</span></tt></a>, indicating that the term exists but is unset.</li>
+</ul>
+</div></blockquote>
+<p>For example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">c</span> <span class="o">=</span> <span class="n">cf</span><span class="o">.</span><span class="n">CoordinateReference</span><span class="p">(</span><span class="s">&#39;orthographic&#39;</span><span class="p">,</span> 
+<span class="gp">... </span>                           <span class="n">grid_north_pole_latitude</span><span class="o">=</span><span class="mi">70</span><span class="p">,</span>
+<span class="gp">... </span>                           <span class="n">grid_north_pole_longitude</span><span class="o">=</span><span class="n">cf</span><span class="o">.</span><span class="n">Data</span><span class="p">(</span><span class="mi">120</span><span class="p">,</span> <span class="s">&#39;degreesE&#39;</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="p">[</span><span class="s">&#39;grid_north_pole_longitude&#39;</span><span class="p">]</span>
+<span class="go">&lt;CF Data: 120 degreesE&gt;</span>
+</pre></div>
+</div>
+<div class="last highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">orog_field</span>
+<span class="go">&lt;CF Field: surface_altitude(latitude(73), longitude(96)) m&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span> <span class="o">=</span> <span class="n">cf</span><span class="o">.</span><span class="n">CoordinateReference</span><span class="p">(</span><span class="s">&#39;atmosphere_hybrid_height_coordinate&#39;</span><span class="p">,</span>
+<span class="gp">... </span>                           <span class="n">a</span><span class="o">=</span><span class="s">&#39;long_name:ak&#39;</span><span class="p">,</span>
+<span class="gp">... </span>                           <span class="n">b</span><span class="o">=</span><span class="s">&#39;long_name:bk&#39;</span><span class="p">,</span>
+<span class="gp">... </span>                           <span class="n">orog</span><span class="o">=</span><span class="n">orog_field</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<p class="rubric">Methods</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#cf.CoordinateReference.__init__" title="cf.CoordinateReference.__init__"><tt class="xref py py-obj docutils literal"><span class="pre">__init__</span></tt></a>([name,&nbsp;crtype,&nbsp;coords,&nbsp;coord_terms])</td>
+<td><strong>Initialization</strong></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#cf.CoordinateReference.canonical_units" title="cf.CoordinateReference.canonical_units"><tt class="xref py py-obj docutils literal"><span class="pre">canonical_units</span></tt></a>(term)</td>
+<td>Return the canonical units for a standard CF coordinate conversion term.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#cf.CoordinateReference.change_coord_identities" title="cf.CoordinateReference.change_coord_identities"><tt class="xref py py-obj docutils literal"><span class="pre">change_coord_identities</span></tt></a>(coord_map[,&nbsp;i])</td>
+<td>Change the idientifier of all coordinates.</td>
+</tr>
+<tr class="row-even"><td><tt class="xref py py-obj docutils literal"><span class="pre">clear</span></tt>()</td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#cf.CoordinateReference.close" title="cf.CoordinateReference.close"><tt class="xref py py-obj docutils literal"><span class="pre">close</span></tt></a>()</td>
+<td>Close all files referenced by coordinate conversion term values.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#cf.CoordinateReference.copy" title="cf.CoordinateReference.copy"><tt class="xref py py-obj docutils literal"><span class="pre">copy</span></tt></a>([domain])</td>
+<td>Return a deep copy.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#cf.CoordinateReference.default_value" title="cf.CoordinateReference.default_value"><tt class="xref py py-obj docutils literal"><span class="pre">default_value</span></tt></a>(term)</td>
+<td>Return the default value for an unset standard CF coordinate conversion term.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#cf.CoordinateReference.dump" title="cf.CoordinateReference.dump"><tt class="xref py py-obj docutils literal"><span class="pre">dump</span></tt></a>([complete,&nbsp;display,&nbsp;_level,&nbsp;domain])</td>
+<td>Return a string containing a full description of the coordinate reference.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#cf.CoordinateReference.equals" title="cf.CoordinateReference.equals"><tt class="xref py py-obj docutils literal"><span class="pre">equals</span></tt></a>(other[,&nbsp;rtol,&nbsp;atol,&nbsp;...])</td>
+<td>True if two instances are equal, False otherwise.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#cf.CoordinateReference.equivalent" title="cf.CoordinateReference.equivalent"><tt class="xref py py-obj docutils literal"><span class="pre">equivalent</span></tt></a>(other[,&nbsp;atol,&nbsp;rtol,&nbsp;traceback])</td>
+<td>True if two coordinate references are logically equal, False otherwise.</td>
+</tr>
+<tr class="row-odd"><td><tt class="xref py py-obj docutils literal"><span class="pre">get</span></tt>(key[,&nbsp;default])</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#cf.CoordinateReference.has_key" title="cf.CoordinateReference.has_key"><tt class="xref py py-obj docutils literal"><span class="pre">has_key</span></tt></a>(key)</td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#cf.CoordinateReference.identity" title="cf.CoordinateReference.identity"><tt class="xref py py-obj docutils literal"><span class="pre">identity</span></tt></a>([default])</td>
+<td>Return the identity of the coordinate reference.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#cf.CoordinateReference.inspect" title="cf.CoordinateReference.inspect"><tt class="xref py py-obj docutils literal"><span class="pre">inspect</span></tt></a>()</td>
+<td>Inspect the attributes.</td>
+</tr>
+<tr class="row-odd"><td><tt class="xref py py-obj docutils literal"><span class="pre">items</span></tt>()</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><tt class="xref py py-obj docutils literal"><span class="pre">iteritems</span></tt>()</td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><tt class="xref py py-obj docutils literal"><span class="pre">iterkeys</span></tt>()</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><tt class="xref py py-obj docutils literal"><span class="pre">itervalues</span></tt>()</td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><tt class="xref py py-obj docutils literal"><span class="pre">keys</span></tt>()</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#cf.CoordinateReference.match" title="cf.CoordinateReference.match"><tt class="xref py py-obj docutils literal"><span class="pre">match</span></tt></a>([match,&nbsp;exact,&nbsp;match_all,&nbsp;inverse])</td>
+<td>Test whether or not the coordinate reference satisfies the given conditions.</td>
+</tr>
+<tr class="row-odd"><td><tt class="xref py py-obj docutils literal"><span class="pre">pop</span></tt>(key[,&nbsp;default])</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><tt class="xref py py-obj docutils literal"><span class="pre">popitem</span></tt>()</td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#cf.CoordinateReference.remove_all_coords" title="cf.CoordinateReference.remove_all_coords"><tt class="xref py py-obj docutils literal"><span class="pre">remove_all_coords</span></tt></a>()</td>
+<td>Remove all links to coordinate objects.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#cf.CoordinateReference.set" title="cf.CoordinateReference.set"><tt class="xref py py-obj docutils literal"><span class="pre">set</span></tt></a>(term,&nbsp;value)</td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#cf.CoordinateReference.setcoord" title="cf.CoordinateReference.setcoord"><tt class="xref py py-obj docutils literal"><span class="pre">setcoord</span></tt></a>(term,&nbsp;value)</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><tt class="xref py py-obj docutils literal"><span class="pre">setdefault</span></tt>(key[,&nbsp;default])</td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#cf.CoordinateReference.structural_signature" title="cf.CoordinateReference.structural_signature"><tt class="xref py py-obj docutils literal"><span class="pre">structural_signature</span></tt></a>([rtol,&nbsp;atol])</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><tt class="xref py py-obj docutils literal"><span class="pre">update</span></tt>(*args,&nbsp;**kwds)</td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><tt class="xref py py-obj docutils literal"><span class="pre">values</span></tt>()</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Attributes</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#cf.CoordinateReference.T" title="cf.CoordinateReference.T"><tt class="xref py py-obj docutils literal"><span class="pre">T</span></tt></a></td>
+<td>False.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#cf.CoordinateReference.X" title="cf.CoordinateReference.X"><tt class="xref py py-obj docutils literal"><span class="pre">X</span></tt></a></td>
+<td>Returns False.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#cf.CoordinateReference.Y" title="cf.CoordinateReference.Y"><tt class="xref py py-obj docutils literal"><span class="pre">Y</span></tt></a></td>
+<td>Returns False.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#cf.CoordinateReference.Z" title="cf.CoordinateReference.Z"><tt class="xref py py-obj docutils literal"><span class="pre">Z</span></tt></a></td>
+<td>Returns False.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#cf.CoordinateReference.hasbounds" title="cf.CoordinateReference.hasbounds"><tt class="xref py py-obj docutils literal"><span class="pre">hasbounds</span></tt></a></td>
+<td>False</td>
+</tr>
+</tbody>
+</table>
+<dl class="classmethod">
+<dt id="cf.CoordinateReference.canonical_units">
+<em class="property">classmethod </em><tt class="descname">canonical_units</tt><big>(</big><em>term</em><big>)</big><a class="reference external" href="https://bitbucket.org/cfpython/cf-python/src/v1.1/cf/coordinatereference.py#cl-416"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cf.CoordinateReference.canonical_units" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the canonical units for a standard CF coordinate conversion
+term.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt>term <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd><p class="first last">The name of the term.</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first docutils">
+<dt>out <span class="classifier-delimiter">:</span> <span class="classifier">cf.Units or None</span></dt>
+<dd><p class="first last">The canonical units, or <a class="reference external" href="http://docs.python.org/2.7/library/constants.html#None" title="(in Python v2.7)"><tt class="xref py py-obj docutils literal"><span class="pre">None</span></tt></a> if there are not any.</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Examples:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">cf</span><span class="o">.</span><span class="n">CoordinateReference</span><span class="o">.</span><span class="n">canonical_units</span><span class="p">(</span><span class="s">&#39;perspective_point_height&#39;</span><span class="p">)</span>
+<span class="go">&lt;CF Units: m&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cf</span><span class="o">.</span><span class="n">CoordinateReference</span><span class="o">.</span><span class="n">canonical_units</span><span class="p">(</span><span class="s">&#39;ptop&#39;</span><span class="p">)</span>
+<span class="go">None</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="cf.CoordinateReference.change_coord_identities">
+<tt class="descname">change_coord_identities</tt><big>(</big><em>coord_map</em>, <em>i=False</em><big>)</big><a class="reference external" href="https://bitbucket.org/cfpython/cf-python/src/v1.1/cf/coordinatereference.py#cl-1113"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cf.CoordinateReference.change_coord_identities" title="Permalink to this definition">¶</a></dt>
+<dd><p>Change the idientifier of all coordinates.</p>
+<p>If a coordinate identifier is not in the provided mapping then it is
+set to <a class="reference external" href="http://docs.python.org/2.7/library/constants.html#None" title="(in Python v2.7)"><tt class="xref py py-obj docutils literal"><span class="pre">None</span></tt></a> and thus effectively removed from the coordinate
+reference.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt>coord_map <span class="classifier-delimiter">:</span> <span class="classifier">dict</span></dt>
+<dd><p class="first last">For example: <tt class="docutils literal"><span class="pre">{'dim2':</span> <span class="pre">'dim3',</span> <span class="pre">'aux2':</span> <span class="pre">'latitude',</span> <span class="pre">'aux4':</span> <span class="pre">None}</span></tt></p>
+</dd>
+</dl>
+<p>i : bool, optional</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">None</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Examples:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">r</span> <span class="o">=</span> <span class="n">cf</span><span class="o">.</span><span class="n">CoordinateReference</span><span class="p">(</span><span class="s">&#39;atmosphere_hybrid_height_coordinate&#39;</span><span class="p">,</span>
+<span class="gp">... </span>                            <span class="n">coord_terms</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;a&#39;</span><span class="p">,</span> <span class="s">&#39;b&#39;</span><span class="p">],</span>
+<span class="gp">... </span>                            <span class="n">a</span><span class="o">=</span><span class="s">&#39;ncvar:ak&#39;</span><span class="p">,</span>
+<span class="gp">... </span>                            <span class="n">b</span><span class="o">=</span><span class="s">&#39;ncvar:bk&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">r</span><span class="o">.</span><span class="n">coords</span>
+<span class="go">{&#39;atmosphere_hybrid_height_coordinate&#39;, &#39;ncvar:ak&#39;, &#39;ncvar:bk&#39;}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">r</span><span class="o">.</span><span class="n">change_coord_identitiers</span><span class="p">({</span><span class="s">&#39;atmosphere_hybrid_height_coordinate&#39;</span><span class="p">,</span> <span class="s">&#39;dim1&#39;</span><span class="p">,</span>
+<span class="gp">... </span>                            <span class="s">&#39;ncvar:ak&#39;</span><span class="p">:</span> <span class="s">&#39;aux0&#39;</span><span class="p">})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">r</span><span class="o">.</span><span class="n">coords</span>
+<span class="go">{&#39;dim1&#39;, &#39;aux0&#39;}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="cf.CoordinateReference.close">
+<tt class="descname">close</tt><big>(</big><big>)</big><a class="reference external" href="https://bitbucket.org/cfpython/cf-python/src/v1.1/cf/coordinatereference.py#cl-530"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cf.CoordinateReference.close" title="Permalink to this definition">¶</a></dt>
+<dd><p>Close all files referenced by coordinate conversion term values.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">None</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Examples:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="cf.CoordinateReference.copy">
+<tt class="descname">copy</tt><big>(</big><em>domain=None</em><big>)</big><a class="reference external" href="https://bitbucket.org/cfpython/cf-python/src/v1.1/cf/coordinatereference.py#cl-549"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cf.CoordinateReference.copy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a deep copy.</p>
+<p><tt class="docutils literal"><span class="pre">c.copy()</span></tt> is equivalent to <tt class="docutils literal"><span class="pre">copy.deepcopy(c)</span></tt>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Examples 1:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+</pre></div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first">domain : cf.Domain, optional</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first docutils">
+<dt>out :</dt>
+<dd><p class="first last">The deep copy.</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Examples 2:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">domain</span>
+<span class="go">&lt;CF Domain: (110, 106, 3, 5)&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">domain</span><span class="o">=</span><span class="n">domain</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="cf.CoordinateReference.default_value">
+<em class="property">classmethod </em><tt class="descname">default_value</tt><big>(</big><em>term</em><big>)</big><a class="reference external" href="https://bitbucket.org/cfpython/cf-python/src/v1.1/cf/coordinatereference.py#cl-614"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cf.CoordinateReference.default_value" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the default value for an unset standard CF coordinate
+conversion term.</p>
+<p>The default values are stored in the file
+cf/etc/coordinate_reference/default_values.txt.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt>term <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd><p class="first last">The name of the term.</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first docutils">
+<dt>out <span class="classifier-delimiter">:</span> <span class="classifier"></span></dt>
+<dd><p class="first last">The default value, or <a class="reference external" href="http://docs.python.org/2.7/library/constants.html#None" title="(in Python v2.7)"><tt class="xref py py-obj docutils literal"><span class="pre">None</span></tt></a> if there is not one.</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Examples:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">cf</span><span class="o">.</span><span class="n">CoordinateReference</span><span class="o">.</span><span class="n">default_value</span><span class="p">(</span><span class="s">&#39;ptop&#39;</span><span class="p">)</span>
+<span class="go">0.0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">cf</span><span class="o">.</span><span class="n">CoordinateReference</span><span class="o">.</span><span class="n">default_value</span><span class="p">(</span><span class="s">&#39;north_pole_grid_latitude&#39;</span><span class="p">)</span>
+<span class="go">None</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="cf.CoordinateReference.dump">
+<tt class="descname">dump</tt><big>(</big><em>complete=False</em>, <em>display=True</em>, <em>_level=0</em>, <em>domain=None</em><big>)</big><a class="reference external" href="https://bitbucket.org/cfpython/cf-python/src/v1.1/cf/coordinatereference.py#cl-645"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cf.CoordinateReference.dump" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a string containing a full description of the coordinate
+reference.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first">complete : bool, optional</p>
+<dl class="docutils">
+<dt>display <span class="classifier-delimiter">:</span> <span class="classifier">bool, optional</span></dt>
+<dd><p class="first last">If False then return the description as a string. By default
+the description is printed, i.e. <tt class="docutils literal"><span class="pre">c.dump()</span></tt> is equivalent to
+<tt class="docutils literal"><span class="pre">print</span> <span class="pre">c.dump(display=False)</span></tt>.</p>
+</dd>
+</dl>
+<p>domain : cf.Domain, optional</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first docutils">
+<dt>out <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd><p class="first last">A string containing the description.</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Examples:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cf.CoordinateReference.equals">
+<tt class="descname">equals</tt><big>(</big><em>other</em>, <em>rtol=None</em>, <em>atol=None</em>, <em>ignore_fill_value=False</em>, <em>traceback=False</em><big>)</big><a class="reference external" href="https://bitbucket.org/cfpython/cf-python/src/v1.1/cf/coordinatereference.py#cl-716"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cf.CoordinateReference.equals" title="Permalink to this definition">¶</a></dt>
+<dd><p>True if two instances are equal, False otherwise.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt>other <span class="classifier-delimiter">:</span> <span class="classifier"></span></dt>
+<dd><p class="first last">The object to compare for equality.</p>
+</dd>
+<dt>atol <span class="classifier-delimiter">:</span> <span class="classifier">float, optional</span></dt>
+<dd><p class="first last">The absolute tolerance for all numerical comparisons, By
+default the value returned by the <a class="reference internal" href="../generated/cf.ATOL.html#cf.ATOL" title="cf.ATOL"><tt class="xref py py-obj docutils literal"><span class="pre">ATOL</span></tt></a> function is used.</p>
+</dd>
+<dt>rtol <span class="classifier-delimiter">:</span> <span class="classifier">float, optional</span></dt>
+<dd><p class="first last">The relative tolerance for all numerical comparisons, By
+default the value returned by the <a class="reference internal" href="../generated/cf.RTOL.html#cf.RTOL" title="cf.RTOL"><tt class="xref py py-obj docutils literal"><span class="pre">RTOL</span></tt></a> function is used.</p>
+</dd>
+<dt>ignore_fill_value <span class="classifier-delimiter">:</span> <span class="classifier">bool, optional</span></dt>
+<dd><p class="first last">If True then data arrays with different fill values are
+considered equal. By default they are considered unequal.</p>
+</dd>
+<dt>traceback <span class="classifier-delimiter">:</span> <span class="classifier">bool, optional</span></dt>
+<dd><p class="first last">If True then print a traceback highlighting where the two
+instances differ.</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first docutils">
+<dt>out <span class="classifier-delimiter">:</span> <span class="classifier">bool</span></dt>
+<dd><p class="first last">Whether or not the two instances are equal.</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Examples:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cf.CoordinateReference.equivalent">
+<tt class="descname">equivalent</tt><big>(</big><em>other</em>, <em>atol=None</em>, <em>rtol=None</em>, <em>traceback=False</em><big>)</big><a class="reference external" href="https://bitbucket.org/cfpython/cf-python/src/v1.1/cf/coordinatereference.py#cl-855"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cf.CoordinateReference.equivalent" title="Permalink to this definition">¶</a></dt>
+<dd><p>True if two coordinate references are logically equal, False
+otherwise.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt>other <span class="classifier-delimiter">:</span> <span class="classifier">cf.CoordinateReference</span></dt>
+<dd><p class="first last">The object to compare for equality.</p>
+</dd>
+<dt>atol <span class="classifier-delimiter">:</span> <span class="classifier">float, optional</span></dt>
+<dd><p class="first last">The absolute tolerance for all numerical comparisons, By
+default the value returned by the <a class="reference internal" href="../generated/cf.ATOL.html#cf.ATOL" title="cf.ATOL"><tt class="xref py py-obj docutils literal"><span class="pre">cf.ATOL</span></tt></a> function is used.</p>
+</dd>
+<dt>rtol <span class="classifier-delimiter">:</span> <span class="classifier">float, optional</span></dt>
+<dd><p class="first last">The relative tolerance for all numerical comparisons, By
+default the value returned by the <a class="reference internal" href="../generated/cf.RTOL.html#cf.RTOL" title="cf.RTOL"><tt class="xref py py-obj docutils literal"><span class="pre">cf.RTOL</span></tt></a> function is used.</p>
+</dd>
+<dt>traceback <span class="classifier-delimiter">:</span> <span class="classifier">bool, optional</span></dt>
+<dd><p class="first last">If True then print a traceback highlighting where the two
+instances differ.</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first docutils">
+<dt>out <span class="classifier-delimiter">:</span> <span class="classifier">bool</span></dt>
+<dd><p class="first last">Whether or not the two objects are equivalent.</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Examples:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<div class="highlight-python"><div class="highlight"><pre><span class="go">&gt;&gt;&gt;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="cf.CoordinateReference.has_key">
+<tt class="descname">has_key</tt><big>(</big><em>key</em><big>)</big><a class="reference external" href="https://bitbucket.org/cfpython/cf-python/src/v1.1/cf/utils.py#cl-1422"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cf.CoordinateReference.has_key" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="cf.CoordinateReference.identity">
+<tt class="descname">identity</tt><big>(</big><em>default=None</em><big>)</big><a class="reference external" href="https://bitbucket.org/cfpython/cf-python/src/v1.1/cf/coordinatereference.py#cl-980"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cf.CoordinateReference.identity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the identity of the coordinate reference.</p>
+<p>The identity is the standard_name of a formula_terms-type coordinate
+reference or the grid_mapping_name of grid_mapping-type coordinate
+reference.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt>default <span class="classifier-delimiter">:</span> <span class="classifier">optional</span></dt>
+<dd><p class="first last">If the coordinate reference has no identity then return
+<em>default</em>. By default, <em>default</em> is None.</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first docutils">
+<dt>out :</dt>
+<dd><p class="first last">The identity.</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Examples:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">identity</span><span class="p">()</span>
+<span class="go">&#39;rotated_latitude_longitude&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">identity</span><span class="p">()</span>
+<span class="go">&#39;atmosphere_hybrid_height_coordinate&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="cf.CoordinateReference.inspect">
+<tt class="descname">inspect</tt><big>(</big><big>)</big><a class="reference external" href="https://bitbucket.org/cfpython/cf-python/src/v1.1/cf/coordinatereference.py#cl-1009"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cf.CoordinateReference.inspect" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inspect the attributes.</p>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><tt class="xref py py-obj docutils literal"><span class="pre">cf.inspect</span></tt></p>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">None</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cf.CoordinateReference.match">
+<tt class="descname">match</tt><big>(</big><em>match=None</em>, <em>exact=False</em>, <em>match_all=True</em>, <em>inverse=False</em><big>)</big><a class="reference external" href="https://bitbucket.org/cfpython/cf-python/src/v1.1/cf/coordinatereference.py#cl-1024"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cf.CoordinateReference.match" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test whether or not the coordinate reference satisfies the given
+conditions.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first docutils">
+<dt>out <span class="classifier-delimiter">:</span> <span class="classifier">bool</span></dt>
+<dd><p class="first last">True if the coordinate reference satisfies the given criteria,
+False otherwise.</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Examples:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cf.CoordinateReference.remove_all_coords">
+<tt class="descname">remove_all_coords</tt><big>(</big><big>)</big><a class="reference external" href="https://bitbucket.org/cfpython/cf-python/src/v1.1/cf/coordinatereference.py#cl-1192"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cf.CoordinateReference.remove_all_coords" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove all links to coordinate objects.</p>
+<p>All terms linked to coordinate objects are set to <a class="reference external" href="http://docs.python.org/2.7/library/constants.html#None" title="(in Python v2.7)"><tt class="xref py py-obj docutils literal"><span class="pre">None</span></tt></a>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">None</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Examples:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">remove_all_coords</span><span class="p">()</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="cf.CoordinateReference.set">
+<tt class="descname">set</tt><big>(</big><em>term</em>, <em>value</em><big>)</big><a class="reference external" href="https://bitbucket.org/cfpython/cf-python/src/v1.1/cf/coordinatereference.py#cl-1222"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cf.CoordinateReference.set" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="cf.CoordinateReference.setcoord">
+<tt class="descname">setcoord</tt><big>(</big><em>term</em>, <em>value</em><big>)</big><a class="reference external" href="https://bitbucket.org/cfpython/cf-python/src/v1.1/cf/coordinatereference.py#cl-1212"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cf.CoordinateReference.setcoord" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="cf.CoordinateReference.structural_signature">
+<tt class="descname">structural_signature</tt><big>(</big><em>rtol=None</em>, <em>atol=None</em><big>)</big><a class="reference external" href="https://bitbucket.org/cfpython/cf-python/src/v1.1/cf/coordinatereference.py#cl-1230"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cf.CoordinateReference.structural_signature" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="cf.CoordinateReference.T">
+<tt class="descname">T</tt><a class="headerlink" href="#cf.CoordinateReference.T" title="Permalink to this definition">¶</a></dt>
+<dd><p>False.</p>
+<p>Provides compatibility with the <a class="reference internal" href="cf.Coordinate.html#cf.Coordinate" title="cf.Coordinate"><tt class="xref py py-obj docutils literal"><span class="pre">cf.Coordinate</span></tt></a> API.</p>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><a class="reference internal" href="../generated/cf.Coordinate.T.html#cf.Coordinate.T" title="cf.Coordinate.T"><tt class="xref py py-obj docutils literal"><span class="pre">cf.Coordinate.T</span></tt></a>, <a class="reference internal" href="#cf.CoordinateReference.X" title="cf.CoordinateReference.X"><tt class="xref py py-obj docutils literal"><span class="pre">X</span></tt></a>, <a class="reference internal" href="#cf.CoordinateReference.Y" title="cf.CoordinateReference.Y"><tt class="xref py py-obj docutils literal"><span class="pre">Y</span></tt></a>, <a class="reference internal" href="#cf.CoordinateReference.Z" title="cf.CoordinateReference.Z"><tt class="xref py py-obj docutils literal"><span class="pre">Z</span></tt></a></p>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Examples:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">T</span>
+<span class="go">False</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cf.CoordinateReference.X">
+<tt class="descname">X</tt><a class="headerlink" href="#cf.CoordinateReference.X" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns False.</p>
+<p>Provides compatibility with the <a class="reference internal" href="cf.Coordinate.html#cf.Coordinate" title="cf.Coordinate"><tt class="xref py py-obj docutils literal"><span class="pre">cf.Coordinate</span></tt></a> API.</p>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><a class="reference internal" href="../generated/cf.Coordinate.X.html#cf.Coordinate.X" title="cf.Coordinate.X"><tt class="xref py py-obj docutils literal"><span class="pre">cf.Coordinate.X</span></tt></a>, <a class="reference internal" href="#cf.CoordinateReference.T" title="cf.CoordinateReference.T"><tt class="xref py py-obj docutils literal"><span class="pre">T</span></tt></a>, <a class="reference internal" href="#cf.CoordinateReference.Y" title="cf.CoordinateReference.Y"><tt class="xref py py-obj docutils literal"><span class="pre">Y</span></tt></a>, <a class="reference internal" href="#cf.CoordinateReference.Z" title="cf.CoordinateReference.Z"><tt class="xref py py-obj docutils literal"><span class="pre">Z</span></tt></a></p>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Examples:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">X</span>
+<span class="go">False</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cf.CoordinateReference.Y">
+<tt class="descname">Y</tt><a class="headerlink" href="#cf.CoordinateReference.Y" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns False.</p>
+<p>Provides compatibility with the <a class="reference internal" href="cf.Coordinate.html#cf.Coordinate" title="cf.Coordinate"><tt class="xref py py-obj docutils literal"><span class="pre">cf.Coordinate</span></tt></a> API.</p>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><a class="reference internal" href="../generated/cf.Coordinate.Y.html#cf.Coordinate.Y" title="cf.Coordinate.Y"><tt class="xref py py-obj docutils literal"><span class="pre">cf.Coordinate.Y</span></tt></a>, <a class="reference internal" href="#cf.CoordinateReference.T" title="cf.CoordinateReference.T"><tt class="xref py py-obj docutils literal"><span class="pre">T</span></tt></a>, <a class="reference internal" href="#cf.CoordinateReference.X" title="cf.CoordinateReference.X"><tt class="xref py py-obj docutils literal"><span class="pre">X</span></tt></a>, <a class="reference internal" href="#cf.CoordinateReference.Z" title="cf.CoordinateReference.Z"><tt class="xref py py-obj docutils literal"><span class="pre">Z</span></tt></a></p>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Examples:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">Y</span>
+<span class="go">False</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cf.CoordinateReference.Z">
+<tt class="descname">Z</tt><a class="headerlink" href="#cf.CoordinateReference.Z" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns False.</p>
+<p>Provides compatibility with the <a class="reference internal" href="cf.Coordinate.html#cf.Coordinate" title="cf.Coordinate"><tt class="xref py py-obj docutils literal"><span class="pre">cf.Coordinate</span></tt></a> API.</p>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><a class="reference internal" href="../generated/cf.Coordinate.Z.html#cf.Coordinate.Z" title="cf.Coordinate.Z"><tt class="xref py py-obj docutils literal"><span class="pre">cf.Coordinate.Z</span></tt></a>, <a class="reference internal" href="#cf.CoordinateReference.T" title="cf.CoordinateReference.T"><tt class="xref py py-obj docutils literal"><span class="pre">T</span></tt></a>, <a class="reference internal" href="#cf.CoordinateReference.X" title="cf.CoordinateReference.X"><tt class="xref py py-obj docutils literal"><span class="pre">X</span></tt></a>, <a class="reference internal" href="#cf.CoordinateReference.Y" title="cf.CoordinateReference.Y"><tt class="xref py py-obj docutils literal"><span class="pre">Y</span></tt></a></p>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Examples:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">Z</span>
+<span class="go">False</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cf.CoordinateReference.hasbounds">
+<tt class="descname">hasbounds</tt><a class="headerlink" href="#cf.CoordinateReference.hasbounds" title="Permalink to this definition">¶</a></dt>
+<dd><p>False</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Examples:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">hasbounds</span>
+<span class="go">False</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="../generated/cf.CoordinateBounds.where.html"
+                        title="previous chapter">cf.CoordinateBounds.where</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="cf.Data.html"
+                        title="next chapter">cf.Data</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/classes/cf.CoordinateReference.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="cf.Data.html" title="cf.Data"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../generated/cf.CoordinateBounds.where.html" title="cf.CoordinateBounds.where"
+             >previous</a> |</li>
+  <li><a target="_blank" href="http://cfpython.bitbucket.org">cf-python 1.1</a> &raquo;</li>
+<!--
+  <li><a target="_blank" href="http://cfpython.bitbucket.org">cf-python</a> &raquo;</li>
+  <li><select onchange="location = this.options[this.selectedIndex].value;">
+
+      <option value="../../1.0/index.html">1.0
+
+      <option value="../../0.9.9/index.html">0.9.9
+
+      <option value="../../0.9.8.3/index.html">0.9.8.3
+
+      <option value="../../archive.html">Archive
+
+      </select>
+  </li>
+-->
+  
+        <li><a href="../index.html">Documentation</a> &raquo;</li>
+
+          <li><a href="../reference.html" >Reference manual</a> &raquo;</li>
+          <li><a href="../class.html" >Classes of the <tt class="docutils literal"><span class="pre">cf</span></tt> module</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2015, David Hassell.
+      Last updated on Oct 28, 2015.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>

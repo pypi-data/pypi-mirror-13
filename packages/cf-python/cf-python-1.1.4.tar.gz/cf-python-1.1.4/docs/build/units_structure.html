@@ -1,0 +1,374 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Units handling by the cf.Units object &mdash; Documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/copybutton.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="Documentation" href="index.html" />
+    <link rel="up" title="Reference manual" href="reference.html" />
+    <link rel="next" title="Large Amounts of Massive Arrays (LAMA)" href="lama.html" />
+    <link rel="prev" title="Visualisation" href="visualisation.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="lama.html" title="Large Amounts of Massive Arrays (LAMA)"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="visualisation.html" title="Visualisation"
+             accesskey="P">previous</a> |</li>
+  <li><a target="_blank" href="http://cfpython.bitbucket.org">cf-python 1.1</a> &raquo;</li>
+<!--
+  <li><a target="_blank" href="http://cfpython.bitbucket.org">cf-python</a> &raquo;</li>
+  <li><select onchange="location = this.options[this.selectedIndex].value;">
+
+      <option value="../1.0/index.html">1.0
+
+      <option value="../0.9.9/index.html">0.9.9
+
+      <option value="../0.9.8.3/index.html">0.9.8.3
+
+      <option value="../archive.html">Archive
+
+      </select>
+  </li>
+-->
+  
+        <li><a href="index.html">Documentation</a> &raquo;</li>
+
+          <li><a href="reference.html" accesskey="U">Reference manual</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="units-handling-by-the-cf-units-object">
+<span id="units"></span><h1>Units handling by the <a class="reference internal" href="classes/cf.Units.html#cf.Units" title="cf.Units"><tt class="xref py py-obj docutils literal"><span class="pre">cf.Units</span></tt></a> object<a class="headerlink" href="#units-handling-by-the-cf-units-object" title="Permalink to this headline">¶</a></h1>
+<p>A field (as well as any other object which <a class="reference internal" href="class.html#inheritance-diagrams"><em>inherits</em></a> from <a class="reference internal" href="classes/cf.Variable.html#cf.Variable" title="cf.Variable"><tt class="xref py py-obj docutils literal"><span class="pre">cf.Variable</span></tt></a>) always contains a
+<a class="reference internal" href="classes/cf.Units.html#cf.Units" title="cf.Units"><tt class="xref py py-obj docutils literal"><span class="pre">cf.Units</span></tt></a> object which gives the physical units of the values
+contained in its data array.</p>
+<p>The <a class="reference internal" href="classes/cf.Units.html#cf.Units" title="cf.Units"><tt class="xref py py-obj docutils literal"><span class="pre">cf.Units</span></tt></a> object is stored in the field&#8217;s <a class="reference internal" href="generated/cf.Field.Units.html#cf.Field.Units" title="cf.Field.Units"><tt class="xref py py-obj docutils literal"><span class="pre">Units</span></tt></a>
+attribute but may also be accessed through the field&#8217;s <a class="reference internal" href="generated/cf.Field.units.html#cf.Field.units" title="cf.Field.units"><tt class="xref py py-obj docutils literal"><span class="pre">units</span></tt></a>
+and <a class="reference internal" href="generated/cf.Field.calendar.html#cf.Field.calendar" title="cf.Field.calendar"><tt class="xref py py-obj docutils literal"><span class="pre">calendar</span></tt></a> CF properties, which may take any value allowed
+by the <a class="reference external" href="http://cf-pcmdi.llnl.gov/documents/cf-conventions/latest-cf-conventions-document-1">CF conventions</a>. In
+particular, the value of the <a class="reference internal" href="generated/cf.Field.units.html#cf.Field.units" title="cf.Field.units"><tt class="xref py py-obj docutils literal"><span class="pre">units</span></tt></a> CF property is a string
+that can be recognized by <a class="reference external" href="http://www.unidata.ucar.edu/software/udunits/">UNIDATA&#8217;s Udunits-2 package</a>, with a few
+exceptions for greater consistency with CF. These are detailed by the
+<a class="reference internal" href="classes/cf.Units.html#cf.Units" title="cf.Units"><tt class="xref py py-obj docutils literal"><span class="pre">cf.Units</span></tt></a> object.</p>
+<div class="section" id="assignment">
+<h2>Assignment<a class="headerlink" href="#assignment" title="Permalink to this headline">¶</a></h2>
+<p>The Field&#8217;s units may be assigned directly to its <a class="reference internal" href="classes/cf.Units.html#cf.Units" title="cf.Units"><tt class="xref py py-obj docutils literal"><span class="pre">cf.Units</span></tt></a> object:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">f</span><span class="o">.</span><span class="n">Units</span><span class="o">.</span><span class="n">units</span> <span class="o">=</span> <span class="s">&#39;days since 1-1-1&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">f</span><span class="o">.</span><span class="n">Units</span><span class="o">.</span><span class="n">calendar</span> <span class="o">=</span> <span class="s">&#39;noleap&#39;</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">f</span><span class="o">.</span><span class="n">Units</span> <span class="o">=</span> <span class="n">cf</span><span class="o">.</span><span class="n">Units</span><span class="p">(</span><span class="s">&#39;metre&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>But the same result is achieved by assigning to the field&#8217;s
+<a class="reference internal" href="generated/cf.Field.units.html#cf.Field.units" title="cf.Field.units"><tt class="xref py py-obj docutils literal"><span class="pre">units</span></tt></a> and <a class="reference internal" href="generated/cf.Field.calendar.html#cf.Field.calendar" title="cf.Field.calendar"><tt class="xref py py-obj docutils literal"><span class="pre">calendar</span></tt></a> CF properties:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">f</span><span class="o">.</span><span class="n">units</span> <span class="o">=</span> <span class="s">&#39;days since 1-1-1&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">f</span><span class="o">.</span><span class="n">calendar</span> <span class="o">=</span> <span class="s">&#39;noleap&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">f</span><span class="o">.</span><span class="n">Units</span>
+<span class="go">&lt;CF Units: days since 1-1-1 calendar=noleap&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">f</span><span class="o">.</span><span class="n">units</span>
+<span class="go">&#39;days since 1-1-1&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">f</span><span class="o">.</span><span class="n">calendar</span>
+<span class="go">&#39;noleap&#39;</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="time-units">
+<h2>Time units<a class="headerlink" href="#time-units" title="Permalink to this headline">¶</a></h2>
+<p>Time units may be given as durations of time or as an amount of time
+since a reference time:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">f</span><span class="o">.</span><span class="n">units</span> <span class="o">=</span> <span class="s">&#39;day&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">f</span><span class="o">.</span><span class="n">units</span> <span class="o">=</span> <span class="s">&#39;seconds since 1992-10-8 15:15:42.5 -6:00&#39;</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">It is recommended that the units <tt class="docutils literal"><span class="pre">'year'</span></tt> and <tt class="docutils literal"><span class="pre">'month'</span></tt> be used
+with caution, as explained in the following excerpt from the CF
+conventions: &#8220;The Udunits package defines a year to be exactly
+365.242198781 days (the interval between 2 successive passages of
+the sun through vernal equinox). It is not a calendar year. Udunits
+includes the following definitions for years: a common_year is 365
+days, a leap_year is 366 days, a Julian_year is 365.25 days, and a
+Gregorian_year is 365.2425 days. For similar reasons the unit
+<tt class="docutils literal"><span class="pre">'month'</span></tt>, which is defined to be exactly year/12, should also be
+used with caution.&#8221;</p>
+</div>
+<div class="section" id="calendar">
+<h3>Calendar<a class="headerlink" href="#calendar" title="Permalink to this headline">¶</a></h3>
+<p>The date given in reference time units is always associated with one
+of the calendars recognized by the CF conventions and may be set with
+the <em>calendar</em> CF property (on the field or Units object).</p>
+<p>If the calendar is not set then, as in the CF conventions, for the
+purposes of calculation and comparison, it defaults to the mixed
+Gregorian/Julian calendar as defined by Udunits:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">f</span><span class="o">.</span><span class="n">units</span> <span class="o">=</span> <span class="s">&#39;days since 2000-1-1&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">f</span><span class="o">.</span><span class="n">calendar</span>
+<span class="go">AttributeError: Can&#39;t get &#39;Field&#39; attribute &#39;calendar&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">g</span><span class="o">.</span><span class="n">units</span> <span class="o">=</span> <span class="s">&#39;days since 2000-1-1&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">g</span><span class="o">.</span><span class="n">calendar</span> <span class="o">=</span> <span class="s">&#39;gregorian&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">g</span><span class="o">.</span><span class="n">Units</span><span class="o">.</span><span class="n">equals</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">Units</span><span class="p">)</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<p>The calendar is ignored for units other than reference time units.</p>
+</div>
+</div>
+<div class="section" id="changing-units">
+<h2>Changing units<a class="headerlink" href="#changing-units" title="Permalink to this headline">¶</a></h2>
+<p>Changing units to equivalent units causes the variable&#8217;s data array
+values to be modified in place (if required) when they are next
+accessed, and not before:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">f</span><span class="o">.</span><span class="n">units</span>
+<span class="go">&#39;metre&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">f</span><span class="o">.</span><span class="n">array</span>
+<span class="go">array([    0.,  1000.,  2000.,  3000.,  4000.])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">f</span><span class="o">.</span><span class="n">units</span> <span class="o">=</span> <span class="s">&#39;kilometre&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">f</span><span class="o">.</span><span class="n">units</span>
+<span class="go">&#39;kilometre&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">f</span><span class="o">.</span><span class="n">array</span>
+<span class="go">array([ 0.,  1.,  2.,  3.,  4.])</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">f</span><span class="o">.</span><span class="n">units</span>
+<span class="go">&#39;hours since 2000-1-1&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">f</span><span class="o">.</span><span class="n">array</span>
+<span class="go">array([-1227192., -1227168., -1227144.])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">f</span><span class="o">.</span><span class="n">units</span> <span class="o">=</span> <span class="s">&#39;days since 1860-1-1&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">f</span><span class="o">.</span><span class="n">array</span>
+<span class="go">array([ 1.,  2.,  3.])</span>
+</pre></div>
+</div>
+<p>The <a class="reference internal" href="classes/cf.Units.html#cf.Units" title="cf.Units"><tt class="xref py py-obj docutils literal"><span class="pre">cf.Units</span></tt></a> object may be operated on with augmented arithmetic
+assignments and binary arithmetic operations:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">f</span><span class="o">.</span><span class="n">units</span>
+<span class="go">&#39;kelvin&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">f</span><span class="o">.</span><span class="n">array</span>
+<span class="go">array([ 273.15,  274.15,  275.15,  276.15,  277.15])</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">f</span><span class="o">.</span><span class="n">Units</span> <span class="o">-=</span> <span class="mf">273.15</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">f</span><span class="o">.</span><span class="n">units</span>
+<span class="go">&#39;K @ 273.15&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">f</span><span class="o">.</span><span class="n">array</span>
+<span class="go">array([ 0.,  1.,  2.,  3.,  4.])</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">f</span><span class="o">.</span><span class="n">Units</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">Units</span> <span class="o">+</span> <span class="mf">273.15</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">f</span><span class="o">.</span><span class="n">units</span>
+<span class="go">&#39;K&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">f</span><span class="o">.</span><span class="n">array</span>
+<span class="go">array([ 273.15,  274.15,  275.15,  276.15,  277.15])</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">f</span><span class="o">.</span><span class="n">units</span> <span class="o">=</span> <span class="s">&#39;K @ 237.15&#39;</span>
+<span class="go">&#39;K @ 273.15&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">f</span><span class="o">.</span><span class="n">array</span>
+<span class="go">array([ 0.,  1.,  2.,  3.,  4.])</span>
+</pre></div>
+</div>
+<p>If the field has a data array and its units are changed to
+non-equivalent units then a <tt class="xref py py-mod docutils literal"><span class="pre">TypeError</span></tt> will be raised when
+the data are next accessed:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">f</span><span class="o">.</span><span class="n">units</span>
+<span class="go">&#39;m s-1&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">f</span><span class="o">.</span><span class="n">units</span> <span class="o">=</span> <span class="s">&#39;K&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">f</span><span class="o">.</span><span class="n">array</span>
+<span class="go">TypeError: Units are not convertible: &lt;CF Units: m s-1&gt;, &lt;CF Units: K&gt;</span>
+</pre></div>
+</div>
+<div class="section" id="changing-the-calendar">
+<h3>Changing the calendar<a class="headerlink" href="#changing-the-calendar" title="Permalink to this headline">¶</a></h3>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">Do not change the calendar of reference time units in the current
+version. Whilst this is possible, it will almost certainly result
+in an incorrect interpretation of the data array or an
+error. Allowing the calendar to be changed is under development and
+will be available soon.</p>
+</div>
+</div>
+</div>
+<div class="section" id="equality-and-equivalence-of-units">
+<h2>Equality and equivalence of units<a class="headerlink" href="#equality-and-equivalence-of-units" title="Permalink to this headline">¶</a></h2>
+<p>The <a class="reference internal" href="classes/cf.Units.html#cf.Units" title="cf.Units"><tt class="xref py py-obj docutils literal"><span class="pre">cf.Units</span></tt></a> object has methods for assessing whether two units are
+equivalent or equal, regardless of their exact string representations.</p>
+<p>Two units are equivalent if and only if numeric values in one unit are
+convertible to numeric values in the other unit (such as
+<tt class="docutils literal"><span class="pre">'kilometres'</span></tt> and <tt class="docutils literal"><span class="pre">'metres'</span></tt>). Two units are equal if and only if
+they are equivalent and their conversion is a scale factor of 1 (such
+as <tt class="docutils literal"><span class="pre">'kilometres'</span></tt> and <tt class="docutils literal"><span class="pre">'1000</span> <span class="pre">metres'</span></tt>). Note that equivalence and
+equality are based on internally stored binary representations of the
+units, rather than their string representations.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">f</span><span class="o">.</span><span class="n">units</span> <span class="o">=</span> <span class="s">&#39;m/s&#39;</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">g</span><span class="o">.</span><span class="n">units</span> <span class="o">=</span> <span class="s">&#39;m s-1&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">f</span><span class="o">.</span><span class="n">Units</span> <span class="o">==</span> <span class="n">g</span><span class="o">.</span><span class="n">Units</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">f</span><span class="o">.</span><span class="n">Units</span><span class="o">.</span><span class="n">equals</span><span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">Units</span><span class="p">)</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">g</span><span class="o">.</span><span class="n">units</span> <span class="o">=</span> <span class="s">&#39;km s-1&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">f</span><span class="o">.</span><span class="n">Units</span><span class="o">.</span><span class="n">equivalent</span><span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">Units</span><span class="p">)</span>
+<span class="go">False</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">f</span><span class="o">.</span><span class="n">units</span> <span class="o">=</span> <span class="s">&#39;days since 1987-12-3&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">g</span><span class="o">.</span><span class="n">units</span> <span class="o">=</span> <span class="s">&#39;hours since 2000-12-1&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">f</span><span class="o">.</span><span class="n">Units</span> <span class="o">==</span> <span class="n">g</span><span class="o">.</span><span class="n">Units</span>
+<span class="go">False</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">f</span><span class="o">.</span><span class="n">Units</span><span class="o">.</span><span class="n">equivalent</span><span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">Units</span><span class="p">)</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="coordinate-units">
+<h2>Coordinate units<a class="headerlink" href="#coordinate-units" title="Permalink to this headline">¶</a></h2>
+<p>The units of a coordinate&#8217;s bounds are always the same as the
+coordinate itself, and the units of the bounds automatically change
+when a coordinate&#8217;s units are changed:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">units</span>
+<span class="go">&#39;degrees&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">bounds</span><span class="o">.</span><span class="n">units</span>
+<span class="go">&#39;degrees&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">bounds</span><span class="o">.</span><span class="n">array</span>
+<span class="go">array([  0.,  90.])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">units</span> <span class="o">=</span> <span class="s">&#39;radians&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">bounds</span><span class="o">.</span><span class="n">units</span>
+<span class="go">&#39;radians&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">bounds</span><span class="o">.</span><span class="n">array</span>
+<span class="go">array([ 0.        ,  1.57079633])</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Units handling by the <tt class="docutils literal"><span class="pre">cf.Units</span></tt> object</a><ul>
+<li><a class="reference internal" href="#assignment">Assignment</a></li>
+<li><a class="reference internal" href="#time-units">Time units</a><ul>
+<li><a class="reference internal" href="#calendar">Calendar</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#changing-units">Changing units</a><ul>
+<li><a class="reference internal" href="#changing-the-calendar">Changing the calendar</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#equality-and-equivalence-of-units">Equality and equivalence of units</a></li>
+<li><a class="reference internal" href="#coordinate-units">Coordinate units</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="visualisation.html"
+                        title="previous chapter">Visualisation</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="lama.html"
+                        title="next chapter">Large Amounts of Massive Arrays (LAMA)</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/units_structure.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="lama.html" title="Large Amounts of Massive Arrays (LAMA)"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="visualisation.html" title="Visualisation"
+             >previous</a> |</li>
+  <li><a target="_blank" href="http://cfpython.bitbucket.org">cf-python 1.1</a> &raquo;</li>
+<!--
+  <li><a target="_blank" href="http://cfpython.bitbucket.org">cf-python</a> &raquo;</li>
+  <li><select onchange="location = this.options[this.selectedIndex].value;">
+
+      <option value="../1.0/index.html">1.0
+
+      <option value="../0.9.9/index.html">0.9.9
+
+      <option value="../0.9.8.3/index.html">0.9.8.3
+
+      <option value="../archive.html">Archive
+
+      </select>
+  </li>
+-->
+  
+        <li><a href="index.html">Documentation</a> &raquo;</li>
+
+          <li><a href="reference.html" >Reference manual</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2015, David Hassell.
+      Last updated on Oct 28, 2015.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>
