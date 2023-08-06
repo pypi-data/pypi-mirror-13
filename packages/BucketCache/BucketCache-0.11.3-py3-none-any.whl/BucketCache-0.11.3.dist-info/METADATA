@@ -1,0 +1,115 @@
+Metadata-Version: 2.0
+Name: BucketCache
+Version: 0.11.3
+Summary: Versatile persisent file cache.
+Home-page: https://github.com/RazerM/bucketcache
+Author: Frazer McLean
+Author-email: frazer@frazermclean.co.uk
+License: MIT
+Platform: UNKNOWN
+Classifier: Development Status :: 4 - Beta
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Programming Language :: Python :: 3
+Requires-Dist: boltons
+Requires-Dist: decorator (>=4.0.2)
+Requires-Dist: six (>=1.9.0)
+Requires-Dist: logbook (>=0.12.5)
+Requires-Dist: python-dateutil
+Requires-Dist: represent (>=1.4.0)
+Requires-Dist: pathlib; python_version<"3.4"
+Provides-Extra: dev
+Requires-Dist: pytest; extra == 'dev'
+Requires-Dist: packaging; extra == 'dev'
+Requires-Dist: twine; extra == 'dev'
+Requires-Dist: pytest-xdist; extra == 'dev'
+Requires-Dist: shovel; extra == 'dev'
+Requires-Dist: msgpack-python; extra == 'dev'
+Requires-Dist: clint; extra == 'dev'
+Requires-Dist: pytest-benchmark; extra == 'dev'
+Requires-Dist: sphinx; extra == 'dev'
+Requires-Dist: pytest-cov; extra == 'dev'
+Provides-Extra: dev
+Requires-Dist: mock; python_version<"3.3" and extra == 'dev'
+Provides-Extra: test
+Requires-Dist: msgpack-python; extra == 'test'
+Requires-Dist: pytest; extra == 'test'
+Requires-Dist: pytest-benchmark; extra == 'test'
+Requires-Dist: pytest-cov; extra == 'test'
+Requires-Dist: pytest-xdist; extra == 'test'
+Provides-Extra: test
+Requires-Dist: mock; python_version<"3.3" and extra == 'test'
+
+BucketCache
+-----------
+
+|Build Status| |PyPI Version| |Python Version| |MIT License|
+
+Installation
+~~~~~~~~~~~~
+
+.. code:: bash
+
+    $ pip install bucketcache
+
+Automatic Generation
+~~~~~~~~~~~~~~~~~~~~
+
+In one sentence, ``Bucket`` is a container object with optional lifetime
+backed by configurable serialisation methods that can also act as a
+function or method decorator.
+
+Before everything is explained in detail, here's a quick look at the
+functionality:
+
+Container:
+
+.. code:: python
+
+    from bucketcache import Bucket
+
+    bucket = Bucket('cache', hours=1)
+
+    bucket[any_object] = anything_serializable_by_backend  # (Pickle is the default)
+
+Decorator:
+
+.. code:: python
+
+    class SomeService(object):
+        def __init__(self, username, password):
+            self.username = username
+            self.password = password
+
+        @bucket(method=True, nocache='skip_cache')
+        def expensive_method(self, a, b, c, skip_cache=False):
+            print('Method called.')
+
+        @expensive_method.callback
+        def expensive_method(callinfo):
+            print('Cache used.')
+
+    some_service = SomeService()
+    some_service.expensive_method(1, 2, 3)
+    some_service.expensive_method(1, 2, 3)
+    some_service.expensive_method(1, 2, 3, skip_cache=True)
+
+::
+
+    Method called.
+    Cache used.
+    Method called
+
+For in-depth information, `visit the
+documentation <http://pythonhosted.org/BucketCache/>`__!
+
+.. |Build Status| image:: http://img.shields.io/travis/RazerM/bucketcache.svg?style=flat-square
+   :target: https://travis-ci.org/RazerM/bucketcache
+.. |PyPI Version| image:: http://img.shields.io/pypi/v/bucketcache.svg?style=flat-square
+   :target: https://pypi.python.org/pypi/bucketcache/
+.. |Python Version| image:: https://img.shields.io/badge/python-2.7%2C%203-brightgreen.svg?style=flat-square
+   :target: https://www.python.org/downloads/
+.. |MIT License| image:: http://img.shields.io/badge/license-MIT-blue.svg?style=flat-square
+   :target: https://raw.githubusercontent.com/RazerM/bucketcache/master/LICENSE
+
+
