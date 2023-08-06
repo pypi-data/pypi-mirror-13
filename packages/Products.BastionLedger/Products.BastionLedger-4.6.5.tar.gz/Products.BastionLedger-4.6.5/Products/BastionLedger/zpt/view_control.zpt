@@ -1,0 +1,36 @@
+<html tal:replace="structure context/manage_page_header"/>
+
+  <body tal:define="ceiling_date python: modules['Products.BastionLedger.utils'].ceiling_date;
+                    infos python:context.periods.periodsForLedger(context.getId())">
+
+    <span tal:replace="structure context/manage_tabs"/>
+
+    <br/>
+
+
+       <table border="0" cellpadding="2" cellspacing="0" width="100%">
+           <tr class="list-header">
+               <td class="list-item">Year Ended</td>
+               <td class="list-item" align="right">Total</td>
+               <td class="list-item" align="right">Computed</td>
+               <td class="list-item" align="right">Opening</td>
+           </tr>
+           <tr tal:repeat="info infos"
+               tal:attributes="class python: repeat['info'].index % 2 and 'row-hilite' or 'row-normal'">
+              <td tal:content="info/ended"/>
+              <td align="right" tal:content="info/total"/>
+              <td align="right" tal:content="info/computed_total"/>
+              <td align="right" tal:define="ended info/ended; 
+                                            endedstr python: ended.strftime('%Y/%m/%d')">
+                <a href="" 
+                   tal:attributes="href string:${context/absolute_url}/manage_main?date:date=${endedstr}" 
+                   tal:content="python: context.openingBalance(effective=ended)"/>
+              </td>
+           </tr>
+       </table>
+  </body>
+
+<html tal:replace="structure context/manage_page_footer"/>
+
+
+
