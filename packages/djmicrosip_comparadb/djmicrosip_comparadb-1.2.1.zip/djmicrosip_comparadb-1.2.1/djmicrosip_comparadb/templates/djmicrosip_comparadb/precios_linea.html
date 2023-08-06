@@ -1,0 +1,52 @@
+{% extends "djmicrosip_comparadb\base.html" %}
+{% block title %}Precios{% endblock %}
+
+<!-- CSS Code -->
+{% block style_css %}{% endblock %}
+
+<!-- JavaScript Code -->
+{% block js_code %}
+<script src="{{STATIC_URL}}djmicrosip_comparadb/js/compara_db.js"></script>
+<script>
+	var articulos_ids = {{ articulos_ids|safe }};
+	var enviado = "{{enviado}}";
+</script>
+{% endblock %}
+
+{% block breadcrumb %}{{ block.super }} <li class="active">Localizaciones</li> {% endblock %}
+{% block content %}
+{% if enviado == 'S' %}
+<script>
+	alert('Proceso Completado');
+	location.replace('/comparadb/precios_linea/');
+</script>	
+
+{% else %}
+	<form method="post" class="form-horizontal" action="" width="300px"  enctype='multipart/form-data'>{% csrf_token %}
+	  {{ form.errors }}
+	  <button class="btn" id="btn_iniciar_escaneo">Iniciar Escaneo Articulos <i class="glyphicon glyphicon-search"></i></button>
+	  <br>
+	  <br>
+    Empresa: {{form.empresas}}
+    <br>
+    <br>
+	  Linea: {{form2.linea}}
+	</form>
+{% endif %}
+<!-- MODAL DE ESPERA -->
+    <div class="modal fade tags-modal-md" id="wait" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-md">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h4><strong>Procesando Peticion. Espere por favor.</strong></h4>
+          </div>
+          <div class="modal-body">
+            <div class="progress">
+              <div class="progress-bar progress-bar-striped active" id="progress-bar" role="progressbar" aria-valuenow="45" aria-valuemin="0" aria-valuemax="100" style="width: 0%">
+              </div>
+            </div>  
+          </div>
+        </div>
+      </div>
+    </div>
+{% endblock %}
