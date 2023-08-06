@@ -1,0 +1,230 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Usage &mdash; logconf-dsl 1.0b1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0b1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="logconf-dsl 1.0b1 documentation" href="index.html" />
+    <link rel="prev" title="Welcome to logconf-dsl’s documentation!" href="index.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="usage">
+<h1>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h1>
+<p>A very basic example of what logconf-dsl looks like:</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">logconf</span> <span class="kn">import</span> <span class="n">logconf</span><span class="p">,</span> <span class="n">RootLogger</span>
+
+<span class="n">logconf</span><span class="p">(</span>
+    <span class="n">RootLogger</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="s1">&#39;ERROR&#39;</span><span class="p">,</span>
+               <span class="n">handlers</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;console&#39;</span><span class="p">]))</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">{</span><span class="s1">&#39;root&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;level&#39;</span><span class="p">:</span> <span class="s1">&#39;ERROR&#39;</span><span class="p">},</span> <span class="s1">&#39;version&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">}</span>
+</pre></div>
+</div>
+<p>And here&#8217;s an example of what a real logging configuration may look
+like:</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="kn">from</span> <span class="nn">logconf</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">logconf</span><span class="p">,</span>
+    <span class="n">Logger</span><span class="p">,</span> <span class="n">Loggers</span><span class="p">,</span> <span class="n">RootLogger</span><span class="p">,</span>
+    <span class="n">Handler</span><span class="p">,</span> <span class="n">Handlers</span><span class="p">,</span>
+    <span class="n">Formatter</span><span class="p">,</span> <span class="n">Formatters</span>
+<span class="p">)</span>
+
+<span class="n">LOGCONF</span> <span class="o">=</span> <span class="n">logconf</span><span class="p">(</span>
+    <span class="n">Handlers</span><span class="p">(</span>
+        <span class="n">Handler</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;console&#39;</span><span class="p">,</span>
+                <span class="n">klass</span><span class="o">=</span><span class="s1">&#39;logging.StreamHandler&#39;</span><span class="p">,</span>
+                <span class="n">formatter</span><span class="o">=</span><span class="s1">&#39;verbose&#39;</span><span class="p">,</span>
+                <span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
+    <span class="p">),</span>
+    <span class="n">RootLogger</span><span class="p">(</span>
+        <span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">ERROR</span><span class="p">,</span>
+    <span class="p">),</span>
+    <span class="n">Loggers</span><span class="p">(</span>
+        <span class="n">Logger</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;foo.bar&#39;</span><span class="p">,</span>
+               <span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">ERROR</span><span class="p">,</span>
+               <span class="n">handlers</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;console&#39;</span><span class="p">]),</span>
+        <span class="n">Logger</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;foo.zab&#39;</span><span class="p">,</span>
+               <span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">,</span>
+               <span class="n">handlers</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;console&#39;</span><span class="p">])</span>
+    <span class="p">),</span>
+    <span class="n">Formatters</span><span class="p">(</span>
+        <span class="n">Formatter</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;verbose&#39;</span><span class="p">,</span>
+                  <span class="n">format</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%(asctime)s</span><span class="s1"> </span><span class="si">%(levelName)s</span><span class="s1"> </span><span class="si">%(name)s</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="p">)</span>
+<span class="p">)</span>
+
+<span class="n">LOGCONF</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">{</span><span class="s1">&#39;formatters&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;verbose&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;format&#39;</span><span class="p">:</span> <span class="s1">&#39;</span><span class="si">%(asctime)s</span><span class="s1"> </span><span class="si">%(levelName)s</span><span class="s1"> </span><span class="si">%(name)s</span><span class="s1">&#39;</span><span class="p">}},</span>
+ <span class="s1">&#39;handlers&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;console&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;class&#39;</span><span class="p">:</span> <span class="s1">&#39;logging.StreamHandler&#39;</span><span class="p">,</span>
+   <span class="s1">&#39;formatter&#39;</span><span class="p">:</span> <span class="s1">&#39;verbose&#39;</span><span class="p">,</span>
+   <span class="s1">&#39;level&#39;</span><span class="p">:</span> <span class="mi">10</span><span class="p">}},</span>
+ <span class="s1">&#39;loggers&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;foo.bar&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;level&#39;</span><span class="p">:</span> <span class="mi">40</span><span class="p">},</span> <span class="s1">&#39;foo.zab&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;level&#39;</span><span class="p">:</span> <span class="mi">10</span><span class="p">}},</span>
+ <span class="s1">&#39;root&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;level&#39;</span><span class="p">:</span> <span class="mi">40</span><span class="p">},</span>
+ <span class="s1">&#39;version&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">}</span>
+</pre></div>
+</div>
+<p>And then you would apply <code class="docutils literal"><span class="pre">LOGCONF</span></code> to <code class="docutils literal"><span class="pre">logging</span></code> with</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">logging.config</span>
+
+<span class="n">logging</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">dictConfig</span><span class="p">(</span><span class="n">LOGCONF</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>You can pass the most values as positional arguments to <code class="docutils literal"><span class="pre">Logger</span></code>,
+<code class="docutils literal"><span class="pre">Handler</span></code> and <code class="docutils literal"><span class="pre">Formatter</span></code> as well.</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">logconf</span><span class="p">(</span>
+    <span class="n">Handlers</span><span class="p">(</span>
+        <span class="n">Handler</span><span class="p">(</span><span class="s1">&#39;console&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;logging.StreamHandler&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;verbose&#39;</span><span class="p">,</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
+    <span class="p">),</span>
+    <span class="n">RootLogger</span><span class="p">(</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">ERROR</span><span class="p">,</span>
+    <span class="p">),</span>
+    <span class="n">Loggers</span><span class="p">(</span>
+        <span class="n">Logger</span><span class="p">(</span><span class="s1">&#39;foo.bar&#39;</span><span class="p">,</span>
+               <span class="n">logging</span><span class="o">.</span><span class="n">ERROR</span><span class="p">,</span>
+               <span class="p">[</span><span class="s1">&#39;console&#39;</span><span class="p">]),</span>
+        <span class="n">Logger</span><span class="p">(</span><span class="s1">&#39;foo.zab&#39;</span><span class="p">,</span>
+               <span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">,</span>
+               <span class="p">[</span><span class="s1">&#39;console&#39;</span><span class="p">])</span>
+    <span class="p">),</span>
+    <span class="n">Formatters</span><span class="p">(</span>
+        <span class="n">Formatter</span><span class="p">(</span><span class="s1">&#39;verbose&#39;</span><span class="p">,</span>
+                  <span class="s1">&#39;</span><span class="si">%(asctime)s</span><span class="s1"> </span><span class="si">%(levelName)s</span><span class="s1"> </span><span class="si">%(name)s</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="p">)</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">{</span><span class="s1">&#39;formatters&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;verbose&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;format&#39;</span><span class="p">:</span> <span class="s1">&#39;</span><span class="si">%(asctime)s</span><span class="s1"> </span><span class="si">%(levelName)s</span><span class="s1"> </span><span class="si">%(name)s</span><span class="s1">&#39;</span><span class="p">}},</span>
+ <span class="s1">&#39;handlers&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;console&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;class&#39;</span><span class="p">:</span> <span class="s1">&#39;logging.StreamHandler&#39;</span><span class="p">,</span>
+   <span class="s1">&#39;formatter&#39;</span><span class="p">:</span> <span class="s1">&#39;verbose&#39;</span><span class="p">,</span>
+   <span class="s1">&#39;level&#39;</span><span class="p">:</span> <span class="mi">10</span><span class="p">}},</span>
+ <span class="s1">&#39;loggers&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;foo.bar&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;level&#39;</span><span class="p">:</span> <span class="mi">40</span><span class="p">},</span> <span class="s1">&#39;foo.zab&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;level&#39;</span><span class="p">:</span> <span class="mi">10</span><span class="p">}},</span>
+ <span class="s1">&#39;root&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;level&#39;</span><span class="p">:</span> <span class="mi">40</span><span class="p">},</span>
+ <span class="s1">&#39;version&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">}</span>
+</pre></div>
+</div>
+<p>logconf-dsl is very flexible in what it allows you to do:</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="c1"># You can replace the Loggers wrapper class with the keyword &#39;loggers&#39;.</span>
+<span class="n">logconf</span><span class="p">(</span>
+    <span class="n">loggers</span><span class="o">=</span><span class="n">Logger</span><span class="p">(</span><span class="s1">&#39;foo&#39;</span><span class="p">,</span> <span class="s1">&#39;DEBUG&#39;</span><span class="p">,</span> <span class="n">handlers</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;console&#39;</span><span class="p">])</span>
+<span class="p">)</span>
+<span class="c1"># The same goes for &#39;handlers&#39;, &#39;formatters&#39; and any other dict-valued key.</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">{</span><span class="s1">&#39;loggers&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;foo&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;level&#39;</span><span class="p">:</span> <span class="s1">&#39;DEBUG&#39;</span><span class="p">}},</span> <span class="s1">&#39;version&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">}</span>
+</pre></div>
+</div>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="c1"># You can use addition to combine two loggers</span>
+<span class="n">logconf</span><span class="p">(</span>
+    <span class="n">loggers</span><span class="o">=</span><span class="n">Logger</span><span class="p">(</span><span class="s1">&#39;foo&#39;</span><span class="p">,</span> <span class="s1">&#39;DEBUG&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;console&#39;</span><span class="p">])</span> <span class="o">+</span> <span class="n">Logger</span><span class="p">(</span><span class="s1">&#39;bar&#39;</span><span class="p">,</span> <span class="s1">&#39;INFO&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;console&#39;</span><span class="p">])</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">{</span><span class="s1">&#39;loggers&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;bar&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;level&#39;</span><span class="p">:</span> <span class="s1">&#39;INFO&#39;</span><span class="p">},</span> <span class="s1">&#39;foo&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;level&#39;</span><span class="p">:</span> <span class="s1">&#39;DEBUG&#39;</span><span class="p">}},</span>
+ <span class="s1">&#39;version&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">}</span>
+</pre></div>
+</div>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="c1"># You can use the &#39;C&#39; method to combine two loggers</span>
+<span class="kn">from</span> <span class="nn">logconf</span> <span class="kn">import</span> <span class="n">C</span>
+<span class="n">logconf</span><span class="p">(</span>
+    <span class="n">loggers</span><span class="o">=</span><span class="n">C</span><span class="p">(</span><span class="n">Logger</span><span class="p">(</span><span class="s1">&#39;foo&#39;</span><span class="p">,</span> <span class="s1">&#39;DEBUG&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;console&#39;</span><span class="p">]),</span>
+              <span class="n">Logger</span><span class="p">(</span><span class="s1">&#39;bar&#39;</span><span class="p">,</span> <span class="s1">&#39;INFO&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;console&#39;</span><span class="p">]))</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">{</span><span class="s1">&#39;loggers&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;bar&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;level&#39;</span><span class="p">:</span> <span class="s1">&#39;INFO&#39;</span><span class="p">},</span> <span class="s1">&#39;foo&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;level&#39;</span><span class="p">:</span> <span class="s1">&#39;DEBUG&#39;</span><span class="p">}},</span>
+ <span class="s1">&#39;version&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">}</span>
+</pre></div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="index.html" title="previous chapter">Welcome to logconf-dsl&#8217;s documentation!</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/usage.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, Joar Wandborg.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.7</a>
+      
+      |
+      <a href="_sources/usage.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
