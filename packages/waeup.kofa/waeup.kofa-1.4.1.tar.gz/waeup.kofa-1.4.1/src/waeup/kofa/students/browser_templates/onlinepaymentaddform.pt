@@ -1,0 +1,56 @@
+<form action="." tal:attributes="action request/URL" method="post"
+      enctype="multipart/form-data">
+
+  <table class="form-table">
+    <tbody>
+      <tr>
+        <td class="fieldname">
+          Payment Category:
+        </td>
+        <td>
+          <select id="form.p_category" name="form.p_category" size="1"
+                  class="form-control half" onclick="test()">
+            <option tal:repeat="item view/selectable_categories"
+                    tal:attributes="value python:item[0]">
+              <span tal:replace="python:item[1]">FEE CATEGORY</span>
+            </option>
+          </select>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span id="p_item" style="display: none;">
+  <table class="form-table">
+    <tbody>
+      <tr>
+        <td class="fieldname">
+          Desired Course of Study:
+        </td>
+        <td>
+          <input class="textType" id="new_programme" name="new_programme"
+            type="text">
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  </span>
+
+  <br />
+
+  <div tal:condition="view/availableActions">
+    <input tal:repeat="action view/actions"
+           tal:replace="structure action/render"
+           />
+  </div>
+</form>
+
+<script type="text/javascript">
+  function test() {
+      if (document.getElementById('form.p_category').value == 'transfer') {
+          document.getElementById('p_item').style.display = 'block';
+      } else {
+          document.getElementById('p_item').style.display = 'none';
+      }
+  }
+</script>

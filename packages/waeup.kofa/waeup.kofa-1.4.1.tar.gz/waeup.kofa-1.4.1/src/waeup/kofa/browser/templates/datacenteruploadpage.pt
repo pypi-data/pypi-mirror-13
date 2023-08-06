@@ -1,0 +1,100 @@
+<span i18n:translate="">
+    Before uploading a file, check that your file header corresponds
+    with the header format of the selected processor:
+</span>
+<!-- Processors Modal -->
+<button i18n:translate="" class="btn btn-info btn-xs"
+   data-toggle="modal" data-target="#ProcessorsModal"
+   href="../processorsoverview">
+   View available processors (importers)
+</button>
+<div class="modal fade" id="ProcessorsModal" tabindex="-1"
+     role="dialog" aria-labelledby="ProcessorsModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+    </div>
+  </div>
+</div>
+<br /><br />
+<span i18n:translate="">
+    Many importer fields are of type 'Choice' which means only definied keywords
+    are allowed:
+</span>
+<!-- Sources Modal -->
+<button i18n:translate="" class="btn btn-info btn-xs"
+   data-toggle="modal" data-target="#SourcesModal"
+   href="../sourcesoverview">
+   View choices
+</button>
+<div class="modal fade" id="SourcesModal" tabindex="-1"
+     role="dialog" aria-labelledby="SourcesModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+    </div>
+  </div>
+</div>
+<br />
+<form method="post" enctype="multipart/form-data">
+<br />
+  <table class="form-table">
+    <tr>
+      <td i18n:translate="">
+        File:
+      </td>
+      <td>
+    		<div class="input-group half">
+    			<div class="input-group-btn">
+    				<div class="btn btn-default btn-file">
+              Select&hellip;
+              <input type="file" name="uploadfile:file" />
+            </div>
+    			</div>
+    			<input type="text" class="form-control" readonly>
+        </div>
+      </td>
+    </tr>
+    <tr>
+      <td i18n:translate="">
+        Processor:
+      </td>
+      <td>
+        <select name="importer" class="form-control half">
+          <option tal:repeat="importer view/getImporters"
+              tal:attributes="value importer/title"
+              tal:content="importer/title"> Some Importer
+          </option>
+        </select>
+      </td>
+    </tr>
+    <tr>
+      <td i18n:translate="">
+        Import Mode:
+      </td>
+      <td>
+        <select name="import_mode" class="form-control half">
+          <option value='Create'>Create</option>
+          <option value='Update'>Update</option>
+          <option value='Remove'>Remove</option>
+        </select>
+      </td>
+    </tr>
+  </table>
+  <br />
+  <input class="btn btn-primary" type="submit" name="SUBMIT"
+      tal:attributes="value view/upload_button" />
+  <input class="btn btn-default" type="submit" name="CANCEL"
+      tal:attributes="value view/cancel_button"/>
+</form>
+
+
+<br /><br />
+
+<div i18n:translate="">
+    After file upload click the 'Process data' button and proceed up to
+    import step 3. Verify that the data format
+    meets all the import criteria and requirements of the processor.
+</div>
+<br />
+<div i18n:translate="">
+    Import managers will be automatically informed by email after file upload.
+</div>
