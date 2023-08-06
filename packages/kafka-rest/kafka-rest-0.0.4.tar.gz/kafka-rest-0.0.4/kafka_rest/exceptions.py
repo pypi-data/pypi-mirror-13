@@ -1,0 +1,2 @@
+class KafkaRESTShutdownException(Exception):
+    pass
