@@ -1,0 +1,314 @@
+{% extends "reviews/reviewable_base.html" %}
+{% load i18n %}
+{% load djblets_deco %}
+{% load djblets_extensions %}
+{% load djblets_utils %}
+{% load rb_extensions %}
+{% load reviewtags %}
+{% load staticfiles %}
+{% load tz %}
+
+{% block title %}{{review_request_details.summary}} | {% trans "Review Request" %}{% endblock %}
+
+{% block jsconsts %}
+{{block.super}}
+{%  include "reviews/review_flags.js" %}
+{% endblock %}
+
+{% block css %}
+{{block.super}}
+
+{% if siteconfig.settings.diffviewer_show_trailing_whitespace|default_if_none:1 %}
+<style type="text/css">
+  .ew { background: #ee3434; }
+</style>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+{% include "reviews/trophy_box.html" %}
+{% include "reviews/review_header.html" %}
+
+{% box "review-request" %}
+
+<div class="actions-container">
+ {% star review_request %}
+ <ul class="actions">
+{% review_request_action_hooks %}
+{% review_request_dropdown_action_hooks %}
+{% include "reviews/review_request_actions_secondary.html" %}
+{% if has_diffs %}
+  <li class="primary"><a href="diff/raw/">{% trans "Download Diff" %}</a></li>
+{% endif %}
+{% include "reviews/review_request_actions_primary.html" %}
+{% if has_diffs %}
+  <li class="primary"><a href="diff/#index_header">{% trans "View Diff" %}</a></li>
+{% endif %}
+ </ul>
+</div>
+
+<div class="main">
+{% include "reviews/review_request_box.html" %}
+
+<ul class="controls">
+{% if entries %}
+ <li>
+  <a href="#" id="expand-all">
+   <img width="14" height="14" border="0" alt="" src="{% static "rb/images/expand.png" %}">
+   <span>{% trans "Expand All" %}</span>
+  </a>
+ </li>
+ <li>
+  <a href="#" id="collapse-all">
+   <img width="14" height="14" border="0" alt="" src="{% static "rb/images/collapse.png" %}">
+   <span>{% trans "Collapse All" %}</span>
+  </a>
+ </li>
+{% endif %}
+</ul>
+
+</div>
+{% endbox %}
+
+{% for entry in entries %}
+{%  if entry.review %}
+<a name="review{{entry.review.id}}"></a>
+<div id="review{{entry.review.id}}">
+{%   if forloop.last %}
+<a name="last-review"></a>
+{%   endif %}
+{% definevar "boxclass" %}review {{entry.class}}{% enddefinevar %}
+{% box boxclass %}
+<div class="main">
+ <div class="header">
+  {% template_hook_point "review-summary-header-pre" %}
+  {% if entry.review.ship_it %}<div class="shipit">{% trans "Ship it!" %}</div>{% endif %}
+  <div class="collapse-button btn"><div class="ui-collapse-icon"></div></div>
+  <div class="reviewer"><a href="{% url user entry.review.user %}" class="user">{{entry.review.user|user_displayname}}</a></div>
+  <div class="posted_time">{% localtime on %}{% blocktrans with entry.review.timestamp as timestamp and entry.review.timestamp|date:"c" as timestamp_raw %}Posted <time class="timesince" datetime="{{timestamp_raw}}">{{timestamp}}</time> ({{timestamp}}){% endblocktrans %}{% endlocaltime %}</div>
+  {% template_hook_point "review-summary-header-post" %}
+ </div>
+ <div class="banners"></div>
+ <div class="body">
+   <pre class="body_top reviewtext">{{entry.review.body_top|escape}}</pre>
+   {% reply_section entry "" "body_top" "rcbt" %}
+{% if entry.comments.diff_comments or entry.comments.screenshot_comments or entry.comments.file_attachment_comments %}
+   <dl class="diff-comments">
+
+{% for comment in entry.comments.screenshot_comments %}
+    <dt>
+     <a class="comment-anchor" name="{{comment.anchor_prefix}}{{comment.id}}"></a>
+     <div class="screenshot">
+      <span class="filename">
+       <a href="{{comment.screenshot.get_absolute_url}}">{% spaceless %}
+{% if draft and comment.screenshot.draft_caption %}
+{{comment.screenshot.draft_caption}}
+{% else %}
+{{comment.screenshot.caption|default_if_none:comment.screenshot.image.name|basename}}
+{% endif %}
+{% endspaceless %}</a>
+      </span>
+      {{comment.image|safe}}
+     </div>
+    </dt>
+    <dd>
+     <pre class="comment-text" id="{{comment.anchor_prefix}}{{comment.id}}">{{comment.text|escape}}</pre>
+{% if comment.issue_opened %}
+     <div id="comment-{{comment.comment_type}}-{{comment.id}}-issue" class="issue-indicator">
+       {% comment_issue review_request_details comment "screenshot_comments" %}
+     </div>
+{% endif %}
+     {% reply_section entry comment "screenshot_comments" "rc" %}
+    </dd>
+{% endfor %}
+
+{% for comment in entry.comments.file_attachment_comments %}
+    <dt>
+     <a class="comment-anchor" name="{{comment.anchor_prefix}}{{comment.id}}"></a>
+     <div class="file-attachment">
+      <a href="{{comment.get_absolute_url}}">{% spaceless %}
+       <img src="{{comment.file_attachment.icon_url}}" />
+       <span class="filename">{{comment.get_link_text}}</span>
+      </a>
+{% if draft and comment.file_attachment.draft_caption %}
+      <p class="caption">{{comment.file_attachment.draft_caption}}</p>
+{% elif comment.file_attachment.caption %}
+      <p class="caption">{{comment.file_attachment.caption}}</p>
+{% endif %}
+{% endspaceless %}</a>
+{% with comment.thumbnail as thumbnail %}
+{%  if thumbnail %}
+	  <div class="thumbnail">{{thumbnail|default:''|safe}}</div>
+{%  endif %}
+{% endwith %}
+     </div>
+    </dt>
+    <dd>
+     <pre class="comment-text" id="{{comment.anchor_prefix}}{{comment.id}}">{{comment.text|escape}}</pre>
+{% if comment.issue_opened %}
+     <div id="comment-{{comment.comment_type}}-{{comment.id}}-issue" class="issue-indicator">
+       {% comment_issue review_request_details comment "file_attachment_comments" %}
+     </div>
+{% endif %}
+     {% reply_section entry comment "file_attachment_comments" "rc" %}
+    </dd>
+{% endfor %}
+
+{% for comment in entry.comments.diff_comments %}
+    <dt>
+     <a class="comment-anchor" name="{{comment.anchor_prefix}}{{comment.id}}"></a>
+     <div id="comment_container_{{comment.id}}">
+      <table class="sidebyside loading">
+       <thead>
+        <tr>
+         <th class="filename">
+          <a name="{{comment.get_absolute_url}}">{{comment.filediff.dest_file_display}}</a>
+          <span class="diffrevision">
+{% if comment.interfilediff %}
+           (Diff revisions {{comment.filediff.diffset.revision}} - {{comment.interfilediff.diffset.revision}})
+{% else %}
+           (Diff revision {{comment.filediff.diffset.revision}})
+{% endif %}
+          </span>
+         </th>
+        </tr>
+       </thead>
+       <tbody>
+        <tr><td><pre>&nbsp;</pre></td></tr>{# header entry #}
+{% for i in comment.num_lines|default_if_none:1|range %}
+        <tr><td><pre>&nbsp;</pre></td></tr>
+{% endfor %}
+       </tbody>
+      </table>
+     </div>
+    </dt>
+    <dd>
+     <pre class="reviewtext comment-text" id="{{comment.anchor_prefix}}{{comment.id}}">{{comment.text|escape}}</pre>
+{% if comment.issue_opened %}
+     <div id="comment-{{comment.comment_type}}-{{comment.id}}-issue" class="issue-indicator">
+       {% comment_issue review_request_details comment "diff_comments" %}
+     </div>
+{% endif %}
+     {% reply_section entry comment "diff_comments" "rc" %}
+    </dd>
+    <script type="text/javascript">
+      $(document).ready(function() {
+        RB.queueLoadDiffFragment("diff_fragments", "{{comment.id}}",
+{% if comment.interfilediff %}
+          "{{comment.filediff.id}}-{{comment.interfilediff.id}}"
+{% else %}
+          "{{comment.filediff.id}}"
+{% endif %}
+        );
+      });
+    </script>
+{% endfor %}
+   </dl>
+{% endif %}
+  {% if entry.review.body_bottom %}
+   <pre class="body_bottom reviewtext">{{entry.review.body_bottom|escape}}</pre>
+   {% reply_section entry "" "body_bottom" "rcbb" %}
+  {% endif %}
+ </div><!-- body -->
+</div><!-- main -->
+{%   endbox %}
+</div><!-- review{{entry.review.id}} -->
+{%  endif %}
+{%  if entry.changedesc %}
+<a name="changedesc{{entry.changedesc.id}}"></a>
+{% definevar "boxclass" %}changedesc {{entry.class}}{% enddefinevar %}
+{% box boxclass %}
+<div class="main">
+ <div class="header">
+   <div class="collapse-button btn"><div class="ui-collapse-icon"></div></div>
+   <div class="reviewer"><b>{% trans "Review request changed" %}</b></div>
+   <div class="posted_time">{% localtime on %}{% blocktrans with entry.changedesc.timestamp as timestamp and entry.changedesc.timestamp|date:"c" as timestamp_raw %}Updated <time class="timesince" datetime="{{timestamp_raw}}">{{timestamp}}</time> ({{timestamp}}){% endblocktrans %}{% endlocaltime %}</div>
+ </div>
+ <div class="body">
+  <ul>
+{% for fieldinfo in entry.changeinfo %}
+   <li><label>{{fieldinfo.title}}</label>
+{%  if fieldinfo.type == "changed" %}
+{%   if fieldinfo.multiline %}
+	  <p><label>{% trans "Changed from:" %}</label></p>
+      <pre>{{fieldinfo.info.old.0}}</pre>
+	  <p><label>{% trans "Changed to:" %}</label></p>
+	  <pre>{{fieldinfo.info.new.0}}</pre>
+{%   else %}
+{%    blocktrans with fieldinfo.info.old.0 as old_value and fieldinfo.info.new.0 as new_value %}changed from <i>{{old_value}}</i> to <i>{{new_value}}</i>{% endblocktrans %}
+{%   endif %}
+{%  endif %}
+{%  if fieldinfo.type == "add_remove" %}
+    <ul>
+{%   if fieldinfo.info.removed %}
+{%    definevar "removed_values" %}
+{%     for item in fieldinfo.info.removed %}
+{%      if item.1 %}
+     <a href="{{item.1}}">{{item.0}}</a>
+{%      else %}
+         {{item.0}}
+{%      endif %}
+{%      if not forloop.last %}, {% endif %}
+{%     endfor %}
+{%    enddefinevar %}
+     <li>{% blocktrans %}removed {{removed_values}}{% endblocktrans %}</li>
+{%   endif %}
+{%   if fieldinfo.info.added %}
+{%    definevar "added_values" %}
+{%     for item in fieldinfo.info.added %}
+{%      if item.1 %}
+     <a href="{{item.1}}">{{item.0}}</a>
+{%       if fieldinfo.diff_revision %}
+{%        with fieldinfo.diff_revision|add:"-1" as past_revision and fieldinfo.diff_revision as current_revision %}
+     - <a href="{% url view-interdiff review_request.display_id past_revision current_revision %}">{% trans "Show changes" %}</a>
+{%        endwith %}
+{%       endif %}
+{%      else %}
+         {{item.0}}
+{%      endif %}
+{%      if not forloop.last %}, {% endif %}
+{%     endfor %}
+{%    enddefinevar %}
+     <li>{% blocktrans %}added {{added_values}}{% endblocktrans %}</li>
+{%   endif %}
+    </ul>
+{%  endif %}
+{%  if fieldinfo.type == "screenshot_captions" or fieldinfo.type == "file_captions" %}
+    <ul>
+{%   for info in fieldinfo.info.values %}
+     <li>{% blocktrans with info.old.0 as old_value and info.new.0 as new_value %}changed from <i>{{old_value}}</i> to <i>{{new_value}}</i>{% endblocktrans %}</li>
+{%   endfor %}
+    </ul>
+{%  endif %}
+   </li>
+{% endfor %}
+  </ul>
+{% if entry.changedesc.text %}
+  <label>{% trans "Description:" %}</label>
+  <pre class="changedesc-text">{{entry.changedesc.text|escape}}</pre>
+{% endif %}
+ </div>
+</div>
+{%   endbox %}
+{%  endif %}
+{% endfor %}
+
+{% localtime off %}
+<script type="text/javascript">
+  $(document).ready(function() {
+	  /* Listen for updates to this review request. */
+	  RB.registerForUpdates("{{last_activity_time|date:"c"}}");
+{% endlocaltime %}
+
+{% if request.GET.reply_id and request.GET.reply_type %}
+      $.funcQueue("diff_comments").add(function() {
+          var link = $("#add_{{request.GET.reply_type}}_{{request.GET.reply_id}}");
+          $(window).scrollTop(link.offset().top);
+          link.click();
+          $.funcQueue("diff_comments").next();
+      });
+{% endif %}
+  });
+</script>
+
+{% endblock %}
