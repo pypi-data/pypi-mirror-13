@@ -1,0 +1,53 @@
+Metadata-Version: 2.0
+Name: cherrypy-cors
+Version: 1.4.1
+Summary: CORS handling as a cherrypy tool.
+Home-page: https://github.com/yougov/cherrypy-cors
+Author: YouGov, Plc.
+Author-email: opensource@yougov.com
+License: UNKNOWN
+Platform: UNKNOWN
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Programming Language :: Python :: 3
+Requires-Dist: cherrypy (>=3)
+Requires-Dist: httpagentparser (>=1.5)
+
+cherrypy_cors
+=============
+
+CORS support for CherryPy
+
+In a nutshell
+=============
+
+In your application, either install the tool globally.
+
+.. code-block:: python
+
+    import cherrypy_cors
+    cherrypy_cors.install()
+
+Or add it to your application explicitly.
+
+.. code-block:: python
+
+    import cherrypy_cors
+    app = cherrypy.tree.mount(...)
+    app.toolboxes['cors'] = cherrypy_cors.tools
+
+Then, enable it in your cherrypy config. For example, to enable it for all
+static resources.
+
+.. code-block:: python
+
+    config = {
+        '/static': {
+            'tools.staticdir.on': True,
+            'cors.expose.on': True,
+        }
+    }
+
+
