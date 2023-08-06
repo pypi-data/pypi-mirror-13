@@ -1,0 +1,64 @@
+#!/usr/bin/python
+# -*- Mode: Python -*-
+# Copyright (C) 2015 Mathieu Duponchelle
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+# 02110-1301, USA.
+#
+
+"""The main hotdoc application
+"""
+
+import cProfile
+import os
+import sys
+import traceback
+
+# WTF
+# pylint: disable=no-name-in-module
+from hotdoc.core.doc_repo import ConfigError, DocRepo
+
+
+def _run():
+    doc_repo = DocRepo()
+    doc_repo.setup(sys.argv[1:])
+    doc_repo.format()
+    doc_repo.persist()
+    doc_repo.finalize()
+
+
+def _main():
+    run_profile = os.environ.get('HOTDOC_PROFILING', False)
+
+    # pylint: disable=broad-except
+    try:
+        if run_profile:
+            cProfile.run('_run()', 'runstats')
+        else:
+            _run()
+    except ConfigError as exception:
+        print "Configuration error:", exception
+        return 1
+    except Exception:
+        print ("An unknown error happened while building the documentation"
+               " and hotdoc cannot recover from it. Please report "
+               "a bug with this error message and the steps to "
+               "reproduce it")
+        traceback.print_exc()
+        return 1
+    return 0
+
+if __name__ == "__main__":
+    sys.exit(_main())
