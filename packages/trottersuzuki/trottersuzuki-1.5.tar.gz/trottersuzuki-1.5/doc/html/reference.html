@@ -1,0 +1,1219 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Function Reference &mdash; TrotterSuzuki 1.5 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="TrotterSuzuki 1.5 documentation" href="index.html"/>
+        <link rel="prev" title="Examples" href="examples.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> TrotterSuzuki
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.5
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="download.html">Download and Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">Function Reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#lattice-class">Lattice Class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#state-classes">State Classes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#potential-classes">Potential Classes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#hamiltonian-classes">Hamiltonian Classes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#solver-class">Solver Class</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">TrotterSuzuki</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+    <li>Function Reference</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="function-reference">
+<h1>Function Reference<a class="headerlink" href="#function-reference" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="lattice-class">
+<h2>Lattice Class<a class="headerlink" href="#lattice-class" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="trottersuzuki.Lattice">
+<em class="property">class </em><code class="descclassname">trottersuzuki.</code><code class="descname">Lattice</code><span class="sig-paren">(</span><em>dim=100</em>, <em>length_x=20.0</em>, <em>length_y=20.0</em>, <em>periodic_x_axis=False</em>, <em>periodic_y_axis=False</em>, <em>angular_velocity=0.0</em><span class="sig-paren">)</span><a class="headerlink" href="#trottersuzuki.Lattice" title="Permalink to this definition">¶</a></dt>
+<dd><p>This class defines the lattice structure over which the state and potential
+matrices are defined.</p>
+<p>As to single-process execution, the lattice is a single tile which can be
+surrounded by a halo, in the case of periodic boundary conditions.</p>
+<ul>
+<li><p class="first"><cite>Lattice(dim=100, length_x=20.0, length_y=20.0, periodic_x_axis=False, periodic_y_axis=False, angular_velocity=0.0)</cite></p>
+<blockquote>
+<div><p>Construct the Lattice.</p>
+<ul>
+<li><dl class="first docutils">
+<dt><cite>dim</cite> :</dt>
+<dd><p class="first last">Linear dimension of the squared lattice.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><cite>length_x</cite> :</dt>
+<dd><p class="first last">Physical length of the lattice&#8217;s side along the x axis.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><cite>length_y</cite> :</dt>
+<dd><p class="first last">Physical length of the lattice&#8217;s side along the y axis.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><cite>periodic_x_axis</cite> :</dt>
+<dd><p class="first last">Boundary condition along the x axis (false=closed, true=periodic).</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><cite>periodic_y_axis</cite> :</dt>
+<dd><p class="first last">Boundary condition along the y axis (false=closed, true=periodic).</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><cite>angular_velocity</cite> :</dt>
+<dd><p class="first last">Angular velocity of the frame of reference.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</div></blockquote>
+</li>
+</ul>
+<p>C++ includes: trottersuzuki.h</p>
+</dd></dl>
+
+</div>
+<div class="section" id="state-classes">
+<h2>State Classes<a class="headerlink" href="#state-classes" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="trottersuzuki.State">
+<em class="property">class </em><code class="descclassname">trottersuzuki.</code><code class="descname">State</code><span class="sig-paren">(</span><em>*args</em><span class="sig-paren">)</span><a class="headerlink" href="#trottersuzuki.State" title="Permalink to this definition">¶</a></dt>
+<dd><p>This class defines the quantum state.</p>
+<p>C++ includes: trottersuzuki.h</p>
+<dl class="method">
+<dt id="trottersuzuki.State.get_mean_px">
+<code class="descname">get_mean_px</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#trottersuzuki.State.get_mean_px" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the expected value of the P_x operator.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="trottersuzuki.State.get_mean_pxpx">
+<code class="descname">get_mean_pxpx</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#trottersuzuki.State.get_mean_pxpx" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the expected value of the P_x^2 operator.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="trottersuzuki.State.get_mean_py">
+<code class="descname">get_mean_py</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#trottersuzuki.State.get_mean_py" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the expected value of the P_y operator.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="trottersuzuki.State.get_mean_pypy">
+<code class="descname">get_mean_pypy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#trottersuzuki.State.get_mean_pypy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the expected value of the P_y^2 operator.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="trottersuzuki.State.get_mean_x">
+<code class="descname">get_mean_x</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#trottersuzuki.State.get_mean_x" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the expected value of the X operator.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="trottersuzuki.State.get_mean_xx">
+<code class="descname">get_mean_xx</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#trottersuzuki.State.get_mean_xx" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the expected value of the X^2 operator.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="trottersuzuki.State.get_mean_y">
+<code class="descname">get_mean_y</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#trottersuzuki.State.get_mean_y" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the expected value of the Y operator.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="trottersuzuki.State.get_mean_yy">
+<code class="descname">get_mean_yy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#trottersuzuki.State.get_mean_yy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the expected value of the Y^2 operator.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="trottersuzuki.State.get_particle_density">
+<code class="descname">get_particle_density</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#trottersuzuki.State.get_particle_density" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a matrix storing the squared norm of the wave function.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="trottersuzuki.State.get_phase">
+<code class="descname">get_phase</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#trottersuzuki.State.get_phase" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a matrix storing the phase of the wave function.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="trottersuzuki.State.get_squared_norm">
+<code class="descname">get_squared_norm</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#trottersuzuki.State.get_squared_norm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the squared norm of the quantum state.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="trottersuzuki.State.write_particle_density">
+<code class="descname">write_particle_density</code><span class="sig-paren">(</span><em>fileprefix</em><span class="sig-paren">)</span><a class="headerlink" href="#trottersuzuki.State.write_particle_density" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write to a file the squared norm of the wave function.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="trottersuzuki.State.write_phase">
+<code class="descname">write_phase</code><span class="sig-paren">(</span><em>fileprefix</em><span class="sig-paren">)</span><a class="headerlink" href="#trottersuzuki.State.write_phase" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write to a file the phase of the wave function.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="trottersuzuki.State.write_to_file">
+<code class="descname">write_to_file</code><span class="sig-paren">(</span><em>fileprefix</em><span class="sig-paren">)</span><a class="headerlink" href="#trottersuzuki.State.write_to_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write to a file the wave function.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="trottersuzuki.ExponentialState">
+<em class="property">class </em><code class="descclassname">trottersuzuki.</code><code class="descname">ExponentialState</code><span class="sig-paren">(</span><em>_grid</em>, <em>_n_x=1</em>, <em>_n_y=1</em>, <em>_norm=1</em>, <em>_phase=0</em>, <em>_p_real=None</em>, <em>_p_imag=None</em><span class="sig-paren">)</span><a class="headerlink" href="#trottersuzuki.ExponentialState" title="Permalink to this definition">¶</a></dt>
+<dd><p>This class defines a quantum state with exponential like wave function.</p>
+<p>This class is a child of State class.</p>
+<ul>
+<li><p class="first"><cite>ExponentialState(_grid, _n_x=1, _n_y=1, _norm=1, _phase=0, _p_real=None, _p_imag=None)</cite></p>
+<blockquote>
+<div><p>Construct the Lattice.</p>
+<p>Construct the quantum state with exponential like wave function.</p>
+<ul>
+<li><dl class="first docutils">
+<dt><cite>grid</cite> :</dt>
+<dd><p class="first last">Lattice object.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><cite>n_x</cite> :</dt>
+<dd><p class="first last">First quantum number.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><cite>n_y</cite> :</dt>
+<dd><p class="first last">Second quantum number.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><cite>norm</cite> :</dt>
+<dd><p class="first last">Squared norm of the quantum state.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><cite>phase</cite> :</dt>
+<dd><p class="first last">Relative phase of the wave function.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><cite>p_real</cite> :</dt>
+<dd><p class="first last">Pointer to the real part of the wave function.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><cite>p_imag</cite> :</dt>
+<dd><p class="first last">Pointer to the imaginary part of the wave function.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</div></blockquote>
+</li>
+</ul>
+<p>C++ includes: trottersuzuki.h</p>
+<dl class="method">
+<dt id="trottersuzuki.ExponentialState.get_mean_px">
+<code class="descname">get_mean_px</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#trottersuzuki.ExponentialState.get_mean_px" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the expected value of the P_x operator.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="trottersuzuki.ExponentialState.get_mean_pxpx">
+<code class="descname">get_mean_pxpx</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#trottersuzuki.ExponentialState.get_mean_pxpx" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the expected value of the P_x^2 operator.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="trottersuzuki.ExponentialState.get_mean_py">
+<code class="descname">get_mean_py</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#trottersuzuki.ExponentialState.get_mean_py" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the expected value of the P_y operator.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="trottersuzuki.ExponentialState.get_mean_pypy">
+<code class="descname">get_mean_pypy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#trottersuzuki.ExponentialState.get_mean_pypy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the expected value of the P_y^2 operator.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="trottersuzuki.ExponentialState.get_mean_x">
+<code class="descname">get_mean_x</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#trottersuzuki.ExponentialState.get_mean_x" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the expected value of the X operator.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="trottersuzuki.ExponentialState.get_mean_xx">
+<code class="descname">get_mean_xx</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#trottersuzuki.ExponentialState.get_mean_xx" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the expected value of the X^2 operator.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="trottersuzuki.ExponentialState.get_mean_y">
+<code class="descname">get_mean_y</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#trottersuzuki.ExponentialState.get_mean_y" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the expected value of the Y operator.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="trottersuzuki.ExponentialState.get_mean_yy">
+<code class="descname">get_mean_yy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#trottersuzuki.ExponentialState.get_mean_yy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the expected value of the Y^2 operator.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="trottersuzuki.ExponentialState.get_particle_density">
+<code class="descname">get_particle_density</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#trottersuzuki.ExponentialState.get_particle_density" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a matrix storing the squared norm of the wave function.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="trottersuzuki.ExponentialState.get_phase">
+<code class="descname">get_phase</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#trottersuzuki.ExponentialState.get_phase" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a matrix storing the phase of the wave function.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="trottersuzuki.ExponentialState.get_squared_norm">
+<code class="descname">get_squared_norm</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#trottersuzuki.ExponentialState.get_squared_norm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the squared norm of the quantum state.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="trottersuzuki.ExponentialState.write_particle_density">
+<code class="descname">write_particle_density</code><span class="sig-paren">(</span><em>fileprefix</em><span class="sig-paren">)</span><a class="headerlink" href="#trottersuzuki.ExponentialState.write_particle_density" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write to a file the squared norm of the wave function.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="trottersuzuki.ExponentialState.write_phase">
+<code class="descname">write_phase</code><span class="sig-paren">(</span><em>fileprefix</em><span class="sig-paren">)</span><a class="headerlink" href="#trottersuzuki.ExponentialState.write_phase" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write to a file the phase of the wave function.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="trottersuzuki.ExponentialState.write_to_file">
+<code class="descname">write_to_file</code><span class="sig-paren">(</span><em>fileprefix</em><span class="sig-paren">)</span><a class="headerlink" href="#trottersuzuki.ExponentialState.write_to_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write to a file the wave function.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="trottersuzuki.GaussianState">
+<em class="property">class </em><code class="descclassname">trottersuzuki.</code><code class="descname">GaussianState</code><span class="sig-paren">(</span><em>_grid</em>, <em>_omega</em>, <em>_mean_x=0</em>, <em>_mean_y=0</em>, <em>_norm=1</em>, <em>_phase=0</em>, <em>_p_real=None</em>, <em>_p_imag=None</em><span class="sig-paren">)</span><a class="headerlink" href="#trottersuzuki.GaussianState" title="Permalink to this definition">¶</a></dt>
+<dd><p>This class defines a quantum state with gaussian like wave function.</p>
+<p>This class is a child of State class.</p>
+<ul>
+<li><p class="first"><cite>GaussianState(_grid, _omega, _mean_x=0, _mean_y=0, _norm=1, _phase=0, _p_real=None, _p_imag=None)</cite></p>
+<blockquote>
+<div><p>Construct the quantum state with gaussian like wave function.</p>
+<ul>
+<li><dl class="first docutils">
+<dt><cite>grid</cite> :</dt>
+<dd><p class="first last">Lattice object.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><cite>omega</cite> :</dt>
+<dd><p class="first last">Gaussian coefficient.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><cite>mean_x</cite> :</dt>
+<dd><p class="first last">X coordinate of the gaussian function&#8217;s center.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><cite>mean_y</cite> :</dt>
+<dd><p class="first last">Y coordinate of the gaussian function&#8217;s center.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><cite>norm</cite> :</dt>
+<dd><p class="first last">Squared norm of the state.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><cite>phase</cite> :</dt>
+<dd><p class="first last">Relative phase of the wave function.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><cite>p_real</cite> :</dt>
+<dd><p class="first last">Pointer to the real part of the wave function.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><cite>p_imag</cite> :</dt>
+<dd><p class="first last">Pointer to the imaginary part of the wave function.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</div></blockquote>
+</li>
+</ul>
+<p>C++ includes: trottersuzuki.h</p>
+<dl class="method">
+<dt id="trottersuzuki.GaussianState.get_mean_px">
+<code class="descname">get_mean_px</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#trottersuzuki.GaussianState.get_mean_px" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the expected value of the P_x operator.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="trottersuzuki.GaussianState.get_mean_pxpx">
+<code class="descname">get_mean_pxpx</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#trottersuzuki.GaussianState.get_mean_pxpx" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the expected value of the P_x^2 operator.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="trottersuzuki.GaussianState.get_mean_py">
+<code class="descname">get_mean_py</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#trottersuzuki.GaussianState.get_mean_py" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the expected value of the P_y operator.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="trottersuzuki.GaussianState.get_mean_pypy">
+<code class="descname">get_mean_pypy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#trottersuzuki.GaussianState.get_mean_pypy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the expected value of the P_y^2 operator.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="trottersuzuki.GaussianState.get_mean_x">
+<code class="descname">get_mean_x</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#trottersuzuki.GaussianState.get_mean_x" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the expected value of the X operator.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="trottersuzuki.GaussianState.get_mean_xx">
+<code class="descname">get_mean_xx</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#trottersuzuki.GaussianState.get_mean_xx" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the expected value of the X^2 operator.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="trottersuzuki.GaussianState.get_mean_y">
+<code class="descname">get_mean_y</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#trottersuzuki.GaussianState.get_mean_y" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the expected value of the Y operator.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="trottersuzuki.GaussianState.get_mean_yy">
+<code class="descname">get_mean_yy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#trottersuzuki.GaussianState.get_mean_yy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the expected value of the Y^2 operator.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="trottersuzuki.GaussianState.get_particle_density">
+<code class="descname">get_particle_density</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#trottersuzuki.GaussianState.get_particle_density" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a matrix storing the squared norm of the wave function.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="trottersuzuki.GaussianState.get_phase">
+<code class="descname">get_phase</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#trottersuzuki.GaussianState.get_phase" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a matrix storing the phase of the wave function.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="trottersuzuki.GaussianState.get_squared_norm">
+<code class="descname">get_squared_norm</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#trottersuzuki.GaussianState.get_squared_norm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the squared norm of the quantum state.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="trottersuzuki.GaussianState.write_particle_density">
+<code class="descname">write_particle_density</code><span class="sig-paren">(</span><em>fileprefix</em><span class="sig-paren">)</span><a class="headerlink" href="#trottersuzuki.GaussianState.write_particle_density" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write to a file the squared norm of the wave function.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="trottersuzuki.GaussianState.write_phase">
+<code class="descname">write_phase</code><span class="sig-paren">(</span><em>fileprefix</em><span class="sig-paren">)</span><a class="headerlink" href="#trottersuzuki.GaussianState.write_phase" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write to a file the phase of the wave function.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="trottersuzuki.GaussianState.write_to_file">
+<code class="descname">write_to_file</code><span class="sig-paren">(</span><em>fileprefix</em><span class="sig-paren">)</span><a class="headerlink" href="#trottersuzuki.GaussianState.write_to_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write to a file the wave function.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="trottersuzuki.SinusoidState">
+<em class="property">class </em><code class="descclassname">trottersuzuki.</code><code class="descname">SinusoidState</code><span class="sig-paren">(</span><em>_grid</em>, <em>_n_x=1</em>, <em>_n_y=1</em>, <em>_norm=1</em>, <em>_phase=0</em>, <em>_p_real=None</em>, <em>_p_imag=None</em><span class="sig-paren">)</span><a class="headerlink" href="#trottersuzuki.SinusoidState" title="Permalink to this definition">¶</a></dt>
+<dd><p>This class defines a quantum state with sinusoidal like wave function.</p>
+<p>This class is a child of State class.</p>
+<p>C++ includes: trottersuzuki.h</p>
+<ul>
+<li><p class="first"><cite>SinusoidState(_grid, _n_x=1, _n_y=1, _norm=1, _phase=0, _p_real=None, _p_imag=None)</cite></p>
+<blockquote>
+<div><p>Construct the quantum state with sinusoidal like wave function.</p>
+<ul>
+<li><dl class="first docutils">
+<dt><cite>grid</cite> :</dt>
+<dd><p class="first last">Lattice object.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><cite>n_x</cite> :</dt>
+<dd><p class="first last">First quantum number.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><cite>n_y</cite> :</dt>
+<dd><p class="first last">Second quantum number.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><cite>norm</cite> :</dt>
+<dd><p class="first last">Squared norm of the quantum state.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><cite>phase</cite> :</dt>
+<dd><p class="first last">Relative phase of the wave function.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><cite>p_real</cite> :</dt>
+<dd><p class="first last">Pointer to the real part of the wave function.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><cite>p_imag</cite> :</dt>
+<dd><p class="first last">Pointer to the imaginary part of the wave function.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</div></blockquote>
+</li>
+</ul>
+<p>C++ includes: trottersuzuki.h</p>
+<dl class="method">
+<dt id="trottersuzuki.SinusoidState.get_mean_px">
+<code class="descname">get_mean_px</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#trottersuzuki.SinusoidState.get_mean_px" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the expected value of the P_x operator.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="trottersuzuki.SinusoidState.get_mean_pxpx">
+<code class="descname">get_mean_pxpx</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#trottersuzuki.SinusoidState.get_mean_pxpx" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the expected value of the P_x^2 operator.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="trottersuzuki.SinusoidState.get_mean_py">
+<code class="descname">get_mean_py</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#trottersuzuki.SinusoidState.get_mean_py" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the expected value of the P_y operator.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="trottersuzuki.SinusoidState.get_mean_pypy">
+<code class="descname">get_mean_pypy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#trottersuzuki.SinusoidState.get_mean_pypy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the expected value of the P_y^2 operator.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="trottersuzuki.SinusoidState.get_mean_x">
+<code class="descname">get_mean_x</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#trottersuzuki.SinusoidState.get_mean_x" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the expected value of the X operator.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="trottersuzuki.SinusoidState.get_mean_xx">
+<code class="descname">get_mean_xx</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#trottersuzuki.SinusoidState.get_mean_xx" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the expected value of the X^2 operator.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="trottersuzuki.SinusoidState.get_mean_y">
+<code class="descname">get_mean_y</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#trottersuzuki.SinusoidState.get_mean_y" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the expected value of the Y operator.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="trottersuzuki.SinusoidState.get_mean_yy">
+<code class="descname">get_mean_yy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#trottersuzuki.SinusoidState.get_mean_yy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the expected value of the Y^2 operator.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="trottersuzuki.SinusoidState.get_particle_density">
+<code class="descname">get_particle_density</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#trottersuzuki.SinusoidState.get_particle_density" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a matrix storing the squared norm of the wave function.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="trottersuzuki.SinusoidState.get_phase">
+<code class="descname">get_phase</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#trottersuzuki.SinusoidState.get_phase" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a matrix storing the phase of the wave function.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="trottersuzuki.SinusoidState.get_squared_norm">
+<code class="descname">get_squared_norm</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#trottersuzuki.SinusoidState.get_squared_norm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the squared norm of the quantum state.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="trottersuzuki.SinusoidState.write_particle_density">
+<code class="descname">write_particle_density</code><span class="sig-paren">(</span><em>fileprefix</em><span class="sig-paren">)</span><a class="headerlink" href="#trottersuzuki.SinusoidState.write_particle_density" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write to a file the squared norm of the wave function.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="trottersuzuki.SinusoidState.write_phase">
+<code class="descname">write_phase</code><span class="sig-paren">(</span><em>fileprefix</em><span class="sig-paren">)</span><a class="headerlink" href="#trottersuzuki.SinusoidState.write_phase" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write to a file the phase of the wave function.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="trottersuzuki.SinusoidState.write_to_file">
+<code class="descname">write_to_file</code><span class="sig-paren">(</span><em>fileprefix</em><span class="sig-paren">)</span><a class="headerlink" href="#trottersuzuki.SinusoidState.write_to_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write to a file the wave function.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="potential-classes">
+<h2>Potential Classes<a class="headerlink" href="#potential-classes" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="trottersuzuki.Potential">
+<em class="property">class </em><code class="descclassname">trottersuzuki.</code><code class="descname">Potential</code><span class="sig-paren">(</span><em>*args</em><span class="sig-paren">)</span><a class="headerlink" href="#trottersuzuki.Potential" title="Permalink to this definition">¶</a></dt>
+<dd><p>This class defines the external potential that is used for Hamiltonian class.</p>
+<p>C++ includes: trottersuzuki.h</p>
+<ul>
+<li><p class="first"><cite>Potential(*args)</cite></p>
+<blockquote>
+<div><p>Construct the external potential.</p>
+<ul>
+<li><dl class="first docutils">
+<dt><cite>grid</cite> :</dt>
+<dd><p class="first last">Lattice object.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><cite>filename</cite> :</dt>
+<dd><p class="first last">Name of the file that stores the external potential matrix.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</div></blockquote>
+</li>
+</ul>
+<p>C++ includes: trottersuzuki.h</p>
+<dl class="method">
+<dt id="trottersuzuki.Potential.get_value">
+<code class="descname">get_value</code><span class="sig-paren">(</span><em>x</em>, <em>y</em><span class="sig-paren">)</span><a class="headerlink" href="#trottersuzuki.Potential.get_value" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the value at the coordinate (x,y).</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="trottersuzuki.HarmonicPotential">
+<em class="property">class </em><code class="descclassname">trottersuzuki.</code><code class="descname">HarmonicPotential</code><span class="sig-paren">(</span><em>_grid</em>, <em>_omegax</em>, <em>_omegay</em>, <em>_mass=1.0</em>, <em>_mean_x=0.0</em>, <em>_mean_y=0.0</em><span class="sig-paren">)</span><a class="headerlink" href="#trottersuzuki.HarmonicPotential" title="Permalink to this definition">¶</a></dt>
+<dd><p><cite>HarmonicPotential(grid, omegax, omegay, mass=1., mean_x=0., mean_y=0.)</cite></p>
+<p>This class defines the external potential, that is used for Hamiltonian class.</p>
+<p>This class is a child of Potential class.</p>
+<ul>
+<li><p class="first"><cite>HarmonicPotential(grid, omegax, omegay, mass=1., mean_x=0., mean_y=0.)</cite></p>
+<blockquote>
+<div><p>Construct the harmonic external potential.</p>
+<p>Parameters:
+* <cite>grid</cite> :</p>
+<blockquote>
+<div><p>Lattice object.</p>
+</div></blockquote>
+<ul>
+<li><dl class="first docutils">
+<dt><cite>omegax</cite> :</dt>
+<dd><p class="first last">Frequency along x axis.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><cite>omegay</cite> :</dt>
+<dd><p class="first last">Frequency along y axis.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><cite>mass</cite> :</dt>
+<dd><p class="first last">Mass of the particle.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><cite>mean_x</cite> :</dt>
+<dd><p class="first last">Minimum of the potential along x axis.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><cite>mean_y</cite> :</dt>
+<dd><p class="first last">Minimum of the potential along y axis.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</div></blockquote>
+</li>
+</ul>
+<p>C++ includes: trottersuzuki.h</p>
+<dl class="method">
+<dt id="trottersuzuki.HarmonicPotential.get_value">
+<code class="descname">get_value</code><span class="sig-paren">(</span><em>x</em>, <em>y</em><span class="sig-paren">)</span><a class="headerlink" href="#trottersuzuki.HarmonicPotential.get_value" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the value of the external potential at coordinate (x,y)</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="hamiltonian-classes">
+<h2>Hamiltonian Classes<a class="headerlink" href="#hamiltonian-classes" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="trottersuzuki.Hamiltonian">
+<em class="property">class </em><code class="descclassname">trottersuzuki.</code><code class="descname">Hamiltonian</code><span class="sig-paren">(</span><em>_grid</em>, <em>_potential=None</em>, <em>_mass=1.0</em>, <em>_coupling_a=0.0</em>, <em>_angular_velocity=0.0</em>, <em>_rot_coord_x=0</em>, <em>_rot_coord_y=0</em><span class="sig-paren">)</span><a class="headerlink" href="#trottersuzuki.Hamiltonian" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt><a href="#id1"><span class="problematic" id="id2">`</span></a>Hamiltonian(grid, potential=0, mass=1., coupling_a=0., angular_velocity=0.,</dt>
+<dd>rot_coord_x=0, rot_coord_y=0)`</dd>
+</dl>
+<p>This class defines the Hamiltonian of a single component system.</p>
+<ul>
+<li><dl class="first docutils">
+<dt><a href="#id3"><span class="problematic" id="id4">`</span></a>Hamiltonian(grid, potential=0, mass=1., coupling_a=0., angular_velocity=0.,</dt>
+<dd><p class="first">rot_coord_x=0, rot_coord_y=0)`</p>
+<p>Construct the Hamiltonian of a single component system.</p>
+<p>Parameters:
+* <cite>grid</cite> :</p>
+<blockquote>
+<div><p>Lattice object.</p>
+</div></blockquote>
+<ul class="last">
+<li><dl class="first docutils">
+<dt><cite>potential</cite> :</dt>
+<dd><p class="first last">Potential object.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><cite>mass</cite> :</dt>
+<dd><p class="first last">Mass of the particle.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><cite>coupling_a</cite> :</dt>
+<dd><p class="first last">Coupling constant of intra-particle interaction.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><cite>angular_velocity</cite> :</dt>
+<dd><p class="first last">The frame of reference rotates with this angular velocity.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><cite>rot_coord_x</cite> :</dt>
+<dd><p class="first last">X coordinate of the center of rotation.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><cite>rot_coord_y</cite> :</dt>
+<dd><p class="first last">Y coordinate of the center of rotation.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+<p>C++ includes: trottersuzuki.h</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="trottersuzuki.Hamiltonian2Component">
+<em class="property">class </em><code class="descclassname">trottersuzuki.</code><code class="descname">Hamiltonian2Component</code><span class="sig-paren">(</span><em>_grid</em>, <em>_potential=None</em>, <em>_potential_b=None</em>, <em>_mass=1.0</em>, <em>_mass_b=1.0</em>, <em>_coupling_a=0.0</em>, <em>coupling_ab=0.0</em>, <em>_coupling_b=0.0</em>, <em>_omega_r=0</em>, <em>_omega_i=0</em>, <em>_angular_velocity=0.0</em>, <em>_rot_coord_x=0</em>, <em>_rot_coord_y=0</em><span class="sig-paren">)</span><a class="headerlink" href="#trottersuzuki.Hamiltonian2Component" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt><a href="#id5"><span class="problematic" id="id6">`</span></a>Hamiltonian2Component(grid, potential=0, potential_b=0, mass=1., mass_b=1.,</dt>
+<dd>coupling_a=0., coupling_ab=0., coupling_b=0., omega_r=0, omega_i=0,
+angular_velocity=0., rot_coord_x=0, rot_coord_y=0)`</dd>
+</dl>
+<p>This class defines the Hamiltonian of a two component system.</p>
+<ul>
+<li><dl class="first docutils">
+<dt><a href="#id7"><span class="problematic" id="id8">`</span></a>Hamiltonian2Component(grid, potential=0, potential_b=0, mass=1., mass_b=1.,</dt>
+<dd><p class="first">coupling_a=0., coupling_ab=0., coupling_b=0., omega_r=0, omega_i=0,
+angular_velocity=0., rot_coord_x=0, rot_coord_y=0)`</p>
+<p>Construct the Hamiltonian of a two component system.</p>
+<p>Parameters:
+* <cite>grid</cite> :</p>
+<blockquote>
+<div><p>Lattice object.</p>
+</div></blockquote>
+<ul class="last">
+<li><dl class="first docutils">
+<dt><cite>potential</cite> :</dt>
+<dd><p class="first last">Potential of the first component.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><cite>potential_b</cite> :</dt>
+<dd><p class="first last">Potential of the second component.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><cite>mass</cite> :</dt>
+<dd><p class="first last">Mass of the first-component&#8217;s particles.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><cite>mass_b</cite> :</dt>
+<dd><p class="first last">Mass of the second-component&#8217;s particles.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><cite>coupling_a</cite> :</dt>
+<dd><p class="first last">Coupling constant of intra-particle interaction for the first component.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><cite>coupling_ab</cite> :</dt>
+<dd><p class="first last">Coupling constant of inter-particle interaction between the two
+components.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><cite>coupling_b</cite> :</dt>
+<dd><p class="first last">Coupling constant of intra-particle interaction for the second
+component.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><cite>omega_r</cite> :</dt>
+<dd><p class="first last">Real part of the Rabi coupling.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><cite>omega_i</cite> :</dt>
+<dd><p class="first last">Imaginary part of the Rabi coupling.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><cite>angular_velocity</cite> :</dt>
+<dd><p class="first last">The frame of reference rotates with this angular velocity.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><cite>rot_coord_x</cite> :</dt>
+<dd><p class="first last">X coordinate of the center of rotation.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><cite>rot_coord_y</cite> :</dt>
+<dd><p class="first last">Y coordinate of the center of rotation.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+<p>C++ includes: trottersuzuki.h</p>
+</dd></dl>
+
+</div>
+<div class="section" id="solver-class">
+<h2>Solver Class<a class="headerlink" href="#solver-class" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="trottersuzuki.Solver">
+<em class="property">class </em><code class="descclassname">trottersuzuki.</code><code class="descname">Solver</code><span class="sig-paren">(</span><em>*args</em><span class="sig-paren">)</span><a class="headerlink" href="#trottersuzuki.Solver" title="Permalink to this definition">¶</a></dt>
+<dd><p><cite>Solver(grid, state, hamiltonian, delta_t, kernel_type=&#8221;cpu&#8221;)</cite>
+<cite>Solver(grid, state1, state2, hamiltonian, delta_t, kernel_type=&#8221;cpu&#8221;)</cite></p>
+<p>This class defines the evolution tasks.</p>
+<ul>
+<li><p class="first"><cite>Solver(grid, state, hamiltonian, delta_t, kernel_type=&#8221;cpu&#8221;)</cite></p>
+<blockquote>
+<div><p>Construct the Solver object for a single-component system.</p>
+<p>Parameters:
+* <cite>grid</cite> :</p>
+<blockquote>
+<div><p>Lattice object.</p>
+</div></blockquote>
+<ul>
+<li><dl class="first docutils">
+<dt><cite>state</cite> :</dt>
+<dd><p class="first last">State of the system.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><cite>hamiltonian</cite> :</dt>
+<dd><p class="first last">Hamiltonian of the system.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><cite>delta_t</cite> :</dt>
+<dd><p class="first last">A single evolution iteration, evolves the state for this time.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><cite>kernel_type</cite> :</dt>
+<dd><p class="first last">Which kernel to use (either cpu or gpu).</p>
+</dd>
+</dl>
+</li>
+</ul>
+<p>Massively Parallel Trotter-Suzuki Solver</p>
+<p>This program is free software: you can redistribute it and/or modify it
+under the terms of the GNU General Public License as published by the Free
+Software Foundation, either version 3 of the License, or (at your option)
+any later version.</p>
+<p>This program is distributed in the hope that it will be useful, but WITHOUT
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+more details.</p>
+<p>You should have received a copy of the GNU General Public License along with
+this program. If not, see <a class="reference external" href="http://www.gnu.org/licenses/">http://www.gnu.org/licenses/</a>.</p>
+</div></blockquote>
+</li>
+<li><p class="first"><cite>Solver(grid, state1, state2, hamiltonian, delta_t, kernel_type=&#8221;cpu&#8221;)</cite></p>
+<blockquote>
+<div><p>Construct the Solver object for a two-component system.</p>
+<p>Parameters:
+* <cite>grid</cite> :</p>
+<blockquote>
+<div><p>Lattice object.</p>
+</div></blockquote>
+<ul>
+<li><dl class="first docutils">
+<dt><cite>state1</cite> :</dt>
+<dd><p class="first last">First component&#8217;s state of the system.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><cite>state2</cite> :</dt>
+<dd><p class="first last">Second component&#8217;s state of the system.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><cite>hamiltonian</cite> :</dt>
+<dd><p class="first last">Hamiltonian of the two-component system.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><cite>delta_t</cite> :</dt>
+<dd><p class="first last">A single evolution iteration, evolves the state for this time.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><cite>kernel_type</cite> :</dt>
+<dd><p class="first last">Which kernel to use (either cpu or gpu).</p>
+</dd>
+</dl>
+</li>
+</ul>
+</div></blockquote>
+</li>
+</ul>
+<p>C++ includes: trottersuzuki.h</p>
+<dl class="method">
+<dt id="trottersuzuki.Solver.evolve">
+<code class="descname">evolve</code><span class="sig-paren">(</span><em>iterations</em>, <em>imag_time=False</em><span class="sig-paren">)</span><a class="headerlink" href="#trottersuzuki.Solver.evolve" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evolve the state of the system.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="trottersuzuki.Solver.get_inter_species_energy">
+<code class="descname">get_inter_species_energy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#trottersuzuki.Solver.get_inter_species_energy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the inter-particles interaction energy of the system.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="trottersuzuki.Solver.get_intra_species_energy">
+<code class="descname">get_intra_species_energy</code><span class="sig-paren">(</span><em>which=3</em><span class="sig-paren">)</span><a class="headerlink" href="#trottersuzuki.Solver.get_intra_species_energy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the intra-particles interaction energy of the system.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="trottersuzuki.Solver.get_kinetic_energy">
+<code class="descname">get_kinetic_energy</code><span class="sig-paren">(</span><em>which=3</em><span class="sig-paren">)</span><a class="headerlink" href="#trottersuzuki.Solver.get_kinetic_energy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the kinetic energy of the system.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="trottersuzuki.Solver.get_potential_energy">
+<code class="descname">get_potential_energy</code><span class="sig-paren">(</span><em>which=3</em><span class="sig-paren">)</span><a class="headerlink" href="#trottersuzuki.Solver.get_potential_energy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the potential energy of the system.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="trottersuzuki.Solver.get_rabi_energy">
+<code class="descname">get_rabi_energy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#trottersuzuki.Solver.get_rabi_energy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the Rabi energy of the system.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="trottersuzuki.Solver.get_rotational_energy">
+<code class="descname">get_rotational_energy</code><span class="sig-paren">(</span><em>which=3</em><span class="sig-paren">)</span><a class="headerlink" href="#trottersuzuki.Solver.get_rotational_energy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the rotational energy of the system.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="trottersuzuki.Solver.get_squared_norm">
+<code class="descname">get_squared_norm</code><span class="sig-paren">(</span><em>which=3</em><span class="sig-paren">)</span><a class="headerlink" href="#trottersuzuki.Solver.get_squared_norm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the squared norm of the state (default: total wave-function).</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="trottersuzuki.Solver.get_total_energy">
+<code class="descname">get_total_energy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#trottersuzuki.Solver.get_total_energy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the total energy of the system.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+      
+        <a href="examples.html" class="btn btn-neutral" title="Examples" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2015-2016, Peter Wittek, Luca Calderaro.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'1.5',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
