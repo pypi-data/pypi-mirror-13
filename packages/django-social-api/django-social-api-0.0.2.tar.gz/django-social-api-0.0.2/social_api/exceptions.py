@@ -1,0 +1,2 @@
+class NoActiveTokens(Exception):
+    pass
