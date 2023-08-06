@@ -1,0 +1,162 @@
+#!/usr/bin/env python
+
+import argparse
+import cPickle as pickle
+import datetime
+import os
+
+from yahoo_finance import Share
+
+def get_historical(symbol, start_date, end_date):
+	"""Get historical info."""
+	# historical info cache is a list of dicts
+	historical_info_cache = []
+
+	# convert relevant dates
+	start_date = datetime.datetime.strptime(start_date, '%Y-%m-%d')
+	end_date = datetime.datetime.strptime(end_date, '%Y-%m-%d')
+	last_available_date = None
+
+	# try to open pickle file
+	rsicalc_directory = os.path.expanduser('~/.rsicalc')
+	historical_info_cache_file_path = os.path.join(rsicalc_directory, symbol) + '.pickle'
+	try:
+		historical_info_cache_file = open(historical_info_cache_file_path, 'rb')
+
+		# keep unpickling until EOF reached
+		while True:
+			try:
+				historical_info_cache.append(pickle.load(historical_info_cache_file))
+			except EOFError:
+				break
+		historical_info_cache_file.close()
+	except IOError:
+		pass
+
+	# check the cache if non-empty
+	if historical_info_cache:
+		last_available_date = datetime.datetime.strptime(historical_info_cache[0]['Date'], '%Y-%m-%d')
+
+		# reset start date if less than or equal to last available date
+		if start_date <= last_available_date:
+			start_date = last_available_date + datetime.timedelta(days=1)
+		else: # clear cache that is too old
+			historical_info_cache = []
+
+	# query and append to cache only if satisfies all below conditions:
+	# - start date must be less than or equal to end date
+	# - either there is no last available date (no cache) or the last available date is less than end date
+	# - NOT if start date is equal to end date and end date is equal to Saturday or Sunday
+	# NOTE: will not protect against queries on holidays or major disruptions
+	historical_info = []
+	if (start_date <= end_date) and \
+		((not last_available_date) or (last_available_date < end_date)) and \
+		(not ((start_date == end_date) and (end_date.weekday() in (5, 6)))):
+		# convert start and end date back to strings
+		start_date = start_date.strftime("%Y-%m-%d")
+		end_date = end_date.strftime("%Y-%m-%d")
+
+		# query yahoo
+		historical_info = Share(symbol).get_historical(start_date, end_date)
+
+		# if there was a non-empty result
+		if historical_info:
+			# open pickle file for overwriting
+			historical_info_cache_file = open(historical_info_cache_file_path, 'wb')
+			
+			# prepend historical_info to historical_info_cache
+			historical_info_cache[:0] = historical_info
+
+			# pickle back to disk
+			for info in historical_info_cache:
+				pickle.dump(info, historical_info_cache_file)
+			historical_info_cache_file.close()
+
+	# return result
+	return historical_info_cache
+
+def calculate_rsi(symbols, period, last, row, separator):
+	"""Calculate the relative strength index using yahoo finance."""
+	# create .rsicalc if it does not exist
+	rsicalc_directory = os.path.expanduser('~/.rsicalc')
+	if not os.path.exists(rsicalc_directory):
+		os.mkdir(rsicalc_directory)
+
+	# yahoo finance starts back at roughly 22 months (~660 + 20 days = 680 ok)
+	start_date = str(datetime.date.today() - datetime.timedelta(days=680))
+	end_date = str(datetime.date.today())
+	relative_strength_indices_dict = {}
+	for symbol in symbols:
+		historical_info = get_historical(symbol, start_date, end_date)
+
+		# cannot exceed total retrieved data
+		assert len(historical_info) >= period+last
+
+		# filter out and reverse order of adjusted close prices
+		adjusted_close_prices = [float(x['Adj_Close']) for x in historical_info]
+		adjusted_close_prices.reverse()
+
+		# get day-to-day changes of adjusted close prices
+		changes = [y - x for x, y in zip(adjusted_close_prices, adjusted_close_prices[1:])]
+
+		# add positives to gains bucket, negatives to losses bucket
+		gains, losses = [], []
+		for change in changes:
+			if change > 0:
+				gains.append(change)
+				losses.append(0)
+			elif change < 0:
+				losses.append(-change)
+				gains.append(0)
+			else:
+				gains.append(0)
+				losses.append(0)
+
+		# calculate average gains and losses
+		avg_gains, avg_losses = [], []
+		avg_gains.append(sum(gains[:period])/period)
+		for gain in gains[period:]:
+			avg_gains.append((avg_gains[-1]*(period-1)+gain)/period)
+		avg_losses.append(sum(losses[:period])/period)
+		for loss in losses[period:]:
+			avg_losses.append((avg_losses[-1]*(period-1)+loss)/period)
+
+		# calculate relative strengths
+		relative_strengths = [avg_gain/avg_loss for avg_gain, avg_loss in zip(avg_gains, avg_losses)]
+
+		# calculate relative strength indices
+		relative_strength_indices = [100-(100/(1+s)) for s in relative_strengths]
+
+		# add result to dictionary
+		relative_strength_indices_dict[symbol] = relative_strength_indices[-last:]
+
+	# print either in row or columnar fashion
+	if row:
+		for key in relative_strength_indices_dict.keys():
+			print key, ':', relative_strength_indices_dict[key]
+	else:
+		print separator.join(relative_strength_indices_dict.keys())
+		for i in range(0, len(relative_strength_indices_dict[relative_strength_indices_dict.keys()[0]])):
+			print separator.join([str(relative_strength_indices_dict[x][i]) for x in relative_strength_indices_dict.keys()])
+
+def parse():
+	"""Parse arguments."""
+	parser = argparse.ArgumentParser(description='Calculate the relative strength index using yahoo finance.')
+	parser.add_argument('symbols', metavar='S', type=str, nargs='+',
+		help='a ticker symbol')
+	# yahoo finance can have granularity smaller than days which this tool doesn't support
+	# i.e., this will not give you the values on the 1d and 5d graphs
+	parser.add_argument('--period', type=int, dest='period', default=14,
+		help='number of trading days to calculate rsi over (default: 14)')
+	# 1m on yahoo is roughly 22 trading days (30 days - 8 weekend days)
+	parser.add_argument('--last', type=int, dest='last', default=22,
+		help='number of the last N rsi values to print to stdout (default: 22)')
+	parser.add_argument('--row', dest='row', action='store_true',
+		help='print output for each symbol in row fashion (default: columnar')
+	parser.add_argument('--separator', dest='separator', default=' ',
+		help='separator used for columnar output (default: space)')
+	args = parser.parse_args()
+	calculate_rsi(args.symbols, args.period, args.last, args.row, args.separator)
+
+if __name__ == '__main__':
+	parse()
