@@ -1,0 +1,192 @@
+#! /usr/bin/env python3.4
+# -*- coding: utf-8 -*-
+
+# (c) 2013 Marcos Dione <mdione@grulic.org.ar>
+
+# This file is part of ayrton.
+#
+# ayrton is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# ayrton is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with ayrton.  If not, see <http://www.gnu.org/licenses/>.
+
+# cannot be simpler :)
+import ayrton
+
+# well, actually, it could :)
+import sys
+import os.path
+import traceback
+import logging
+
+usage="""ayrton - A Python-based shell-like scripting language.
+
+Usage:
+
+    ayrton -h|--help
+    ayrton -v|--version
+    ayrton [DEBUG_OPTS] -c|--script SCRIPT [argv ...]
+    ayrton [DEBUG_OPTS] [-f|--file] file [argv ...]
+
+Options:
+  -h, --help            Show this help message and exit.
+  -c SCRIPT, --script SCRIPT
+                        If this option is present, the script is read from its
+                        argument.
+  -v, --version         Show the version number and exit.
+  [-f, --file] FILE     Name of the file from which the script is read.
+
+Debug Options:
+  -d, --debug           Enable debugging, which writes lots of ayrton's execution
+                        information in a file called 'ayrton.log' in the current
+                        directory.
+  -dd, --debug2         More execution info.
+  -ddd, --debug3        Even more execution info.
+  -x, --trace           Trace script execution. It does not trace other modules
+                        used. If debug is enabled, trace goes to log.
+  -xx, --trace-with-lineno
+                        Trace and print the line number.
+  -xxx, --trace-all     Trace all executed lines, including in used modules.
+                        File name and line number will be printed.
+                        WARNING: Too much info will be in the output.
+
+Arguments:
+  argv                  Arguments to be passed to the script."""
+
+# argument parsing has to be done by hand, so arguments can be given to the script
+# it *is* kinda idiotic, but I can't tell any of the parsing modules to just parse those options
+# and the options are not many and are simple to handle, anyways
+
+file_name= None
+script= None
+file= None
+params= ayrton.ExecParams ()
+# sys.argv[0] is 'ayrton', always defined
+args= sys.argv[1:]
+reason= None
+
+# special case so I can boot fast
+if len (args)==0:
+    print (usage)
+    sys.exit (0)
+
+try:
+    for index, arg in enumerate (args):
+        if arg in ('-h', '--help'):
+            print (usage)
+            sys.exit (0)
+
+        if arg in ('-v', '--version'):
+            print (ayrton.version)
+            sys.exit (0)
+
+        if arg in ('-c', '--script'):
+            reason= 'Missing argument to option %s' % arg
+            script= args[index+1]
+            # fake argv[0]
+            script_args= [ '<script_from_command_line>' ]+args[index+2:]
+            # stop parsing, anything else is passed to the script
+            break
+
+        if arg in ('-x', '--trace'):
+            params.trace= True
+            continue
+
+        if arg in ('-xx', '--trace-with-linenos'):
+            params.trace= True
+            params.linenos= True
+            continue
+
+        if arg in ('-xxx', '--trace_all'):
+            params.trace= True
+            params.linenos= True
+            params.trace_all= True
+            continue
+
+        if arg in ('-d', '--debug'):
+            params.debug= True
+            # set this ASAP
+            ayrton.debug ()
+            continue
+
+        if arg in ('-dd', '--debug2'):
+            params.debug= True
+            # set this ASAP
+            ayrton.debug (logging.DEBUG2)
+            continue
+
+        if arg in ('-ddd', '--debug3'):
+            params.debug= True
+            # set this ASAP
+            ayrton.debug (logging.DEBUG3)
+            continue
+
+        if arg in ('-f', '--file'):
+            reason= 'Missing argument to option %s' % arg
+            # -f|--file is optional (because idiot /usr/bin/env ayrton -f does not work)
+            # we could let it fallback to the last case,
+            # but this way we can handle the actual argument to the option
+            file_name= args[index+1]
+            # script_args[0] is the script's file name
+            script_args= args[index+1:]
+            # stop parsing, anything else is passed to the script
+            break
+
+        # as every branch either exit()s, break's or continue's,
+        # here we're in the situation where the next argument is the script name
+        file_name= arg
+        # script_args[0] is the script's file name
+        script_args= args[index:]
+        # stop parsing, anything else is passed to the script
+        break
+
+except IndexError:
+    print (reason)
+    print (usage)
+    sys.exit (1)
+
+if file_name is None and script is None:
+    print (usage)
+    sys.exit (1)
+
+try:
+    v= ayrton.run_file_or_script (file_name=file_name, script=script,
+                                  argv=script_args, params=params)
+
+    if type(v)==bool:
+        if v:
+            v= 0 # success in shellspeak
+        else:
+            v= 1 # 'some' error
+    else:
+        try:
+            v= int (v)
+        except (ValueError, TypeError):
+            # I can only assume it's ok
+            v= 0
+
+    sys.exit (v)
+
+except Exception:
+    t, e, tb= sys.exc_info ()
+
+    if False:
+        # skip ayrton's stack
+        # TODO: if the script has a syntax error, the stack is shorter
+        if script is not None:
+            for i in range (5):
+                tb= tb.tb_next
+        else:
+            for i in range (6):
+                tb= tb.tb_next
+
+    traceback.print_exception (t, e, tb)
+    sys.exit (1)

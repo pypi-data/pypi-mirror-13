@@ -1,0 +1,29 @@
+#!/bin/bash
+
+# Download subtitles from all movies in a directory
+# MOVIE_TYPES="*.mp4 *.avi *.mkv"
+# FADES_BIN=/home/humitos/fades/bin/fades
+# PATH_MOVIES_1=$1
+
+# for MOVIE_TYPE in $MOVIE_TYPES; do {
+  # find "$PATH_MOVIES_1" -name $MOVIE_TYPE -type f -print | \
+  # xargs -I '{}' $FADES_BIN -p python2 -d subliminal==1.1.1 -x subliminal download -v \
+   # -p addic7ed -p opensubtitles -p podnapisi -p thesubdb -p tvsubtitles \
+   # -l en -l spa \
+   # '{}'
+# }; done
+
+MOVIE_TYPES = "*.mp4 *.avi *.mkv".split()
+# I have fades in my path, thank you :)
+PATH_MOVIES_1 = argv[1]
+
+# I do an alternative treatment of MOVIE_TYPES, using find's -o boolean operator
+# I also ise -iname for handling different casing
+# and find -print0/xargs -0 for handling spaces and such
+find(PATH_MOVIES_1,
+     *(' -o '.join([ "-iname %s" for MOVIE_TYPE in MOVIE_TYPES])).split(),
+     -type='f', -print0=True) | xargs(-0=True, -I='{}', 'fades', -p='python2',
+                                      -d='subliminal==1.1.1' -x='subliminal',
+                                      'download', -v=True, *( o('-p', x)
+                                                              for x in ('addic7ed', 'opensubtitles', 'opdnapisi', 'thesubdb', 'tvsubtitles') ),
+                                      -l='en', -l='spa', '{}')
