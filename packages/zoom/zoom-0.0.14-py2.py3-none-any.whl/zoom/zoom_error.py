@@ -1,0 +1,2 @@
+class ZoomError(Exception):
+    pass
