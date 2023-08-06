@@ -1,0 +1,10 @@
+__version__ = "0.2.12"
+__git_commiter_name__ = "Guy Rozendorn"
+__git_commiter_email__ = "guy@rzn.co.il"
+__git_branch__ = '(HEAD detached at v0.2.12)'
+__git_remote_tracking_branch__ = '(No remote tracking)'
+__git_remote_url__ = '(Not remote tracking)'
+__git_head_hash__ = 'cdb2805f563ded9a388d67c0415b03156a90bc16'
+__git_head_subject__ = 'Finished Release v0.2.12'
+__git_head_message__ = '* develop:\n  HPT-1738 removed "parted mkfs" code since it\'s redundant and causing errors on ubuntu Leaving mkfs_options arg in format_partition for backward compatibility\n  HPT-1717 removing -F flag for mkfs, not supported for some filesystems\n  HPT-1718 fixing preious commit\n  HPT-1718 fixing preious commit\n  HPT-1718 creating filesystem without type'
+__git_dirty_diff__ = ''
