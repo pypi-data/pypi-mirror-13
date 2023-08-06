@@ -1,0 +1,11 @@
+__version__ = "0.0.4"
+__git_commiter_name__ = "Guy Rozendorn"
+__git_commiter_email__ = "guy@rzn.co.il"
+__git_branch__ = '(HEAD detached at v0.0.4)'
+__git_remote_tracking_branch__ = '(No remote tracking)'
+__git_remote_url__ = '(Not remote tracking)'
+__git_head_hash__ = '3c1b9d0f1af5f7446e8251d5fe070ba7ab6d105d'
+__git_head_subject__ = 'Finished Release v0.0.4'
+__git_head_message__ = '* develop:\n  update buildout.cfg\n  HPT-1733 support unicode mtab/fstab'
+__git_dirty_diff__ = ''
+__git_commit_date__ = '2016-02-15 13:51:37'
