@@ -1,0 +1,45 @@
+import re
+
+__author__ = 'David Moser <david.moser@bitmovin.net>'
+
+
+def convert_dict(d):
+    """
+    Converts all camelCase styles attributes in the dictionary d to snake_case attributes.
+    Returns the new dictionary which contains the snake_case attributes.
+    :param d
+    """
+    if d is None:
+        return
+
+    new_d = {}
+    for k, v in d.items():
+        if isinstance(v, str):
+            try:
+                v = int(v)
+            except ValueError:
+                try:
+                    v = float(v)
+                except ValueError:
+                    v = v
+
+        if isinstance(v, list):
+            index = 0
+            for d in v:
+                if isinstance(d, dict):
+                    v[index] = convert_dict(d)
+                index += 1
+            del index
+
+        new_d[convert(k)] = convert_dict(v) if isinstance(v, dict) else v
+
+    return new_d
+
+
+def convert(name):
+    """
+    Converts camelCase strings to snake_case ones.
+    :param name
+    """
+    s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
+    return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).lower()
