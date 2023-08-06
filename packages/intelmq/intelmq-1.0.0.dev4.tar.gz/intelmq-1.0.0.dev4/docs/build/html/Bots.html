@@ -1,0 +1,670 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>} &mdash; Python  documentation</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="Python  documentation" href="contents.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body role="document">  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <p># Bots Documentation</p>
+<ol class="arabic simple">
+<li>[Collectors](#collectors)</li>
+<li>[Parsers](#parsers)</li>
+<li>[Experts](#experts)</li>
+<li>[Outputs](#outputs)</li>
+</ol>
+<p>&lt;a name=&#8221;collectors&#8221;&gt;&lt;/a&gt;
+## Collectors</p>
+<p>### HTTP</p>
+<p>#### Information:
+* <cite>name:</cite> http
+* <cite>lookup:</cite> yes
+* <cite>public:</cite> yes
+* <cite>cache (redis db):</cite> none
+* <cite>ipv6 support:</cite> yes
+* <cite>description:</cite> collect report messages from remote hosts using http protocol</p>
+<p>#### Configuration Parameters:
+* <cite>feed</cite>: Name for the feed, usually found in collector bot configuration.
+* <cite>rate_limit</cite>: time interval (in seconds) between messages processing
+* <cite>http_url</cite>: location of information resource (e.g. <a class="reference external" href="https://feodotracker.abuse.ch/blocklist/?download=domainblocklist">https://feodotracker.abuse.ch/blocklist/?download=domainblocklist</a>)
+* <cite>http_header</cite>: FIXME
+* <cite>http_verify_cert</cite>: FIXME
+* <cite>http_username</cite>: FIXME
+* <cite>http_password</cite>: FIXME
+* <cite>http_proxy</cite>: FIXME
+* <cite>http_ssl_proxy</cite>: FIXME</p>
+<ul class="simple">
+<li><ul class="first">
+<li><ul class="first">
+<li></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p>### Mail (URL)</p>
+<p>#### Information:
+* <cite>name:</cite> collector_mail_url
+* <cite>lookup:</cite> yes
+* <cite>public:</cite> yes
+* <cite>cache (redis db):</cite> none
+* <cite>ipv6 support:</cite> yes
+* <cite>description:</cite> collect messages from mailboxes, extract urls from that messages and download the report messages from the urls.</p>
+<p>#### Configuration Parameters:</p>
+<ul class="simple">
+<li><cite>feed</cite>: Name for the feed, usually found in collector bot configuration.</li>
+<li><cite>rate_limit</cite>: time interval (in seconds) between messages processing</li>
+<li><cite>mail_host</cite>: fqdn or ip of mail server</li>
+<li><cite>mail_user</cite>: user account of the email account</li>
+<li><cite>mail_password</cite>: password associated to user account</li>
+<li><cite>mail_ssl</cite>: FIXME</li>
+<li><cite>mail_folder</cite>: FIXME</li>
+<li><cite>mail_subject_regex</cite>: FIXME</li>
+<li><cite>mail_url_regex</cite>: FIXME</li>
+<li><ul class="first">
+<li><ul class="first">
+<li></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p>### Mail (Attach)</p>
+<p>#### Information:
+* <cite>name:</cite> collector_mail_attach
+* <cite>lookup:</cite> yes
+* <cite>public:</cite> yes
+* <cite>cache (redis db):</cite> none
+* <cite>ipv6 support:</cite> -
+* <cite>description:</cite> collect messages from mailboxes, download the report messages from the attachments.</p>
+<p>#### Configuration Parameters:</p>
+<ul class="simple">
+<li><cite>feed</cite>: Name for the feed, usually found in collector bot configuration.</li>
+<li><cite>rate_limit</cite>: time interval (in seconds) between messages processing</li>
+<li><cite>mail_host</cite>: FIXME</li>
+<li><cite>mail_user</cite>: FIXME</li>
+<li><cite>mail_password</cite>: FIXME</li>
+<li><cite>mail_ssl</cite>: FIXME</li>
+<li><cite>mail_folder</cite>: FIXME</li>
+<li><cite>mail_subject_regex</cite>: FIXME</li>
+<li><cite>mail_folder</cite>: FIXME</li>
+<li><cite>mail_attach_regex</cite>: FIXME</li>
+<li><cite>mail_attach_unzip</cite>: FIXME</li>
+<li><ul class="first">
+<li><ul class="first">
+<li></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p>### Alien Vault OTX</p>
+<p>#### Information:
+* <cite>name:</cite> http
+* <cite>lookup:</cite> yes
+* <cite>public:</cite> yes
+* <cite>cache (redis db):</cite> none
+* <cite>ipv6 support:</cite> -
+* <cite>description:</cite> collect report messages from Alien Vault OTX API</p>
+<p>#### Configuration Parameters:</p>
+<ul class="simple">
+<li><cite>feed</cite>: Name for the feed, usually found in collector bot configuration.</li>
+<li><cite>rate_limit</cite>: time interval (in seconds) between messages processing</li>
+<li><cite>api_key</cite>: location of information resource (e.g. FIXME)</li>
+</ul>
+<p>&lt;a name=&#8221;parsers&#8221;&gt;&lt;/a&gt;
+## Parsers</p>
+<p>### &lt;ParserBot&gt;</p>
+<p>#### Information:
+* <cite>name:</cite>
+* <cite>lookup:</cite>
+* <cite>public:</cite>
+* <cite>cache (redis db):</cite>
+* <cite>ipv6 support:</cite>
+* <cite>description:</cite></p>
+<p>#### Configuration Parameters:</p>
+<ul class="simple">
+<li><cite>&lt;parameter&gt;</cite>: &lt;text&gt;</li>
+</ul>
+<p>&lt;a name=&#8221;experts&#8221;&gt;&lt;/a&gt;
+## Experts</p>
+<p>### Abusix</p>
+<p>#### Information:
+* <cite>name:</cite> abusix
+* <cite>lookup:</cite> dns
+* <cite>public:</cite> yes
+* <cite>cache (redis db):</cite> 5
+* <cite>ipv6 support:</cite> no (implementation missing)
+* <cite>description:</cite> FIXME
+* <cite>notes</cite>: <a class="reference external" href="https://abusix.com/contactdb.html">https://abusix.com/contactdb.html</a></p>
+<p>#### Configuration Parameters:</p>
+<p>FIXME</p>
+<ul class="simple">
+<li><ul class="first">
+<li><ul class="first">
+<li></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p>### ASN Lookup</p>
+<p>#### Information:
+* <cite>name:</cite> asn-lookup
+* <cite>lookup:</cite> local database
+* <cite>public:</cite> yes
+* <cite>cache (redis db):</cite> none
+* <cite>ipv6 support:</cite> yes
+* <cite>description:</cite> ip to asn</p>
+<p>#### Configuration Parameters:</p>
+<p>FIXME</p>
+<ul class="simple">
+<li><ul class="first">
+<li><ul class="first">
+<li></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p>### CERT.AT Contact</p>
+<p>#### Information:
+* <cite>name:</cite> certat-contact
+* <cite>lookup:</cite> https
+* <cite>public:</cite> yes
+* <cite>cache (redis db):</cite> none
+* <cite>ipv6 support:</cite> yes
+* <cite>description:</cite> <a class="reference external" href="https://contacts.cert.at">https://contacts.cert.at</a> offers an IP address to national CERT contact (and cc) mapping. See <a class="reference external" href="https://contacts.cert.at">https://contacts.cert.at</a> for more info.</p>
+<p>#### Configuration Parameters:</p>
+<ul class="simple">
+<li><cite>filter</cite>: (true/false) act as a a filter for AT.</li>
+<li><cite>overwrite_cc</cite>: set to true if you want to overwrite any potentially existing cc fields in the event.</li>
+<li><ul class="first">
+<li><ul class="first">
+<li></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p>### Cymru Whois</p>
+<p>#### Information:
+* <cite>name:</cite> cymru-whois
+* <cite>lookup:</cite> cymru dns
+* <cite>public:</cite> yes
+* <cite>cache (redis db):</cite> 6
+* <cite>ipv6 support:</cite> yes
+* <cite>description:</cite> ip to geolocation, asn, bgp prefix</p>
+<p>#### Configuration Parameters:</p>
+<p>FIXME</p>
+<ul class="simple">
+<li><ul class="first">
+<li><ul class="first">
+<li></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p>### Deduplicator</p>
+<p>#### Information:
+* <cite>name:</cite> deduplicator
+* <cite>lookup:</cite> redis cache
+* <cite>public:</cite> yes
+* <cite>cache (redis db):</cite> 7
+* <cite>ipv6 support:</cite> yes
+* <cite>description:</cite> message deduplicator</p>
+<p>#### Configuration Parameters:</p>
+<p>FIXME</p>
+<ul class="simple">
+<li><ul class="first">
+<li><ul class="first">
+<li></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p>### Filter</p>
+<p>#### Information:
+* <cite>name:</cite> filter
+* <cite>lookup:</cite> none
+* <cite>public:</cite> yes
+* <cite>cache (redis db):</cite> none
+* <cite>ipv6 support:</cite> yes
+* <cite>description:</cite> filter messages (drop or pass messages) FIXME</p>
+<p>#### Configuration Parameters:</p>
+<p>FIXME</p>
+<ul class="simple">
+<li><ul class="first">
+<li><ul class="first">
+<li></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p>### MaxMind GeoIP</p>
+<p>#### Information:
+* <cite>name:</cite> maxmind-geoip
+* <cite>lookup:</cite> local database
+* <cite>public:</cite> yes
+* <cite>cache (redis db):</cite> none
+* <cite>ipv6 support:</cite> yes
+* <cite>description:</cite> ip to geolocation</p>
+<p>#### Configuration Parameters:</p>
+<p>FIXME</p>
+<ul class="simple">
+<li><ul class="first">
+<li><ul class="first">
+<li></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p>### Reverse DNS</p>
+<p>#### Information:
+* <cite>name:</cite> reverse-dns
+* <cite>lookup:</cite> dns
+* <cite>public:</cite> yes
+* <cite>cache (redis db):</cite> 8
+* <cite>ipv6 support:</cite> no
+* <cite>description:</cite> ip to domain</p>
+<p>#### Configuration Parameters:</p>
+<p>FIXME</p>
+<ul class="simple">
+<li><ul class="first">
+<li><ul class="first">
+<li></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p>### RipeNCC Abuse Contact</p>
+<p>#### Information:
+* <cite>name:</cite> ripencc-abuse-contact
+* <cite>lookup:</cite> https api
+* <cite>public:</cite> yes
+* <cite>cache (redis db):</cite> 9
+* <cite>ipv6 support:</cite> yes
+* <cite>description:</cite> ip to abuse contact</p>
+<p>#### Configuration Parameters:</p>
+<p>FIXME</p>
+<ul class="simple">
+<li><ul class="first">
+<li><ul class="first">
+<li></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p>### Taxonomy</p>
+<p>#### Information:
+* <cite>name:</cite> taxonomy
+* <cite>lookup:</cite> local config
+* <cite>public:</cite> yes
+* <cite>cache (redis db):</cite> none
+* <cite>ipv6 support:</cite> -
+* <cite>description:</cite> use eCSIRT taxonomy to classify events (classification type to classification taxonomy)</p>
+<p>#### Configuration Parameters:</p>
+<p>FIXME</p>
+<ul class="simple">
+<li><ul class="first">
+<li><ul class="first">
+<li></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p>### Tor Nodes</p>
+<p>#### Information:
+* <cite>name:</cite> tor-nodes
+* <cite>lookup:</cite> local database
+* <cite>public:</cite> yes
+* <cite>cache (redis db):</cite> none
+* <cite>ipv6 support:</cite> yes
+* <cite>description:</cite> check if ip is tor node</p>
+<p>#### Configuration Parameters:</p>
+<p>FIXME</p>
+<ul class="simple">
+<li><ul class="first">
+<li><ul class="first">
+<li></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p>### Modify</p>
+<p>#### Information:
+* <cite>name:</cite> modify
+* <cite>lookup:</cite> local config
+* <cite>public:</cite> yes
+* <cite>cache (redis db):</cite> none
+* <cite>ipv6 support:</cite> -
+* <cite>description:</cite> modify expert bot allows you to change arbitrary field values of events just using a configuration file</p>
+<p>#### Configuration Parameters:</p>
+<p>The modify expert bot allows you to change arbitrary field values of events just using a configuration file. Thus it is possible to adapt certain values or adding new ones only by changing JSON-files without touching the code of many other bots.</p>
+<p>The configuration is called <cite>modify.conf</cite> and looks like this:</p>
+<p><a href="#id1"><span class="problematic" id="id2">``</span></a><a href="#id3"><span class="problematic" id="id4">`</span></a>json
+{
+&#8220;Spamhaus Cert&#8221;: {</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>&#8220;__default&#8221;: [{</dt>
+<dd><blockquote class="first">
+<div>&#8220;feed.name&#8221;: &#8220;^Spamhaus Cert$&#8221;</div></blockquote>
+<dl class="docutils">
+<dt>}, {</dt>
+<dd>&#8220;classification.identifier&#8221;: &#8220;{msg[malware.name]}&#8221;</dd>
+</dl>
+<p class="last">}],</p>
+</dd>
+<dt>&#8220;conficker&#8221;: [{</dt>
+<dd><blockquote class="first">
+<div>&#8220;malware.name&#8221;: &#8220;^conficker(ab)?$&#8221;</div></blockquote>
+<dl class="docutils">
+<dt>}, {</dt>
+<dd>&#8220;classification.identifier&#8221;: &#8220;conficker&#8221;</dd>
+</dl>
+<p class="last">}],</p>
+</dd>
+<dt>&#8220;urlzone&#8221;: [{</dt>
+<dd><blockquote class="first">
+<div>&#8220;malware.name&#8221;: &#8220;^urlzone2?$&#8221;</div></blockquote>
+<dl class="docutils">
+<dt>}, {</dt>
+<dd>&#8220;classification.identifier&#8221;: &#8220;urlzone&#8221;</dd>
+</dl>
+<p class="last">}]
+}</p>
+</dd>
+</dl>
+</div></blockquote>
+<div class="section" id="id5">
+<h1>}<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h1>
+<p>The dictionary in the first level holds sections, here called <cite>Spamhaus Cert</cite> to group the rulessets and for easier navigation. It holds another dictionary of rules, consisting of <em>conditions</em> and <em>actions</em>. The first matching rule is used. Conditions and actions are again dictionaries holding the field names of harmonization and have regex-expressions to existing values (condition) or new values (action). The rule conditions are merged with the default condition and the default action is applied if no rule matches.</p>
+<p>The default rule/action list may not exist. If the value is an empty string, the bot checks if the field does not exist. This is useful to apply default values for empty fields.</p>
+<p>#### Examples</p>
+<p>We have an event with <cite>feed.name = Spamhaus Cert</cite> and <cite>malware.name = confickerab</cite>. The expert loops over all sections in the file and enters section <cite>Spamhaus Cert</cite>. First, the default condition is checked, it matches! Ok, going on. Otherwise the expert would have continued to the next section. Now, iteration through the rules, the first is rule <cite>conficker</cite>. We combine the conditions of this rule with the default conditions, and both rules match! So we can apply the action, here <cite>classification.identifier</cite> is set to <cite>conficker</cite>, the trivial name.</p>
+<p>Assume we have an event with <cite>feed.name = Spamhaus Cert</cite> and <cite>malware.name = feodo</cite>. The default condition matches, but no others. So the default action is applied. The value for <cite>classification.identifier</cite> is <cite>{msg[malware.name]}</cite>, this is [standard Python string format syntax](<a class="reference external" href="https://docs.python.org/3/library/string.html#formatspec">https://docs.python.org/3/library/string.html#formatspec</a>). Thus you can use any value from the processed event, which is available as <cite>msg</cite>.</p>
+<p>&lt;a name=&#8221;outputs&#8221;&gt;&lt;/a&gt;
+## Outputs</p>
+<p>### File</p>
+<p>#### Information:
+* <cite>name:</cite> file
+* <cite>lookup:</cite> no
+* <cite>public:</cite> yes
+* <cite>cache (redis db):</cite> none
+* <cite>ipv6 support:</cite> yes
+* <cite>description:</cite> output messages (reports or events) to file</p>
+<p>#### Configuration Parameters:</p>
+<ul class="simple">
+<li><cite>file</cite>: filepath of output file</li>
+<li><ul class="first">
+<li><ul class="first">
+<li></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p>### MongoDB</p>
+<p>#### Information:
+* <cite>name:</cite> mongodb
+* <cite>lookup:</cite> no
+* <cite>public:</cite> yes
+* <cite>cache (redis db):</cite> none
+* <cite>ipv6 support:</cite> yes
+* <cite>description:</cite> MongoDB is the bot responsible to send events to a MongoDB database</p>
+<p>#### Configuration Parameters:</p>
+<ul class="simple">
+<li><cite>collection</cite>: MongoDB collection</li>
+<li><cite>database</cite>: MongoDB database</li>
+<li><cite>host</cite>: MongoDB host (fqdn or IP)</li>
+<li><cite>port</cite>: MongoDB port</li>
+</ul>
+<p>#### Installation Requirements</p>
+<p>Using Python 3.4 (recommended):
+<code class="docutils literal"><span class="pre">`</span>
+<span class="pre">pip3</span> <span class="pre">install</span> <span class="pre">pymongo&gt;=2.7.1</span>
+<span class="pre">`</span></code></p>
+<p>Using Python 2.7:
+<code class="docutils literal"><span class="pre">`</span>
+<span class="pre">pip2</span> <span class="pre">install</span> <span class="pre">pymongo&gt;=2.7.1</span>
+<span class="pre">`</span></code></p>
+<ul class="simple">
+<li><ul class="first">
+<li><ul class="first">
+<li></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p>### IntelMQ Mailer</p>
+<p>#### Information:
+* <cite>name:</cite> intelmqmailer
+* <cite>lookup:</cite> no
+* <cite>public:</cite> yes
+* <cite>cache (redis db):</cite> none
+* <cite>ipv6 support:</cite> yes
+* <cite>description:</cite> IntelMQ Mailer is the bot responsible to send events to a MongoDB database that supports IntelMQ Mailer platform</p>
+<p>#### Configuration Parameters:</p>
+<ul class="simple">
+<li><cite>collection</cite>: MongoDB collection</li>
+<li><cite>database</cite>: MongoDB database</li>
+<li><cite>host</cite>: MongoDB host (FQDN or IP)</li>
+<li><cite>port</cite>: MongoDB port</li>
+</ul>
+<p>#### Installation Requirements</p>
+<p>Using Python 3.4 (recommended):
+<code class="docutils literal"><span class="pre">`</span>
+<span class="pre">pip3</span> <span class="pre">install</span> <span class="pre">pymongo&gt;=2.7.1</span>
+<span class="pre">`</span></code></p>
+<p>Using Python 2.7:
+<code class="docutils literal"><span class="pre">`</span>
+<span class="pre">pip2</span> <span class="pre">install</span> <span class="pre">pymongo&gt;=2.7.1</span>
+<span class="pre">`</span></code></p>
+<ul class="simple">
+<li><ul class="first">
+<li><ul class="first">
+<li></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p>### PostgreSQL</p>
+<p>#### Information:
+* <cite>name:</cite> postgresql
+* <cite>lookup:</cite> no
+* <cite>public:</cite> yes
+* <cite>cache (redis db):</cite> none
+* <cite>ipv6 support:</cite> yes
+* <cite>description:</cite> PostgreSQL is the bot responsible to send events to a PostgreSQL Database
+* <cite>notes</cite>: When activating autocommit, transactions are not used: <a class="reference external" href="http://initd.org/psycopg/docs/connection.html#connection.autocommit">http://initd.org/psycopg/docs/connection.html#connection.autocommit</a></p>
+<p>#### Configuration Parameters:</p>
+<ul class="simple">
+<li><cite>autocommit</cite>: FIXME</li>
+<li><cite>database</cite>: PostgreSQL database</li>
+<li><cite>host</cite>: PostgreSQL host</li>
+<li><cite>port</cite>: PostgreSQL port</li>
+<li><cite>user</cite>: PostgreSQL user</li>
+<li><cite>password</cite>: PostgreSQL password</li>
+<li><cite>sslmode</cite>: FIXME</li>
+<li><cite>autocommit</cite>: FIXME</li>
+<li><cite>table</cite>: FIXME</li>
+</ul>
+<p>#### Installation Requirements</p>
+<p>Using Python 3.4 (recommended):
+<code class="docutils literal"><span class="pre">`</span>
+<span class="pre">pip3</span> <span class="pre">install</span> <span class="pre">psycopg2&gt;=2.5.5</span>
+<span class="pre">`</span></code></p>
+<p>Using Python 2.7:
+<code class="docutils literal"><span class="pre">`</span>
+<span class="pre">pip2</span> <span class="pre">install</span> <span class="pre">psycopg2&gt;=2.5.5</span>
+<span class="pre">`</span></code></p>
+<p>#### PostgreSQL Installation</p>
+<ul class="simple">
+<li>Install PostgreSQL, at least version 9.4 is recommended.</li>
+</ul>
+<p><code class="docutils literal"><span class="pre">`bash</span>
+<span class="pre">&gt;</span> <span class="pre">apt-get</span> <span class="pre">install</span> <span class="pre">postgresql-9.4</span> <span class="pre">python-psycopg2</span> <span class="pre">postgresql-server-dev-9.4</span>
+<span class="pre">`</span></code></p>
+<ul class="simple">
+<li>Create a User and Database:</li>
+</ul>
+<p><a href="#id6"><span class="problematic" id="id7">``</span></a><a href="#id8"><span class="problematic" id="id9">`</span></a>shell
+&gt; su - postgres
+&gt; createuser intelmq -W</p>
+<blockquote>
+<div>Shall the new role be a superuser? (y/n) n
+Shall the new role be allowed to create databases? (y/n) y
+Shall the new role be allowed to create more new roles? (y/n) n
+Password:</div></blockquote>
+<p>&gt; createdb -O intelmq &#8211;encoding=&#8217;utf-8&#8217; intelmq-events
+<a href="#id10"><span class="problematic" id="id11">``</span></a><a href="#id12"><span class="problematic" id="id13">`</span></a></p>
+<ul class="simple">
+<li>Please note the &#8211;encoding=&#8217;utf-8&#8217; in the line above! Without it, the output but will not be able to insert utf-8 data into the table.</li>
+<li>Depending on your setup adjust <cite>/etc/postgresql/9.4/main/pg_hba.conf</cite> to allow network connections for the intelmq user.</li>
+<li>Restart PostgreSQL.</li>
+<li>Generate <cite>initdb.sql</cite> by using the [psql_initdb_generator.py](<a class="reference external" href="https://github.com/certtools/intelmq/blob/master/intelmq/bin/intelmq_psql_initdb.py">https://github.com/certtools/intelmq/blob/master/intelmq/bin/intelmq_psql_initdb.py</a>) tool which extracts all field names and data types from <cite>Data-Harmonization.md</cite>.</li>
+<li>Create the <cite>events</cite> table:</li>
+</ul>
+<p><code class="docutils literal"><span class="pre">`bash</span>
+<span class="pre">&gt;</span> <span class="pre">psql</span> <span class="pre">intelmq-events</span> <span class="pre">&lt;</span> <span class="pre">/tmp/initdb.sql</span> <span class="pre">#</span> <span class="pre">as</span> <span class="pre">intelmq</span> <span class="pre">user</span>
+<span class="pre">&gt;</span> <span class="pre">psql</span> <span class="pre">-U</span> <span class="pre">intelmq</span> <span class="pre">intelmq-events</span> <span class="pre">-W</span> <span class="pre">&lt;</span> <span class="pre">/tmp/initdb.sql</span> <span class="pre">#</span> <span class="pre">as</span> <span class="pre">other</span> <span class="pre">user</span>
+<span class="pre">`</span></code></p>
+<ul class="simple">
+<li><ul class="first">
+<li><ul class="first">
+<li></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p>### REST API</p>
+<p>#### Information:
+* <cite>name:</cite> restapi
+* <cite>lookup:</cite> no
+* <cite>public:</cite> yes
+* <cite>cache (redis db):</cite> none
+* <cite>ipv6 support:</cite> yes
+* <cite>description:</cite> REST API is the bot responsible to send events to a REST API listener through POST</p>
+<p>#### Configuration Parameters:</p>
+<ul class="simple">
+<li><cite>auth_token</cite>: FIXME</li>
+<li><cite>auth_token_name</cite>: FIXME</li>
+<li><cite>host</cite>: FIXME</li>
+<li><ul class="first">
+<li><ul class="first">
+<li></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p>### TCP</p>
+<p>#### Information:
+* <cite>name:</cite> tcp
+* <cite>lookup:</cite> no
+* <cite>public:</cite> yes
+* <cite>cache (redis db):</cite> none
+* <cite>ipv6 support:</cite> yes
+* <cite>description:</cite> TCP is the bot responsible to send events to a tcp port (Splunk, ElasticSearch, etc..)</p>
+<p>#### Configuration Parameters:</p>
+<ul class="simple">
+<li><cite>ip</cite>: FIXME</li>
+<li><cite>port</cite>: FIXME</li>
+</ul>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="contents.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/Bots.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.6</a>
+      
+      |
+      <a href="_sources/Bots.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

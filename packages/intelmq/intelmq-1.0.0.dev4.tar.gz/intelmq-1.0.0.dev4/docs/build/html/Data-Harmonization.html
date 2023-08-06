@@ -1,0 +1,227 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>&lt;no title&gt; &mdash; Python  documentation</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="Python  documentation" href="contents.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body role="document">  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <p>## Table of Contents</p>
+<ol class="arabic simple">
+<li>[Overview](#overview)</li>
+<li>[Rules for keys](#rules)</li>
+<li>[Sections](#sections)</li>
+<li>[Data types](#basicdatatypes)</li>
+<li>[List of known fields](#fields)</li>
+<li>[Type/Taxonomy Mapping](#mapping)</li>
+<li>[Minimum required fields](#requirements)</li>
+</ol>
+<p>&lt;a name=&#8221;overview&#8221;&gt;&lt;/a&gt;</p>
+<p>## Overview</p>
+<p>All messages (reports and events) are Python/JSON dictionaries. The key names and according types are defined by the so called <em>harmonization</em>.</p>
+<p>The purpose of this document is to list and clearly define known <strong>fields</strong> in Abusehelper as well as Intelmq or similar systems. A field is a <code class="docutils literal"><span class="pre">`key=value`</span></code> pair. For a clear and unique definition of a field, we must define the <strong>key</strong> (field-name) as well as the possible <strong>values</strong>. A field belongs to an <strong>event</strong>. An event is basically a  structured log record in the form <code class="docutils literal"><span class="pre">`key=value,</span> <span class="pre">key=value,</span> <span class="pre">key=value,</span> <span class="pre">…`</span></code>. In the [List of known fields](#fields), each field is grouped by a <strong>section</strong>. We describe these sections briefly below.
+Every event <strong>MUST</strong> contain a timestamp field.</p>
+<p>[IOC](<a class="reference external" href="https://en.wikipedia.org/wiki/Indicator_of_compromise">https://en.wikipedia.org/wiki/Indicator_of_compromise</a>) (Indicator of compromise) is a single observation like a log line.</p>
+<p>&lt;a name=&#8221;rules&#8221;&gt;&lt;/a&gt;</p>
+<p>## Rules for keys</p>
+<p>The keys can be grouped together in sub-fields, e.g. <cite>source.ip</cite> or <cite>source.geolocation.latitude</cite>. Thus, keys must match <cite>[a-z_.]</cite>.</p>
+<p>&lt;a name=&#8221;sections&#8221;&gt;&lt;/a&gt;
+## Sections</p>
+<p>As stated above, every field is organised under some section. The following is a description of the sections and what they imply.</p>
+<p>### Feed</p>
+<p>Fields listed under this grouping list details about the source feed where information came from.</p>
+<p>### Time</p>
+<p>The time section lists all fields related to time information.
+This document requires that all the timestamps MUST be normalized to UTC. If the source reports only a date, do not attempt to invent timestamps.</p>
+<p>### Source Identity</p>
+<p>This section lists all fields related to identification of the source. <strong>XXX FIXME: not clear!! XXX</strong>
+The abuse type of an event defines the way these events needs to be interpreted. For example, for a botnet drone they refer to the compromised machine, whereas for a command and control server they refer the server itself.</p>
+<p>#### Source Geolocation Identity</p>
+<p>We recognize that ip geolocation is not an exact science and analysis of the abuse data has shown that different sources attribution sources have different opinions of the geolocation of an ip. This is why we recommend to enrich the data with as many sources as you have available and make the decision which value to use for the cc IOC based on those answers.</p>
+<p>#### Source Local Identity</p>
+<p>Some sources report an internal (NATed) IP address.</p>
+<p>### Destination Identity</p>
+<p>The abuse type of an event defines the way these IOCs needs to be interpreted. For a botnet drone they refer to the compromised machine, whereas for a command and control server they refer the server itself.</p>
+<p>#### Destination Geolocation Identity</p>
+<p>We recognize that ip geolocation is not an exact science and analysis of the abuse data has shown that different sources attribution sources have different opinions of the geolocation of an ip. This is why we recommend to enrich the data with as many sources as you have available and make the decision which value to use for the cc IOC based on those answers.</p>
+<p>#### Destination Local Identity</p>
+<p>Some sources report an internal (NATed) IP address.</p>
+<p>### Reported Identity</p>
+<p>Not used currently.</p>
+<p>#### Reported Source Identity</p>
+<p>As stated above, each abuse handling organization should define a policy, which IOC to use as the primary element describing an abuse event. Often the sources have done their attribution, but you may choose to correlate their attributive elements with your own. In practice this means that your sanitation should prefix the elements with the &#8216;&#8217;&#8216;reported&#8217;&#8216;&#8217; keyword, to denote that you&#8217;ve decided the attribute these yourself. The list below is not comprehensive, rather than a list of common things you may want to attribute yourself. Moreover, if you choose to perform your own attribution, the observation time will become your authoritative point of reference related to these IOC.</p>
+<p>#### Reported Destination Identity</p>
+<p>As stated above, each abuse handling organization should define a policy, which IOC to use as the primary elements describing an abuse event. Often the sources have done their attribution, but you may choose to correlate their attributive elements with your own. In practice this means that your sanitation should prefix the elements with the &#8216;&#8217;&#8216;reported&#8217;&#8216;&#8217; keyword, to denote that you&#8217;ve decided the attribute these yourself. The list below is not comprehensive, rather than a list of common things you may want to attribute yourself. Moreover, if you choose to perform your own attribution, the observation time will become your authoritative point of reference related to these IOC.</p>
+<p>#### Additional Fields</p>
+<p>TODO: description</p>
+<p>#### Malware Elements</p>
+<p>TODO: description</p>
+<p>#### Artifact Elements</p>
+<p>TODO: description</p>
+<p>#### Specific Elements</p>
+<p>The elements listed below are additional keys used to describe abusive behavior, which are topic specific. They may refer to the source of information, such as notified by, an augmentation source such a cymru cc or internal integration source, such as|rtir id||. The reason why they are separated from the the other IOCs is that they are not generic, rather than topic or provider specific. Their communicative function is defined as an optional way to understand what other abuse handling pipelines are most likely to call these elements.</p>
+<p>#### Classification</p>
+<p>Having a functional ontology to work with, especially for the abuse types is important for you to be able to classify, prioritize and report relevant actionable intelligence to the parties who need to be informed. The driving idea for this ontology has been to use a minimal set of values with maximal usability. See the classification section below for explanations and examples.</p>
+<p>&lt;a name=&#8221;datatypes&#8221;&gt;&lt;/a&gt;
+## Data types</p>
+<p>This section lists common data / field type definitions. The section [Fields List](#fields) references this table.
+Hence, this section also gives an overview of which basic data types need to be parseable and implemented by any system using this data harmonisation format.
+Note that this section does not yet define error handling and failure mechanisms should a field not be parseable.</p>
+<p><a href="#id9"><span class="problematic" id="id10">|Name                                | SQL Data type     | Regexp and Syntax       | Cybox Equivalent |  Comment                           |
+|:&#8212;&#8212;&#8212;&#8212;&#8212;&#8212;&#8212;&#8212;&#8212;&#8212;&#8212;&#8211;|</span></a>:&#8212;&#8212;&#8212;&#8212;&#8212;&#8212;<a href="#id11"><span class="problematic" id="id12">|:&#8212;&#8212;&#8212;&#8212;&#8212;&#8212;&#8212;&#8212;|</span></a>:&#8212;&#8212;&#8212;&#8212;&#8212;&#8211;<a href="#id13"><span class="problematic" id="id14">|:&#8212;&#8212;&#8212;&#8212;&#8212;&#8212;&#8212;&#8212;&#8212;&#8212;&#8212;&#8211;|</span></a>
+<a href="#id1"><span class="problematic" id="id2">|</span></a>&lt;a name=&#8221;#datatype-feed&#8221;&gt;&lt;/a&gt;feed   <a href="#id3"><span class="problematic" id="id4">|</span></a>varchar(2000)      |  <code class="docutils literal"><span class="pre">`[a-zA-Z0-9_.-]+`</span></code>  |                  | no characters allowed which could be interpreted as CSV separators |
+<a href="#id5"><span class="problematic" id="id6">|</span></a>&lt;a name=&#8221;#datatype-url&#8221;&gt;&lt;/a&gt;url     <a href="#id7"><span class="problematic" id="id8">|</span></a>varchar(2000)      | a valid URL (see [RFC3987](<a class="reference external" href="http://tools.ietf.org/html/rfc3987">http://tools.ietf.org/html/rfc3987</a>) or similar). | [URI](<a class="reference external" href="http://cybox.mitre.org/language/version2.1/xsddocs/objects/URI_Object.html">http://cybox.mitre.org/language/version2.1/xsddocs/objects/URI_Object.html</a>)  | TODO: It is recommended to use libaries such as [faup](<a class="reference external" href="https://github.com/stricaud/faup">https://github.com/stricaud/faup</a>) for validation. |</p>
+<p>&lt;a name=&#8221;fields&#8221;&gt;&lt;/a&gt;
+## Fields List</p>
+<p>A list of allowed fields can be found in [Harmonization-fields.md](Harmonization-fields.md)</p>
+<p>&lt;a name=&#8221;mapping&#8221;&gt;&lt;/a&gt;
+## Classification</p>
+<p>Intelmq classifies events using three labels: taxonomy, type and identifier. This tuple of three values can be used for deduplication of events and describes what happened.
+TODO: examples from chat</p>
+<p>The taxonomy can be automatically added by the taxonomy expert bot based on the given type. The following taxonomy-type mapping is based on eCSIRT Taxonomy:</p>
+<p><a href="#id15"><span class="problematic" id="id16">|Type|Taxonomy|Description|</span></a>
+<a href="#id17"><span class="problematic" id="id18">|&#8212;-|</span></a>&#8212;&#8212;&#8211;<a href="#id19"><span class="problematic" id="id20">|&#8212;&#8212;&#8212;&#8211;|</span></a>
+<a href="#id21"><span class="problematic" id="id22">|spam|Abusive Content|This IOC refers to resources, which make up a SPAM infrastructure, be it a harvester, dictionary attacker, URL etc.|</span></a>
+<a href="#id23"><span class="problematic" id="id24">|malware|Malicious Code|A URL is the most common resource with reference to malware binary distribution.|</span></a>
+<a href="#id25"><span class="problematic" id="id26">|botnet drone|Malicious Code|This is a compromized machine, which has been observed to make a connection to a command and control server.|</span></a>
+<a href="#id27"><span class="problematic" id="id28">|ransomware|Malicious Code|This IOC refers to a specific type of compromized machine, where the computer has been hijacked for ransom by the criminals.|</span></a>
+<a href="#id29"><span class="problematic" id="id30">|malware configuration|Malicious Code|This is a resource which updates botnet drones with a new configuration.|</span></a>
+<a href="#id31"><span class="problematic" id="id32">|c&amp;c|Malicious Code|This is a command and control server in charge of a given number of botnet drones.|</span></a>
+<a href="#id33"><span class="problematic" id="id34">|scanner|Information Gathering|This IOC refers to port scanning activity specifically.|</span></a>
+<a href="#id35"><span class="problematic" id="id36">|exploit|Intrusion Attempts|An exploit is often executed through a malicious URL.|</span></a>
+<a href="#id37"><span class="problematic" id="id38">|brute-force|Intrusion Attempts|This IOC refers to a resource, which has been observed to perform brute-force attacks over a given application protocol. Please see the IOC protocol below.|</span></a>
+<a href="#id39"><span class="problematic" id="id40">|ids alert|Intrusion Attempts|IOCs based on a sensor network. This is a generic IOC denomination, should it be difficult to reliably denote the exact type of activity involved for example due to an anecdotal nature of the rule that triggered the alert.|</span></a>
+<a href="#id41"><span class="problematic" id="id42">|defacement|Intrusions|This IOC refers to hacktivism related activity.|</span></a>
+<a href="#id43"><span class="problematic" id="id44">|compromised|Intrusions|This IOC refers to compromised system.|</span></a>
+<a href="#id45"><span class="problematic" id="id46">|backdoor|Intrusions|This refers to hosts, which have been compromized and backdoored with a remote administration software or trojan in the traditional sense.|</span></a>
+<a href="#id47"><span class="problematic" id="id48">|ddos|Availability|This IOC refers to various parts of the DDOS infrastructure.|</span></a>
+<a href="#id49"><span class="problematic" id="id50">|dropzone|Information Content Security|This IOC refers to place where the compromized machines store the stolen user data.|</span></a>
+<a href="#id51"><span class="problematic" id="id52">|phishing|Fraud|This IOC most often refers to a URL, which is phishing for user credentials.|</span></a>
+<a href="#id53"><span class="problematic" id="id54">|vulnerable service|Vulnerable|This attribute refers to a badly configured or vulnerable network service, which may be abused by a third party. For example, these services relate to open proxies, open dns resolvers, network time servers (ntp) or character generation services (chargen), simple network management services (snmp). In addition, to specify the network service and its potential abuse, one should use the protocol, destination port and description attributes for that purpose respectively.|</span></a>
+<a href="#id55"><span class="problematic" id="id56">|blacklist|Other|Some sources provide blacklists, which clearly refer to abusive behavior, such as spamming, but fail to denote the exact reason why a given identity has been blacklisted. The reason may be that the justification is anecdotal or missing entirely. This type should only be used if the typing fits the definition of a blacklist, but an event specific denomination is not possible for one reason or another.|</span></a>
+<a href="#id57"><span class="problematic" id="id58">|unknown|Other|unknown events|</span></a>
+<a href="#id59"><span class="problematic" id="id60">|test|Test|This is a value for testing purposes.|</span></a></p>
+<p>Meaning of source, destination and local values for each classification type and possible identifiers. The identifier is often a normalized malware name, grouping many variants.</p>
+<p><a href="#id61"><span class="problematic" id="id62">|Type|Source|Destination|Local|Possible identifiers|</span></a>
+<a href="#id63"><span class="problematic" id="id64">|&#8212;-|</span></a>&#8212;&#8212;<a href="#id65"><span class="problematic" id="id66">|&#8212;&#8212;&#8212;&#8211;|</span></a>&#8212;&#8211;<a href="#id67"><span class="problematic" id="id68">|&#8212;&#8212;&#8212;&#8212;&#8212;&#8212;&#8211;|</span></a>
+<a href="#id69"><span class="problematic" id="id70">|spam|*infected device*|targeted server|internal at source||</span></a>
+<a href="#id71"><span class="problematic" id="id72">|malware|*infected device*||internal at source|zeus, palevo, feodo|</span></a>
+<a href="#id73"><span class="problematic" id="id74">|botnet drone|*infected device*||||</span></a>
+<a href="#id75"><span class="problematic" id="id76">|ransomware|*infected device*||||</span></a>
+<a href="#id77"><span class="problematic" id="id78">|malware configuration|*infected device*||||</span></a>
+<a href="#id79"><span class="problematic" id="id80">|c&amp;c|*(sinkholed) c&amp;c server*|||zeus, palevo, feodo|</span></a>
+<a href="#id81"><span class="problematic" id="id82">|scanner|*scanning device*|scanned device|||</span></a>
+<a href="#id83"><span class="problematic" id="id84">|exploit|*hosting server*||||</span></a>
+<a href="#id85"><span class="problematic" id="id86">|brute-force|*attacker*|target|||</span></a>
+<a href="#id87"><span class="problematic" id="id88">|ids alert|*triggering device*||||</span></a>
+<a href="#id89"><span class="problematic" id="id90">|defacement|*defaced website*||||</span></a>
+<a href="#id91"><span class="problematic" id="id92">|compromised|*server*||||</span></a>
+<a href="#id93"><span class="problematic" id="id94">|backdoor|*backdoored device*||||</span></a>
+<a href="#id95"><span class="problematic" id="id96">|ddos|*attacker*|target|||</span></a>
+<a href="#id97"><span class="problematic" id="id98">|dropzone|*server hosting stolen data*||||</span></a>
+<a href="#id99"><span class="problematic" id="id100">|phishing|*phishing website*||||</span></a>
+<a href="#id101"><span class="problematic" id="id102">|vulnerable service|*vulnerable device*|||</span></a> heartbleed, openresolver, snmp |
+<a href="#id103"><span class="problematic" id="id104">|blacklist|*blacklisted device*||||</span></a>
+<a href="#id105"><span class="problematic" id="id106">|unknown||||||</span></a></p>
+<p>Field in italics is the interesting one for CERTs.</p>
+<p>Example:</p>
+<p>If you know of an IP address that connects to a zeus c&amp;c server, it&#8217;s about the infected device, thus type malware and identifier zeus. If you want to complain about the c&amp;c server, it&#8217;s type c&amp;c and identifier zeus. The <cite>malware.name</cite> can have the full name, eg. &#8216;zeus_p2p&#8217;.</p>
+<p>&lt;a name=&#8221;requirements&#8221;&gt;&lt;/a&gt;
+## Minimum requirements for events</p>
+<p>Below, we have enumerated the minimum requirements for an actionable abuse event. These keys need to be present for the abuse report to make sense for the end recipient. Please note that if you choose to anonymize your sources, you can substitute <strong>feed</strong> with <strong>feed code</strong> and that only one of the identity keys <strong>ip</strong>, <strong>domain name</strong>, <strong>url</strong>, <strong>email address</strong> must be present. All the rest of the keys enumerated above are <strong>optional</strong>.</p>
+<p><a href="#id107"><span class="problematic" id="id108">|Category|Key|Terminology|</span></a>
+<a href="#id109"><span class="problematic" id="id110">|&#8212;&#8212;&#8211;|</span></a>&#8212;<a href="#id111"><span class="problematic" id="id112">|&#8212;&#8212;&#8212;&#8211;|</span></a>
+<a href="#id113"><span class="problematic" id="id114">|Feed|feed|Must|</span></a>
+<a href="#id115"><span class="problematic" id="id116">|Classification|type|Must|</span></a>
+<a href="#id117"><span class="problematic" id="id118">|Classification|taxonomy|Must|</span></a>
+<a href="#id119"><span class="problematic" id="id120">|Time|source time|Must|</span></a>
+<a href="#id121"><span class="problematic" id="id122">|Time|observation time|Must|</span></a>
+<a href="#id123"><span class="problematic" id="id124">|Identity|source.ip|Must*|</span></a>
+<a href="#id125"><span class="problematic" id="id126">|Identity|source.fqdn|Must*|</span></a>
+<a href="#id127"><span class="problematic" id="id128">|Identity|source.url|Must*|</span></a>
+<a href="#id129"><span class="problematic" id="id130">|Identity|source.account|Must*|</span></a></p>
+<p><strong>NOTE:</strong> This document was copied from [AbuseHelper repository](<a class="reference external" href="https://bitbucket.org/clarifiednetworks/abusehelper/wiki/Data">https://bitbucket.org/clarifiednetworks/abusehelper/wiki/Data</a> Harmonization Ontology) and improved.</p>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="contents.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/Data-Harmonization.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.6</a>
+      
+      |
+      <a href="_sources/Data-Harmonization.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

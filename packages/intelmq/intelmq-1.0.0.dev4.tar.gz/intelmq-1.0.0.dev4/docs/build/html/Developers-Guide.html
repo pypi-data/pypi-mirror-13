@@ -1,0 +1,434 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>&lt;no title&gt; &mdash; Python  documentation</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="Python  documentation" href="contents.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body role="document">  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <p><strong>Table of Contents</strong></p>
+<ol class="arabic simple">
+<li>[Code and Repository Rules](#code-and-repository-rules)</li>
+<li>[System Overview](#system-overview)</li>
+<li>[Bot Developer Guide](#bot-developer-guide)</li>
+</ol>
+<p>&lt;a name=&#8221;code-and-repository-rules&#8221;&gt;&lt;/a&gt;
+# Development Guide</p>
+<p>If you are digging into the code of IntelMQ or want to write new bots, this document should give you an overview of the system, the responsibilities and how to adapt it to your needs. Please read the [User Guide](User-Guide.md) first.</p>
+<p>## Goals</p>
+<p>It is important, that developers agree and stick to these meta-guidelines. We expect you to always try to:</p>
+<ul class="simple">
+<li>reduce the complexity of system administration</li>
+<li>reduce the complexity of writing new bots for new data feeds</li>
+<li>make your code easily and pleasantly readable</li>
+<li>reduce the probability of events lost in all process with persistence functionality (even system crash)</li>
+<li>strictly adhere to the existing [Data Harmonization Ontology](Data-Harmonization.md) for key-values in events</li>
+<li>always use JSON format for all messages internally</li>
+<li>help and support the interconnection between IntelMQ and existing tools like AbuseHelper, CIF, etc. or new tools (in other words: we will not accept data-silos!)</li>
+<li>provide an easy way to store data into Log Collectors like ElasticSearch, Splunk</li>
+<li>provide an easy way to create your own black-lists</li>
+<li>provide easy to understand interfaces with other systems via HTTP RESTFUL API</li>
+</ul>
+<p>The main take away point from the list above is: things <strong>MUST</strong> stay __intuitive__ and __easy__.
+How do you test if things are easy? Let them new programmers test-drive your features and if it is not understandable in 15 minutes, go back to the drawing board.</p>
+<p>Similarly, if code does not get accepted upstream by the main developers, it is usually only because of the ease-of-use argument. Do not give up , go back to the drawing board, and re-submit again.</p>
+<p>## Installation</p>
+<p>Install intelmq with <cite>pip -e</cite>, which gives you a so called <em>editable</em> installation. All changed files in the local copy are directly changed in the local installation too!</p>
+<blockquote>
+<div>pip install -e .</div></blockquote>
+<p>If you do any changes on setup.py, data files (e.g. example configurations), you need to run <cite>pip install -eU .</cite> of course.</p>
+<p>## Testing</p>
+<p>All changes have to be tested and new contributions must must be accompanied by according tests. You can run the tests by changing to the directory with intelmq repository and running either <cite>unittest</cite> or <cite>nosetests</cite>:</p>
+<blockquote>
+<div>cd intelmq
+python -m unittest [discover|filename]  # or
+nosetests [filename]</div></blockquote>
+<p>It may be necessary to switch the user to <cite>intelmq</cite> if the run-path (<cite>/opt/intelmq/var/run/</cite>) is not writeable by the current user. Some bots need local databases to succeed. If you don&#8217;t mind about those and only want to test one explicit test file, you can give the filepath as argument.</p>
+<p>There is a [Travis-CI](<a class="reference external" href="https://travis-ci.org/certtools/intelmq/builds">https://travis-ci.org/certtools/intelmq/builds</a>) setup for automatic testing. (-&gt; thx sebix!)</p>
+<p>## Coding-Rules</p>
+<p>In general, we follow the [Style Guide for Python Code (PEP8)](<a class="reference external" href="https://www.python.org/dev/peps/pep-0008/">https://www.python.org/dev/peps/pep-0008/</a>).
+We recommend reading it before committing code.</p>
+<p>There are some exceptions: sometimes it does not make sense to check for every PEP8 error (such as whitespace indentation when you want to make a dict=() assignment
+look pretty. Therefore, we do not check for the error messages given in the .pep8 file.</p>
+<p>### Unicode</p>
+<ul class="simple">
+<li>Each internal object in IntelMQ (Event, Report, etc) that has strings, their strings MUST be in UTF-8 Unicode format.</li>
+<li>Any data received from external sources MUST be transformed into UTF-8 unicode format before add it to IntelMQ objects.</li>
+</ul>
+<p>Inside the pipeline it may be necessary to convert to bytes (ASCII). Conversion back to UTF-8 is automatically done when data is brought back to Python. This is the case for Redis pipeline implementation.</p>
+<p>### Back-end independence</p>
+<p>Any component of the IntelMQ MUST be independent of the message queue technology (Redis, RabbitMQ, etc...), except <cite>lib/pipeline.py</cite>. Intelmq bots MAY only assume to use the class specified in <cite>lib/pipeline.py</cite> for inter-process or inter-bot communications.</p>
+<p>### Compatibility</p>
+<p>IntelMQ core (including intelmqctl) MUST be compatible with IntelMQ Manager, IntelMQ UI and IntelMQ Mailer.</p>
+<p>## Event Harmonization</p>
+<p>Any component of IntelMQ MUST respect the &#8220;Data Harmonization Ontology&#8221;.</p>
+<p><strong>Reference:</strong> IntelMQ Data Harmonization - [Data Harmonization Ontology](Data-Harmonization.md)</p>
+<p>## Directory layout in the repository
+<a href="#id1"><span class="problematic" id="id2">``</span></a><a href="#id3"><span class="problematic" id="id4">`</span></a>bash
+intelmq</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>bin</dt>
+<dd>intelmqctl</dd>
+<dt>lib</dt>
+<dd>bot.py
+cache.py
+message.py
+pipeline.py
+utils.py</dd>
+<dt>bots</dt>
+<dd><dl class="first docutils">
+<dt>collector</dt>
+<dd><dl class="first last docutils">
+<dt>&lt;bot name&gt;</dt>
+<dd>collector.py</dd>
+</dl>
+</dd>
+<dt>parser</dt>
+<dd><dl class="first last docutils">
+<dt>&lt;bot name&gt;</dt>
+<dd>parser.py</dd>
+</dl>
+</dd>
+<dt>expert</dt>
+<dd><dl class="first last docutils">
+<dt>&lt;bot name&gt;</dt>
+<dd>expert.py</dd>
+</dl>
+</dd>
+<dt>output</dt>
+<dd><dl class="first last docutils">
+<dt>&lt;bot name&gt;</dt>
+<dd>output.py</dd>
+</dl>
+</dd>
+</dl>
+<p class="last">BOTS</p>
+</dd>
+<dt>conf</dt>
+<dd>pipeline.conf
+runtime.conf
+startup.conf
+system.conf</dd>
+</dl>
+</div></blockquote>
+<p><a href="#id5"><span class="problematic" id="id6">``</span></a><a href="#id7"><span class="problematic" id="id8">`</span></a></p>
+<p>Assuming you want to create a bot for &#8216;Abuse.ch Zeus&#8217; feed. It turns out that here it is necessary to create different parsers for the respective kind of events (C&amp;C, Binaries, Dropzones). Therefore, the hierarchy ‘intelmqbotsparserabusechparser.py’ would not be suitable because it is necessary to have more parsers, as mentioned above. The solution is to use the same hierarchy with an additional &#8220;description&#8221; in the file name, separated by underscore. Also see the section <em>Directories and Files naming</em>.</p>
+<p>Example:
+<code class="docutils literal"><span class="pre">`</span>
+<span class="pre">\intelmq\bots\parser\abusech\parser_zeus_cc.py</span>
+<span class="pre">\intelmq\bots\parser\abusech\parser_zeus_binaries.py</span>
+<span class="pre">\intelmq\bots\parser\abusech\parser_zeus_dropzones.py</span>
+<span class="pre">`</span></code></p>
+<p>### Directories Hierarchy on Default Installation</p>
+<p>Configuration Files Path:
+<code class="docutils literal"><span class="pre">`</span>
+<span class="pre">/opt/intelmq/etc/</span>
+<span class="pre">`</span></code></p>
+<p>PID Files Path:
+<code class="docutils literal"><span class="pre">`</span>
+<span class="pre">/opt/intelmq/var/run/</span>
+<span class="pre">`</span></code></p>
+<p>Logs Files and dumps Path:
+<code class="docutils literal"><span class="pre">`</span>
+<span class="pre">/opt/intelmq/var/log/</span>
+<span class="pre">`</span></code></p>
+<p>Additional Bot Files Path, e.g. templates or databases:
+<code class="docutils literal"><span class="pre">`</span>
+<span class="pre">/opt/intelmq/var/lib/bots/[bot-name]/</span>
+<span class="pre">`</span></code></p>
+<p>### Directories and Files naming</p>
+<p>Any directory and file of IntelMQ has to follow the Directories and Files naming. Any file name or folder name has to
+* be represented with lowercase and in case of the name has multiple words, the spaces between them must be replaced by underscores;
+* be self-explaining what the content contains.</p>
+<p>In the bot directories name, the name must correspond to the feed name. If necessary, some words can be added to give context by joining together using underscores.</p>
+<p>Example (without context words):
+<code class="docutils literal"><span class="pre">`</span>
+<span class="pre">intelmq/bots/parser/dragonresearchgroup</span>
+<span class="pre">intelmq/bots/parser/malwaredomainlist</span>
+<span class="pre">`</span></code></p>
+<p>Example (with context words):
+<code class="docutils literal"><span class="pre">`</span>
+<span class="pre">intelmq/bots/parser/cymru_full_bogons</span>
+<span class="pre">intelmq/bots/parser/taichung_city_netflow</span>
+<span class="pre">`</span></code></p>
+<p>#### Class Names</p>
+<p>Class name of the bot (ex: PhishTank Parser) must correspond to the type of the bot (ex: Parser) e.g. <cite>PhishTankParserBot</cite></p>
+<p>### Licence and Author files</p>
+<p>License and Authors files can be found at the root of repository.
+* License file <strong>MUST NOT</strong> be modified except by the explicit written permission by CNCS/CERT.PT or CERT.at
+* Credit to the authors file must be always retained. When a new contributor (person and/or organization) improves in some way the repository content (code or documentation), he or she might add his name to the list of contributors.</p>
+<p>License and authors must be only listed in an external file but not inside the code files.</p>
+<p>## Logging
+### Log Messages Format</p>
+<p>Log messages have to be clear and well formatted. The format is the following:</p>
+<p>Format:
+<code class="docutils literal"><span class="pre">`</span>
+<span class="pre">&lt;timestamp&gt;</span> <span class="pre">-</span> <span class="pre">&lt;bot</span> <span class="pre">id&gt;</span> <span class="pre">-</span> <span class="pre">&lt;log</span> <span class="pre">level&gt;</span> <span class="pre">-</span> <span class="pre">&lt;log</span> <span class="pre">message&gt;</span>
+<span class="pre">`</span></code></p>
+<p>Rules:
+* the Log message MUST follow the common rules of a sentence, beginning with uppercase and ending with period.
+* the sentence MUST describe the problem or has useful information to give to an unexperienced user a context. Pure stack traces without any further explanation are not helpful.</p>
+<p>When the logger instance is created, the bot id must be given as parameter anyway. The function call defines the log level, see below.</p>
+<p>### Log levels</p>
+<ul class="simple">
+<li><em>debug</em>: Debugging informations includes retrieved and sent messages, detailed status information. Can include sensitive information like passwords and amount can be huge.</li>
+<li><em>info</em>: Logs include loaded databases, fetched reports or waiting messages.</li>
+<li><em>warning</em>: Unexpected, but handled behavior.</li>
+<li><em>error</em>: Errors and Exceptions.</li>
+<li><em>critical</em> Program is failing.</li>
+</ul>
+<p>### What to log?</p>
+<ul class="simple">
+<li>Try to keep a balance between obscuring the source code file with hundreds of log messages and having too little log messages.</li>
+<li>In general, a bot MUST report error conditions.</li>
+</ul>
+<p>### How to log
+The Bot class creates a logger with that should be used by bots. Other components won&#8217;t log anyway currently. Examples:</p>
+<p><code class="docutils literal"><span class="pre">`python</span>
+<span class="pre">self.logger.info('Bot</span> <span class="pre">start</span> <span class="pre">processing')</span>
+<span class="pre">self.logger.error('Pipeline</span> <span class="pre">failed')</span>
+<span class="pre">self.logger.exception('Pipeline</span> <span class="pre">failed')</span>
+<span class="pre">`</span></code>
+The <cite>exception</cite> method automatically appends an exception traceback. The logger instance writes by default to the file <cite>/opt/intelmq/var/log/[bot-id].log</cite> and to stderr.</p>
+<p>&lt;a name=&#8221;system-overview&#8221;&gt;&lt;/a&gt;
+## System Overview</p>
+<dl class="docutils">
+<dt>In the <cite>intelmq/lib/</cite> directory you can find some libraries:</dt>
+<dd><ul class="first last simple">
+<li>Bots: Defines base structure for bots and handling of startup, stop, messages etc.</li>
+<li>Cache: For some expert bots it does make sense to cache external lookup results. Redis is used here.</li>
+<li>Harmonization: For defined types, checks and sanitation methods are implemented.</li>
+<li>Message: Defines Events and Reports classes, uses harmonization to check validity of keys and values according to config.</li>
+<li>Pipeline: Writes messages to message queues. Implemented for productions use is only Redis. A python-only solution is used by testing. A solution using ZMQ is in development.</li>
+<li>Test: Base class for bot tests with predefined test and assert methods.</li>
+<li>Utils: Utility functions used by system components.</li>
+</ul>
+</dd>
+</dl>
+<p>### Pipeline</p>
+<blockquote>
+<div><ul class="simple">
+<li>collector bot</li>
+</ul>
+</div></blockquote>
+<p>### Code Architecture</p>
+<p>![Code Architecture](<a class="reference external" href="http://s28.postimg.org/5wmak1upp/intelmq_arch_schema.png">http://s28.postimg.org/5wmak1upp/intelmq_arch_schema.png</a>)</p>
+<p>&lt;a name=&#8221;bot-developer-guide&#8221;&gt;&lt;/a&gt;
+## Bot Developer Guide</p>
+<p>There&#8217;s a dummy bot including tests at <cite>intelmq/tests/bots/test_dummy_bot.py</cite>.</p>
+<p>You can always start any parser directly from command line by either invoking the script or the python module. Don&#8217;t forget to give an bot id as first argument. Also, running bots with other users than <cite>intelmq</cite> will raise permission errors.
+<code class="docutils literal"><span class="pre">`bash</span>
+<span class="pre">sudo</span> <span class="pre">-i</span> <span class="pre">intelmq</span>
+<span class="pre">python</span> <span class="pre">-m</span> <span class="pre">intelmq.bots.outputs.file.output</span> <span class="pre">file-output</span>
+<span class="pre">python</span> <span class="pre">intelmq/bots/outputs/file/output.py</span> <span class="pre">file-output</span>
+<span class="pre">`</span></code></p>
+<p>### Template
+Please adjust the doc strings accordingly and remove the in-line comments (<cite>#</cite>).
+<a href="#id9"><span class="problematic" id="id10">``</span></a><a href="#id11"><span class="problematic" id="id12">`</span></a>python
+# -<em>- coding: utf-8 -</em>-
+&#8220;&#8221;&#8221;
+ExampleParserBot parses data from example.com.</p>
+<p>Document possible necessary configurations.
+&#8220;&#8221;&#8221;
+from __future__ import unicode_literals
+import sys</p>
+<p># imports for additional libraries and intelmq
+from intelmq.lib.bot import Bot</p>
+<dl class="docutils">
+<dt>class ExampleParserBot(Bot):</dt>
+<dd><dl class="first last docutils">
+<dt>def process(self):</dt>
+<dd><p class="first">report = self.receive_message()
+if report is None:  # Can be a None object in case the received message is empty</p>
+<blockquote>
+<div>self.acknowledge_message()
+return</div></blockquote>
+<p>event = Event(report)  # copies feed.name, time.observation
+... # implement the logic here
+event.add(&#8216;source.ip&#8217;, &#8216;127.0.0.1&#8217;)
+event.add(&#8216;extra&#8217;, {&#8220;os.name&#8221;: &#8220;Linux&#8221;})</p>
+<p class="last">self.send_message(event)
+self.acknowledge_message()</p>
+</dd>
+</dl>
+</dd>
+<dt>if __name__ == &#8220;__main__&#8221;:</dt>
+<dd>bot = ExampleParserBot(sys.argv[1])
+bot.start()</dd>
+</dl>
+<p><a href="#id13"><span class="problematic" id="id14">``</span></a><a href="#id15"><span class="problematic" id="id16">`</span></a></p>
+<p>### Pipeline interactions</p>
+<p>A can call three methods related to the pipeline:</p>
+<blockquote>
+<div><ul class="simple">
+<li><cite>self.receive_message()</cite>: The pipeline handler pops one message from the internal queue if possible. Otherwise one message from the sources list is popped, and added it to an internal queue. In case of errors in process handling, the message can still be found in the internal queue and is not lost. The bot class unravels the message a creates an instance of the Event or Report class.</li>
+<li><cite>self.send_message(event)</cite>: Processed message is sent to destination queues.</li>
+<li><cite>self.acknowledge_message()</cite>: Message formerly received by <cite>receive_message</cite> is removed from the internal queue. This should always be done after processing and after the sending of the new message. In case of errors, this function is not called and the message will stay in the internal queue waiting to be processed again.</li>
+</ul>
+</div></blockquote>
+<p>### Error handling</p>
+<p>The bot class itself has error handling implemented. The bot itself is allowed to throw exceptions and <strong>intended to fail</strong>! The bot should fail in case of malicious messages, and in case of unavailable but necessary resources. The bot class handles the exception and will restart until the maximum number of tries is reached and fail then. Additionally, the message in question is dumped to the file <cite>/opt/intelmq/var/log/[bot-id].dump</cite> and removed from the queue.</p>
+<p>### Initialization</p>
+<p>Maybe it is necessary so setup a Cache instance or load a file into memory. Use the <cite>init</cite> function for this purpose:</p>
+<p><a href="#id17"><span class="problematic" id="id18">``</span></a><a href="#id19"><span class="problematic" id="id20">`</span></a>python
+class ExampleParserBot(Bot):</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>def init(self):</dt>
+<dd><dl class="first last docutils">
+<dt>try:</dt>
+<dd>self.database = pyasn.pyasn(self.parameters.database)</dd>
+<dt>except IOError:</dt>
+<dd><dl class="first docutils">
+<dt>self.logger.error(&#8220;pyasn data file does not exist or could not be &#8220;</dt>
+<dd>&#8220;accessed in &#8216;%s&#8217;.&#8221; % self.parameters.database)</dd>
+<dt>self.logger.error(&#8220;Read &#8216;bots/experts/asn_lookup/README.md&#8217; and &#8220;</dt>
+<dd>&#8220;follow the procedure.&#8221;)</dd>
+</dl>
+<p class="last">self.stop()</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</div></blockquote>
+<p><a href="#id21"><span class="problematic" id="id22">``</span></a><a href="#id23"><span class="problematic" id="id24">`</span></a></p>
+<p>### Examples</p>
+<ul class="simple">
+<li>Check [Expert Bots](../intelmq/bots/experts/)</li>
+<li>Check [Parser Bots](../intelmq/bots/parsers/)</li>
+</ul>
+<p>### Tests</p>
+<p>In order to do automated tests on the bot, it is necessary to write tests including sample data. Have a look at some existing tests:</p>
+<blockquote>
+<div><ul class="simple">
+<li>The DummyParserBot in <cite>intelmq/tests/bots/test_dummy_bot.py</cite>. This test has the example data (report and event) inside the file, defined as dictionary.</li>
+<li>The parser for malwaregroup at <cite>intelmq/tests/bots/parsers/malwaregroup/test_parser_*.py</cite>. The latter loads a sample HTML file from the same directory, which is the raw report.</li>
+<li>The test for ASNLookupExpertBot has two event tests, one is an expected fail (IPv6).</li>
+</ul>
+</div></blockquote>
+<p>Ideally an example contains not only the ideal case which should succeed, but also a case where should fail instead. (TODO: Implement assertEventNotEqual or assertEventNotcontainsSubset or similar)
+Most existing bots are only tested with one message. For newly written test it is appreciable to have tests including more then one message, e.g. a parser fed with an report consisting of multiple events.</p>
+<p><a href="#id25"><span class="problematic" id="id26">``</span></a><a href="#id27"><span class="problematic" id="id28">`</span></a>python
+# -<em>- coding: utf-8 -</em>-
+from __future__ import unicode_literals</p>
+<p>import unittest</p>
+<p>import intelmq.lib.test as test
+from intelmq.bots.parsers.exampleparser.parser import ExampleParserBot  # adjust bot class name and module</p>
+<dl class="docutils">
+<dt>class TestExampleParserBot(test.BotTestCase, unittest.TestCase):  # adjust test class name</dt>
+<dd><p class="first">&#8220;&#8221;&#8221;
+A TestCase for ExampleParserBot.
+&#8220;&#8221;&#8220;</p>
+<p>&#64;classmethod
+def set_bot(cls):</p>
+<blockquote>
+<div><p>cls.bot_reference = ExampleParserBot  # adjust bot class name
+cls.default_input_message = EXAMPLE_EVENT  # adjust source of the example event (dict)</p>
+<p># This is an example how to test the log output</p>
+</div></blockquote>
+<dl class="last docutils">
+<dt>def test_log_test_line(self):</dt>
+<dd><p class="first">&#8220;&#8221;&#8221; Test if bot does log example message. &#8220;&#8221;&#8221;
+self.run_bot()
+self.assertRegexpMatches(self.loglines_buffer,</p>
+<blockquote class="last">
+<div>&#8220;INFO - Lorem ipsum dolor sit amet&#8221;)</div></blockquote>
+</dd>
+<dt>def test_event(self):</dt>
+<dd>&#8220;&#8221;&#8221; Test if correct Event has been produced. &#8220;&#8221;&#8221;
+self.run_bot()
+self.assertMessageEqual(0, EXAMPLE_REPORT)</dd>
+</dl>
+</dd>
+<dt>if __name__ == &#8216;__main__&#8217;:</dt>
+<dd>unittest.main()</dd>
+</dl>
+<p><a href="#id29"><span class="problematic" id="id30">``</span></a><a href="#id31"><span class="problematic" id="id32">`</span></a></p>
+<p>When calling the file directly, only the tests in this file for the bot will be expected. Some default tests are always executed (via the <cite>test.BotTestCase</cite> class), such as pipeline and message checks, logging, bot naming or empty message handling.</p>
+<p>### Configure IntelMQ</p>
+<p>In the end, the new information about the new bot should be added to BOTS file located at <cite>intelmq/bots</cite>.</p>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="contents.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/Developers-Guide.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.6</a>
+      
+      |
+      <a href="_sources/Developers-Guide.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
