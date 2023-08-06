@@ -1,0 +1,52 @@
+ {% for key, value in res.iteritems() %}
+    <header class="program-day-header">
+        <hgroup>
+          <h2>{{ key }}
+            <a class="btn btn-default btn-xs" role="button"
+               data-toggle="collapse" aria-expanded="false"
+               aria-controls="sat-timeslots"
+               href="#sat-timeslots">
+              &#x2193;
+            </a>
+          </h2>
+        </hgroup>
+      </header>
+
+    <div class="collapse in" id="sat-timeslots">
+  {% for key2, value2 in value.iteritems() %}
+    <article id="sat-ts-b0"
+    class="program-timeslot-break"> <!-- sat-ts-b0 start -->
+    <header class="program-timeslot-break-header">
+    <hgroup>
+    <h2>{{ key2 }}</h2>
+    </hgroup>
+    </header>
+    {# conditional content #}
+    {% if value2|count > 0 %}
+    <div class="collapse in"
+	 id="sat-ts0-sessions"> <!-- sat-ts0-sessions start -->
+      {% for key3, value3 in value2.iteritems() %}
+    <section id="sat-ts0-s0" class="program-session"> <!-- sat-ts0-s0 start -->
+    <header class="program-session-header">
+    <h2>{{ key3 }}</h2>
+    </header>
+    <a href="#" class="program-session-speaker">{{ value3['speaker'] }}</a>
+    
+<button class="btn btn-default btn-xs"
+data-toggle="collapse" aria-expanded="false"
+aria-controls="sat-ts0-s0-collapse"
+data-target="#sat-ts0-s0-collapse">
+Details
+</button>
+<div class="collapse in" id="sat-ts0-s0-collapse">
+<p><span class="label label-default">{{ value3['room'] }}</span></p>
+
+<p>{{ value3['desc'][0].decode('utf-8') }}</p>
+</div>
+</section> <!-- sat-ts0-s0 end -->
+    </div> <!-- sat-ts0-sessions end -->
+      {% endfor %}
+    {% endif %}
+    </article>
+  {% endfor %}
+{% endfor %}
