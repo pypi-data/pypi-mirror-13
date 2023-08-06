@@ -1,0 +1,5 @@
+
+
+
+class LocalConfig:
+    pass
