@@ -1,0 +1,53 @@
+#!/usr/bin/python
+# PYTHON_ARGCOMPLETE_OK
+
+import sys
+import osex
+import curses
+import argparse
+import argcomplete
+import ioex, ioex.selector
+
+def locate_select(patterns, match_all, ignore_case, update_database, multiple):
+
+    paths = osex.locate(
+                patterns, 
+                match_all = match_all, 
+                ignore_case = ignore_case, 
+                update_database = update_database
+                )
+
+    selected_paths = ioex.curses_tty_wrapper(
+        ioex.selector.select_string,
+        paths,
+        multiple = multiple
+        )
+
+    return selected_paths
+
+def _init_argparser():
+
+    argparser = argparse.ArgumentParser(description = None)
+    argparser.add_argument('--ignore-case', action='store_true')
+    argparser.add_argument('--match-all', action='store_true')
+    argparser.add_argument('--multiple', action='store_true')
+    argparser.add_argument('--update-database', action='store_true')
+    argparser.add_argument('patterns', metavar = 'pattern', nargs = '+')
+    return argparser
+
+def main(argv):
+
+    argparser = _init_argparser()
+    argcomplete.autocomplete(argparser)
+    args = argparser.parse_args(argv)
+
+    paths = locate_select(**vars(args))
+
+    if paths is None:
+        return 1
+    else:
+        print('\n'.join(paths))
+        return 0
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv[1:]))
