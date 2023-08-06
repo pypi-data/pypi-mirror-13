@@ -1,0 +1,32 @@
+<configure
+    xmlns="http://namespaces.zope.org/zope"
+    xmlns:browser="http://namespaces.zope.org/browser"
+    xmlns:i18n="http://namespaces.zope.org/i18n"
+    i18n_domain="ftw.redirector">
+
+    <browser:resourceDirectory name="ftw.redirector" directory="resources" />
+
+    <browser:page
+        name="plone_redirector_view"
+        for="*"
+        class=".fourohfour.CustomFourOhFourView"
+        permission="zope2.View"
+        allowed_interface="plone.app.redirector.interfaces.IFourOhFourView"
+        layer="ftw.redirector.interfaces.IRedirectorLayer"
+        />
+
+    <browser:page
+        name="export"
+        for="..interfaces.IRedirectConfig"
+        class=".excel_views.ExportRedirectConfigView"
+        permission="zope2.View"
+        />
+
+    <browser:page
+        name="import"
+        for="..interfaces.IRedirectConfig"
+        class=".excel_views.ImportRedirectConfigView"
+        permission="cmf.ModifyPortalContent"
+        />
+
+</configure>
