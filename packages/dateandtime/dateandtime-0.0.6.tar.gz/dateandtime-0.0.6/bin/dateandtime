@@ -1,0 +1,21 @@
+"""Command line entry point for dateandtime."""
+
+
+import os
+import sys
+
+from dateandtime.base import be_a_clock, parse_args
+
+
+if __name__ == "__main__":
+    term_avail = os.system("which setterm") == 0
+    if term_avail:
+        os.system("setterm -cursor off")
+
+    try:
+        be_a_clock(**parse_args(sys.argv))
+    except KeyboardInterrupt:
+        raise SystemExit("\n")
+    finally:
+        if term_avail:
+            os.system("setterm -cursor on")
