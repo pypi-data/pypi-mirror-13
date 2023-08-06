@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8"/>
+    <title>Simple Environment Monitor System</title>
+
+    <link rel="stylesheet" href="{{ static_url("bootstrap.css") }}" type="text/css" />
+    <link rel="stylesheet" href="{{ static_url("bootstrap-theme.css") }}" type="text/css" />
+    <link rel="stylesheet" href="{{ static_url("dashboard.css") }}" type="text/css"a />
+</head>
+
+<body>
+
+    <div id="container">
+
+        <div class="row" id="commands">
+            <div class="col-md-12">
+                <h1>Simple Environment Monitor System</h1>
+
+                 <div id="commands-wrap">
+                    <a href="#" id="new-monitor" class="btn btn-primary pull-right">Add New Monitor</a>
+                    <div class="clear"></div>
+                    <div id="form-wrap-monitor" class="hidden">
+                        <form id="form-monitor" action="/api/monitors" method="post">
+                            <div class="form-group">
+                                <label for="monitor-type">Type:</label>
+                                <select name="monitor-type" id="monitor-type">
+                                    {% for monitor_type in monitor_types %}
+                                        <option value="{{monitor_type[1]}}">{{monitor_type[0]}}</option>
+                                    {% end %}
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="monitor-label">Label:</label>
+                                <input type="text" name="label" id="monitor-label"/>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="monitor-url">Url or Host:</label>
+                                <input type="text" name="url" id="monitor-url"/>
+                            </div>
+
+                            <div id="custom-fields" class="form-group"></div>
+
+                            <input type="submit" value="Save" />
+                        </form>
+                    </div>
+                 </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <div id="monitors">
+                    {% for monitor in monitors %}
+                        <div class="monitor-entry">
+                            <h2><a class="monitor-label" href="{{monitor.url}}" target="_blank">{{monitor.label}}</a></h2>
+                            <p>
+                                <span class="monitor-url">{{monitor.url}}</span>
+                            </p>
+                            <p>
+                                <span class="monitor-status"></span>
+                            </p>
+                            <p>
+                                <a href="#" class="monitor-remove">remover</a>
+                            </p>
+                        </div>
+                    {% end %}
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <script src="/static/rest_client.js"></script>
+    <script src="/static/monitor_form.js"></script>
+    <script src="/static/monitor.js"></script>
+    <script src="/static/dashboard.js"></script>
+</body>
+
+</html>
+
