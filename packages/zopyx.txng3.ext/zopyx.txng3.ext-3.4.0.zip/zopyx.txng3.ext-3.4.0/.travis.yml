@@ -1,0 +1,22 @@
+language:  python
+sudo: false
+
+python:
+  - 2.6
+  - 2.7
+  - pypy
+
+install:
+  - python bootstrap.py
+  - bin/buildout
+
+script:
+  - bin/test-jenkins --xml
+
+
+notifications:
+  irc:
+    channels:
+      - "irc.freenode.org#sprint"
+    template:
+      - "%{repository}/#%{build_number}/%{branch} (%{author}): %{message} %{build_url}"
