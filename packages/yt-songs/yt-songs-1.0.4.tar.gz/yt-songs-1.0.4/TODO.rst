@@ -1,0 +1,2 @@
+ - Add search options
+ - Consider alternatives to setting props in run
