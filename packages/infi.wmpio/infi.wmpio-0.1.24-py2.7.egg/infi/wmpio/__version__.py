@@ -1,0 +1,11 @@
+__version__ = "0.1.24"
+__git_commiter_name__ = "Guy Rozendorn"
+__git_commiter_email__ = "guy@rzn.co.il"
+__git_branch__ = '(HEAD detached at v0.1.24)'
+__git_remote_tracking_branch__ = '(No remote tracking)'
+__git_remote_url__ = '(Not remote tracking)'
+__git_head_hash__ = '13498d26ba698d68abe348e5c5a626b55d9b43d0'
+__git_head_subject__ = 'Finished Release v0.1.24'
+__git_head_message__ = '* develop:\n  Python 3 compatibility\n  update buildout.cfg'
+__git_dirty_diff__ = ''
+__git_commit_date__ = '2016-02-15 13:49:22'
