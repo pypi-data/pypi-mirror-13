@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>Clok</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="static/bower_components/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="static/bower_components/pure-min/index.css">
+    <link rel="stylesheet" href="static/css/main.css">
+</head>
+
+<body>
+
+<!-- MENU COMPONENT -->
+<template id="menu-template">
+  <!-- Menu toggle -->
+  <a href="#menu" id="menuLink" class="menu-link" @click.prevent="menuClick">
+      <!-- Hamburger icon -->
+      <span></span>
+  </a>
+  <div id="menu">
+      <div class="pure-menu">
+          <a class="pure-menu-heading" href="#/webradios"><i class="fa fa-clock-o"></i> Clok</a>
+
+          <ul class="pure-menu-list">
+              <li class="pure-menu-item"><a href="#/webradios" class="pure-menu-link">
+                {{ $t('menu.radios') | capitalize }}
+              </a></li>
+              <li class="pure-menu-item">
+                <a href="#/alarms" class="pure-menu-link">
+                  {{ $t('menu.alarms') | capitalize }}
+                  <strong v-if="nbAlarms > 0">({{ nbAlarms }})</strong>
+                </a>
+              </li>
+          </ul>
+      </div>
+  </div>
+</template>
+
+<!-- WEBRADIO-PLAYER COMPONENT -->
+<template id="webradioplayer-template">
+  <div class="header" v-if="!state.isStopped">
+    <h1>{{ state.whatsPlaying }}
+      <i v-if="state.isMuted" class="fa fa-volume-off" style="color: #D83A2A;"></i>
+      <i v-else class="fa fa-volume-up"></i>
+    </h1>
+    <h2>
+      <a @click="state.go_backward()" class="btn small grey"><i class="fa fa-backward"></i></a>
+      <a @click="state.go_forward()" class="btn small grey"><i class="fa fa-forward"></i></a>
+      <a @click="state.shuffle()" v-if="state.isPlaylist" class="btn small grey"><i class="fa fa-random"></i></a>
+      <a @click="state.previous_track()" v-if="state.isPlaylist" class="btn small grey"><i class="fa fa-step-backward"></i></a>
+      <a @click="state.next_track()" v-if="state.isPlaylist" class="btn small grey"><i class="fa fa-step-forward"></i></a>
+      <a @click="state.pause()" v-if="state.isPaused" class="btn small black"><i class="fa fa-play"></i></a>
+      <a @click="state.pause()" v-else class="btn small black"><i class="fa fa-pause"></i></a>
+      <a @click="state.volume_down()" v-if="!state.isMuted" class="btn small grey"><i class="fa fa-volume-down"></i></a>
+      <a @click="state.volume_up()" v-if="!state.isMuted" class="btn small grey"><i class="fa fa-volume-up"></i></a>
+      <a @click="state.mute()" class="btn small" :class="[state.isMuted ? 'red' : 'grey']"><i class="fa fa-volume-off"></i></a>
+    </h2>
+  </div>
+  <div class="header" v-else>
+    <h1>{{ $t('player.title') }}</h1>
+    <h2>{{ $t('player.subtitle') }}</h2>
+  </div>
+</template>
+
+<!-- RADIOITEM COMPONENT -->
+<template id="radioitem-template">
+  <span class="radio-item">
+    <span @click="radioClick" :class="[selected ? 'name-selected' : 'name']" >{{ radio.name }}</span><a href="#/webradios/edit/{{ radio.uuid }}" class="edit"><i class="fa fa-cogs"></i></a><span @click="deleteRadioClick" class="delete"><i class="fa fa-trash-o"></i></span>
+  </span>
+</template>
+
+<!-- WEBRADIOEDIT COMPONENT -->
+<template id="webradioeditview-template">
+  <div id="main">
+    <div class="header" v-else>
+      <h1>{{ (isEdit ? $t('action.edit') : $t('action.add')) | capitalize }} {{ $t('radioadd.aradio') }}</h1>
+      <h2 v-if="!isEdit">{{ $t('radioadd.subtitle') }}</h2>
+    </div>
+
+    <div class="content">
+      <form class="pure-form webradio-form">
+        <input class="pure-input-1 my-input-1" type="text" placeholder="{{ $t('radioadd.name') }}" v-model="radio.name" /><br />
+        <input class="pure-input-1 my-input-1" type="text" placeholder="{{ $t('radioadd.streamurl') }}" v-model="radio.url" /><br />
+      </form>
+
+      <div class="add-radio-btns">
+        <a @click="submit" class="btn grey"><i class="fa fa-check"></i>
+          {{ $t('action.save') | capitalize }}
+        </a>
+        <a @click="cancel" class="btn black">
+          {{ $t('action.cancel') | capitalize }}
+        </a>
+      </div>
+    </div>
+  </div>
+</template>
+
+<!-- WEBRADIOVIEW COMPONENT -->
+<template id="webradioview-template">
+  <div id="main">
+    <webradio-player :state="state"></webradio-player>
+
+    <div class="content">
+      <div class="radio-item-list">
+        <radio-item
+          v-for="radio in state.webradios"
+          :radio="radio"
+          :state="state"
+          :selected="(!state.isStopped) && (radio.url == state.whatsPlayingURL)">
+        </radio-item>
+      </div>
+
+      <div class="add-radio-btns">
+        <a href="#/webradios/new" class="btn grey"><i class="fa fa-plus"></i>
+          {{ $t('action.add') | capitalize }}
+        </a>
+        <!--
+        <a href="#/webradios/search" class="btn grey"><i class="fa fa-search"></i>
+          {{ $t('action.search') | capitalize }}
+        </a>
+        -->
+      </div>
+    </div>
+  </div>
+</template>
+
+<!-- ALARMITEM COMPONENT -->
+<template id="alarmitem-template">
+  <span class="alarm-item" :class="{'disabled': alarm.disabled}">
+    <span class="alarm-label">
+      <span class="days">{{ daysFormat }}</span>
+      {{ radio.name }} <span class="limits">{{ limitsFormat }}</span>
+    </span>
+    <a href="#/alarms/edit/{{ alarm.uuid }}" class="btn small yellow"><i class="fa fa-cogs"></i></a>
+    <a @click="deleteAlarmClick" class="btn small red"><i class="fa fa-trash-o"></i></a>
+  </span>
+</template>
+
+<!-- ALARMEDIT COMPONENT -->
+<template id="alarmeditview-template">
+  <div id="main">
+    <div class="header" v-else>
+      <h1>{{ (isEdit ? $t('action.edit') : $t('action.add')) | capitalize }} {{ $t('alarmadd.analarm') }}</h1>
+    </div>
+
+    <div class="content">
+      <form class="pure-form alarm-form">
+        <label for="webradio-choice">{{ $t('alarmadd.radio') }} : </label>
+        <select v-model="alarm.webradio" id="webradio-choice" required>
+          <option v-for="webradio in state.webradios" :value="webradio.uuid">
+            {{ webradio.name }}
+          </option>
+        </select>
+
+        <br><br>
+
+        <label for="opt-lun">
+          <input type="checkbox" id="opt-lun" value="0" v-model="alarm.days" number>
+          {{ $t('day.monday') }}
+        </label>
+        <label for="opt-mar">
+          <input type="checkbox" id="opt-mar" value="1" v-model="alarm.days" number>
+          {{ $t('day.tuesday') }}
+        </label>
+        <label for="opt-mer">
+          <input type="checkbox" id="opt-mer" value="2" v-model="alarm.days" number>
+          {{ $t('day.wednesday') }}
+        </label>
+        <label for="opt-jeu">
+          <input type="checkbox" id="opt-jeu" value="3" v-model="alarm.days" number>
+          {{ $t('day.thursday') }}
+        </label>
+        <label for="opt-ven">
+          <input type="checkbox" id="opt-ven" value="4" v-model="alarm.days" number>
+          {{ $t('day.friday') }}
+        </label>
+        <label for="opt-sam">
+          <input type="checkbox" id="opt-sam" value="5" v-model="alarm.days" number>
+          {{ $t('day.saturday') }}
+        </label>
+        <label for="opt-dim">
+          <input type="checkbox" id="opt-dim" value="6" v-model="alarm.days" number>
+          {{ $t('day.sunday') }}
+        </label>
+
+        <br><br>
+
+        <label for="starthour">{{ $t('alarmadd.trigger') }} :</label><br />
+        <div class="pure-g">
+        <input id="starthour"
+               class="my-input-1 stuck-on-right"
+               type="number"
+               v-model="starthour"
+               placeholder="{{ $t('alarmadd.hour') }}"
+               number>
+        <input class="my-input-1 stuck-on-left"
+               type="number"
+               v-model="startminute"
+               placeholder="{{ $t('alarmadd.minutes') }}"
+               number>
+        </div>
+
+        <br>
+
+        <label for="duration">{{ $t('alarmadd.duration') }} :</label><br />
+        <input id="duration"
+               class="my-input-1"
+               type="number"
+               v-model="duration"
+               placeholder="{{ $t('alarmadd.duration') }}"
+               number>
+
+        <br><br>
+
+        <label for="opt-disable" class="pure-checkbox">
+          <input id="opt-disable" type="checkbox" v-model="alarm.disabled">
+          {{ $t('alarmadd.disabled') }}
+        </label>
+
+        <label for="opt-shuffle" class="pure-checkbox">
+          <input id="opt-shuffle" type="checkbox" v-model="shuffle">
+          {{ $t('alarmadd.shuffle') }}
+        </label>
+
+      </form>
+
+      <div class="add-radio-btns">
+        <a @click="submit" class="btn grey"><i class="fa fa-check"></i> {{ $t('action.save') | capitalize }}</a>
+        <a @click="cancel" class="btn black">{{ $t('action.cancel') | capitalize }}</a>
+      </div>
+    </div>
+  </div>
+</template>
+
+<!-- ALARMVIEW COMPONENT -->
+<template id="alarmview-template">
+  <div id="main">
+    <div class="header">
+      <h1>{{ $t('menu.alarms') | capitalize }}</h1>
+      <h2>{{ $t('alarmview.subtitle') }}</h2>
+    </div>
+
+    <div class="content">
+      <div class="alarm-item-list">
+        <alarm-item
+          v-for="alarm in state.alarms"
+          :alarm="alarm"
+          :state="state">
+        </alarm-item>
+      </div>
+
+      <div class="add-radio-btns">
+        <a href="#/alarms/new" class="btn grey"><i class="fa fa-plus"></i> {{ $t('action.add') | capitalize }}</a>
+      </div>
+    </div>
+  </div>
+</template>
+
+<!-- ROOT COMPONENT -->
+<div id="everything">
+  <div id="layout">
+    <menu :nb-alarms="nbAlarmsEnabled"></menu>
+    <webradio-view :state="$data" v-if="view === 'webradioView'"></webradio-view>
+    <webradio-edit-view
+      v-if="(view === 'webradioEditView') || (view === 'webradioCreateView')"
+      :is-edit="view === 'webradioEditView'"
+      :state="$data">
+    </webradio-edit-view>
+    <alarm-view :state="$data" v-if="view === 'alarmView'"></alarm-view>
+    <alarm-edit-view
+      v-if="(view === 'alarmEditView') || (view === 'alarmCreateView')"
+      :is-edit="view === 'alarmEditView'"
+      :state="$data">
+    </alarm-edit-view>
+  </div>
+</div>
+
+
+<script src="static/bower_components/lodash/dist/lodash.min.js"></script>
+<script src="static/bower_components/qwest/qwest.min.js"></script>
+<script src="static/bower_components/director/build/director.min.js"></script>
+<script src="static/bower_components/vue/dist/vue.min.js"></script>
+<script src="static/bower_components/vue-i18n/dist/vue-i18n.min.js"></script>
+
+<script src="static/js/translation.js"></script>
+<script src="static/js/app.js"></script>
+
+</body>
+</html>
