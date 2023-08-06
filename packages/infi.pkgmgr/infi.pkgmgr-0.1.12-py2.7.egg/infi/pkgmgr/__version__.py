@@ -1,0 +1,10 @@
+__version__ = "0.1.12"
+__git_commiter_name__ = "Guy Rozendorn"
+__git_commiter_email__ = "guy@rzn.co.il"
+__git_branch__ = '(HEAD detached at v0.1.12)'
+__git_remote_tracking_branch__ = '(No remote tracking)'
+__git_remote_url__ = '(Not remote tracking)'
+__git_head_hash__ = '7f1e38cdf37ef6bcdcd95819a38ba489dae55818'
+__git_head_subject__ = 'Finished Release v0.1.12'
+__git_head_message__ = '* develop:\n  HPT-1680 allowing to install a specific version of a package in Ubuntu\n  fix tests\n  HPT-1616 handle missing packages in ubuntu'
+__git_dirty_diff__ = ''
