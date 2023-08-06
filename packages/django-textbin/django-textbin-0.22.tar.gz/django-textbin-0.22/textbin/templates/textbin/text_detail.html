@@ -1,0 +1,141 @@
+{% extends "textbin/base.html" %}
+{% load staticfiles %}
+<!-- Здесь не подключён фреймворк django bootstrap 3 ! вручную подключается -->
+
+{% block extrahead %}
+    <link href="{% static 'textbin/css/bootstrap.min.css' %}" rel="stylesheet">
+    <script type="text/javascript" language="Javascript"
+            src="{% static 'textbin/js/jquery-1.12.0.min.js' %}"></script>
+    <script type="text/javascript"
+            src="{% static 'textbin/js/bootstrap.min.js' %}"></script>
+{% endblock %}
+
+{% block title %}Запись {{ text.author_name }} |{% endblock %}
+
+{% block body %}
+<style>
+      ul {
+          padding:0 0 0 0;
+          margin:0 0 40px 0;
+      }
+      ul li {
+          list-style:none;
+          margin-bottom:10px;
+      }
+      ul li.bspHasModal {
+          cursor: pointer;
+      }
+      .modal-body {
+          padding:5px !important;
+      }
+      .modal-content {
+          border-radius:0;
+      }
+      .modal-dialog img {
+          text-align:center;
+          margin:0 auto;
+      }
+    .controls{
+        width:100px;
+        display:block;
+        font-size:14px;
+        padding-top:4px;
+        font-weight:bold;
+    }
+    .next {
+        float:right;
+        text-align:right;
+    }
+    .text {
+      color:#666;
+      font-size:11px;
+      margin-bottom:10px;
+      padding:12px;
+      background:#fff;
+    }
+    .glyphicon-remove-circle:hover {
+      cursor: pointer;
+    }
+
+    @media screen and (max-width: 380px){
+       .col-xxs-12 {
+         width:100%;
+       }
+       .col-xxs-12 img {
+         width:100%;
+       }
+    }
+</style>
+
+
+<div class="container">
+
+
+    <!--<p class="post-date">-->
+    <p class="text-muted">
+        Отправил(а)
+        {% if text.author_url %}
+            <a rel="nofollow" target="_blank" href="{{ text.author_url }}"><ins>{{ text.author_name }}</ins></a>
+        {% else %}
+            <i>{{ text.author_name }}</i>
+        {% endif %}
+        {{ text.posted_at }}:
+    </p>
+
+
+    {% if text.text.strip %}
+        <blockquote>{{ text.text|linebreaks|urlize }}</blockquote>
+    {% endif %}
+
+
+    <div class="row">
+         <ul class="first">
+
+        {% for media in medias %}
+            {% if media.type == image %}
+                <!-- IMAGES -->
+
+                <li class="thumbnail col-lg-2 col-md-3 col-sm-4 col-xs-12">
+                    <img  src="{{ media.url }}">
+                </li>
+                <!-- Перед блоком, который должен начинаться с новой строки
+                при указанном размере экрана -->
+                {% if forloop.counter|divisibleby:3 == 0 %}
+                    <div class="clearfix visible-sm-block"></div>
+                {% elif forloop.counter|divisibleby:4 == 0 %}
+                    <div class="clearfix visible-md-block"></div>
+                {% elif forloop.counter|divisibleby:6 == 0 %}
+                    <div class="clearfix visible-lg-block"></div>
+                {% endif %}
+
+            {% elif media.type == video %}
+                <!-- VIDEOS -->
+
+                <span class="media video">
+                    <p><video controls><source src="{{ media.url }}"> </source></video></p>
+                </span>
+
+            {% endif %}
+        {% endfor %}
+
+         </ul>
+    </div>
+
+
+</div>
+{% endblock %}
+
+
+{% block js %}
+<script type="text/javascript"
+        src="{% static 'textbin/js/jquery.bsPhotoGallery.js' %}"></script>
+
+<script>
+$(document).ready(function(){
+  $('ul.first').bsPhotoGallery({
+    "classes" : "col-lg-2 col-md-4 col-sm-3 col-xs-4 col-xxs-12",
+    "hasModal" : true
+  });
+});
+</script>
+{% endblock %}
