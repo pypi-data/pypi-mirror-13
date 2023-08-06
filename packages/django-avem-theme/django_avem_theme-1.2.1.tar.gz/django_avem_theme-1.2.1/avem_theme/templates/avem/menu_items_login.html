@@ -1,0 +1,34 @@
+
+{% load ext %}
+
+
+<form class="form" action="{% block menubar_login_action %}{% url 'account_login_or_register' %}{% endblock menubar_login_action %}" method="POST">
+	<div class="form-group">
+		<div class="input-group">
+			<span class="input-group-addon"><i class="glyphicon glyphicon-user"></i></span>
+			<input type="text" class="form-control" name="login" placeholder="Login">
+		</div>
+	</div>
+	{# todo whitespace #}
+	{# todo focus on unfold #}
+	<div class="form-group">
+		<div class="input-group">
+			<span class="input-group-addon"><i class="glyphicon glyphicon-lock"></i></span>
+			<input type="password" class="form-control" name="password" placeholder="Password">
+		</div>
+	</div>
+	{% csrf_token %}
+	<input type="hidden" name="next" value="{{ request.path }}" />
+	<div class="form-group">
+		<div class="btn-group btn-group-justified" role="group">
+			<div class="btn-group" role="group">
+				<button type="submit" name="action" value="register" class="btn btn-default">Register</button>
+			</div>
+			<div class="btn-group" role="group">
+				<button type="submit" name="action" value="login" class="btn btn-primary">Login</button>
+			</div>
+		</div>
+	</div>
+</form>
+
+

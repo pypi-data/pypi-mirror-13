@@ -1,0 +1,83 @@
+
+{% extends 'avem/frame.html' %}
+
+{% comment %}
+	this theme is based on twitter bootstrap
+{% endcomment %}
+
+{% load static from staticfiles %}
+{% load ext %}
+
+
+{% block extra_meta %}
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+{% endblock extra_meta %}
+
+{% block site_css %}
+	<link rel="stylesheet" href="{% static 'style.css' %}?c={% static_mtime_b64 'style.css' %}" />
+{% endblock site_css %}
+
+{% block site_js %}
+	<script src="{% static 'script.js' %}?c={% static_mtime_b64 'script.js' %}"></script>
+	<script>
+		var autocomplete_url = "{% url 'autocomplete' %}";
+	</script>
+	<script src="{% static 'bootstrap3-typeahead.min.js' %}?c={% static_mtime_b64 'bootstrap3-typeahead.min.js' %}"></script>
+{% endblock site_js %}
+
+{% block page_attr %}{{ block.super }} class='container'{% endblock page_attr %}
+
+{% block main_menu %}
+	{# todo: this main_menu has a totally different structure from the one it overrides... #}
+
+	<nav class="navbar navbar-default navbar-fixed-top" role="navigation">
+		<div class="container">
+			<!-- Brand and toggle get grouped for better mobile display -->
+			<div class="navbar-header">
+				<button type="button" id="menubar-toggle-collapse" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#menu_general" aria-expanded="false">
+					<span class="sr-only">Toggle menu</span>
+					<i class="glyphicon glyphicon-chevron-down collapse-button-icon-collapsed"></i>
+					<i class="glyphicon glyphicon-chevron-up collapse-button-icon-opened"></i>
+				</button>
+				<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#menu_account" aria-expanded="false">
+					<span class="sr-only">Toggle account options</span>
+					<i class="glyphicon glyphicon-user"></i> {% if request.user.is_authenticated %}{% firstof request.user.get_short_name 'account' %}{% else %}login{% endif %} <b class="caret"></b>
+				</button>
+				{% block menu_home %}
+					<a class="navbar-brand" href="{% url 'home' %}"><i class="glyphicon glyphicon-home"></i> {% block brand_name %}markv{% endblock brand_name %}</a>
+				{% endblock menu_home %}
+				<ul class="nav navbar-nav">
+					{% block menu %}
+					{% endblock menu %}
+				</ul>
+			</div>
+
+			{% include 'avem/menu_right.html' %}
+		</div>
+	</nav>
+{% endblock main_menu %}
+
+{% block content_area %}
+	<div class="row">
+		<main class="col-xs-12 col-md-8">
+			{% block content %}
+				empty document for avem/base.html
+			{% endblock content %}
+		</main>
+		<div class="col-xs-12 col-md-4">
+			{% block sidebar %}
+				<!-- nothing here -->
+			{% endblock sidebar %}
+		</div>
+	</div>
+{% endblock content_area %}
+
+{# #todo: should be at the botton OR DEEPER; currently not working #}
+{% block footer_area_attr %}{{ block.super }} class='navbar navbar-default navbar-fixed-bottom visible-lg visible-md hidden-sm hidden-xs'{% endblock footer_area_attr %}
+
+{% block footer_attr %}{{ block.super }} class='container'{% endblock footer_attr %}
+
+{% block footer_list_attr %}{{ block.super }} class='list-inline navbar-nav'{% endblock footer_list_attr %}
+
+

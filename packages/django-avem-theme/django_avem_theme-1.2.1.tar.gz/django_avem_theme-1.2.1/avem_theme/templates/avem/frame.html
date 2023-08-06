@@ -1,0 +1,159 @@
+
+{% comment %}
+	this frame serves to create a consistent base layout for different styles, such that styles
+	can be switched sort-of-simply (e.g., the menu items should still be <li> and everything
+	should still extend {% block content %}; at best, one would only replace BASE_TEMPLATE,
+	to another template that overrides/extends the appropriate blocks in this template
+{% endcomment %}
+
+{% load staticfiles %}
+{% load ext %}
+
+
+<!DOCTYPE html>
+<html>{# possibly add lang='en' #}
+	<head>
+		{% block language_meta %}
+			<meta charset='utf-8'>
+		{% endblock language_meta %}
+
+		<link rel='shortcut icon' href='{% block faviconimg %}{% static 'globesearch.png' %}{% endblock faviconimg %}'>
+
+		{% block extra_meta %}{% endblock extra_meta %}
+
+		{% block header_feeds %}{% endblock header_feeds %}
+
+		<title>{% block title %}{{ TITLE_BASE }}{% endblock title %}</title>
+
+		{% block framework_css %}
+			<link rel='stylesheet' href='{% static 'bootstrap-3.3.5/css/bootstrap.min.css' %}' />
+		{% endblock framework_css %}
+
+		{% block widget_css %}
+			<link rel="stylesheet" href="{% static 'eonasdan-bootstrap-datetimepicker/build/css/bootstrap-datetimepicker.min.css' %}" media="all" />
+			<link rel="stylesheet" href="{% static 'bootstrap-star-rating/css/star-rating.min.css' %}" media="all" />
+			<link rel='stylesheet' href='{% static 'reactable.css' %}' />
+		{% endblock widget_css %}
+
+		{% block theme_css %}
+		{% endblock theme_css %}
+
+		<link rel='stylesheet' href='{% static 'avem/style.css' %}?c={% static_mtime_b64 'avem/style.css' %}' />
+		{% block site_css %}
+		{% endblock site_css %}
+
+		<!-- javascript moved to end of body; it's more logical here but more fast there -->
+
+		{% block header %}
+		{% endblock header %}
+	</head>
+
+	<body>
+		<div id='main_menu' {% block menu_attr %}{% endblock menu_attr %}>
+			{% block main_menu %}
+				<ol class="li_a_upgrade">
+					{% block menu_home %}
+						<li class="{% if_url 'home' %}"><a href='{% url 'home' %}'><i class="glyphicon glyphicon-home"></i> home</a></li>
+					{% endblock menu_home %}
+					{% block menu_info %}
+						<li><a href='{% url 'about' %}'><i class="glyphicon glyphicon-heart"></i> about</a></li>
+					{% endblock menu_info %}
+					{% block menu %}
+					{% endblock menu %}
+					{% block menu_auth %}
+						{% if request.user.is_authenticated %}
+							<li class="{% if_url 'account_logout' %}"><a href="{% url 'account_logout' %}?next={{ request.path }}"><i class="glyphicon glyphicon-off"></i> logout</a></li>
+							<li class="{% if_url 'profile' %}"><a href='{% url 'profile' %}'><i class="glyphicon glyphicon-edit"></i> account</a></li>
+						{% else %}
+							<li class="{% if_url 'account_login' %}"><a href="{% url 'account_login' %}?next={{ request.path }}"><i class="glyphicon glyphicon-user"></i> login</a></li>
+						{% endif %}
+					{% endblock menu_auth %}
+				</ol>
+			{% endblock main_menu %}
+		</div>
+		<div id="body_inside">
+			<div id='page' {% block page_attr %}{% endblock page_attr %}>
+				<div id='content' {% block content_attr %}{% endblock content_attr %}>
+					{% block messages %}
+						{% if messages %}
+							<div class="messages">
+								{% for message in messages %}
+									<div class="alert alert-{% if message.tags %}{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %}{% else %}info{{ message.tags }}"{% endif %} alert-dismissible" role="alert">
+										<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+										<strong>{{ message.tags|title }}</strong> {{ message }}
+									</div>
+								{% endfor %}
+							</div>
+						{% endif %}
+					{% endblock messages %}
+					{% block content_area %}
+						{% block content %}
+							empty document for frame.html
+						{% endblock content %}
+					{% endblock content_area %}
+				</div>
+			</div>
+		</div>
+
+		<section id='footer_area' {% block footer_area_attr %}{% endblock footer_area_attr %}>
+			<footer id='footer' {% block footer_attr %}{% endblock footer_attr %}>
+				<div id='name' {% block name_attr %}{% endblock name_attr %}>
+					{% block page_name %}{{ TITLE_BASE }}{% endblock page_name %}
+				</div>
+				<ul {% block footer_list_attr %}{% endblock footer_list_attr %}>
+					{% block page_footer %}
+						{% block footer_admin %}
+							{% if request.user.is_superuser %}
+								<li><a href="{% url 'backup_db' %}">back</a><a href="{% url 'backup_media' %}">up</a></li>
+							{% endif %}
+							{% if request.user.is_staff %}
+								<li><a href="{% url 'admin:index' %}">admin</a></li>
+							{% endif %}
+						{% endblock footer_admin %}
+						{% block footer %}
+						{% endblock footer %}
+						{% block footer_about %}
+							{# <li><a href="{% url 'contact' %}">contact</a></li> #}
+							{# <li><a href="{% url 'credits' %}">credits</a></li> #}
+						{% endblock footer_about %}
+						{% block footer_notify %}
+							{% if DEBUG %}
+								<li title="The website is running in debug mode. Apologies if you encounter any problems!"><strong>debug mode</strong></li>
+							{% endif %}
+						{% endblock footer_notify %}
+					{% endblock page_footer %}
+				</ul>
+			</footer>
+		</section>
+
+		<!-- javascript here for speed considerations -->
+
+		{% block framework_js %}
+			<script src='{% static 'jquery-2.1.4.min.js' %}'></script> {# minor version difference with CDN #}
+			<script src='{% static 'bootstrap-3.3.5/js/bootstrap.min.js' %}'></script>
+			{# <script src="{% static 'momentjs/min/moment.min.js' %}"></script> #}
+		{% endblock framework_js %}
+
+		{% block widget_js %}
+			<script src="{% static 'eonasdan-bootstrap-datetimepicker/build/js/bootstrap-datetimepicker.min.js' %}"></script>
+			<script src="{% static 'bootstrap-star-rating/js/star-rating.min.js' %}"></script>
+		{% endblock widget_js %}
+
+		{% block js_settings %}
+			<script>
+				/* get some constants into javascript; provided by base.context.javascript_settings; accessed by document.settings.SETTING_NAME */
+				document.settings = {{ BASE_JS_SETTINGS|json }};
+			</script>
+		{% endblock js_settings %}
+
+		{% block theme_js %}
+		{% endblock theme_js %}
+
+		<script src="{% static 'avem/script.js' %}?c={% static_mtime_b64 'avem/script.js' %}"></script>
+		{% block site_js %}
+		{% endblock site_js %}
+
+	</body>
+</html>
+
+
