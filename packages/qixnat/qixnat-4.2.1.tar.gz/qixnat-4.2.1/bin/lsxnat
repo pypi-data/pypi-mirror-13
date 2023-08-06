@@ -1,0 +1,74 @@
+#!/usr/bin/env python
+"""
+Lists XNAT objects. ``lsxnat`` is akin to the ``ls -d`` *nix command,
+in that it displays the objects that match the path argument rather
+than the matching arguments child content.
+
+Examples:
+
+>> lsxnat /QIN/Breast003
+/QIN/Breast003
+>> lsxnat /QIN/Breast003/*
+/QIN/Breast003/Session01
+/QIN/Breast003/Session02
+>> lsxnat /QIN/Breast003/sessions
+/QIN/Breast003/Session01
+/QIN/Breast003/Session02
+>> lsxnat /QIN/Breast003/Session01/scan/1/resources
+/QIN/Breast003/Session01/scan/1/resource/DICOM
+/QIN/Breast003/Session01/scan/1/resource/NIFTI
+>> lsxnat /QIN/Breast003/Session*/scan/1/resource/DICOM
+/QIN/Breast003/Session01/scan/1/resource/DICOM
+/QIN/Breast003/Session02/scan/1/resource/DICOM
+>> lsxnat /QIN/Breast003/Session01/scan/*/resource/NIFTI/file/volume001.*
+/QIN/Breast003/Session01/scan/1/resource/NIFTI/file/volume001.nii.gz
+/QIN/Breast003/Session01/scan/2/resource/NIFTI/file/volume001.nii.gz
+"""
+
+from __future__ import print_function
+import sys
+import os
+import argparse
+import qixnat
+from qixnat import command
+from qixnat.helpers import (xnat_name, xnat_path)
+from qixnat.facade import XNATError
+
+
+def main(argv=sys.argv):
+    # Parse the command line arguments.
+    path, opts = _parse_arguments()
+    # The XNAT configuration.
+    config = opts.pop('config', None)
+    # Configure the logger.
+    command.configure_log(**opts)
+
+    # Print the XNAT object names specified by the path. 
+    with qixnat.connect(config) as xnat:
+        matches = xnat.find_path(path)
+        if not matches:
+            print("No such XNAT object: %s" % path, file=sys.stderr)
+            return 1
+        for match in matches:
+            print(xnat_path(match))
+    return 0
+
+
+def _parse_arguments():
+    """Parses the command line arguments."""
+    parser = argparse.ArgumentParser()
+
+    # The log options.
+    qixnat.command.add_options(parser)
+
+    # The input XNAT hierarchy path.
+    parser.add_argument('path', help='the target XNAT object path')
+
+    args = vars(parser.parse_args())
+    nonempty_args = dict((k, v) for k, v in args.iteritems() if v != None)
+
+    return nonempty_args.pop('path'), nonempty_args
+
+
+if __name__ == '__main__':
+    sys.exit(main())
