@@ -1,0 +1,255 @@
+{% comment %}
+<!--
+ 
+    Copyright 2012-2015 Grigoriy Kramarenko <root@rosix.ru>
+
+    This file is part of QuickAPI.
+
+    QuickAPI is free software: you can redistribute it and/or
+    modify it under the terms of the GNU Affero General Public License
+    as published by the Free Software Foundation, either version 3 of
+    the License, or (at your option) any later version.
+
+    QuickAPI is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public
+    License along with QuickAPI. If not, see
+    <http://www.gnu.org/licenses/>.
+-->
+{% endcomment %}{% load i18n l10n quickapi_base static %}<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE|default:"ru" }}" {% if LANGUAGE_BIDI %}dir="rtl"{% endif %}>
+<head>
+    <title>{% block title %}{% trans 'API documentation' %}{% endblock %}</title>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="author" content="Grigoriy Kramarenko">
+    <meta name="generator" content="Django {% get_version 'django' %}">
+    <meta name="description" content="{% trans "QuickAPI - it's Django-application for the fast organization API." %}">
+    <meta name="version" content="{% get_version 'quickapi' %}">
+
+{% block shortcut_icons %}
+    <link rel="icon" href="{% get_static_prefix %}quickapi/{% get_version 'quickapi' %}/img/logo.svg" type="image/svg">
+    <link rel="icon" href="{% get_static_prefix %}quickapi/{% get_version 'quickapi' %}/img/favicon.png" type="image/png">
+{% endblock %}
+
+    <!-- START: block style -->
+    {% block style %}
+    <!-- Bootstrap -->
+    <link rel="stylesheet" href="{% get_static_prefix %}font-awesome/{% get_version 'font-awesome' %}/css/font-awesome.min.css">
+    <link rel="stylesheet" href="{% get_static_prefix %}bootstrap/{% get_version 'bootstrap' %}/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{% get_static_prefix %}bootstrap/{% get_version 'bootstrap' %}/css/bootstrap-theme.min.css">
+    <link rel="stylesheet" href="{% get_static_prefix %}pygments/{% get_version 'pygments' %}/{% PYGMENTS_STYLE %}.css">
+
+    <style type="text/css">
+        html {
+            position: relative;
+            min-height: 100%;
+        }
+        body {
+            margin-bottom: 100px;
+        }
+        body > .container {
+            margin-top: 20px;
+        }
+        .navbar-brand > img {
+            display: inline;
+        }
+        .navbar-brand.active {
+            color: #fff;
+        }
+        #requests, #responses, #methods, .method-head {
+            padding-top: 20px;
+        }
+        .backtop {
+            position: fixed;
+            bottom: 30px;
+            right: 20px;
+            z-index: 10;
+            display: block;
+        }
+        .backtop > a {
+            padding: 10px;
+            background-color: rgba(0,0,0,.06);
+        }
+        .backtop > a:hover {
+            background-color: #500000;
+            color: #fff;
+        }
+
+        .paragraph {
+            color: rgba(0,0,255,.1);
+        }
+        .paragraph:hover {
+            color: #337ab7;;
+        }
+
+        /* FOOTER */
+
+        .footer {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            min-height: 91px;
+            background-color: #f5f5f5;
+        }
+        .footer>div {
+            background-color: #f5f5f5;
+        }
+        .footer-content {
+            padding: 35px 0px;
+        }
+
+        /* SIDEBAR */
+
+        #sidebar {
+            position: fixed; top: 20px;
+        }
+        #sidebar hr {
+            margin: 8px;
+        }
+        .sidebar-nav li > a {
+            padding: 1px 8px;
+        }
+        .sidebar-nav .nav {
+            display: none; padding-bottom: 10px;
+        }
+        .sidebar-nav .nav li > a {
+            padding-left: 18px;
+        }
+        .sidebar-nav .nav li:first-child {
+            margin-top: 2px;
+        }
+        .sidebar-nav>li.active .fa-plus-square-o {
+            display: none;
+        }
+        .nav-pills>li.method-name.active>a,
+        .nav-pills>li.method-name.active>a:focus,
+        .nav-pills>li.method-name.active>a:hover {
+            color: #fff;
+            background-color: #d9534f;
+        }
+
+        @media (min-width: 992px) {
+            .sidebar-nav>.active>ul { display: block; }
+        }
+
+    </style>
+    {% endblock %}
+    <!-- END: block style -->
+
+    <!-- START: block extrastyle -->
+    {% block extrastyle %}{% endblock %}
+    <!-- END: block extrastyle -->
+</head>
+
+<body data-spy="scroll" data-target="#sidebar">
+    <!-- START: block navbar -->
+    {% block navbar %}
+        {% include "quickapi/_navbar.html" %}
+    {% endblock %}
+    <!-- END: block navbar -->
+
+    <!-- START: block container -->
+    {% block container %}
+    <div class="container">
+        <!-- START: block content -->
+        {% block content %}
+        <div class="row">
+            <div class="col-md-9">
+            <!-- START: block requests -->
+            {% block requests %}
+                {% include "quickapi/_requests.html" %}
+            {% endblock %}
+            <!-- END: block requests -->
+
+            <!-- START: block responses -->
+            {% block responses %}
+                {% include "quickapi/_responses.html" %}
+            {% endblock %}
+            <!-- END: block responses -->
+
+            <!-- START: block methods -->
+            {% block methods %}
+                {% include "quickapi/_methods.html" %}
+            {% endblock %}
+            <!-- END: block methods -->
+            </div><!-- /.col-md-9 -->
+
+            <div class="col-md-3">
+            <!-- START: block sidebar -->
+            {% block sidebar %}
+                {% include "quickapi/_sidebar.html" %}
+            {% endblock %}
+            <!-- END: block sidebar -->
+            </div><!-- /.col-md-3 -->
+
+        </div><!-- /.row -->
+        {% endblock %}
+        <!-- END: block content -->
+    </div><!-- /.container -->
+    {% endblock %}
+    <!-- END: block container -->
+
+    <!-- START: block footer -->
+    {% block footer %}
+    <!-- .footer -->
+    <div class="footer">
+
+        <div class="container">
+
+            <div class="col-xs-12">
+
+                <div class="footer-content text-center">
+                    
+                    <button class="btn" data-toggle="modal" data-target="#modal-license">
+                        <span> <strong>QuickAPI</strong> <span class="badge">{% get_version 'quickapi' %}</span> </span>
+                        <img style="height:18px; background: white;" src="{% get_static_prefix %}licenses/GNU/img/agplv3-88x31.png">
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+    <!-- /.footer -->
+    {% endblock %}
+    <!-- END: block footer -->
+
+    <div class="backtop">
+        <a href="#" title="{% trans 'Back on top' %}">
+            <i class="fa fa-angle-double-up fa-lg"></i>
+        </a>
+    </div>
+
+    <!-- START: block modal -->
+    {% block modal %}
+        {% include "quickapi/_modal.html" %}
+    {% endblock %}
+    <!-- END: block modal -->
+
+    <!-- START: block js -->
+    {% block js %}
+    <script src="{% get_static_prefix %}jquery/jquery-{% get_version 'jquery' %}.min.js"></script>
+    <script src="{% get_static_prefix %}jquery/django/django-ajax-csrf.min.js"></script>
+    <script src="{% get_static_prefix %}jquery/json/{% get_version 'jquery.json' %}/jquery.json.min.js"></script>
+    <script src="{% get_static_prefix %}bootstrap/{% get_version 'bootstrap' %}/js/bootstrap.min.js"></script>
+    <script src="{% get_static_prefix %}quickapi/{% get_version 'quickapi' %}/js/jquery.quickapi.min.js"></script>
+
+    {% endblock %}
+    <!-- END: block js -->
+
+    <!-- START: block extrajs -->
+    {% block extrajs %}
+    <script>
+    </script>
+    {% endblock %}
+    <!-- END: block extrajs -->
+
+</body>
+</html>
