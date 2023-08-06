@@ -1,0 +1,2 @@
+class NestedAdminDeprecationWarning(DeprecationWarning):
+    pass
