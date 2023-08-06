@@ -1,0 +1,80 @@
+====================
+Pylude
+====================
+
+A library trying to clone the Haskell-Prelude for python3 :
+
+http://hackage.haskell.org/package/base-4.8.1.0/docs/Prelude.html
+
+
+Why? Because rapid prototyping for Haskell should be a thing!
+Okay if you want you can use it for something useful aswell...
+
+
+Features
+========
+
+
+The newType function
+-----------------------
+
+
+.. code:: python
+
+    Just, Nothing = newType('Maybe', ('Just', 1), ('Nothing', 0), deriving={'Eq','Show'})
+
+
+constructor matching
+-----------------------
+
+.. code:: python
+
+    def isJust(x):
+        return Just(match=x)
+
+    def isNothing(x):
+        return x==Nothing
+
+
+type-classes
+-----------------
+
+.. code:: python
+
+    def mapB(func, b):
+        return b
+
+
+    T, F = newType("B", ("T",0), ("F",0), deriving={"Eq","Show"}, implements={Functor : {"fmap" : mapB} })
+
+    print(fmap(lambda x: x*2, T)) # 'T()'
+
+
+
+
+operators
+-----------------
+
+.. code:: python
+
+    '$ as |'
+
+    @libfunc
+    def f(x):
+        return x
+
+    print( f | (lambda x: x*3) | (lambda x: x+1) | 2) #9
+
+
+    '. as *'
+
+    g = (lambda x: x*3) * f * (lambda x: x+1) * (lambda x: x+1)
+
+    print(g(2)) #8
+
+
+
+
+
+
+
