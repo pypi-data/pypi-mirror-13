@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ image.gallery_info.title }} :: {{ image.title }}</title>
+    <link href="style.css" rel="stylesheet" />
+    <script src="gallery.js"></script>
+</head>
+<body class="image-page"><div class="image-toolbar">
+            <a class='arrow' id='home' title="Home" href='index.html'>&#9632;</a>
+            {% if image.previous %}
+                <a class='arrow' id='left' title="Previous" href='{{ image.previous.basename }}.html'>&#9664;</a>
+            {% else %}
+                <span></span>
+            {% endif %}
+            {% if image.next %}
+                <a class='arrow' id='right' title="Next" href='{{ image.next.basename }}.html'>&#9654;</a>
+            {% else %}
+                <span></span>
+            {% endif %}
+            <span>{{ image.index }}/{{image.total_count }}</span>
+            {% if image.title %}
+                <span>{{ image.title }}</span>
+            {% endif %}
+            <span>{{ image.date_time.strftime("%d/%m/%Y") -}}
+                {%- if image.place -%}
+                , {{ image.place }}
+                {% endif %}
+            </span>
+        </div><img class="image-itself" src="{{ image.basename }}.jpg" /></body>
+</html>
