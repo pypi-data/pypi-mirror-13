@@ -1,0 +1,23 @@
+!OozieGraph
+nodes:
+  check-empty-dir: !JavaAction
+    args:
+    - eu.dnetlib.iis.core.java.jsonworkflownodes.EmptyDirChecker
+    - -Iinput=${workingDir}/empty
+    captures_output: false
+    configuration: {}
+    error_node: fail
+    main_class: eu.dnetlib.iis.core.java.ProcessWrapper
+    ok_node: end
+  end: !End {}
+  fail: !Kill {}
+  init-workingDir: !FSAction
+    configuration: {}
+    error_node: fail
+    ok_node: check-empty-dir
+  start: !Start
+    next: init-workingDir
+parameters:
+  execution_environment: preprocessing
+  workingDir: /user/${user.name}/iis/working_dirs/${execution_environment}
+
