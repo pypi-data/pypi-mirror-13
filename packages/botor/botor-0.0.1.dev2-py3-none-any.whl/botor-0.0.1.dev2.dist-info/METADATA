@@ -1,0 +1,38 @@
+Metadata-Version: 2.0
+Name: botor
+Version: 0.0.1.dev2
+Summary: A thin wrapper around boto3
+Home-page: https://github.com/monkeysecurity/botor
+Author: Patrick Kelley
+Author-email: patrick@netflix.com
+License: UNKNOWN
+Platform: UNKNOWN
+Requires-Dist: boto (>=2.39.0)
+Requires-Dist: boto3 (>=1.2.3)
+Requires-Dist: joblib (==0.9.4)
+Provides-Extra: dev
+Provides-Extra: docs
+Provides-Extra: tests
+
+# botor
+A thin wrapper around boto3
+
+## features
+
+ - intelligent connection caching.
+ - rate limit handling, with exponential backoff.
+ - multi-account sts:assumerole abstraction.
+
+## Example
+
+    from botor.aws.sqs import get_queue, get_messages
+    conn_details = {
+        'account_number': '111111111111',
+        'assume_role': 'MyRole',
+        'session_name': 'MySession',
+        'region': 'us-east-1'
+    }
+    queue = get_queue(queue_name='MyQueue', **conn_details)
+    messages = get_messages(queue=queue)
+
+
