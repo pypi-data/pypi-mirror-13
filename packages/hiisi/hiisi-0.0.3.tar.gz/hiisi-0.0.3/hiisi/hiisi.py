@@ -1,0 +1,226 @@
+# -*- coding: utf-8 -*-
+import h5py
+import os
+from collections import namedtuple
+__version__ = '0.0.3'
+PathValue = namedtuple('PathValue', ['path', 'value'])
+
+
+class HiisiHDF(h5py.File):
+    """hdf5 file handle written on top of h5py.File.
+
+    Module offers easy to use search, and write methods for handling
+    HDF5 files.
+    """
+    CACHE = {'search_attribute':None,
+             'dataset_paths':[],
+             'group_paths':[],
+             'attribute_paths':[]}
+
+    def __init__(self, *args, **kwargs):
+        super(HiisiHDF, self).__init__(*args, **kwargs)
+
+    @staticmethod
+    def _clear_cache():
+        HiisiHDF.CACHE = {'search_attribute':None,
+                          'dataset_paths':[],
+                          'group_paths':[],
+                          'attribute_paths':[]}
+
+    @staticmethod
+    def _is_dataset(name, obj):
+        if isinstance(obj, h5py.Dataset):
+            HiisiHDF.CACHE['dataset_paths'].append(obj.name)
+
+    @staticmethod
+    def _is_group(name, obj):
+        if isinstance(obj, h5py.Group):
+            HiisiHDF.CACHE['group_paths'].append(obj.name)
+
+    @staticmethod
+    def _find_attr_paths(name, obj):
+        if HiisiHDF.CACHE['search_attribute'] in obj.attrs:
+            HiisiHDF.CACHE['attribute_paths'].append(obj.name)
+
+    @staticmethod
+    def _is_attr_path(name, obj):
+        if HiisiHDF.CACHE['search_attribute'] in obj.attrs:
+            return obj.name
+
+    def attr_exists(self, attr):
+        """Returns True if at least on instance of the attribute is found
+        """
+        gen = self.attr_gen(attr)
+        n_instances = len(list(gen))
+        if n_instances > 0:
+            return True
+        else:
+            return False
+
+    def is_unique_attr(self, attr):
+        """Returns true if only single instance of the attribute is found
+        """
+        gen = self.attr_gen(attr)
+        n_instances = len(list(gen))
+        if n_instances == 1:
+            return True
+        else:
+            return False
+
+    def list_datasets(self):
+        """Method returns a list of all dataset paths.
+
+        Examples
+        --------
+
+        >>> h5f = HiisiHDF('data.h5')
+        >>> print(h5f.list_datasets())
+        ['/dataset1/data1/data', '/dataset1/data2/data', ...]
+
+        """
+        HiisiHDF._clear_cache()
+        self.visititems(HiisiHDF._is_dataset)
+        return HiisiHDF.CACHE['dataset_paths']
+
+    def list_groups(self):
+        """Method returns a list of all goup paths
+        
+        Examples
+        --------
+        >>> h5f = HiisiHDF('data.h5')
+        >>> print(h5f.list_groups())
+        >>> ['/', '/dataset1', '/dataset1/data1', '/dataset1/data2']
+        """
+        HiisiHDF._clear_cache()
+        self.CACHE['group_paths'].append('/') #Every hdf5 file has a root
+        self.visititems(HiisiHDF._is_group)
+        return HiisiHDF.CACHE['group_paths']
+
+
+    def attr_gen(self, attr):
+        """Returns attribute generator that yields namedtuples containing
+        path value pairs
+
+        Examples
+        --------
+        >>> gen = h5f.attr_gen('elangle')
+        >>> pair = gen.next()
+        >>> print(pair.path)
+        '/dataset1/where'
+        >>> print(pair.value)
+        0.5
+
+        """
+        HiisiHDF._clear_cache()
+        HiisiHDF.CACHE['search_attribute'] = attr
+        HiisiHDF._find_attr_paths('/', self['/']) # Check root attributes
+        self.visititems(HiisiHDF._find_attr_paths)
+        path_attr_gen = (PathValue(attr_path, self[attr_path].attrs.get(attr)) for attr_path in HiisiHDF.CACHE['attribute_paths'])
+        return path_attr_gen
+
+
+    def create_from_filedict(self, filedict):
+        """
+        Creates h5 file from dictionary containing the file structure.
+        
+        Filedict is a regular dictinary whose keys are hdf5 paths and whose
+        values are dictinaries containing the metadata and datasets. Metadata
+        is given as normal key-value -pairs and dataset arrays are given using
+        'DATASET' key. Datasets must be numpy arrays.
+                
+        Method can also be used to append existing hdf5 file. If the file is
+        opened in read only mode, method does nothing.
+
+        Examples
+        --------
+        Create newfile.h5 and fill it with data and metadata
+
+        >>> h5f = HiisiHDF('newfile.h5', 'w')
+        >>> filedict = {'/':{'attr1':'A'},
+                        '/dataset1/data1/data':{'DATASET':np.zeros(100), 'quantity':'emptyarray'}, 'B':'b'}
+        >>> h5f.create_from_filedict(filedict)
+
+        """
+        if self.mode in ['r+','w', 'w-', 'x', 'a']:
+            for h5path, path_content in filedict.iteritems():
+                if path_content.has_key('DATASET'):
+                    # If path exist, write only metadata
+                    if h5path in self:
+                        for key, value in path_content.iteritems():
+                            if key != 'DATASET':
+                                self[h5path].attrs[key] = value
+                    else:
+                        try:
+                            group = self.create_group(os.path.dirname(h5path))
+                        except ValueError:
+                            group = self[os.path.dirname(h5path)]
+                            pass # This pass has no effect?
+                        new_dataset = group.create_dataset(os.path.basename(h5path), data=path_content['DATASET'])
+                        for key, value in path_content.iteritems():
+                            if key != 'DATASET':
+                                new_dataset.attrs[key] = value
+                else:
+                    try:  
+                        group = self.create_group(h5path)
+                    except ValueError:
+                        group = self[h5path]
+                    for key, value in path_content.iteritems():
+                        group.attrs[key] = value
+
+    def search(self, attr, value, tolerance=0):
+        """Find paths with a key value match
+
+        Parameters
+        ----------
+        attr : str
+            name of the attribute
+        value : str or numerical value
+            value of the searched attribute
+        
+        Keywords
+        --------
+        tolerance : float
+            tolerance used when searching for matching numerical
+            attributes. If the value of the attribute found from the file
+            differs from the searched value less than the tolerance, attributes
+            are considered to be the same.
+
+        Returns
+        -------
+        list_of_paths : list of strings
+            List of hdf5 paths
+
+        Examples
+        --------
+
+        >>> h5f = HiisiHDF('data.h5')
+        >>> h5f.search('elangle', 0.5, 0.1)
+        [u'/dataset1/where']
+
+        >>> h5f = HiisiHDF('data.h5')
+        >>> h5f.search('quantity', 'DBZH')
+        [u'/dataset1/data2/what',
+         u'/dataset2/data2/what',
+         u'/dataset3/data2/what',
+         u'/dataset4/data2/what',
+         u'/dataset5/data2/what']
+
+        """
+        found_paths = []
+        gen = self.attr_gen(attr)
+        for path_attr_pair in gen:
+            # if attribute is numerical use numerical_value_tolerance in
+            # value comparison. If attribute is string require exact match
+            if isinstance(path_attr_pair.value, str):
+                type_name = 'str'
+            else:
+                type_name = path_attr_pair.value.dtype.name
+            if 'int' in type_name or 'float' in type_name:
+                if abs(path_attr_pair.value - value) <= tolerance:
+                    found_paths.append(path_attr_pair.path)
+            else:
+                if path_attr_pair.value == value:
+                    found_paths.append(path_attr_pair.path)
+
+        return found_paths
+
