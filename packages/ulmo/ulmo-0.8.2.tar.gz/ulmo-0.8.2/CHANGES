@@ -1,0 +1,232 @@
+Changelog
+---------
+**0.8.2 (released 2016-02-02)**
+
+- added modules for getting LCRA hydromet and water quality data
+- fixed waterml parser bug that was affecting USGS NWIS data when
+  parameter data collected using multiple methods exist (e.g. water level
+  measured with RADAR and pressure transducer) through use of optional 'method'
+  kwarg
+- fixed ncdc.ghcn.get_stations() failing tests with pandas==0.17.0
+
+**0.8.1 (released 2015-09-16)**
+
+- packaging fixes. 0.8.0 does not install correctly from pypi.
+
+**0.8.0 (released 2015-09-15)**
+
+- python 3 compatibility. ulmo is now compatible py python 2.7 and python 3.4.
+- ulmo is now being tested on Windows/Linux/MacOSX using AppVeyor and Travis CI.
+- the ioos conda channel is now the supported way to get ulmo.
+- added conda environment yaml files to make it easier to set up a development environment.
+
+**0.7.8 (released 2015-07-02)**
+
+- no changes, had to bump version number because of a corrupt file uploaded to pypi.
+
+**0.7.7 (released 2015-07-02)**
+
+- dropped python 2.6 support
+- fixed bug in extracting raster file from zip file on windows
+- fixes for cdec service
+- fix url_params kwarg typo for nwis service
+
+**0.7.6 (released 2015-04-27)**
+
+- fixed ncdc.gsod services to use new station list over depreciated list (thanks Victor)
+- added USGS National Elevation Dataset (NED) raster service
+- added USGS Earth Resources Observation Systems (EROS) raster services
+- allow passthrough of extra kwargs for USGS NWIS services
+
+
+**0.7.5 (released 2015-01-26)**
+
+- add support for pandas 0.14 and 0.15
+- add a function to selectively remove data from nwis hdf5 cache
+
+
+**0.7.4 (released 2014-09-09)**
+
+- in cuahsi.wof module: allow optional configuration of caching behavior for
+  underlying suds SOAP library
+- in cuahsi.wof.get_values(), variable_code is no longer a keyword argument. It
+  didn't make sense for it to be a kwarg since it is not optional.
+
+
+**0.7.3 (released 2014-07-16)**
+
+- bugfix: using parameters argument in ulmo.ncdc.gsod.get_data() was not working
+
+
+**0.7.2 (released 2014-06-17)**
+
+- add parser for TWDB DOT dataloggers to usgs.eddn
+
+
+**0.7.1 (released 2014-06-05)**
+
+- bugfix: in cpc.drought dataset calculate year number externally rather than
+  using year number from data files, as they are sometimes incorrect (see github
+  issue #66)
+
+
+**0.7.0 (released 2014-04-01)**
+
+- this release includes some backwards incompatible changes
+- update ncdc.cirs to use new nClimDiv dataset (see
+  ftp://ftp.ncdc.noaa.gov/pub/data/cirs/climdiv/div-dataset-transition-readme.txt)
+  for details about the new dataset
+- some ncdc.cirs element names have changed:
+    - cdd -> cddc
+    - hdd -> hddc
+    - pcp -> pcpn
+    - tmp -> tmpc
+- fix flakey cpc.drought url determination causing data for the 2011
+  agricultural year to be unavailable
+
+
+**0.6.7 (released 2014-03-28)**
+
+- fix usgs.cpc year/week number reckoning bug
+
+
+**0.6.6 (released 2014-03-24)**
+
+- fix usgs.eddn parsers: values should be interpretted as reversed for sutron
+  and texuni dataloggers
+
+
+**0.6.5 (released 2014-03-14)**
+
+- usgs.eddn hdf5 files will no longer grow larger than they have to with each
+  update
+- fix incorrect ghcn_daily wm_oid when using pandas 0.13.1
+- fix incorrect pytables required version
+
+
+**0.6.4 (released 2014-01-22)**
+
+- a bunch of minor fixes for working with pandas 0.13
+- this release drops support for pandas 0.10.1; the minimum required version of
+  pandas is now 0.11
+- usgs.eddn.get_data will now make multiple requests if it encounters a 'Maximum
+  data limit reached' message
+
+
+**0.6.3 (released 2013-12-12)**
+
+- add cdec.historical for accessing California Department of Water Resources
+  California Data Exchange Center
+- fix last_modified dates being incorrectly updated when using nwis hdf5 backend
+  on some platforms
+
+
+**0.6.2 (released 2013-11-19)**
+
+- add usgs.eddn module for accessing USGS Emergency Data Distribution Network
+
+
+**0.6.1 (released 2013-07-31)**
+
+- raise a friendlier error message for usace.swtwc when no data is found
+- bugfix: waterml files with empty metadata elements (e.g. method) were breaking
+  the parsing logic
+
+
+**0.6.0 (released 2013-07-30)**
+
+- this release includes some backwards incompatible changes
+- simplified labels used for KBDI values: kbdi_avg -> avg, kbdi_min -> min...
+- added parameter_code kwarg to usgs.nwis.hdf5.get_site_data
+- added start and end dates to cuahsi.wof.get_values()
+- added support for NCDC's CIRS drought index dataset
+- fixed filesystem timestamp related bug that could cause file-based datesets to
+  be unnecessarily re-downloaded
+- version number is now available at ulmo.__version__
+- misc documentation fixes
+
+
+**0.5.0 (released 2013-05-14)**
+
+- nwis.pytables has been replaced with nwis.hdf5 which uses the
+  pandas.io.pytables backend; things should generally run a bit faster now and
+  the code is much cleaner. There is one backwards-incompatible change:
+  nwis.hdf5.get_site() is now thread-safe. There was an undocumented behavior
+  where if a site could not be found in the hdf5 file during a
+  nwis.pytables.get_site() call, then a request to the NWIS service would be
+  made and the site table would be updated but no longer happens. You must
+  explicitly run nwis.hdf5.update_site_list() to update the site list first.
+- the nwis.pytables namespace is deprecated in favor of nwis.hdf5 because it is
+  shorter and more recognizable but pytables is still powering things under the
+  hood (via the pandas HDFStore)
+- parsed timeseries data dicts from waterml-based datasets (cuahsi.wof and
+  usgs.nwis) now contain parsed site info mapped to the 'site' key
+- add support for pre-1997 data from CPC's weekly drought monitor dataset
+- bugfix: some related to change of the "current" agricultural year for CPC
+  weekly drought data
+- add support for Texas Weather Connection's Daily Keetch-Byram Drought Index
+  (KBDI) dataset
+
+
+**0.4.1 (released 2013-03-04)**
+
+- bugfix: interpret missing data ('----') correctly in usace.swtwc.get_stations
+
+
+**0.4.0 (released 2013-03-04)**
+
+- this release includes some backwards incompatible changes
+- usgs.nwis date_range parameter has been replaced with more explicit
+  start, end and period parameters
+- ncdc.gsod.get_data() parameters renamed: start_date -> start
+  and end_date -> end to be consistent with other dataset APIs
+- ncdc.gsod.get_stations() now allows limiting stations to matching parameters
+  (e.g. country='US')
+- all date and datetime parameters are now consistently parsed
+- added support for CUAHSI's HIS Central service: ulmo.cuahsi.his_central
+- added preliminary support for CPC's weekly drought monitor dataset (>=1997)
+- added preliminary support for data from USACE Tulsa Water District Control
+
+
+**0.3.0 (released 2013-01-14)**
+
+- this release includes some backwards incompatible changes
+- moved module for USGS NWIS from ulmo.usgs -> ulmo.nwis.usgs
+- moved module for WaterOneFlow from ulmo.wof -> ulmo.cuahsi.wof
+
+
+
+**0.2.4 (released 2013-01-14)**
+
+- core API functions can be called from main dataset modules
+- support python 2.6
+
+
+
+**0.2.3 (released 2013-01-13)**
+
+- add ghcn daily dataset
+- add preliminary support for CUAHSI WOF
+- add sphinx documentation
+- clean up tests
+- make pytables an optional dependency; pytables-related functionality is just
+  disabled if pytables can't be found
+
+
+
+**0.2.2 (released 2012-11-05)**
+
+- bugfix: broken usgs.pytables last_refresh handling
+
+
+
+**0.2.1 (released 2012-11-04)**
+
+- turn on compression for pytables cache files
+- minor bugfix and test cleanup
+
+
+
+**0.2.0 (released 2012-10-12)**
+
+- initial public release as ulmo (formerly pyhis)
