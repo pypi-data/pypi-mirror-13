@@ -1,0 +1,97 @@
+#!/usr/bin/env python
+
+from pprint import pprint
+from tblgen import interpret, Dag, TableGenBits
+import argparse
+
+parser = argparse.ArgumentParser(description='Dump definitions from a TableGen file')
+parser.add_argument('filename', metavar='filename.td', type=unicode,
+					help='a TableGen file')
+parser.add_argument('--filter', metavar='class', type=unicode, action='append', 
+					help='filter by class')
+parser.add_argument('--json', action='store_true', 
+					help='output JSON')
+
+args = parser.parse_args()
+fulldata = data = interpret(args.filename)
+if args.filter is not None:
+	for der in args.filter:
+		data = data.deriving(der)
+
+def drepr(type, val):
+	def dagop(name, value):
+		if name is None:
+			return drepr(type, value)
+		elif value is None:
+			return str(name)
+		else:
+			return '%s:%s' % (drepr(type, value), name)
+	if isinstance(type, TableGenBits):
+		return '{ %s }' % (', '.join(str((val >> (type.width - i - 1)) & 1) for i in xrange(type.width)))
+	elif isinstance(val, tuple):
+		if val[0] == 'defref':
+			return val[1]
+		elif val[0] == 'code':
+			return '[{%s}]' % val[1]
+	elif isinstance(val, unicode):
+		return '"%s"' % val.encode('unicode_escape').replace('"', '\\"')
+	elif isinstance(val, list):
+		return '[%s]' % (', '.join(map(lambda x: drepr(type, x), val)))
+	elif isinstance(val, Dag):
+		rest = ', '.join(dagop(name, value) for name, value in val.elements[1:])
+		return '(%s%s)' % (drepr(type, val.elements[0][1]), (' ' if len(val.elements) > 1 else '') + rest)
+	else:
+		return `val`
+
+def jsonify(val):
+	if isinstance(val, tuple):
+		if val[0] == 'defref':
+			return val[1]
+		elif val[0] == 'code':
+			return val[1]
+		else:
+			print 'Unknown tuple type in jsonify:', val[0]
+			pprint(val)
+			assert False
+	elif isinstance(val, list):
+		return map(jsonify, val)
+	elif isinstance(val, int):
+		return val
+	elif isinstance(val, unicode) or isinstance(val, str):
+		return val
+	elif isinstance(val, Dag):
+		return [jsonify(val.elements[0][1])] + [
+			dict(name=elem[0], value=jsonify(elem[1]))
+			for elem in val.elements[1:]
+		]
+	else:
+		print 'Unknown type in jsonify:'
+		pprint(val)
+		assert False
+
+if args.json:
+	fulldata = dict(fulldata)
+	include = list(dict(data).keys())
+	output = {}
+
+	while len(include):
+		name = include.pop()
+		if name in output:
+			continue
+
+		tdef = fulldata[name]
+		output[name] = dict(
+			_derived_from=tdef[0], 
+			_types={k:str(v[0]) for k, v in tdef[1].items()}, 
+		)
+		output[name].update({k:jsonify(v[1]) for k, v in tdef[1].items() if k != 'NAME'})
+
+	import json
+	print json.dumps(output, indent=2)
+else:
+	for name, body in sorted(data, key=lambda a: a[0]):
+		print 'def %s { // %s' % (name, ' '.join(body[0]))
+		for ename, (etype, eval) in body[1].items():
+			print '  %s %s = %s;' % (etype, ename, drepr(etype, eval))
+		print '}'
+		print
