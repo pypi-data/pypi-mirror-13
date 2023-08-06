@@ -1,0 +1,25 @@
+<configure
+    xmlns="http://namespaces.zope.org/zope"
+    xmlns:browser="http://namespaces.zope.org/browser"
+    xmlns:i18n="http://namespaces.zope.org/i18n"
+    xmlns:genericsetup="http://namespaces.zope.org/genericsetup"
+    i18n_domain="collective.editmodeswitcher">
+
+    <!-- Include configuration for dependencies listed in setup.py -->
+    <includeDependencies package="." />
+
+    <subscriber
+        for="*
+             zope.app.publication.interfaces.IBeforeTraverseEvent"
+        handler=".handlers.set_editmode"
+        />
+
+    <browser:page
+        for="*"
+        name="switch-editmode"
+        class=".browser.EditModeSwitcher"
+        permission="zope.Public"
+        allowed_attributes="get_state"
+    />
+
+</configure>
