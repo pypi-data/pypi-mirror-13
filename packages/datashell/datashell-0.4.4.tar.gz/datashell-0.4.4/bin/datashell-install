@@ -1,0 +1,26 @@
+import os
+import subprocess
+
+
+def here(*segments):
+    return os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', *segments)
+
+
+JUPYTER = os.path.join(
+    subprocess.check_output(['jupyter', '--data-dir']).decode('utf-8').strip(),
+    'kernels/datashell/kernel.json',
+    )
+IPYTHON = os.path.join(
+    subprocess.check_output(['ipython', 'locate']).decode('utf-8').strip(),
+    'profile_datashell/startup/datashell.ipy',
+    )
+DATASHELL = here('datashell.ipy')
+KERNEL = here('kernel.json')
+
+
+os.makedirs(os.path.dirname(IPYTHON), exist_ok=True)
+os.makedirs(os.path.dirname(JUPYTER), exist_ok=True)
+if not os.path.exists(IPYTHON):
+    os.symlink(DATASHELL, IPYTHON)
+if not os.path.exists(JUPYTER):
+    os.symlink(KERNEL, JUPYTER)
