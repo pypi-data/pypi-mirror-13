@@ -1,0 +1,24 @@
+{% extends "moneta/base_package.html" %}{% load staticfiles i18n moneta %}
+{% block bootstrap3_title %}{% blocktrans %}Repository {{ repo }}{% endblocktrans %}{% if state_slug %}/{{ state_slug }}{% endif %}{% endblock %}
+
+{% block repo_content %}
+    <h1><a href="{{ repo.get_absolute_url }}">{% blocktrans %}Repository {{ repo }}{% endblocktrans %}{% if state_slug %}/{{ state_slug }}{% endif %}</a></h1>
+    <ol class="breadcrumb">
+    {% for bread_crumb in bread_crumbs %}
+        <li {% if forloop.last %}class="active"{% endif %}><a href="{{ bread_crumb.1 }}">{{ bread_crumb.0 }}</a></li>
+    {% endfor %}
+    </ol>
+    <p>{% blocktrans %}Available files in <strong>{{ repo }}/{{ request_path }}</strong>: {% endblocktrans %}
+        <span class="badge">{{ element_count }}</span></p>
+    <ul class="list-unstyled">
+        {% for path in paths %}
+            <li><a href="{{ path.1 }}">{{ path.0 }}</a>
+                {% if path.2 %}<a href="{% url 'moneta:show_file' path.2 %}" class="btn btn-success btn-xs">{% trans 'More infos…' %}</a>{% endif %}
+
+            </li>
+            {% empty %}
+            <li>{% trans 'No available package' %}</li>
+        {% endfor %}
+    </ul>
+{% endblock %}
+

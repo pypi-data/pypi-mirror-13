@@ -1,0 +1,44 @@
+{% extends "moneta/base_package.html" %}{% load staticfiles i18n moneta %}
+
+{% block repo_content %}
+        <h2>{% trans 'Available APT sources' %}</h2>
+
+        <ul class="nav nav-tabs">
+        {% for tab_info in tab_infos %}
+                <li {% if forloop.first %}class="active"{% endif %}><a href="#{{ tab_info.1.slug }}" data-toggle="tab">{{ tab_info.1.name }}</a></li>
+        {% endfor %}
+        </ul>
+        <div class="tab-content">
+            {% for tab_info in tab_infos %}
+                <div class="tab-pane {% if forloop.first %}active{% endif %}" id="{{ tab_info.1.slug }}">
+            {% trans 'Modify your APT sources:' %}
+<pre>cat &lt;&lt; EOF | sudo tee /etc/apt/sources.list.d/{{ repo.slug }}.list
+{% for state in tab_info.0 %}deb {{ absolute_url }}{{ index_url }} {{ repo.slug }} {{ state }}
+{% endfor %}EOF</pre>
+
+        {% if use_https %}
+            {% trans 'Do not forget to install apt-transport-https first.' %}
+            <pre>sudo apt-get install apt-transport-https</pre>
+        {% endif %}
+                {% if repo.is_private %}
+                    <div>{% trans 'As far we know, the only method to authenticate APT clients is to use client SSL certificates.' %}</div>
+                {% endif %}
+        {% trans 'Please run the following command to register the GPG key of this repository:' %}
+        {% with view=repo|moneta_url:"gpg_key" %}<pre>{% curl repo %} {{ absolute_url }}{% url view rid=repo.id repo_slug=repo.slug slug2=repo.slug %} | sudo apt-key add -</pre>{% endwith %}
+        {% trans 'The Release file can be downloaded using cURL:' %}
+        {% with view=repo|moneta_url:"repo_release" %}<pre>{% curl repo %} {{ absolute_url }}{% url view rid=repo.id repo_slug=repo.slug filename='Release' %}</pre>{% endwith %}
+        {% if upload_allowed %}<h2>{% trans 'Add a package' %}</h2>
+            {% trans 'In order to add a new package, please run the following command:' %}
+        <pre>FILENAME=filename-version.deb
+{% curl %} --data-binary @$FILENAME {{ absolute_url }}{% url 'moneta:add_element_post' rid=repo.id %}\?filename=$FILENAME{% for state in tab_info.0 %}\&amp;states={{ state.slug }}{% endfor %}</pre>
+        {% trans 'Run the following command to re-index packages after an upload:' %}
+        {% with view=repo|auth_moneta_url:"force_index" %}<pre>{% curl %} {{ absolute_url }}{% url view rid=repo.id repo_slug=repo.slug %}</pre>{% endwith %}
+        {% endif %}
+                </div>
+            {% endfor %}
+
+        </div>
+
+    {% include 'moneta/add_signature.html' %}
+{% endblock %}
+
