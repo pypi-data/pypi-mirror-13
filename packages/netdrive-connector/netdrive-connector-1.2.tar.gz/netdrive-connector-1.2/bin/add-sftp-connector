@@ -1,0 +1,133 @@
+#!/bin/sh
+
+# Copyright (c) 2015, Euan Thoms
+# All rights reserved.
+# 
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+# 
+# * Redistributions of source code must retain the above copyright notice, this
+#   list of conditions and the following disclaimer.
+# 
+# * Redistributions in binary form must reproduce the above copyright notice,
+#   this list of conditions and the following disclaimer in the documentation
+#   and/or other materials provided with the distribution.
+# 
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+# DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+# FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+# SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+# CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+# OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
+SERVER_URL=`echo $1 | sed "s|\:[0-9]*/|:/|"`
+MOUNT_POINT=$2
+SFTP_PASSWORD=$4
+SFTP_PORT=`echo $1 | sed "s|^.*:||" | sed "s|/.*||"`
+
+if [ "${SFTP_PORT}" = "" ]
+then
+  SFTP_PORT=22
+fi
+
+
+FS_TYPE="fuse.sshfs"
+MOUNT_OPTIONS="users,noauto,exec,reconnect,ServerAliveInterval=5"
+
+get_mount_user(){
+
+  ## test if mount point exists
+  if [ ! -d ${MOUNT_POINT} ]
+  then
+    echo ""
+    echo "ERROR (1): mount point does not exist"
+    echo ""
+    exit 1
+  fi
+
+  ## get mount point owner
+  MOUNT_USER=`ls -ld ${MOUNT_POINT} | awk '{print $3}'`
+  MOUNT_USER_GROUP=`ls -ld ${MOUNT_POINT} | awk '{print $4}'`
+  MOUNT_USER_FOLDER=`su - ${MOUNT_USER} -c 'eval "echo $HOME"'`
+
+}
+
+add_connection(){
+
+  get_mount_user
+
+  ## test if connection already exists
+  cat /etc/fstab | grep " ${FS_TYPE} " | grep "${SERVER_URL}" | grep "${MOUNT_POINT}" > /dev/null
+  if [ $? = 0 ]
+  then
+    echo ""
+    echo "ERROR (2): That connection is already setup"
+    echo ""
+    exit 2
+  fi
+
+  ## make sure sftp_connector public key exists
+  if [ ! -f ${MOUNT_USER_FOLDER}/.ssh/sftp_connector.pub ]
+  then
+    if [ ! -d ${MOUNT_USER_FOLDER}/.ssh ]
+    then
+      mkdir ${MOUNT_USER_FOLDER}/.ssh
+      chown ${MOUNT_USER}:${MOUNT_USER_GROUP} ${MOUNT_USER_FOLDER}/.ssh
+    fi
+    su - ${MOUNT_USER}  -c 'ssh-keygen -q -f '${MOUNT_USER_FOLDER}'/.ssh/sftp_connector -N ""' 
+  fi
+
+  echo "${SERVER_URL} ${MOUNT_POINT} ${FS_TYPE} ${MOUNT_OPTIONS},port=${SFTP_PORT},IdentityFile=${MOUNT_USER_FOLDER}/.ssh/sftp_connector 0 0" >> /etc/fstab
+
+}
+
+copy_key_no_prompt(){
+
+  SERVER_URL_NO_PATH=`echo ${SERVER_URL} | cut -d: -f1`
+
+  ## copy ssh identity to server
+  su - ${MOUNT_USER} -c 'expect -c "set timeout 30 ; spawn ssh-copy-id -i '${MOUNT_USER_FOLDER}'/.ssh/sftp_connector '${SERVER_URL_NO_PATH}' -p '${SFTP_PORT}' ; expect (yes/no)? ; send \"yes\r\" ; expect *?assword: ; send \"'${SFTP_PASSWORD}'\r\" ; expect *?assword: ; send \"'${SFTP_PASSWORD}'\r\" ; expect *?assword: ; send \"'${SFTP_PASSWORD}'\r\" ; interact"'
+}
+
+copy_key_prompt_pass(){
+
+  SERVER_URL_NO_PATH=`echo ${SERVER_URL} | cut -d: -f1`
+
+  ## copy ssh identity to server
+  su - ${MOUNT_USER}  -c 'ssh-copy-id -i '${MOUNT_USER_FOLDER}'/.ssh/sftp_connector '${SERVER_URL_NO_PATH}' -p '${SFTP_PORT}
+}
+
+if [ $# = 2 ]
+then
+  add_connection
+elif [ $# = 3 ] && [ "$3" = "key" ]
+then
+  add_connection
+  copy_key_prompt_pass
+elif [ $# = 4 ] && [ "$3" = "key" ]
+then
+  add_connection
+  copy_key_no_prompt
+else
+  echo ""
+  echo "Usage (1): $0 username@server_url mount_point"
+  echo "Example  : $0 bill@host1.example.com:/shares /home/bill/Shares"
+  echo "Example  : $0 bill@host1.example.com:22/shares /home/bill/Shares"
+  echo ""
+  echo "Usage (2): $0 username@server_url mount_point key"
+  echo "Example  : $0 bill@host1.example.com:/shares /home/bill/Shares key"
+  echo "Example  : $0 bill@host1.example.com:22/shares /home/bill/Shares key"
+  echo ""
+  echo "Usage (3): $0 username@server_url mount_point key sftp_password"
+  echo "Example  : $0 bill@host1.example.com:/shares /home/bill/Shares key opensesame"
+  echo "Example  : $0 bill@host1.example.com:22/shares /home/bill/Shares key opensesame"
+  echo "!WARNING!: this method may save your password to the HISTFILE (command history)"
+  echo ""
+  echo "NOTE:    : options (2) and (3) will add a local ssh key to the remote authorized_keys for password-less login."
+  echo ""
+fi
