@@ -1,0 +1,90 @@
+Metadata-Version: 2.0
+Name: stt-watson
+Version: 1.0.3
+Summary: Continuous speech to text using watson in python with websocket and record from microphone
+Home-page: https://github.com/HomeHabbit/stt-watson
+Author: Arthur Halet
+Author-email: arthurh.halet@gmail.com
+License: MIT
+Keywords: text-to-speech watson websocket
+Platform: ALL
+Classifier: Topic :: Multimedia :: Sound/Audio :: Analysis
+Classifier: Topic :: Multimedia :: Sound/Audio :: Capture/Recording
+Classifier: Topic :: Software Development :: Libraries
+Classifier: License :: OSI Approved :: MIT License
+Requires-Dist: Twisted (>=13.2.0)
+Requires-Dist: autobahn (>=0.10.9)
+Requires-Dist: pyOpenSSL (>=0.13.1)
+Requires-Dist: pyaudio (>=0.2.9)
+Requires-Dist: pyyaml (>=3.08)
+Requires-Dist: requests (>=2.8.1)
+Requires-Dist: txaio (>=2.0.4)
+
+# stt-watson
+Continuous speech to text using watson in python with websocket and record from microphone
+
+## Requirements
+
+- **Python 2.7**
+- **Pip**
+- **portaudio**, can be installed with `brew install portaudio` (mac) or `apt-get install portaudio19-dev`(linux)
+
+## Installation
+
+Install with pip: `pip install stt-watson`
+
+## Run the playground
+
+Simply run in command line: `stt-watson`
+
+**At the first launch it will create a config file located to `~/.config-stt-watson.yml` and ask you your watson credentials**
+
+## Usage for developers
+
+Bootstrap example:
+
+```python
+from stt_watson.SttWatson import SttWatson
+from stt_watson.SttWatsonAbstractListener import SttWatsonAbstractListener
+
+"""
+Example of listener to use data given by stt-watson (stt-watson notify hypothesis to his listeners when he receive it)
+
+Hypothesis format:
+{
+    'confidence': '0.1' // confidence of the sentence or words if exist
+    'transcript': 'the transcription of your voice'
+}
+"""
+class MyListener(SttWatsonAbstractListener):
+    def __init__(self):
+        pass
+    """
+    This give hypothesis from watson when your sentence is finished
+    """
+    def listenHypothesis(self, hypothesis):
+        print "Hypothesis: {0}".format(hypothesis)
+
+    """
+    This give the json received from watson
+    """
+    def listenPayload(self, payload):
+        print(u"Text message received: {0}".format(payload))
+    """
+    This give hypothesis from watson when your sentence is not finished
+    """
+    def listenInterimHypothesis(self, interimHypothesis):
+        print "Interim hypothesis: {0}".format(interimHypothesis)
+
+
+myListener = MyListener()
+sttWatson = SttWatson('watson_user', 'watson_password')
+sttWatson.addListener(myListener)
+sttWatson.run()
+```
+
+
+
+
+
+
