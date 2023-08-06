@@ -1,0 +1,29 @@
+#!/usr/bin/env python
+"""
+"""
+
+import argparse
+import logging
+import pandas as pd
+import numpy as np
+
+if __name__ == "__main__":
+    # get arguments
+    parser = argparse.ArgumentParser(description="remove bad points from xypts.csv")
+    parser.add_argument("ifile",
+                        help="input filename, should be like xypts.csv")
+    parser.add_argument("frames",nargs="+",
+                        help="frames to nan, starting with 1")
+    parser.add_argument("ofile",
+                        help="output filename")
+    args = parser.parse_args()
+
+    # load file
+    data = pd.read_csv(args.ifile)
+
+    # nan the offending rows
+    for eachframe in args.frames:
+        data.iloc[int(eachframe)-1][...] = np.nan
+    
+    # save result
+    data.to_csv(args.ofile,index=False,na_rep="NaN")

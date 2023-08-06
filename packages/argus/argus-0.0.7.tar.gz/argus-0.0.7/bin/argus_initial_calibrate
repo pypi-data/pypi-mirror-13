@@ -1,0 +1,105 @@
+#!/usr/bin/env python
+"""
+Note: This code is a straight copy of the old newcalibrate.py script.
+Generate initial calibration by repeating it many times. 
+This program takes corners or dots found by OpenCV and computes
+the camera matrix and distortion coefficients by selecting
+N-frame subsets, running a calibration, repeating this M times,
+and returning the best P calibrations (ones with lowest 
+root mean square error).  
+
+This routine is mostly deprecated; new users should start with
+argus_simplified.  This routine is included for backwards compatibility
+and for expert sitations where more control is needed over 
+the parameter search.
+"""
+
+import argparse
+import logging
+import argus
+import numpy as np
+import random
+import cv2
+import pickle
+
+# KNOWN BUG WORKAROUND
+# Old Ubuntu 12.04 has a strange calling signature for cv2.calibrateCamera
+UBUNTU1204 = (cv2.__version__ == "$Rev: 4557 $")
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Get calibration for GoPro",
+                                     epilog=__doc__)
+    parser.add_argument("corners",
+                        help=".pkl file with objectPoints and imagePoints")
+    parser.add_argument("ofile",nargs="?",default="initial.csv",
+                        help=".csv output file with best P results")
+    parser.add_argument("--N",default=10,
+                        help="number of patterns to use, default 10")
+    parser.add_argument("--M",default=10,
+                        help="number of replicates, default 10")
+    parser.add_argument("--P",default=5,
+                        help="report P best calibrations, default 5")
+    parser.add_argument("--inverted",action="store_true",
+                        help="use if pattern upside down")
+    parser.add_argument("--verbose","-v",action="store_true",
+                        help="toggle verbosity")
+    args = parser.parse_args()
+
+    if args.verbose:
+        logging.basicConfig(level=logging.DEBUG)
+    else:
+        logging.basicConfig(level=logging.INFO)
+
+    # load object and image points and image size
+    oP,iP,frames,iS = argus.load_points(args.corners)
+
+    # repeat calibration M times using N points
+    results = []
+    for m in xrange(int(args.M)):
+        # get subset of oP and iP
+        subset = random.sample(frames,int(args.N))
+        if args.inverted:
+            ooP = [-oP[X] for X in subset]
+        else:
+            ooP = [oP[X] for X in subset]
+        iiP = [iP[X] for X in subset]
+        
+        cM,dC,rv,tv = argus.initialize_outputs(iS,len(subset))
+
+        flags = int(0)
+        #flags = flags | cv2.CALIB_USE_INTRINSIC_GUESS
+        flags = flags | cv2.CALIB_FIX_PRINCIPAL_POINT
+        flags = flags | cv2.CALIB_FIX_ASPECT_RATIO
+        flags = flags | cv2.CALIB_FIX_K1
+        flags = flags | cv2.CALIB_ZERO_TANGENT_DIST
+        flags = flags | cv2.CALIB_FIX_K2
+        flags = flags | cv2.CALIB_FIX_K3
+        #flags = flags | cv2.CALIB_RATIONAL_MODEL
+
+        if UBUNTU1204: # KNOWN BUG WORK AROUND
+            retval,cM,dC,rv,tv = cv2.calibrateCamera(ooP,iiP,iS,
+                                                     cM,dC,
+                                                     cM,dC,rv,tv,
+                                                     flags=flags)
+        else:
+            retval,cM,dC,rv,tv = cv2.calibrateCamera(ooP,iiP,iS,
+                                                     cM,dC,
+                                                     rv,tv,
+                                                     flags=flags)
+        if retval:
+            rmse = argus.compute_rmse(ooP,iiP,cM,dC,rv,tv)
+            result = argus.Camera(cM,dC,rmse)
+            results.append(result)
+            logging.debug("Replicate {0}, got {1}".format(m,str(result)))
+
+    # report best P results
+    ofile = file(args.ofile,"w")
+    results.sort(key=lambda cam: cam.rmse)
+    for p in xrange(int(args.P)):
+        ofile.write(str(results[p])+"\n")
+    ofile.close()
+    logging.info("Results written to {0}".format(args.ofile))
+    logging.info("Best rmse = {0}".format(results[0].rmse))
+
+    fovx,fovy,focalLength,principalPoint,aspectRatio = cv2.calibrationMatrixValues(results[0].cM,iS,6.248,4.686)
+    logging.info("fovx:{0}, fovy:{1}, focalLength:{2}".format(fovx,fovy,focalLength))
