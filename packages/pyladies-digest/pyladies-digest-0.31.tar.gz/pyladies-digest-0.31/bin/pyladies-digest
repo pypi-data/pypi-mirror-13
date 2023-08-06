@@ -1,0 +1,86 @@
+#!/usr/bin/env python
+from digest import config, email_template, meetup_events
+from argparse import ArgumentParser
+import random
+
+if __name__ == '__main__':
+
+    parser = ArgumentParser()
+    parser.add_argument(
+        '--option', metavar='str', type=str,
+         help='config, template, scrape_events, scrape_confs')
+    parser.add_argument(
+        '--meetup_key', default=None, metavar='str', type=str,
+         help='Meetup API key')
+
+    # Args for generating Mail Chimp template
+    parser.add_argument(
+        '--mailchimp_key', default=None, metavar='str', type=str,
+         help='Mailchimp API key')
+    parser.add_argument(
+        '--template-name', default=str(random.randint(0, 9999999)), metavar='str', type=str,
+         help='template name')
+    parser.add_argument(
+        '--month', metavar='str', type=str,
+         help='month digest producing')
+    parser.add_argument(
+        '--year', metavar='str', type=str,
+         help='year digest product')
+    parser.add_argument(
+        '--key', default=None, metavar='str', type=str,
+         help='Mailchimp API key')
+    parser.add_argument(
+        '--data', default=['career', 'conferences', 'events', 'miscellaneous', 'volunteer'], nargs='*',
+         help='Data to include in digest e.g. career, conferences, events, miscellaneous, volunteer')
+    parser.add_argument(
+        '--city', default="Chicago", metavar='str', type=str,
+         help='City name to appear in email template e.g. Chicago')
+    parser.add_argument(
+        '--career', default=None, metavar='str', type=str,
+         help='Location of csv file with career information, file must be named career.csv')
+    parser.add_argument(
+        '--volunteer', default=None, metavar='str', type=str,
+         help='Location of csv file with volunteer information, file must be named volunteer.csv')
+    parser.add_argument(
+        '--misc', default=None, metavar='str', type=str,
+         help='Location of csv file with miscelleanous information, file must be named misceallaneous.csv')
+    parser.add_argument(
+        '--fb', default='https://www.facebook.com/pyladies/', metavar='str', type=str,
+        help='Facebook link to include in email template')
+    parser.add_argument(
+        '--tw', default='https://www.twitter.com/pyladies/', metavar='str', type=str,
+        help='Twitter link to include in email template')
+    parser.add_argument(
+        '--organizers', nargs='*',
+        help='List of organizers and contact info e.g. Lorena Mesa https://twitter.com/loooorenanicole')
+
+    # Args for generating events data
+    parser.add_argument(
+        '--category', default='34', metavar='str', type=str,
+         help='category as defined by MeetUp API http://www.meetup.com/meetup_api/data/2/categories/')
+    parser.add_argument(
+        '--location', default='Chicago', metavar='str', type=str,
+         help='location to query group events for e.g. Chicago')
+    parser.add_argument(
+        '--text', default='python', metavar='str', type=str,
+         help='text to query group events for e.g. Python')
+    parser.add_argument(
+        '--m_key', default=None, metavar='str', type=str,
+         help='MeetUp API key https://secure.meetup.com/meetup_api/key/')
+
+    # Args for generating conference data
+    parser.add_argument(
+        '--topic', default=['python'],  nargs='*', help='Lanyrd conference topic query')
+    parser.add_argument(
+        '--calls', default=['python'],  nargs='*', help='Lanyrd CFPs calls query')
+
+    args = parser.parse_args().__dict__
+
+    if args.get('option') == 'config':
+        config.main(args.get('meetup_key'), args.get('mailchimp_key'))
+    elif args.get('option') == 'template':
+        email_template.main(args)
+    elif args.get('option') == 'scrape_events':
+        meetup_events.main(args)
+    elif args.get('option') == 'scrape_confs':
+        conferences.main(args)
