@@ -1,0 +1,146 @@
+# -*- coding: utf-8 -*-
+# :Project:   hurm -- Test data
+# :Created:   ven 22 gen 2016 17:53:06 CET
+# :Author:    Lele Gaifax <lele@metapensiero.it>
+# :License:   GNU General Public License version 3 or later
+# :Copyright: © 2016 Lele Gaifax
+#
+
+- entity: hurm.db.entities.Edition
+  key: description
+  data:
+    - &test_edition
+      description: Test edition
+      startdate: 2016-04-30
+      enddate: 2016-05-02
+
+- entity: hurm.db.entities.Activity
+  key: description
+  data:
+    - &presence
+      description: Presence
+    - &supervision
+      description: Supervision
+
+- entity: hurm.db.entities.Location
+  key: description
+  data:
+    - &reception
+      address: Corso Rosmini, 1
+      city: Rovereto
+      country: IT
+      description: Reception
+      province: IT-TN
+      zip: '38068'
+
+- entity: hurm.db.entities.Task
+  key:
+    - edition
+    - activity
+    - location
+    - date
+    - starttime
+  data:
+    - &reception_presence_04_30
+      edition: *test_edition
+      activity: *presence
+      location: *reception
+      date: 2016-04-30
+      starttime: T09:00
+      endtime: T19:00
+      npersons: 1
+    - &reception_presence_05_01
+      edition: *test_edition
+      activity: *presence
+      location: *reception
+      date: 2016-05-01
+      starttime: T08:00
+      endtime: T22:00
+      npersons: 1
+    - &reception_presence_05_02
+      edition: *test_edition
+      activity: *presence
+      location: *reception
+      date: 2016-05-02
+      starttime: T08:00
+      endtime: T22:00
+      npersons: 1
+
+- entity: hurm.db.entities.Person
+  key:
+    - lastname
+    - firstname
+  data:
+    - &john_doe
+      firstname: John
+      lastname: Doe
+      mobile: 345 678 1234
+      role: president
+    - &jane_tree
+      firstname: Jane
+      lastname: Tree
+      mobile: 333 876 8998
+      role: director
+    - &bob_quartz
+      firstname: Bob
+      lastname: Quartz
+      email: bob@example.com
+      password: "$2a$10$BxgvjZLMen5NgIvzKtc.Q.iRZwtND2j1Dn8vwPDp/6z5s/YO1b2uC"
+      phone: 1234 456 7890
+      role: secretary, HuRM Admin
+
+- entity: hurm.db.entities.PersonActivity
+  key:
+    - person
+    - activity
+  fields:
+    - person
+    - activity
+  data:
+    - [ *john_doe, *supervision ]
+    - [ *bob_quartz, *presence ]
+    - [ *bob_quartz, *supervision ]
+
+- entity: hurm.db.entities.Availability
+  key:
+    - edition
+    - person
+    - date
+    - starttime
+  fields:
+    - edition
+    - person
+    - date
+    - starttime
+    - endtime
+  data:
+    - [ *test_edition, *john_doe, 2016-04-30, null, null ]
+    - [ *test_edition, *john_doe, 2016-05-01, !time '10:00', !time '15:00' ]
+
+    - [ *test_edition, *jane_tree, 2016-04-30, !time '08:00', !time '20:00' ]
+    - [ *test_edition, *jane_tree, 2016-05-01, !time '10:00', null ]
+
+    - [ *test_edition, *bob_quartz, 2016-04-30, !time '08:00', !time '20:00' ]
+    - [ *test_edition, *bob_quartz, 2016-05-01, null, null ]
+
+- entity: hurm.db.entities.Duty
+  key:
+    - person
+    - task
+    - starttime
+  fields:
+    - person
+    - task
+    - starttime
+    - endtime
+  data:
+    - [ *john_doe, *reception_presence_04_30,  !time '10:00', !time '12:00' ]
+    - [ *john_doe, *reception_presence_04_30,  !time '15:00', !time '19:00' ]
+
+    - [ *jane_tree, *reception_presence_04_30, !time '09:00', !time '10:00' ]
+    - [ *jane_tree, *reception_presence_04_30, !time '12:00', !time '14:00' ]
+
+    - [ *john_doe, *reception_presence_05_01,  !time '10:00', !time '12:00' ]
+
+    - [ *jane_tree, *reception_presence_05_01, !time '10:00', !time '12:00' ]
+    - [ *jane_tree, *reception_presence_05_01, !time '18:00', !time '22:00' ]
