@@ -1,0 +1,24 @@
+# RPi.Doorman systemd service file
+#
+# INSTALL:
+#   - copy rpi-doorman-gammu.conf tmpfiles configuration into /etc/tmpfiles.d/
+#   - copy rpi-doorman-gammu.service into /etc/systemd/system/
+#   - run: systemd-tmpfiles --create /etc/tmpfiles.d/rpi-doorman-gammu.conf
+#   - run: systemctl enable rpi-doorman-gammu.service && systemctl start rpi-doorman-gammu.service
+
+[Unit]
+Description=RPi.Doorman Gammu - Door state monitor
+Documentation=https://github.com/ricco386/rpi-doorman-gammu
+After=network.target
+
+[Service]
+Type=simple
+User=pi
+PIDFile=/run/rpi-doorman/rpi-doorman-gammu.pid
+ExecStart=/usr/bin/rpi-doorman-gammu
+Restart=on-failure
+RestartPreventExitStatus=2
+RestartSec=30
+
+[Install]
+WantedBy=multi-user.target
