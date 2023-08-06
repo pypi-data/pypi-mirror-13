@@ -1,0 +1,46 @@
+{% extends "kstore/superbase.html" %}
+
+{% block content %}
+  <section class="Content">
+    <header class="ContentHeader">
+      <ul class="Breadcrum">
+        {% for item in jerarquia %}
+          <li class="BreadcrumItem">{{item}}</li>
+        {% endfor %}
+      </ul>
+    </header>
+    <article class="Page">
+      <h1 class="PageTitle">{{ jerarquia|last }} <span>Lista de productos &amp; informaci&oacute;n</span></h1>
+
+      <p>
+        El precio medio es {{ precio_medio }}, y el valor del almacen es {{ valor_inventario_total }}
+      </p>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Product name</th>
+            <th>Valor inventario</th>
+            <th>Margen sobre venta</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for product in products %}
+            <tr>
+              <td>
+                {{ product.name }}
+              </td>
+              <td>
+                {{ product.stockage_value }}
+              </td>
+              <td>
+                {{ product.profit_over_sale }}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+    </article>
+  </section>
+{% endblock %}

@@ -1,0 +1,83 @@
+{% load staticfiles %}
+<header class="MainHeader">
+  <div class="MainLogoGroup">
+    <h1 class="MainLogo">{{ superconfig.company_name }}<span>Admin</span></h1>
+    <a href="" class="MainMenuToogleButton">
+      <span class="ButtonBar"></span>
+      <span class="ButtonBar"></span>
+      <span class="ButtonBar"></span>
+      <span class="ButtonBar"></span>
+    </a>
+  </div>
+  <div class="MainHeaderNotificationGroup">
+    <ul class="NotificationList">
+      <li class="NotificationElement">
+        <a href="" class="NotificationIcon">
+        <i class="fa fa-bell-o"></i>
+        </a>
+      </li>
+      <li class="NotificationElement">
+        <a href="{% url 'kstore:mail:inbox' %}" class="NotificationIcon">
+          <span class="NotificationNumberMessages">{{ num_unread_messages }}</span>
+          <i class="fa fa-envelope-o"></i>
+        </a>
+      </li>
+      <li class="NotificationElement">
+        <a href="" class="NotificationIcon">
+          <i class="fa fa-calendar"></i>
+        </a>
+      </li>
+      <li class="NotificationElement DropdownUser">
+        <img src="{{ user.userprofile.get_avatar }}" alt="">
+        <span>{{ user.username|capfirst }}</span>
+        <i class="fa fa-caret-down MenuSign"></i>
+        <ul class="DropdownUserMenu">
+          <li class="UserMenuItem">
+            <a class="ItemLink" href="{% url 'kstore:users:profile' %}">
+              <i class="fa fa-user"></i>
+              <span class="ItemName">My Profile</span>
+            </a>
+          </li>
+          <li class="UserMenuItem">
+            <a href="/calendar" class="ItemLink">
+              <i class="fa fa-calendar"></i>
+              <span class="ItemName">My Calendar</span>
+            </a>
+          </li>
+          <li class="UserMenuItem">
+            <a href="{% url 'kstore:mail:inbox' %}" class="ItemLink">
+              <i class="fa fa-envelope-o"></i>
+              <span class="ItemName">My Inbox</span>
+              <span class="NotificationNumberMessagesInItem">5</span>
+            </a>
+          </li>
+          <li class="UserMenuItem">
+            <a href="/task" class="ItemLink">
+              <i class="fa fa-rocket"></i>
+              <span class="ItemName">My Tasks</span>
+              <span class="NotificationNumberMessagesInItem Notification-danger">2</span>
+            </a>
+          </li>
+          <li class="UserMenuItem SeparationBar"></li>
+          <li class="UserMenuItem">
+            <a href="/lock" class="ItemLink">
+              <i class="fa fa-lock"></i>
+              <span class="ItemName">Lock Screen</span>
+            </a>
+          </li>
+          <li class="UserMenuItem">
+            <a href="/logout" class="ItemLink">
+              <i class="fa fa-key"></i>
+              <span class="ItemName">Log Out</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="NotificationElement">
+        <a href="" class="NotificationIcon">
+          <i class="fa fa-power-off"></i>
+        </a>
+      </li>
+    </ul>
+  </div>
+</header>

@@ -1,0 +1,140 @@
+{% extends "kstore/superbase.html" %}
+
+{% block content %}
+  <section class="Content">
+    <header class="ContentHeader">
+      <ul class="Breadcrum">
+        {% for item in jerarquia %}
+          <li class="BreadcrumItem">{{item}}</li>
+        {% endfor %}
+      </ul>
+    </header>
+    <h1 class="PageTitle">{{ jerarquia|last }} <span>Bandeja de entrada</span></h1>
+    <article class="Page flex-page">
+
+      <div class="MailMenuWrapper">
+        <div class="MailMenu">
+          <a href="#" class="ComposeMailBtn btn">
+            <i class="fa fa-pencil-square-o"></i>
+            <span>Compose</span>
+          </a>
+          <div class="MailActionWrapper">
+            <ul class="MailActionList">
+              <li class="MailAction m-inbox active">
+                <span class="ActionText">Inbox</span>
+                <span class="UnreadMessages blue">{{ new_messages }}</span>
+              </li>
+              <li class="MailAction m-important">
+                <span class="ActionText">Important</span>
+              </li>
+              <li class="MailAction m-sent">
+                <span class="ActionText">Sent</span>
+              </li>
+              <li class="MailAction m-draft">
+                <span class="ActionText">Draft</span>
+                <span class="UnreadMessages red">1</span>
+              </li>
+            </ul>
+          </div>
+          <div class="MailFoldersWrapper">
+            <ul class="MailFolderList">
+              <li class="MailFolder m-trash">
+                <span class="ActionText">Trash</span>
+                <span class="UnreadMessages purple">2333</span>
+              </li>
+              <li class="MailFolder">
+                <span class="ActionText">Promotions</span>
+                <span class="UnreadMessages yellow">2</span>
+              </li>
+              <li class="MailFolder">News</li>
+            </ul>
+          </div>
+          <div class="MailContactsWrapper">
+            <ul class="MailContactList">
+              {% for contact in mail_contacts %}
+                <li class="MailContact">
+                  <span class="photo">
+                    <img src="img/avatar.jpg" alt="">
+                    <span class="DepartamentColorCircle blue"></span>
+                  </span>
+                  <span class="ContactName">{{ contact.full_name }}</span>
+                </li>
+              {% endfor %}
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="InboxWrapper">
+        <div class="Inbox">
+          <header class="InboxHeader">
+            <h1>Inbox</h1>
+            <form action="">
+              <input type="text" placeholder="Search ...">
+              <button type="submit">
+                <i class="fa fa-search"></i>
+              </button>
+            </form>
+          </header>
+          <table class="InboxTable">
+            <thead class="InboxTableHead">
+              <tr>
+                <th colspan="3">
+                  <div class="InboxTableHeadActions">
+                    <input type="checkbox">
+                    <a href="#" class="InboxTableHeadActionButton">
+                      <i class="fa fa-reply"></i>
+                      <span>Responder</span>
+                    </a>
+                    <a href="#" class="InboxTableHeadActionButton">
+                      <i class="fa fa-reply-all"></i>
+                      <span>Responder a todos</span>
+                    </a>
+                    <a href="#" class="InboxTableHeadActionButton">
+                      <i class="fa fa-share"></i>
+                      <span>Reenviar</span>
+                    </a>
+                    <a href="#" class="InboxTableHeadActionButton">
+                      <i class="fa fa-trash"></i>
+                      <span>Eliminar</span>
+                    </a>
+                  </div>
+                </th>
+                <th class="numberMessages" colspan="3">
+                  <span class="numMessageText">1-30 of 789</span>
+                  <span>
+                    <a class="InboxTableHeadActionButton" href="#"><</a>
+                    <a class="InboxTableHeadActionButton" href="#">></a>
+                  </span>
+                </th>
+              </tr>
+            </thead>
+            <tbody class="InboxTableBody">
+              {% for message in messages %}
+                <tr class="TableRow {% if not message.readed %}unread{% endif %}">
+                  <td class="TableCell checker">
+                    <input type="checkbox">
+                  </td>
+                  <td class="TableCell favorite">
+                    <i class="fa fa-star favorite"></i>
+                  </td>
+                  <td class="TableCell sender">
+                    {{ message.sender }}
+                  </td>
+                  <td class="TableCell subject">
+                    {{ message.subject }}
+                  </td>
+                  <td class="TableCell adjunt">
+                    <i class="fa fa-paperclip"></i>
+                  </td>
+                  <td class="TableCell date">
+                    16:30 PM
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </article>
+  </section>
+{% endblock %}
