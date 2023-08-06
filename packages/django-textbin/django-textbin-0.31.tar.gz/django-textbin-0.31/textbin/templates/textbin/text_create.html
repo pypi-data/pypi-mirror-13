@@ -1,0 +1,124 @@
+{% extends "textbin/base.html" %}
+{% load staticfiles %}
+{% load bootstrap3 %}
+{% bootstrap_css %}
+{% bootstrap_javascript %}
+{# % load bootstrap_dynamic_formsets % #}
+{% load recaptcha2 %}
+
+{% block extrahead %}
+    <link href="{% static 'textbin/css/bootstrap.min.css' %}" rel="stylesheet">
+    <script type="text/javascript" language="Javascript"
+            src="{% static 'textbin/js/jquery-1.12.0.min.js' %}"></script>
+    <script type="text/javascript"
+            src="{% static 'textbin/js/bootstrap.min.js' %}"></script>
+
+    <!-- К табличному представлению -->
+    <script type="text/javascript" language="Javascript"
+            src="{% static 'textbin/js/jquery.formset.js' %}"></script>
+    <script type="text/javascript">
+        $(function() {
+            $('#urls_table tbody tr').formset({
+                // For inline formsets, be sure to set the prefix, as the default prefix
+                // ('form') isn't correct.
+                // Django appears to generate the prefix from the lowercase plural
+                // name of the related model, with camel-case converted to underscores.
+                prefix: 'media'
+            })
+        })
+    </script>
+
+    {% recaptcha_init 'ru' %}
+
+{% endblock %}
+
+{% block title %}Новая запись |{% endblock %}
+
+
+{% block body %}
+
+<style>
+    input[type="text"] { width: 30%; }
+    input[type="url"] { width: 30%; }
+    table { width: 100%; }
+    textarea { width: 70%; }
+</style>
+
+
+<div class="container">
+    <!--<div class="entry">-->
+        <form class="form-horizontal" method="post" action="">{% csrf_token %}
+            <fieldset>
+
+                <!-- Сообщение: "Введите текст сообщения или прикрепите ссылки"-->
+                {% if error_no_content %}
+                    <p class="text-danger">{{ error_no_content }}</p>
+                {% endif %}
+
+                 <!-- Text: AutoFields -->
+                {# Display a form #}
+                {% bootstrap_form text_form %}
+
+
+                <!-- URLs -->
+                <div class="row">
+                    <div class="col-md-6 col-sm-12">
+                    <table id="urls_table" border="0" cellpadding="0" cellspacing="5">
+                         <thead>
+                         <tr>
+                             <th scope="col">Прикрепить url изображения/видео:</th>
+                         </tr>
+                         </thead>
+                         <tbody>
+                         {% for form in media_formset.forms %}
+                         <tr id="{{ form.prefix }}-row">
+                         <td>
+                             {% if form.url and form.errors.url %}
+                                 {% for err in form.errors.url %}
+                                     <span class="text-danger">{{err}}</span><br>
+                                 {% endfor %}
+                             {% endif %}
+
+                             {% for fld in form.hidden_fields %}
+                                 {{ fld }}
+                             {% endfor %}
+
+                             {% if form.instance.pk %}
+                                 {{ form.DELETE }}
+                             {% endif %}
+
+                             {{ form.url }}
+
+                         </td>
+                         </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                    {{ media_formset.management_form }}
+                </div>
+
+                <!-- {# % bootstrap_dynamic_formset media_formset % #} -->
+
+
+                <!-- CAPTCHA -->
+                <div class="col-md-6 col-sm-12">
+                    <div class="text-danger">
+                        {% for err in captcha_form.errors.captcha %}
+                            {{ err }}
+                        {% endfor %}
+                    </div>
+                    {{ captcha_form.captcha }}
+                </div>
+
+
+            </fieldset>
+
+            <!-- SUBMIT -->
+            <p>
+                <input type="submit" value="Отправить" />
+            </p>
+
+        </form>
+    <!--</div>-->
+</div>
+{% endblock %}
