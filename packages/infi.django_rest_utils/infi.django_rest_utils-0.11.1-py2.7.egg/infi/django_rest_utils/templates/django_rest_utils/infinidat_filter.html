@@ -1,0 +1,59 @@
+<h3>
+    Filtering
+    <button class="btn btn-default btn-sm" type="button" data-toggle="collapse" data-target="#filtering-collapse"><i class="glyphicon glyphicon-chevron-down"></i></button>
+</h3>
+
+<div class="collapse" id="filtering-collapse">
+
+    <p>
+    The syntax for filtering objects is:
+    </p>
+
+    <p>
+        <code>
+        {{ url }}?&lt;field name&gt;=&lt;oper&gt;:&lt;value&gt;[&amp;&lt;field name&gt;=&lt;oper&gt;:&lt;value&gt;]*
+        </code>
+    </p>
+
+    <p>The following fields can be used for filtering:</p>
+    <table class="table table-bordered">
+        <tbody>
+            {% for field in fields %}
+                <tr><th>{{ field.name }}</th><td>{{ field.datatype}}</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <p>
+    These are the operators that can be used in filters:
+    </p>
+
+    <table class="table table-bordered">
+        <tbody>
+            <tr>
+                <th>Operator</th>
+                <th>Expects</th>
+                <th>Description</th>
+            </tr>
+            {% for operator in operators %}
+                <tr>
+                    <td>{{ operator }}</td>
+                    <td>{{ operator.get_expected_value_description }}</td>
+                    <td>{{ operator.description }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <p>Notes:</p>
+    <ul>
+        <li>When filtering on more than one field, the conditions are ANDed together.</li>
+        <li>String comparisons are case sensitive except for the <tt>like</tt> operator.</li>
+        <li>Datetime values should be specified in ISO-8601 format: <tt>yyyy-mm-dd[Thh:mm[:ss][Z]]</tt>.
+            <br>For example <tt>2014-01-17</tt> or <tt>2014-12-31T23:59:59Z</tt></li>
+        <li>To filter on boolean fields use 1 for true and 0 for false.</li>
+        <li>Lists of values should be comma-separated, and optionally enclosed in parentheses or square brackets.
+            <br>For example <tt>red,blue,green</tt> or <tt>[red,blue,green]</tt></li>
+    </ul>
+
+</div>

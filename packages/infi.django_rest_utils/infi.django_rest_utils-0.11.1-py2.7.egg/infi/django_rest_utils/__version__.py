@@ -1,0 +1,11 @@
+__version__ = "0.11.1"
+__git_commiter_name__ = "Guy Rozendorn"
+__git_commiter_email__ = "guy@rzn.co.il"
+__git_branch__ = '(HEAD detached at v0.11.1)'
+__git_remote_tracking_branch__ = '(No remote tracking)'
+__git_remote_url__ = '(Not remote tracking)'
+__git_head_hash__ = '040838923c39de10ea1adfbc341cbe0dfc7d014e'
+__git_head_subject__ = 'Finished Release v0.11.1'
+__git_head_message__ = '* develop:\n  - make ordering docs interactive - hide the "filters" button\n  SPTL-363: Fixed regression caused by deprecation of feature in django rest utils\n  Removed deprecated call\n  import OrderedDict from collections\n  Updated README and added command line plucking\n  Added support for wildcards in dicts\n  Plucking: Slash(/) path delimiter replaced by dot(.)\n  Missing fields are now reported by null values rather than simply being absent\n  Some files missing in previous commit\n  Added deep plucking capabilities\n  Added missing import'
+__git_dirty_diff__ = ''
+__git_commit_date__ = '2016-02-15 15:45:13'
