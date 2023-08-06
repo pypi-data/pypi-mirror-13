@@ -1,0 +1,153 @@
+.TH FADES 1
+.SH NAME
+fades - A system that automatically handles the virtualenvs in the cases normally found when writing scripts and simple programs, and even helps to administer big projects.
+
+
+.SH SYNOPSYS
+.B fades
+[\fB-h\fR][\fB--help\fR]
+[\fB-V\fR][\fB--version\fR]
+[\fB-v\fR][\fB--verbose\fR]
+[\fB-q\fR][\fB--quiet\fR]
+[\fB-i\fR][\fB--ipython\fR]
+[\fB-d\fR][\fB--dependency\fR]
+[\fB-r\fR][\fB--requirement\fR]
+[\fB-x\fR][\fB--exec\fR]
+[\fB-p\fR \fIversion\fR][\fB--python\fR=\fIversion\fR]
+[\fB--rm\fR=\fIuuid\fR]
+[\fB--system-site-packages\fR]
+[\fB--virtualenv-options\fR=\fIoptions\fR]
+[\fB--pip-options\fR=\fIoptions\fR]
+[\fB--check-updates\fR]
+[child_program [child_options]]
+
+\fBfades\fR can be used to execute directly your script, or put it with a #! at your script's beginning.
+
+
+.SH DESCRIPTION
+
+\fBfades\fR will automagically create a new virtualenv (or reuse a previous created one), installing the necessary dependencies, and execute your script inside that virtualenv, with the only requirement of executing the script with \fBfades\fR and also marking the required dependencies.
+
+The first non-option parameter (if any) would be then the child program to execute, and any other parameters after that are passed as is to that child script.
+
+\fBfades\fR can also be executed without passing a child script to execute: in this mode it will open a Python interactive interpreter inside the created/reused virtualenv (taking dependencies from \fI--dependency\fR or \fI--requirement\fR options).
+
+.SH OPTIONS
+
+.TP
+.BR -h ", "--help
+Show help about all the parameters and options, and quit.
+
+.TP
+.BR -V ", "--version
+Show the program version and info about the system, and quit.
+
+.TP
+.BR -v ", "--verbose
+Send all internal debugging lines to stderr, which may be very useful if any problem arises.
+
+.TP
+.BR -q ", " --quiet
+Don't show anything (unless it has a real problem), so the original script stderr is not polluted at all.
+
+.TP
+.BR -i ", " --ipython
+Runs IPython shell instead of python ones.
+
+.TP
+.BR -d ", " --dependency
+Specify dependencies through command line. This option can be specified multiple times (once per dependency), and each time the format is \fBrepository::dependency\fR. The dependency may have versions specifications, and the repository is optional (defaults to 'pypi'). Examples:
+
+    requests
+    pypi::requests > 2.3
+    requests<=3
+
+See more examples below for real command line usage explanations.
+
+.TP
+.BR -r ", " --requirement
+Read the dependencies from a file. Format in each line is the same than dependencies specified with \fI--dependency\fR.
+
+.TP
+.BR -p " " \fIversion\fR ", " --python=\fIversion\fR
+Select which Python version to be used; the argument can be just the number (2.7), the whole name (python2.7) or the whole path (/usr/bin/python2.7).  Of course, the corresponding version of Python needs to be installed in your system.
+
+The dependencies can be indicated in multiple places (in the Python source file, with a comment besides the import, in a \fIrequirements\fRfile, and/or through command line. In case of multiple definitions of the same dependency, command line overrides everything else, and requirements file overrides what is specified in the source code.
+
+.TP
+.BR -x ", " --exec
+Execute the \fIchild_program\fR inside the virtualenv.
+
+The \fIchild_program\fR \fBmust\fR be found in the virtualenv's \fIbin\fR directory.
+
+.TP
+.BR --rm " " \fIuuid\fR
+Remove a virtualenv by uuid.
+
+.TP
+.BR --system-site-packages ""
+Give the virtual environment access to thesystem site-packages dir 
+
+.TP 
+.BR --virtualenv-options=\fIVIRTUALENV_OPTION\fR
+Extra options to be supplied to virtualenv. (this option can beused multiple times)
+
+.TP 
+.BR --pip-options=\fIPIP_OPTION\fR
+Extra options to be supplied to pip. (this option can beused multiple times)
+
+.TP 
+.BR --check-updates
+Will check for updates in PyPI to verify if there are new versions for the requested dependencies. If a new version is available for a dependency, it will use it (if the dependency was requested without version) or just inform which new version is available (if the dependency was requested with a specific version).
+
+.SH EXAMPLES
+
+.TP
+fades foo.py --bar
+
+Executes foo.py under fades, passing the --bar parameter to the child program, in a virtualenv with the dependencies indicated in the source code.
+
+.TP
+fades -v foo.py
+
+Executes foo.py under fades, showing all the fades messages (verbose mode).
+
+.TP
+fades -d dependency1 -d dependency2>3.2 foo.py --bar
+
+Executes foo.py under fades (passing the --bar parameter to it), in a virtualenv with the dependencies indicated in the source code and also dependency1 and dependency2 (any version > 3.2).
+
+.TP
+fades -d dependency1
+
+Executes the Python interactive interpreter in a virtualenv with dependency1 installed.
+
+.TP
+fades -r requirements.txt
+
+Executes the Python interactive interpreter in a virtualenv after installing there all dependencies taken from the requirements.txt file.
+
+.SH USING CONFIGURATION FILES
+
+You can also configure fades using \fB.ini\fR config files. fades will search config files in 
+\fB/etc/fades/fades.ini\fR, the path indicated by \fBxdg\fR for your system 
+(for example ~/config/fades/fades.ini) and .fades.ini. 
+So you can have different settings at system, user and project level.
+
+The config files are in .ini format. (configparser) and fades will search for a [fades] section.
+You have to use the same configurations that in the CLI. The only difference is with the config 
+options with a dash, it has to be replaced with a underscore.
+
+Check http://fades.readthedocs.org/en/latest/readme.html#setting-options-using-config-files for full examples.
+
+
+.SH SEE ALSO
+Development is centralized in https://github.com/PyAr/fades
+
+Check that site for a better explanation of \fBfades\fR usage.
+
+.SH AUTHORS
+Facundo Batista, Nicolás Demarchi (see development page for contact info).
+
+.SH LICENSING
+This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License version 3, as published by the Free Software Foundation.
