@@ -1,0 +1,11 @@
+__version__ = "0.0.2"
+__git_commiter_name__ = "Guy Rozendorn"
+__git_commiter_email__ = "guy@rzn.co.il"
+__git_branch__ = '(HEAD detached at v0.0.2)'
+__git_remote_tracking_branch__ = '(No remote tracking)'
+__git_remote_url__ = '(Not remote tracking)'
+__git_head_hash__ = 'c6c50bd356456ebaca5808c8858124f5192ae144'
+__git_head_subject__ = 'Finished Release v0.0.2'
+__git_head_message__ = '* develop:\n  HOSTDEV-2315 prevent projector repository sync from running if not under project root directory'
+__git_dirty_diff__ = ''
+__git_commit_date__ = '2016-02-15 15:42:08'
