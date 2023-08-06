@@ -1,0 +1,389 @@
+Metadata-Version: 1.0
+Name: taskcluster-util
+Version: 0.0.29
+Summary: Taskcluster Utilities
+Home-page: https://github.com/askeing/taskcluster-util-python
+Author: Askeing Yen
+Author-email: askeing@gmail.com
+License: UNKNOWN
+Description: taskcluster-util-python
+        =======================
+        .. image:: https://travis-ci.org/askeing/taskcluster-util-python.svg
+            :target: https://travis-ci.org/askeing/taskcluster-util-python
+        
+        Python `Taskcluster <http://docs.taskcluster.net/>`_ Utilities.
+        
+        
+        Installation
+        ------------
+        
+        To install **taskcluster_util**, simply:
+        
+        .. code-block:: bash
+        
+            $ pip install -U taskcluster_util
+        
+        
+        Tools Usages
+        ------------
+        
+        Temporary Credentials
+        +++++++++++++++++++++
+        
+        You can get your temporary credentials from https://auth.taskcluster.net/ (using Persona with LDAP account).
+        
+        The temporary credentials will remain valid for 31 days.
+        
+        Or you can just run **taskcluster_login** to get your credentials. (Note: it will remove your old credentials file.)
+        
+        tc_credentials.json
+        ~~~~~~~~~~~~~~~~~~~
+        
+        You can put the credentials into **tc_credentials.json** file under your home folder.
+        
+        .. code-block:: bash
+        
+            $ <YOUR_EDITOR> ~/tc_credentials.json
+        
+        The file format will be:
+        
+        .. code-block::
+        
+            {
+                "clientId": "<YOUR_CLIENTID>",
+                "accessToken": "<YOUR_ACCESSTOKEN>",
+                "certificate": <YOUR_CERTIFICATE>
+            }
+        
+        Here's a simple example:
+        
+        .. code-block::
+        
+            {
+                "clientId": "foo-XXX",
+                "accessToken": "hello-world-XXX",
+                "certificate": {"version":1,"scopes":["*"],"start":1,"expiry":9,"seed":"hello","signature":"world="}
+            }
+        
+        
+        taskcluster_download
+        ++++++++++++++++++++
+        
+        Download artifacts from command line.
+        
+        .. code-block:: bash
+        
+            usage: taskcluster_download [-h] [--credentials CREDENTIALS]
+                                        (-n NAMESPACE | -t TASK_ID) [-a ARITFACT_NAME]
+                                        [-d DEST_DIR] [-v]
+        
+            The simple download tool for Taskcluster.
+        
+            optional arguments:
+              -h, --help            show this help message and exit
+              --credentials CREDENTIALS
+                                    The credential JSON file
+                                    (default: <YOUR_HOME>/tc_credentials.json)
+              -n NAMESPACE, --namespace NAMESPACE
+                                    The namespace of task
+              -t TASK_ID, --taskid TASK_ID
+                                    The taskId of task
+              -v, --verbose         Turn on verbose output, with all the debug logger.
+        
+            Download Artifact:
+              The artifact name and dest folder
+        
+              -a ARITFACT_NAME, --artifact ARITFACT_NAME
+                                    The artifact name on Taskcluster
+              -d DEST_DIR, --dest-dir DEST_DIR
+                                    The dest folder (default: current working folder)
+              -u, --signed-url-only
+                                    Retrieve the signed url and display it.
+                                    No download is done.
+        
+            The tc_credentials.json Template:
+                {
+                    "clientId": "",
+                    "accessToken": "",
+                    "certificate": {
+                        "version":1,
+                        "scopes":["*"],
+                        "start":xxx,
+                        "expiry":xxx,
+                        "seed":"xxx",
+                        "signature":"xxx"
+                    }
+                }
+        
+        
+        taskcluster_traverse
+        ++++++++++++++++++++
+        
+        Travese namespace and download artifacts from GUI.
+        
+        .. code-block:: bash
+        
+            usage: taskcluster_traverse [-h] [--credentials CREDENTIALS] [-n NAMESPACE]
+                                        [-d DEST_DIR] [-v]
+        
+            The simple GUI traverse and download tool for Taskcluster.
+        
+            optional arguments:
+              -h, --help            show this help message and exit
+              --credentials CREDENTIALS
+                                    The credential JSON file
+                                    (default: <YOUR_HOME>/tc_credentials.json)
+              -n NAMESPACE, --namespace NAMESPACE
+                                    The namespace of task
+              -d DEST_DIR, --dest-dir DEST_DIR
+                                    The dest folder (default: current working folder)
+              -v, --verbose         Turn on verbose output, with all the debug logger.
+        
+            The tc_credentials.json Template:
+                {
+                    "clientId": "",
+                    "accessToken": "",
+                    "certificate": {
+                        "version":1,
+                        "scopes":["*"],
+                        "start":xxx,
+                        "expiry":xxx,
+                        "seed":"xxx",
+                        "signature":"xxx"
+                    }
+                }
+        
+        
+        taskcluster_login
+        +++++++++++++++++
+        
+        Login Taskcluster, get Temporary Credentials, and save to home directory.
+        
+        .. code-block:: bash
+        
+            usage: taskcluster_login [-h] [-a ADDRESS] [-p PORT] [--file CREDENTIALS_FILE]
+                                     [-v]
+        
+            The simple login tool for Taskcluster.
+        
+            optional arguments:
+              -h, --help            show this help message and exit
+              -a ADDRESS, --address ADDRESS
+                                    Specify the server address. (default: localhost)
+              -p PORT, --port PORT  Specify the server port. (default: 0)
+              --file CREDENTIALS_FILE
+                                    The credentials file. It will be overwritten if it
+                                    already exist. (default:
+                                    /Users/Askeing/tc_credentials.json)
+              -v, --verbose         Turn on verbose output, with all the debug logger.
+                                    (default: False)
+        
+        
+        SSL InsecurePlatformWarning
+        ---------------------------
+        
+        If you got the following error message when running the tools, please install **requests[security]** package.
+        
+        .. code-block:: bash
+        
+            InsecurePlatformWarning: A true SSLContext object is not available.
+            This prevents urllib3 from configuring SSL appropriately and may cause certain SSL connections to fail.
+            For more information, see https://urllib3.readthedocs.org/en/latest/security.html#insecureplatformwarning.
+        
+        
+        Install package by pip install. Please note it's not required for Python 2.7.9+.
+        
+        .. code-block:: bash
+        
+            pip install requests[security]
+        
+        If you got **Setup script exited with error: command 'gcc' failed with exit status 1** error when install **requests[security]**, please install **libffi-dev**. (Ubuntu)
+        
+        .. code-block:: bash
+        
+            sudo apt-get install libffi-dev
+        
+        
+        The Other Issues
+        ----------------
+        
+        If you meet any issues related to urllib3, SSL, or tk, please install following packages. (Ubuntu)
+        
+        .. code-block:: bash
+        
+            sudo apt-get install python python-dev python-setuptools libffi-dev libssl-dev python-tk
+            sudo easy_install pip
+            sudo pip install -U pip setuptools
+            sudo pip install -U requests
+            sudo pip install -U requests[security]
+        
+        
+        Release History
+        ---------------
+        
+        0.0.28 (2016-01-29)
+        +++++++++++++++++++
+        
+        **Features and Improvements**
+        
+        - Reduce the log information.
+        
+        0.0.27 (2016-01-05)
+        +++++++++++++++++++
+        
+        **Features and Improvements**
+        
+        - Update the taskcluster-client.py to 0.0.32.
+        
+        **Bugfixes**
+        
+        - Fix the gzip encoding issue of download.
+        
+        0.0.26 (2015-12-24)
+        +++++++++++++++++++
+        
+        **Features and Improvements**
+        
+        - Modify the taskcluster_download method for easier usage.
+        
+        0.0.25 (2015-11-30)
+        +++++++++++++++++++
+        
+        **Features and Improvements**
+        
+        - Add taskcluster_login for getting credentials.
+        - Make user choice more strict when getting credentials.
+        
+        **Bugfixes**
+        
+        - Fix the issue when query is an empty string (taskcluster_login).
+        
+        0.0.24 (2015-11-23)
+        +++++++++++++++++++
+        
+        **Features and Improvements**
+        
+        - Add taskcluster_login for getting credentials.
+        
+        0.0.23 (2015-11-23)
+        +++++++++++++++++++
+        
+        **Features and Improvements**
+        
+        - Check the credentials does or doesn't expired, and print on console.
+        
+        **Bugfixes**
+        
+        - Raise exception when loading credentials file error.
+        
+        0.0.22 (2015-11-06)
+        +++++++++++++++++++
+        
+        **Bugfixes**
+        
+        - Clean the cache of dest_dir and download_file_list after downloading.
+        
+        0.0.21 (2015-11-04)
+        +++++++++++++++++++
+        
+        **Features and Improvements**
+        
+        - Provide a way to give TaskCluster builds to Bitbar (Bug 1189354).
+        
+        0.0.20 (2015-11-02)
+        +++++++++++++++++++
+        
+        **Features and Improvements**
+        
+        - Modify the class for inheritance.
+        
+        0.0.19 (2015-10-30)
+        +++++++++++++++++++
+        
+        **Features and Improvements**
+        
+        - Modify the logger and gui of taskcluster_traverse.
+        
+        0.0.18 (2015-10-30)
+        +++++++++++++++++++
+        
+        **Features and Improvements**
+        
+        - Move tc_credentials.json to User's Home folder.
+        - Update README file.
+        - Update usage.
+        - Modify the Credentials input GUI of taskcluster_traverse.
+        
+        0.0.17 (2015-10-27)
+        +++++++++++++++++++
+        
+        **Features and Improvements**
+        
+        - Add the credentials information.
+        
+        0.0.16 (2015-10-13)
+        +++++++++++++++++++
+        
+        **Bugfixes**
+        
+        - Fix the issue of downloading public artifact when no credentials
+        
+        0.0.15 (2015-10-02)
+        +++++++++++++++++++
+        
+        **Features and Improvements**
+        
+        - Upgrade the taskcluster library to 0.0.27, which fixed the bewit issue.
+        - Download artifacts by Signed URL, not API method.
+        
+        0.0.14 (2015-10-01)
+        +++++++++++++++++++
+        
+        **Bugfixes**
+        
+        - Fix the internal server error (cause by taskcluster v0.0.21).
+        
+        0.0.13 (2015-09-07)
+        +++++++++++++++++++
+        
+        **Features and Improvements**
+        
+        - Refactoring.
+        - Using the prograssbar package to display the download progress.
+        - Add hooking point 'do_after_download' after downloading.
+        
+        0.0.12 (2015-09-04)
+        +++++++++++++++++++
+        
+        **Bugfixes**
+        
+        - Fix some description error.
+        
+        0.0.11 (2015-09-04)
+        +++++++++++++++++++
+        
+        **Features and Improvements**
+        
+        - Add taskcluster_traverse.
+        - Modify setup.py, HISTORY, and README.
+        - Add more function of TaskFinder.
+        - Add Makefile and travis ci settings.
+        - Add unittest cases.
+        
+        **Bugfixes**
+        
+        - Fix the temp folder deleted issue when downloading multiple times.
+        
+        0.0.10 (2015-08-04)
+        +++++++++++++++++++
+        
+        **Features and Improvements**
+        
+        - Download artifacts from taskcluster.
+        
+        0.0.1 (2015-07-15)
+        ++++++++++++++++++
+        - Initiate the project.
+        
+Keywords: mozilla b2g firefoxos fxos firefox taskcluster utilities download
+Platform: UNKNOWN
