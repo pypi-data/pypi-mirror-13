@@ -1,0 +1,222 @@
+#!/usr/bin/python
+
+import hashlib
+import io
+import itertools
+import json
+import os
+import sys
+import tarfile
+try: # py3
+    import xmlrpc.client as rpc_client
+except ImportError:
+    import xmlrpclib as rpc_client
+
+from lxml import html
+try:
+    from urllib import request
+except ImportError: # py2
+    import urllib as request
+    from urllib import quote
+    HTTPError = Exception
+else:
+    from urllib.error import HTTPError
+    from urllib.parse import quote
+
+PYPI_URL = 'http://pypi.python.org/pypi'
+conf_name = os.path.expanduser('~/.config/aury/config')
+conf_dir = os.path.dirname(conf_name)
+
+
+def print_help(exit_code=None, message=None):
+    print('''Syntax: %s <JSON configuration file>
+
+Sample configuration file:
+
+-----8<---snip----8<--
+{
+    "user": "<your AUR login>",
+    "lowercase": [ "ZConfig", "Ghost.py" ]
+}
+-----8<---snip----8<--
+Default location is: %s
+
+Use "lowercase" to give hints about the "official" (Pypi) package name.
+''' % (sys.argv[0], conf_name))
+
+    if message:
+        print(message)
+    if exit_code:
+        raise SystemExit(exit_code)
+
+
+class Pypi:
+
+    def __init__(self):
+        self._xml = rpc_client.ServerProxy(PYPI_URL)
+
+    def last_release(self, pkg):
+        r = self._xml.package_releases(pkg)
+        if r:
+            return r[0]
+
+    def rel_info(self, pkg, version):
+        r = self._xml.release_urls(pkg, version)
+        return r
+
+    def get_links(self, pkg, version):
+        r = [{'url': x['url'], 'md5': x['md5_digest']}
+             for x in self.rel_info(pkg, version)]
+        if not r:
+            req = request.urlopen('%s/%s/json'.format(PYPI_URL, quote(pkg)))
+            res = json.loads(req.read().decode('utf-8'))
+            if res['urls']:
+                r = [{'url': x['url'], 'md5': x['md5_digest']}
+                     for x in res['urls']]
+            elif 'download_url' in res['info']:
+                r = [{'url': res['info']['download_url'], 'md5': None}]
+            else:
+                r = [{'url': res['info']['package_url'], 'md5': None}]
+        return r
+
+    def get_source_link(self, pkg, version):
+        links = self.get_links(pkg, version)
+        if not links:
+            return
+        for infos in links:
+            if '/source/' in infos['url']:
+                return infos
+        for infos in links:
+            if '.egg' not in infos['url']:
+                return infos
+        return links[0]
+
+
+if len(sys.argv) != 2:
+    if not os.path.exists(conf_name):
+        os.makedirs(conf_dir)
+        with open(conf_name, 'w') as f:
+            f.write('{\n"user": "<your AUR login>",\n"lowercase": []\n}\n')
+
+        print_help(1, 'Please give a single valid JSON file as parameter (should contain "user: <user id>")\nYou can also edit %r and restart %s' % (conf_name, sys.argv[0]))
+    os.chdir(conf_dir)
+else:
+    if sys.argv[1].endswith('help'):
+        print_help(1)
+    conf_name = sys.argv[1]
+
+try:
+    conf = json.load(open(conf_name))
+except Exception as e:
+    print_help(2,
+                'ERROR: %s\n%r should be a valid JSON file.' % (e, conf_name))
+
+print("Warming up")
+
+pkg_index = Pypi()
+
+uri = 'https://aur4.archlinux.org/packages.php?SeB=m&K=' + conf['user']
+
+print("Connecting...")
+try:
+    doc = html.fromstring(request.urlopen(uri).read())
+except HTTPError:
+    print_help(3, "Please check your %r file, login looks invalid" % conf_name)
+
+lc_map = {x.lower(): x for x in conf['lowercase']}
+
+print('Processing:')
+
+valid = itertools.count()
+scm = itertools.count()
+total = itertools.count()
+nopython = itertools.count()
+
+
+errors = []
+for tr in doc.cssselect('form table tbody tr'):
+
+
+    tds = tr.findall('td')
+    if tds:
+        next(total)
+        # extract name & version
+        opkg = tds[0].find('a').text.strip()
+        ver = tds[1].text.strip()
+        ver = ver.rsplit('-', 1)[0]
+        pkg = opkg
+
+        # download the package itself
+
+        if not os.path.exists(opkg):
+            os.system('git clone ssh://aur@aur.archlinux.org/'+opkg+' >/dev/null 2>&1')
+
+        # skip DEV packages
+        if pkg.endswith('-git') or pkg.endswith('-hg'):
+            next(scm)
+            continue
+
+        # skip non-python packages
+        if 'python' not in open(os.path.join(opkg, 'PKGBUILD')).read():
+            print(' - %s (skipping: not a standard python package)' % opkg)
+            next(nopython)
+            continue
+
+        # strip prefix
+        if pkg.startswith('python2-') or pkg.startswith('python-'):
+            pkg = pkg.split('-', 1)[1]
+
+        # fix the caption from the map
+        if pkg in lc_map:
+            pkg = lc_map[pkg]
+
+        # display some progress information (a dot currently)
+        print(" * %s"%pkg)
+
+        # get pypi informations
+        utd_ver = pkg_index.last_release(pkg)
+        if not utd_ver:
+            print('Unable to find "{0}" on Pypi !,\n you may need to add this package to "lowercase" section of {1}'.format(pkg, conf_name))
+            continue
+
+        next(valid)
+
+        # if version is not a digit, skip it
+        if utd_ver[0].isalpha():
+            print('Skipping bad PyPi version information for %s (%r)' % (pkg, utd_ver))
+        # if it's not matching the latest version, ugrade !
+        elif utd_ver != ver:
+            print("%s (%s => %s)" % (opkg, ver, utd_ver))
+            # get the md5 value
+            infos = pkg_index.get_source_link(pkg, utd_ver)
+            if infos['md5']:
+                md5 = infos['md5']
+            else:
+                md5 = hashlib.md5()
+                while True:
+                    d = request.urlopen(infos['url']).read(2 ** 16)
+                    if not d:
+                        break
+                    md5.update(d)
+                md5 = md5.hexdigest()
+            PKGBUILD = open(os.path.join(opkg, 'PKGBUILD')).readlines()
+            for i, line in enumerate(PKGBUILD):
+                if line.startswith('pkgver'):
+                    PKGBUILD[i] = 'pkgver=%s\n' % utd_ver
+                elif line.startswith('pkgrel'):
+                    PKGBUILD[i] = 'pkgrel=1\n'
+                elif line.startswith('md5sums'):
+                    PKGBUILD[i] = "md5sums=('%s')\n" % md5
+
+            open(os.path.join(opkg, 'PKGBUILD'), 'w').writelines(PKGBUILD)
+            if os.system('cd %s && (makepkg --noconfirm -sf >out.log 2>.err.log) && (mksrcinfo && sync; git add .SRCINFO PKGBUILD ; (git commit -a -m "%s %s" >/dev/null 2>&1) ; git push)' % (opkg, opkg, utd_ver)):
+                errors.append((opkg, utd_ver))
+
+print("Processed {0} packages ({1} found, {2} rolling packages, {3} non-python).".format(next(valid), next(total), next(scm), next(nopython)))
+if errors:
+    print(" FAIL LOG ".center(80, '#'))
+    for err in errors:
+        print((' %s -> %s '%err).center(80, '-'))
+        print(open(os.path.join(conf_dir, err[0], '.err.log')).read())
+
+    print("cd %s and take a look at 'out.log' if it helps fixing issues"%conf_dir)
