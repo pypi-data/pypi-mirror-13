@@ -1,0 +1,16 @@
+options = (
+    ('piwik-idsite',
+     {'type': 'int',
+      'default': None,
+      'help': 'idsite of your piwik site (eg. 3)',
+      'group': 'piwik',
+      'level': 2,
+      }),
+    ('piwik-domain',
+     {'type': 'string',
+      'default': None,
+      'help': 'domain of your piwik installation',
+      'group': 'piwik',
+      'level': 2,
+      }),
+)
