@@ -1,0 +1,11 @@
+__version__ = "0.4.32"
+__git_commiter_name__ = "Guy Rozendorn"
+__git_commiter_email__ = "guy@rzn.co.il"
+__git_branch__ = '(HEAD detached at v0.4.32)'
+__git_remote_tracking_branch__ = '(No remote tracking)'
+__git_remote_url__ = '(Not remote tracking)'
+__git_head_hash__ = '8dd2ae5bd52635667620243131bcf650b21e4719'
+__git_head_subject__ = 'Finished Release v0.4.32'
+__git_head_message__ = '* develop:\n  Python 3 support\n  update isolated python version'
+__git_dirty_diff__ = ''
+__git_commit_date__ = '2016-02-15 13:54:44'
