@@ -1,0 +1,67 @@
+#!/usr/bin/env python
+from datetime import datetime
+
+import os
+import requests
+from optparse import OptionParser
+
+CHECK_LOGIN_URL = 'http://{}/0/wl/cklogin'
+LOGIN_URL = 'http://{}/0/wl/'
+
+
+class AllianceConnection:
+    def __init__(self, username, password, host):
+        self.username = username
+        self.password = password
+        self.host = host
+
+    def is_logged_in(self):
+        res = requests.get(
+            CHECK_LOGIN_URL.format(self.host)
+        )
+        return 'yes' in res.text
+
+    def login(self):
+        # you should set ALLIANCE_USER and ALLIANCE_PASS in the .config file in the
+        # same directory
+        data = {
+            'login': 1,
+            'user': self.username,
+            'pass': self.password,
+        }
+        r = requests.post(
+            LOGIN_URL.format(self.host),
+            data=data,
+        )
+        assert r.status_code == 200
+
+
+def main():
+    parser = OptionParser()
+    parser.add_option('-u', '--username', dest='username',
+                      help='your Alliance internet username', type='string')
+    parser.add_option('-p', '--password', dest='password',
+                      help='your Alliance internet password', type='string')
+    parser.add_option('-H', '--host', dest='host', type='string',
+                      help='your Alliance host for login',
+                      default='10.254.254.8')
+    (options, args) = parser.parse_args()
+    username = options.username
+    password = options.password
+    host = options.host
+    if not username or not password:
+        print("** Please provide Username and Password")
+        return
+    print("{} Checking connection".format(datetime.now()))
+    connection = AllianceConnection(username, password, host)
+    if not connection.is_logged_in():
+        print("{} Not logged in, trying to login".format(datetime.now()))
+        connection.login()
+        assert connection.is_logged_in()
+        print("{} Login successful".format(datetime.now()))
+    else:
+        print("{} Already logged in".format(datetime.now()))
+
+
+if __name__ == "__main__":
+    main()
