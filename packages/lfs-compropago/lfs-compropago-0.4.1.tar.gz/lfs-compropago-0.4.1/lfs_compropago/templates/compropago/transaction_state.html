@@ -1,0 +1,37 @@
+{% extends "lfs/base.html" %}
+{% load i18n lfs_tags lfs_portlets_tags %}
+
+{% block title %}
+        {{ SHOP.get_meta_title }} - Estatus de tu pago en {{ payment_type_name }}
+{% endblock %}
+
+{% block section %}comments{% endblock %}
+
+{% block content %}
+    {% if transaction.payment_status == 'SUCCESS' or transaction.payment_status == 'charge.success' %}
+        <h3>Tu pago en {{ payment_type_name }} ha sido aplicado</h3>
+        <p class="shop_logo"><img src="{{ STATIC_URL }}/compropago/logos/{{ logo_filename }}" alt="{{ payment_type_name }}"></p>
+        <p>Tu pago en {{ payment_type_name }} ya ha sido aplicado. Muchas gracias por tu compra.</p>
+        <p>Consulta los detalles de tu orden de compra <a href="{% url lfs_my_order order.id %}">aqui</a>.</p>
+        <p>{{ SHOP.get_meta_title }}</p>
+    {% endif %}
+    {% if transaction.payment_status == 'DECLINED' or transaction.payment_status == 'charge.declined' %}
+        <h3>Tu pago en {{ payment_type_name }} ha sido declinado</h3>
+        <p class="shop_logo"><img src="{{ STATIC_URL }}/compropago/logos/{{ logo_filename }}" alt="{{ payment_type_name }}"></p>
+        <p>Lo sentimos mucho pero tu pago en {{ payment_type_name }} ha sido declinado.</p>
+        <p>Ponte en <a href="{% url 'lfs_contact_form' %}">contacto con nosotros</a> para ver otras alternativas de pago.</p>
+        <p>{{ SHOP.get_meta_title }}</p>
+    {% endif %}
+    {% if transaction.payment_status == 'DELETED'  or transaction.payment_status == 'charge.deleted' %}
+        <h3>El pago ha sido borrado.</h3>
+        <p class="shop_logo"><img src="{{ STATIC_URL }}/compropago/logos/{{ logo_filename }}" alt="{{ payment_type_name }}"></p>
+        <p>Ponte en <a href="{% url 'lfs_contact_form' %}">contacto con nosotros</a> para ver otras alternativas de pago.</p>
+        <p>{{ SHOP.get_meta_title }}</p>
+    {% endif %}
+    {% if transaction.payment_status == 'EXPIRED'  or transaction.payment_status == 'charge.expired' %}
+        <h3>La orden de pago en {{ payment_type_name }} ha expirado.</h3>
+        <p class="shop_logo"><img src="{{ STATIC_URL }}/compropago/logos/{{ logo_filename }}" alt="{{ payment_type_name }}"></p>
+        <p>Ponte en <a href="{% url 'lfs_contact_form' %}">contacto con nosotros</a> para ver otras alternativas de pago.</p>
+        <p>{{ SHOP.get_meta_title }}</p>
+    {% endif %}
+{% endblock %}
