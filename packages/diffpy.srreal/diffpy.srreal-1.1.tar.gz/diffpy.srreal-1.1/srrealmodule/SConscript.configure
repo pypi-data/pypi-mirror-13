@@ -1,0 +1,40 @@
+Import('env', 'pyconfigvar')
+
+# Helper functions -----------------------------------------------------------
+
+boostlibtags = ['', '-mt']
+def configure_boost_library(libname):
+    '''Add a boost library to the configured environment allowing for any
+    of the boostlibtags name extensions.
+
+    libname  -- boost library name without any extension
+
+    Note: CheckLib function automatically adds library to the environment.
+    '''
+    # using global conf defined below
+    for t in boostlibtags:
+        libnamefull = libname + t
+        if conf.CheckLib(libnamefull, language='C++'):
+            boostlibtags[:] = [t]
+            return
+    # library not found here
+    print('This program requires %r library' % libname)
+    Exit(1)
+
+# Start configuration --------------------------------------------------------
+
+# Create configuration environment that links with Python shared_library, so
+# that the boost_python check does not fail due to unresolved Python symbols.
+ecfg = env.Clone()
+ecfg.Append(LIBS=[])
+ecfg.MergeFlags(pyconfigvar('BLDLIBRARY'))
+newlibsindex = len(ecfg['LIBS'])
+
+conf = Configure(ecfg)
+configure_boost_library('boost_python')
+conf.Finish()
+
+# Use libraries that were found in the configuration.
+env.AppendUnique(LIBS=ecfg['LIBS'][newlibsindex:])
+
+# vim: ft=python
