@@ -1,0 +1,504 @@
+Metadata-Version: 1.1
+Name: metapensiero.sqlalchemy.proxy
+Version: 3.0
+Summary: Expose SQLAlchemy's queries and their metadata to a webservice
+Home-page: https://bitbucket.org/lele/metapensiero.sqlalchemy.proxy
+Author: Lele Gaifax
+Author-email: lele@metapensiero.it
+License: GPLv3+
+Description: .. -*- coding: utf-8 -*-
+        .. :Project:   metapensiero.sqlalchemy.proxy
+        .. :Created:   gio 30 apr 2009 10:01:20 CEST
+        .. :Author:    Lele Gaifax <lele@metapensiero.it>
+        .. :License:   GNU General Public License version 3 or later
+        .. :Copyright: © 2009, 2010, 2012, 2013, 2014, 2016 Lele Gaifax
+        ..
+        
+        ===============================
+         metapensiero.sqlalchemy.proxy
+        ===============================
+        
+        Expose SQLAlchemy's queries and their metadata to a webservice
+        ==============================================================
+        
+        This package contains a few utilities to make it easier applying some filtering to a stock
+        query and obtaining the resultset in various formats.
+        
+        An helper decorator explicitly designed for Pylons is included: it provides a `property` like
+        syntax to attach either a ProxiedQuery or a plain Python function to a Controller, handling
+        ``GET``, ``POST`` or ``DEL`` request methods.
+        
+        Since version 1.7 there are some Pyramid specific subclasses that help using the proxies within
+        a Pyramid view as well as a `expose` decorator that simplify their implementation.
+        
+        
+        Usage with Pyramid
+        ------------------
+        
+        First of all, there are some setup steps to follow:
+        
+        1. Include the package in the configuration file::
+        
+            [app:main]
+            use = egg:ph.data
+        
+            ...
+        
+            pyramid.includes =
+                metapensiero.sqlalchemy.proxy.pyramid
+                pyramid_tm
+        
+           This is not strictly needed, but it will override the standard ``json`` renderer with one
+           that uses ``nssjson``, to handle the datetime type.
+        
+        2. Configure the ``expose`` decorator, for example adding something like the following snippet
+           to the ``.../views.py`` source::
+        
+            from metapensiero.sqlalchemy.proxy.pyramid import expose
+            from .models import DBSession
+        
+            # Configure the `expose` decorator
+            expose.create_session = staticmethod(lambda req: DBSession())
+        
+        Then you can add views to expose either an entity or a plain select::
+        
+            @view_config(route_name='users', renderer='json')
+            @expose(User, metadata=dict(
+                password=dict(hidden=True, password=True, width=40),
+                is_anonymous=False,
+                ))
+            def users(request, results):
+                return results
+        
+            sessions_t = Session.__table__
+        
+            @view_config(route_name='sessions', renderer='json')
+            @expose(select([sessions_t], sessions_t.c.iduser == bindparam('user_id')))
+            def sessions(request, results):
+                return results
+        
+        The decorated function may be a generator instead, which has the opportunity of freely
+        manipulate either the arguments received from the request, or the final result, or both as
+        follows::
+        
+            @view_config(route_name='users', renderer='json')
+            @expose(User, metadata=dict(
+                password=dict(hidden=True, password=True, width=40),
+                is_anonymous=False,
+                ))
+            def complex():
+                # Receive request and params
+                request, params = (yield)
+        
+                # Adjust parameters
+                params['new'] = True
+        
+                if 'something' in params:
+                    # Inject other conditions
+                    something = params.pop('something')
+                    conditions = (User.c.foo == something,)
+                    result = yield params, conditions
+                else:
+                    # Go on, and receive the final result
+                    result = yield params
+        
+                # Fix it up
+                result['COMPLEX'] = 'MAYBE'
+        
+                yield result
+        
+        
+        Examples
+        ~~~~~~~~
+        
+        Assuming the ``users`` view is added as ``/views/users``, it could be called in the following
+        ways:
+        
+        ``GET /views/users``
+          would return a JSON response containing **all** users, like::
+        
+            {
+              "count": 1234,
+              "message": "Ok",
+              "success": true,
+              "root": [
+                {
+                  "first_name": "Lele",
+                  "last_name": "Gaifax",
+                  ...
+                },
+                {
+                  "first_name": "Mario",
+                  "last_name": "Rossi",
+                  ...
+                },
+                ...
+              ]
+            }
+        
+        ``GET /views/users?limit=1&start=2``
+          would return a JSON response containing just **one** user, the second::
+        
+            {
+              "count": 1234,
+              "message": "Ok",
+              "success": true,
+              "root": [
+                {
+                  "first_name": "Mario",
+                  "last_name": "Rossi",
+                  ...
+                }
+              ]
+            }
+        
+        ``GET /views/users?filter_first_name=Lele``
+          would return a JSON response containing the records satisfying the given condition::
+        
+            {
+              "count": 1,
+              "message": "Ok",
+              "success": true,
+              "root": [
+                {
+                  "first_name": "Lele",
+                  "last_name": "Gaifax",
+                  ...
+                }
+              ]
+            }
+        
+        ``GET /views/users?limit=1&only_cols=first_name,role_name``
+          would return a JSON response containing only the requested fields of a single record::
+        
+            {
+              "count": 1234,
+              "message": "Ok",
+              "success": true,
+              "root": [
+                {
+                  "first_name": "Lele",
+                  "role_name": "administrator"
+                }
+              ]
+            }
+        
+        ``GET /views/users?metadata=metadata&limit=0``
+          would return a JSON response containing a description of the schema::
+        
+            {
+              "metadata": {
+                "success_slot": "success",
+                "primary_key": "iduser",
+                "fields": [
+                  {
+                    "width": 60,
+                    "hint": "The unique ID of the user.",
+                    "align": "right",
+                    "nullable": false,
+                    "readonly": true,
+                    "type": "int",
+                    "hidden": true,
+                    "label": "User ID",
+                    "name": "iduser"
+                  },
+                  ...
+                ],
+                "root_slot": "root",
+                "count_slot": "count"
+              },
+              "message": "Ok",
+              "success": true
+            }
+        
+        Browse SoL__ sources for real usage examples.
+        
+        
+        __ https://bitbucket.org/lele/sol/src/master/src/sol/views/data.py
+        
+        
+        Changes
+        -------
+        
+        3.0 (2016-02-03)
+        ~~~~~~~~~~~~~~~~
+        
+        * Internal, backward incompatible code reorganization, splitting the main module into smaller
+          pieces
+        
+        * Handle corner cases with joined queries involving aliased tables
+        
+        
+        2.8 (2015-08-02)
+        ~~~~~~~~~~~~~~~~
+        
+        * Use py.test instead of nosetests
+        
+        * Remove workaround to an async issue caused by a bug fixed in ``arstecnica.sqlalchemy.async``
+        
+        
+        2.7 (2015-07-16)
+        ~~~~~~~~~~~~~~~~
+        
+        * Reasonably working asyncio variant of ProxiedQuery (Python 3.4 only, and using the
+          yet-to-be-released ``arstecnica.sqlalchemy.async``)
+        
+        
+        2.6 (2014-11-05)
+        ~~~~~~~~~~~~~~~~
+        
+        * Handle ``NULL`` in the multi-valued ``IN`` comparisons
+        
+        * Minor doc tweaks, added request examples section to the README
+        
+        * Honor both "filter" and "filters" request parameters
+        
+        
+        2.5 (2014-09-14)
+        ~~~~~~~~~~~~~~~~
+        
+        * Honor the "key" of the columns in ProxiedQuery result dictionaries
+        
+        
+        2.4 (2014-03-22)
+        ~~~~~~~~~~~~~~~~
+        
+        * Use nssjson instead of simplejson
+        
+        
+        2.3 (2014-02-28)
+        ~~~~~~~~~~~~~~~~
+        
+        * Explicitly require simplejson
+        
+        * Improved test coverage
+        
+        * Fix SQLAlchemy and_() usage
+        
+        
+        2.2 (2014-02-02)
+        ~~~~~~~~~~~~~~~~
+        
+        * Easier syntax to sort on multiple fields
+        
+        
+        2.1 (2014-01-19)
+        ~~~~~~~~~~~~~~~~
+        
+        * Fix TypeDecorators in compare_field()
+        
+        
+        2.0 (2013-12-23)
+        ~~~~~~~~~~~~~~~~
+        
+        * The generator function may yield a tuple with modified params and
+          other conditions
+        
+        * Simple Makefile with common recipes
+        
+        
+        1.9.6 (2013-12-12)
+        ~~~~~~~~~~~~~~~~~~
+        
+        * Encoding issue on package meta data
+        
+        
+        1.9.5 (2013-12-12)
+        ~~~~~~~~~~~~~~~~~~
+        
+        * First official release on PyPI
+        
+        
+        1.9.4 (2013-12-12)
+        ~~~~~~~~~~~~~~~~~~
+        
+        * Pyramid expose() can decorate a generator function too
+        
+        
+        1.9.3 (2013-08-04)
+        ~~~~~~~~~~~~~~~~~~
+        
+        * Use setuptools instead of distribute
+        
+        
+        1.9.2 (2013-06-09)
+        ~~~~~~~~~~~~~~~~~~
+        
+        * New replaceable ``extract_parameters(request)`` static method on
+          Pyramid's `expose` decorator
+        
+        * **Backward incompatible change**: fix handling of bindparams in
+          ProxiedQuery, which shall be passed as a dictionary with the
+          `params` keyword instead as of individual keywords
+        
+        * Fix handling of SQLAlchemy custom types
+        
+        
+        1.9.1 (2013-04-17)
+        ~~~~~~~~~~~~~~~~~~
+        
+        * Fix and test handling of ORM queries
+        
+        * Fix Pyramid exposure of ORM queries
+        
+        
+        1.9 (2013-04-08)
+        ~~~~~~~~~~~~~~~~
+        
+        * Minor adjustments for SQLAchemy 0.8
+        
+        * Compatibility tweaks for Python 2.7 and Python 3.3
+        
+        * Improved test coverage
+        
+        
+        1.8.7 (2013-03-18)
+        ~~~~~~~~~~~~~~~~~~
+        
+        * For backward compatibility check for “filters” too
+        
+        * Ignore the filter condition if the comparison value is missing
+        
+        
+        1.8.6 (2013-03-08)
+        ~~~~~~~~~~~~~~~~~~
+        
+        * Use the ExtJS default name, “filter”, not the plural form, “filters”
+          for the filter parameter
+        
+        
+        1.8.5 (2013-02-28)
+        ~~~~~~~~~~~~~~~~~~
+        
+        * Factor out the extraction of filtering conditions, so it can be used
+          by other packages
+        
+        
+        1.8.4 (2013-01-28)
+        ~~~~~~~~~~~~~~~~~~
+        
+        * Field metadata information can be a callable returning the actual
+          dictionary
+        
+        
+        1.8.3 (2013-01-26)
+        ~~~~~~~~~~~~~~~~~~
+        
+        * **Backward incompatible change**: pass the request also the the
+          ``save_changes`` function, it may need it to determine if the user
+          is allowed to make the changes
+        
+        
+        1.8.2 (2013-01-21)
+        ~~~~~~~~~~~~~~~~~~
+        
+        * More generic way of specifying an handler for non-GET request
+          methods
+        
+        
+        1.8.1 (2013-01-09)
+        ~~~~~~~~~~~~~~~~~~
+        
+        * **Backward incompatible change**: pass the request to the adaptor
+          function, it may need it to do its job
+        
+        
+        1.8 (2012-12-19)
+        ~~~~~~~~~~~~~~~~
+        
+        * SQLAlchemy 0.8 compatibility
+        
+        
+        1.7.12 (2012-11-17)
+        ~~~~~~~~~~~~~~~~~~~
+        
+        * Properly recognize TIME type
+        
+        
+        1.7.11 (2012-10-22)
+        ~~~~~~~~~~~~~~~~~~~
+        
+        * Fix exception
+        
+        
+        1.7.10 (2012-10-22)
+        ~~~~~~~~~~~~~~~~~~~
+        
+        * Small code tweaks
+        
+        
+        1.7.9 (2012-10-20)
+        ~~~~~~~~~~~~~~~~~~
+        
+        * Attempt to extract the primary key fields of a ProxiedQuery
+        
+        
+        1.7.8 (2012-10-19)
+        ~~~~~~~~~~~~~~~~~~
+        
+        * More versatile way of injecting the SA session maker
+        
+        
+        1.7.7 (2012-09-26)
+        ~~~~~~~~~~~~~~~~~~
+        
+        * Multicolumns sort
+        
+        
+        1.7.6 (2012-09-25)
+        ~~~~~~~~~~~~~~~~~~
+        
+        * Better error reporting
+        
+        
+        1.7.5 (2012-09-21)
+        ~~~~~~~~~~~~~~~~~~
+        
+        * Rework how filters are passed
+        
+        * Emit more compact JSON
+        
+        
+        1.7.4 (2012-09-14)
+        ~~~~~~~~~~~~~~~~~~
+        
+        * Tweak the Pyramid ``expose`` to work on selectables
+        
+        
+        1.7.3 (2012-09-12)
+        ~~~~~~~~~~~~~~~~~~
+        
+        * New ``expose`` decorator for Pyramid
+        
+        
+        1.7.2 (2012-08-18)
+        ~~~~~~~~~~~~~~~~~~
+        
+        * Ability to skip a field, setting its metadata info to ``False``
+        
+        * Extract the primary key fields of a ProxiedEntity
+        
+        
+        1.7.1 (2012-08-13)
+        ~~~~~~~~~~~~~~~~~~
+        
+        * Pyramid glue
+        
+        
+        1.7 (2012-08-08)
+        ~~~~~~~~~~~~~~~~
+        
+        * Drop cjson support
+        
+Platform: UNKNOWN
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 2
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.3
+Classifier: Programming Language :: Python :: 3.4
+Classifier: Programming Language :: Python :: 3.5
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)
+Classifier: Topic :: Database
