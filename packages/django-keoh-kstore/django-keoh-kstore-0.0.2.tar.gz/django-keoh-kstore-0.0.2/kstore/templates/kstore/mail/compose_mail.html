@@ -1,0 +1,33 @@
+{% extends "kstore/mail/mail_base.html" %}
+{% load staticfiles %}
+{% block jerarquia_description %}Mensaje recibido{% endblock %}
+
+{% block inbox_content %}
+  <div class="Inbox">
+    <header class="InboxHeader">
+      <h1>Redactar mensage</h1>
+    </header>
+    <form action="" method="post">
+      {% csrf_token %}
+      <div>
+        <label for="subject">Asunto:</label>
+        {{ form.subject }}
+      </div>
+      <div>
+        <label for="destinatarios">Destinatarios:</label>
+        {{ form.destinatario }}
+        {{ form.destinatario.errors }}
+      </div>
+      <div>
+        <label for="message">Mensaje:</label>
+        {{ form.message }}
+      </div>
+
+      <input type="submit" value="Guardar como borrador" name="draft_button">
+      <input type="submit" value="Enviar" name="send_button">
+    </form>
+
+  </div>
+  <script type="text/javascript" src="{% static "ckeditor/ckeditor/ckeditor.js" %}"></script>
+  <script type="text/javascript" src="{% static "ckeditor/ckeditor-init.js" %}"></script>
+{% endblock %}

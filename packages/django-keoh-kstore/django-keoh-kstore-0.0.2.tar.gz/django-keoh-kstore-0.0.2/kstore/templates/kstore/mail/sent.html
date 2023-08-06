@@ -1,0 +1,60 @@
+{% extends "kstore/mail/mail_base.html" %}
+{% load i18n %}
+
+{% block jerarquia_description %}{% trans "Sent messages" %}{% endblock %}
+
+{% block inbox_content %}
+  <div class="Inbox">
+    <header class="InboxHeader">
+      <h1>{% trans "Sent" %}</h1>
+      <form action="">
+        <input type="text" placeholder='{% trans "Search ..." %}'>
+        <button type="submit">
+          <i class="fa fa-search"></i>
+        </button>
+      </form>
+    </header>
+    <table class="InboxTable">
+      <thead class="InboxTableHead">
+        <tr>
+          <th colspan="3">
+            <div class="InboxTableHeadActions">
+              <a href="#" class="InboxTableHeadActionButton">
+                <i class="fa fa-trash"></i>
+                <span>{% trans "Delete" %}</span>
+              </a>
+            </div>
+          </th>
+          <th class="numberMessages" colspan="3">
+            <span class="numMessageText">1-30 {% trans "of" %} {{ messages|length }}</span>
+            <span>
+              <a class="InboxTableHeadActionButton" href="#"><</a>
+              <a class="InboxTableHeadActionButton" href="#">></a>
+            </span>
+          </th>
+        </tr>
+      </thead>
+      <tbody class="InboxTableBody">
+        {% for message in messages %}
+          <tr class="TableRow {% if not message.readed %}unread{% endif %}">
+            <td class="TableCell checker">
+              <input type="checkbox">
+            </td>
+            <td class="TableCell sender">
+              @{{ message.recipient }}
+            </td>
+            <td class="TableCell subject">
+              {{ message.subject }}
+            </td>
+            <td class="TableCell adjunt">
+              <i class="fa fa-paperclip"></i>
+            </td>
+            <td class="TableCell date">
+              {{ message.sended_at|time:"H:i" }} - {{ message.sended_at|date:"d/M/Y" }}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endblock %}

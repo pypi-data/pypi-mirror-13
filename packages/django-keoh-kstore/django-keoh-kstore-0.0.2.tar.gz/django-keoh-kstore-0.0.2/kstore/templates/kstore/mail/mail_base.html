@@ -1,0 +1,86 @@
+{% extends "kstore/superbase.html" %}
+{% load i18n %}
+
+{% block content %}
+  <section class="Content">
+    <header class="ContentHeader">
+      <ul class="Breadcrum">
+        {% for item in jerarquia %}
+          <li class="BreadcrumItem">{{item}}</li>
+        {% endfor %}
+      </ul>
+    </header>
+    <h1 class="PageTitle">{{ jerarquia|last }} <span>{% block jerarquia_description %}{% endblock %}</span></h1>
+    <article class="Page flex-page">
+
+      <div class="MailMenuWrapper">
+        <div class="MailMenu">
+          <a href="{% url 'kstore:mail:compose' %}" class="ComposeMailBtn btn">
+            <i class="fa fa-pencil-square-o"></i>
+            <span>{% trans "Compose" %}</span>
+          </a>
+          <div class="MailActionWrapper">
+            <ul class="MailActionList">
+              <li class="MailAction m-inbox active">
+                <a href="{% url 'kstore:mail:inbox' %}">
+                  <span class="ActionText">{% trans "Inbox" %}</span>
+                  {% if new_messages != 0 %}
+                    <span class="UnreadMessages blue">{{ new_messages }}</span>
+                  {% endif %}
+                </a>
+              </li>
+              <li class="MailAction m-important">
+                <a href="{% url 'kstore:mail:important' %}">
+                  <span class="ActionText">{% trans "Important" %}</span>
+                </a>
+              </li>
+              <li class="MailAction m-sent">
+                <a href="{% url 'kstore:mail:sent' %}">
+                  <span class="ActionText">{% trans "Sent" %}</span>
+                </a>
+              </li>
+              <li class="MailAction m-draft">
+                <a href="{% url 'kstore:mail:draft' %}">
+                  <span class="ActionText">{% trans "Draft" %}</span>
+                  {% if num_drafts != 0 %}
+                    <span class="UnreadMessages red">{{ num_drafts }}</span>
+                  {% endif %}
+                </a>
+              </li>
+            </ul>
+          </div>
+          <div class="MailFoldersWrapper">
+            <ul class="MailFolderList">
+              <li class="MailFolder m-trash">
+                <span class="ActionText">{% trans "Trash" %}</span>
+                <span class="UnreadMessages purple">3</span>
+              </li>
+              <li class="MailFolder">
+                <span class="ActionText">{% trans "Promotions" %}</span>
+                <span class="UnreadMessages yellow">2</span>
+              </li>
+              <li class="MailFolder">{% trans "News" %}</li>
+            </ul>
+          </div>
+          <div class="MailContactsWrapper">
+            <ul class="MailContactList">
+              {% for contact in mail_contacts %}
+                <li class="MailContact">
+                  <span class="photo">
+                    <img src="{{ contact.user.userprofile.get_avatar }}" alt="">
+                    <span class="DepartamentColorCircle blue"></span>
+                  </span>
+                  <span class="ContactName">{{ contact.full_name }}</span>
+                </li>
+              {% endfor %}
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="InboxWrapper">
+        {% block inbox_content %}
+        {% endblock %}
+      </div>
+    </article>
+  </section>
+{% endblock %}

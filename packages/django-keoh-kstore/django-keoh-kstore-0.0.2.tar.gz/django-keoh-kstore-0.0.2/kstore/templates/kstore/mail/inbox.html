@@ -1,0 +1,85 @@
+{% extends "kstore/mail/mail_base.html" %}
+{% load i18n %}
+
+{% block jerarquia_description %}{% trans "Your inbox" %}{% endblock %}
+
+{% block inbox_content %}
+  <div class="Inbox">
+    <header class="InboxHeader">
+      <h1>Inbox</h1>
+      <form action="">
+        <input type="text" placeholder="Search ...">
+        <button type="submit">
+          <i class="fa fa-search"></i>
+        </button>
+      </form>
+    </header>
+    <table class="InboxTable">
+      <thead class="InboxTableHead">
+        <tr>
+          <th colspan="3">
+            <div class="InboxTableHeadActions">
+              <a href="#" class="InboxTableHeadActionButton">
+                <i class="fa fa-reply"></i>
+                <span>Responder</span>
+              </a>
+              <a href="#" class="InboxTableHeadActionButton">
+                <i class="fa fa-reply-all"></i>
+                <span>Responder a todos</span>
+              </a>
+              <a href="#" class="InboxTableHeadActionButton">
+                <i class="fa fa-share"></i>
+                <span>Reenviar</span>
+              </a>
+              <a href="#" class="InboxTableHeadActionButton">
+                <i class="fa fa-trash"></i>
+                <span>Eliminar</span>
+              </a>
+            </div>
+          </th>
+          <th class="numberMessages" colspan="3">
+            <span class="numMessageText">1-30 of {{ messages|length }}</span>
+            <div class="MessagePagination">
+              {% if messages.has_previous %}
+                <a class="InboxTableHeadActionButton" href="?page={{ messages.previous_page_number }}"><</a>
+              {% endif %}
+              {% if messages.has_next %}
+                <a class="InboxTableHeadActionButton" href="?page={{ messages.next_page_number }}">></a>
+              {% endif %}
+            </div>
+          </th>
+        </tr>
+      </thead>
+      <tbody class="InboxTableBody">
+        {% for message in messages %}
+          <tr class="TableRow {% if not message.readed %}unread{% endif %}">
+            <td class="TableCell checker">
+              <input type="checkbox">
+            </td>
+            <td class="TableCell favorite">
+              {% if message.important %}
+                <i class="fa fa-star favorite"></i>
+              {% else %}
+                <i class="fa fa-star-o"></i>
+              {% endif %}
+            </td>
+            <td class="TableCell sender">
+              @{{ message.sender }}
+            </td>
+            <td class="TableCell subject">
+              <a href="{% url 'kstore:mail:message' message.slug %}">
+                {{ message.subject }}
+              </a>
+            </td>
+            <td class="TableCell adjunt">
+              <i class="fa fa-paperclip"></i>
+            </td>
+            <td class="TableCell date">
+              {{ message.sended_at|time:"H:i" }} - {{ message.sended_at|date:"d/M/Y" }}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endblock %}
