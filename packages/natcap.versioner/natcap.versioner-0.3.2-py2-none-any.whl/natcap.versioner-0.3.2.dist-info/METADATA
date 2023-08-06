@@ -1,0 +1,239 @@
+Metadata-Version: 2.0
+Name: natcap.versioner
+Version: 0.3.2
+Summary: Git and hg versioning for natcap projects
+Home-page: https://bitbucket.org/jdouglass/versioner
+Author: James Douglass
+Author-email: jdouglass@stanford.edu
+License: This tool has an open license. All people are invited to use the tool
+Requires-Dist: pyyaml
+
+under the following conditions and terms:
+
+Copyright (c) 2015, The Natural Capital Project
+
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are
+met:
+
+ * Redistributions of source code must retain the above copyright
+   notice, this list of conditions and the following disclaimer.
+
+ * Redistributions in binary form must reproduce the above copyright
+   notice, this list of conditions and the following disclaimer in the
+   documentation and/or other materials provided with the
+   distribution.
+
+ * Neither the name of the Natural Capital Project nor the names of
+   its contributors may be used to endorse or promote products derived
+   from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+Description: Consistent versioning for NatCap Projects
+        =========================================
+        
+        This package provides a consistent versioning scheme for projects of the
+        Natural Capital Project (http://naturalcapitalproject.org).
+        
+        Versioning Scheme
+        =================
+        
+        How a version string is formatted: ::
+        
+            If we are at a tag:
+                version = {tag}
+            else:
+                version = {tag}.post{N}+r{nodeid|short}
+        
+            If there are no tags:
+                {tag} = 'null'
+        
+        
+        Examples:
+        
+         * **Version string** = ``3.4.5``
+        
+           * Meaning: This version of this tool was built from the tag ``3.4.5``.
+        
+           * You can update to this revision by calling ``hg update -r 3.4.5``
+        
+         * **Version string =** ``3.4.5.post35+r788a29c99234``
+        
+           * Meaning: This version of this tool was built from a revision where:
+        
+             * The latest tag was ``3.4.5``
+        
+             * The latest commit on this branch is ``35`` commits beyond the latest tag.
+        
+             * The latest commit has a shortened node ID of ``788a29c99234``
+        
+           * You can update to this revision by calling ``hg update -r 788a29c99234``
+        
+        
+        
+        Installation
+        ============
+        
+        **Via pip:** ``pip install natcap.versioner``
+        
+        **Via setup.py:** ``python setup.py install``
+        
+        .. note ::
+            If you install ``natcap.versioner`` via pip or via setup.py, dependencies
+            should install automatically.
+        
+        
+        Dependencies
+        ============
+        
+        Both these can be installed via ``pip``.
+        
+         * ``setuptools``
+         * ``yaml``
+        
+        To install dependencies: ::
+        
+             pip install setuptools pyyaml
+        
+        
+        Usage In Your Project
+        =====================
+        
+        To use this project, you'll need to edit two files: ``setup.py`` and ``__init__.py``.
+        
+        
+        **In your ``setup.py``**
+        
+        Adding these lines to your ``setup.py`` allows the DVCS information to be
+        fetched from ``git`` or ``hg`` and recorded in the package metadata.
+        
+        ::
+        
+            from setuptools import setup
+            import natcap.versioner
+        
+            setup(
+                name='example_project',
+                ...
+                version=natcap.versioner.parse_version()
+                natcap_version='example_project/version.py',
+            )
+        
+        
+        **In your package's ``__init__.py``** 
+        
+        Adding these lines to your package's ``__init__.py`` file will allow the package
+        version to be fetched from the package metadata.
+        
+        ::
+        
+            # Let's assume your package name is still 'example_project'
+            import natcap.versioner
+            __version__ = natcap.versioner.get_version('example_project')
+        
+        Support
+        =======
+        
+        If something doesn't work, it's probably broken!
+        Please submit an issue via the issue tracker, send James an email
+        or stop by if you're in the office and I'll try to fix it!
+        
+        Tests
+        =====
+        
+        To run the suite of tests: ::
+        
+            $ python setup.py nosetests
+        
+        Note that ``hg`` and ``git`` must be available as executables on the command-line.
+        
+        
+        
+        
+        0.3.2
+        =====
+        * Setting setuptools ``zip_safe=True``.  After a review of the module, it
+          appears that no functionality within ``natcap.versioner`` requires access to
+          resources within the package via the filesystem.
+        
+        0.3.1
+        =====
+        * Restoring support for installation as egg (0.3.0 lacked this).
+        * Minor stylistic changes for PEP8 and PEP257
+        
+        0.3.0
+        =====
+        * Adding support for git.
+        * Added tests for core versioning functionality.
+        
+        0.2.4
+        =====
+        * Allowing get_version() to allow fallback to SCM only when allowed by user
+          input.  Defaults to only allowing fallback in non-frozen environments (e.g. a
+          source tree).  ``natcap.versioner.VersionNotFound`` will be raised if the version
+          string cannot be loaded normally or SCM is disallowed.
+        * If a version string cannot be parsed by vcs_version(),
+          ``natcap.versioner.VersionNotFound`` will optionally be raised.
+        
+        0.2.3
+        =====
+        * Turning setuptools zip_safe flag to False.  When this and natcap.invest have their zip_safe
+          flags all as False, the packages happily install side-by-side as individual eggs.
+        
+        0.2.2
+        =====
+        * Fixes an issue where a development version is returned when the user is at a tag.  The 
+          version is now correctly reported as just the tag.
+        
+        0.2.1
+        =====
+        * Version files are now properly imported.  This fixes an issue with users unable to fetch
+          version strings from within frozen environments that are outside of a source tree.
+        
+        0.2.0
+        =====
+        * API Change: version is now parsed from setup.py using ``natcap.versioner.parse_version()``.
+        * Allowing the version to be correctly fetched from PKG-INFO from egg/distribution metadata even when the package has not already been built.
+        
+        0.1.4
+        =====
+        * Attempting to get the utils module to import correctly.
+        
+        0.1.3
+        =====
+        * Allowing version string to be written to a package file.
+        
+        0.1.2
+        =====
+        * Default version scheme is dvcs-based post-release now. but can also do a pre-release.
+        
+        0.1.1
+        =====
+        * Fixes installation issues where certain files needed for setup.py were missing from the source distribution.
+        
+        0.1.0
+        =====
+        * Initial public release.
+        
+Keywords: hg mercurial git versioning natcap
+Platform: UNKNOWN
+Classifier: Intended Audience :: Developers
+Classifier: Development Status :: 2 - Pre-Alpha
+Classifier: Natural Language :: English
+Classifier: Operating System :: MacOS :: MacOS X
+Classifier: Operating System :: Microsoft
+Classifier: Operating System :: POSIX
+Classifier: Programming Language :: Python :: 2 :: Only
