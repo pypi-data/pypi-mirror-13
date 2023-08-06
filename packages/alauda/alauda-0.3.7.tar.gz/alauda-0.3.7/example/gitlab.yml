@@ -1,0 +1,28 @@
+postgresql:
+  image: index.alauda.cn/shaomq/postgres:9.3
+  environment:
+    - POSTGRES_USER=gitlab
+    - POSTGRES_PASSWORD=password
+    - POSTGRES_DB=gitlabhq_production
+  volumes:
+    - /src/docker/gitlab/postgresql:/var/lib/postgresql
+gitlab:
+  image: index.alauda.cn/shaomq/gitlab:7.9.4
+  links:
+    - redis:redisio
+    - postgresql:postgresql
+  ports:
+    - "10080:80"
+    - "10022:22"
+  environment:
+    - DB_NAME=gitlabhq_production
+    - DB_PASS=password
+    - DB_TYPE=postgres
+    - DB_USER=gitlab
+    - GITLAB_SSH_PORT=10022
+  volumes:
+    - /src/docker/gitlab/gitlab:/home/git/data
+redis:
+  image: index.alauda.cn/shaomq/redis:2.8 
+  volumes:
+    - /src/docker/gitlab/redis:/var/lib/redis
