@@ -1,0 +1,54 @@
+<div class="fields-count hideable">
+  {% import 'includes/filters/filter-variables.j2' as vars %}
+
+  <p class="doc">
+    Aggregate HXL data to generate reports or protect private data.
+    {% with key='Count-rows-filter' %}{% include "includes/help.html" %}{% endwith %}
+  </p>
+
+  {% set name='count-tags%02d' % n %}
+  <div id="{{ name }}" class="form-group required">
+    <label for="{{ name }}">
+      Count values for these hashtags (comma-separated)
+    </label>
+    <input
+        class="form-control"
+        name="{{ name }}"
+        value="{{ recipe.args[name] }}"
+        required="required"
+        pattern="^{{ vars.filters_pattern }}$"
+        title="{{ vars.filters_help }}"
+        placeholder="{{ vars.filters_placeholder }}" />
+  </div>
+
+  {% set name='count-spec%02d' % n %}
+  <div id="{{ name }}" class="form-group">
+    <label for="{{ name }}">
+      Name and hashtag for count column (instead of <code>#meta+count</code>)
+    </label>
+    <input
+        class="form-control"
+        name="{{ name }}"
+        value="{{ recipe.args[name] }}"
+        title="{{ vars.filters_help }}"
+        placeholder="Header Text#tag+attributes" />
+  </div>
+
+
+  {% set name='count-aggregate-tag%02d' % n %}
+  <div id="{{ name }}" class="form-group">
+    <label for="{{ name }}">
+      Optionally also include aggregate values (sum, average, min, max) for
+      this tag pattern.
+    </label>
+    <input
+        class="form-control"
+        name="{{ name }}"
+        value="{{ recipe.args[name] }}"
+        pattern="^{{ vars.filter_pattern }}$"
+        title="{{ vars.filter_help }}"
+        placeholder="#tag" />
+  </div>
+
+
+</div>

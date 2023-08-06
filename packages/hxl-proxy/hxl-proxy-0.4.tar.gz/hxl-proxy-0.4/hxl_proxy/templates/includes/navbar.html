@@ -1,0 +1,77 @@
+<nav role="navigation" class="navbar navbar-inverse navbar-fixed-top">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target=".navbar-collapse">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a href="/">
+        <img class="navbar-brand" src="{{ static('images/hxl-logo-white.png') }}" alt="#HXL" />
+      </a>
+    </div>
+    <div class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li class="{% if facet=='source' and not recipe.args.url %}active{% endif %}">
+          <a href="/data/source">
+            <span class="glyphicon glyphicon-plus"></span>
+            New
+          </a>
+        </li>
+        {% if recipe and recipe.args.url %}
+        <li class="{% if facet in ['source', 'tagger', 'edit', 'view'] %}active{% endif %}">
+          <a href="{{ data_url(recipe) }}">
+            <span class="glyphicon glyphicon-th-list"></span>
+            Data
+          </a>
+        </li>
+        <li class="{% if facet=='validate' %}active{% endif %}">
+          <a href="{{ data_url(recipe, facet='validate') }}">
+            <span class="glyphicon glyphicon-ok"></span>
+            Validate
+          </a>
+        </li>
+        <li class="{% if facet=='chart' %}active{% endif %}">
+          <a href="{{ data_url(recipe, facet='chart') }}">
+            <span class="glyphicon glyphicon-signal"></span>
+            Visualise
+          </a>
+        </li>
+        {% if recipe.recipe_id and recipe.cloneable %}
+        <li>
+          <a href="{{ data_url(recipe, facet='clone') }}">
+            <span class="glyphicon glyphicon-copy"></span>
+            Clone
+          </a>
+        </li>
+        {% endif %}
+        {% endif %}
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        {% if g.member %}
+        <li class="{% if facet=='settings' %}active{% endif %}">
+          <a href="/settings/user">
+            <span class="glyphicon glyphicon-user"></span>
+            {{ g.member.name_given }}
+          </a>
+        </li>
+        <li>
+          <a href="/logout?from={{ request.full_path }}">
+            <span class="glyphicon glyphicon-log-out"></span>
+            Logout
+          </a>
+        </li>
+        {% else %}
+        <li>
+          <a href="/login?from={{ request.full_path }}">
+            <span class="glyphicon glyphicon-log-in"></span>
+            Login
+          </a>
+        </li>
+        {% endif %}
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div>
+</nav>
+{% include "includes/messages.html" %}

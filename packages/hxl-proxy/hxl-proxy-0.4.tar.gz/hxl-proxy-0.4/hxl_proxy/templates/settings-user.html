@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>User settings @ HXL Proxy</title>
+    {% include "includes/headers.html" %}
+  </head>
+  <body class="container-fluid">
+    {% set facet='settings' %}
+    {% include "includes/navbar.html" %}
+    <header>
+      <h1>
+        User settings
+      </h1>
+    </header>
+    <main>
+      <p class="col-sm-12">
+        The HXL Proxy will soon allow you to save data recipes and
+        manage private data by logging in via <a
+        href="https://auth.humanitarian.id">Humanitarian ID</a>. For
+        now, we will simply show you what we know about you through
+        H.ID:
+      </p>
+      <div class="col-sm-3">
+        <img class="img-responsive" src="{{ get_gravatar(member.email, size=800) }}" alt="User gravatar" />
+      </div>
+
+      <div class="col-sm-9">
+        <dl class="dl-horizontal">
+
+          <dt>Full name</dt>
+          <dd>{{ member.name }}</dd>
+
+          <dt>Family name</dt>
+          <dd>{{ member.name_family }}</dd>
+
+          <dt>Given name</dt>
+          <dd>{{ member.name_given }}</dd>
+
+          <dt>Email (not public)</dt>
+          <dd>{{ member.email }}</dd>
+
+          <dt>H.ID user id (not public)</dt>
+          <dd>{{ member.id }}</dd>
+
+          <dt>Active H.ID user?</dt>
+          <dd>{% if member.active %}yes{% else %}no{% endif %}</dd>
+
+        </dl>
+
+        <p>
+          To make changes or to logout of <em>all</em> H.ID-linked
+          applications, please visit <a
+          href="https://auth.humanitarian.id">auth.humanitarian.id</a>
+        </p>
+      </div>
+    </main>
+    {% include "includes/scripts.html" %}
+  </body>
+</html>

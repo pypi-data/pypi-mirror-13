@@ -1,0 +1,29 @@
+    {% if source %}
+    <div class="table-container hxltable">
+    <table class="table">
+      <thead>
+        {% if (not recipe.args.get('strip-headers')) and source.has_headers %}
+        <tr class="hxl-headers">
+          {% for header in source.headers %}
+          <th>{{ header|nonone }}</th>
+          {% endfor %}
+        </tr>
+        {% endif %}
+        <tr class="hxl-tags" id="hashtag-row">
+          {% for tag in source.display_tags %}
+          <th>{{ tag|nonone }}</th>
+          {% endfor %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in source %}
+        <tr id="row_{{ row.row_number }}">
+          {% for value in row.values %}
+          <td><span class="content">{{ value|nonone }}</span></td>
+          {% endfor %}
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    </div>
+    {% endif %}

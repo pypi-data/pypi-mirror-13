@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Data source @ HXL Proxy</title>
+    {% include "includes/headers.html" %}
+  </head>
+  <body class="container-fluid">
+    {% with facet='source' %}
+    {% include "includes/navbar.html" %}
+    {% endwith %}
+    <header class="col-sm-12">
+      {% if recipe.args.url %}
+      {% with facet='source' %}
+      {% include "includes/data-tabs.html" %}
+      {% endwith %}
+      {% endif %}
+      <h1>
+        Choose your HXL data source
+      </h1>
+    </header>
+    <main class="col-sm-9 col-md-10">
+      <section id="url" class="panel panel-primary">
+        <div class="panel-heading">
+          <h2 class="panel-title">
+            <b>Option 1:</b>
+            enter a URL
+          </h2>
+        </div>
+        <div class="panel-body">
+          {% if recipe.recipe_id %}
+          {% set method="POST" %}
+          {% set action="/actions/save-recipe" %}
+          {% else %}
+          {% set method="GET" %}
+          {% set action="/data/edit" %}
+          {% endif %}
+          <form action="{{ action }}" method="{{ method }}">
+            <div class="col-sm-8 col-md-10">
+              <div class="input-group required">
+                <input id='dataset-url'
+                       class="form-control" 
+                       name="url"
+                       type="url"
+                       required="required"
+                       value="{{ recipe.args.url }}"
+                       placeholder="http://example.org/dataset.csv" />
+                <div class="input-group-btn">
+                  <button class="btn btn-success"
+                          type="submit">Next</button>
+                </div>
+              </div>
+              <p class="help-block small">
+                Type or paste the URL of an online spreadsheet or API containing <a
+                href="http://hxlstandard.org/">HXL hashtags</a>.
+              </p>
+            </div>
+
+            <div class="col-sm-4 col-md-2">
+              <div class="input-group">
+                <div class="input-group-addon">
+                  Tab #
+                </div>
+                <input name="sheet" value="{{ recipe.args.sheet }}" type="number" size="2" min="0" max="100" class="form-control"/>
+              </div>
+            </div>
+
+            {% include "includes/params.html" %}
+
+          </form>
+        </div>
+      </section>
+      <section id="cloud" class="panel panel-primary icons">
+        <div class="panel-heading">
+          <h2 class="panel-title">
+            <b>Option 2:</b>
+            choose from the cloud
+          </h2>
+        </div>
+        <div class="panel-body" id="cloud-body">
+          <a href="#" onclick="return hxl_proxy.doHDX('#dataset-url', true);">
+            <img src="{{ static('images/hdx-logo.png') }}" alt="Humanitarian Data Exchange logo" />
+            <span>HDX</span>
+          </a>
+          <a href="#" onclick="return hxl_proxy.doDropbox('#dataset-url', true);">
+            <img src="{{ static('images/dropbox-logo.png') }}" alt="Dropbox logo" />
+            <span>Dropbox</span>
+          </a>
+          <a href="#" onclick="return hxl_proxy.doGDrive('#dataset-url', true);">
+            <img src="{{ static('images/google-drive-logo.png') }}" alt="Google Drive logo" />
+            <span>Google Drive</span>
+          </a>
+        </div>
+      </section>
+    </main>
+    {% include "includes/sidebar.html" %}
+    {% include "includes/scripts.html" %}
+    {% include "includes/chooser-scripts.html" %}
+  </body>
+</html>

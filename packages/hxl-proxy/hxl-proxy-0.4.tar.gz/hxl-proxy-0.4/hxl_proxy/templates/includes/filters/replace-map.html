@@ -1,0 +1,28 @@
+<div class="fields-replace-map hideable">
+  {% import 'includes/filters/filter-variables.j2' as vars %}
+
+  <p class="doc">
+    Replace values using an external mapping table.
+    {% with key='Replace-data-filter' %}{% include "includes/help.html" %}{% endwith %}
+  </p>
+
+  {% set name='replace-map-url%02d' % n %}
+  <div id="{{ name }}" class="form-group required">
+    <label for="{{ name }}">
+      URL of the external mapping table
+    </label>
+    <input
+        class="form-control"
+        required="required"
+        id="{{ name }}-field"
+        name="{{ name }}"
+        value="{{ recipe.args[name] }}"
+        type="url"
+        placeholder="http://example.org/replacement-map.csv"
+        />
+    {% with id='#' + name + '-field' %}
+    {% include "includes/selectors.html" %}
+    {% endwith %}
+  </div>
+
+</div>

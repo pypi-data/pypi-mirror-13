@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>
+      Map{% if recipe.name %}of {{ recipe.name}}{% endif %} @ HXL Proxy
+    </title>
+    {% include "includes/headers.html" %}
+  </head>
+  <body class="container-fluid">
+    {% set facet="chart" %}
+    {% include "includes/navbar.html" %}
+    <header>
+      <h1>
+        Map{% if recipe.name %}of {{ recipe.name}}{% endif %}        
+      </h1>
+    </header>
+    <main>
+      <div id="map-div" style="height: 480px"></div>
+      {% include "includes/source.html" %}
+    </main>
+    <script type="text/javascript">
+      var csv_url = "{{ data_url(recipe, format='csv') | safe }}";
+      var map_layer_tag = "{{ layer_tag }}";
+    </script>
+    {% include "includes/scripts.html" %}
+    <script type="text/javascript" src="{{ static('leaflet/leaflet.js') }}"></script>
+    <script type="text/javascript" src="{{ static('leaflet/plugins/markercluster/leaflet.markercluster.js') }}"></script>
+    <script type="text/javascript" src="{{ static('jquery/jquery.csv.js') }}"></script>
+    <script type="text/javascript" src="{{ static('libhxl/hxl.js') }}"></script>
+    <script type="text/javascript">
+      hxl_proxy.setupMap();
+    </script>
+  </body>
+</html>
