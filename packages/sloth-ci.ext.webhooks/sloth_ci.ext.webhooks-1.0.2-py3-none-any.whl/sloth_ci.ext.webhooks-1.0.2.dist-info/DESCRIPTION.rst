@@ -1,0 +1,36 @@
+Send POST requests on build events in Sloth CI apps.
+
+Executing actions of an app is called *build*. A build is considered *completed* if all its actions were completed. If some actions were completed and some failed, it's a *partially completed*; if all actions fail, the build *failed*.
+
+This extension sends POST requests when your builds complete (fully or partially) or fail; just pick the desired notification level and the target URL.
+
+
+Installation
+------------
+
+.. code-block:: bash
+
+    $ pip install sloth-ci.ext.webhooks
+
+
+Usage
+-----
+
+.. code-block:: yaml
+    :caption: webhooks.yml
+
+    extensions:
+        webhooks:
+            # Use the module sloth_ci.ext.webhooks.
+            module: webhooks
+
+            # Log level (number or valid Python logging level name).
+            # ERROR includes only build fails, WARNING adds partial completions,
+            # INFO adds completion, and DEBUG adds trigger notifications.
+            # Default is WARNING.
+            level: INFO
+
+            # URL to send the requests to.
+            url: http://example.com
+
+
