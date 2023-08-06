@@ -1,0 +1,41 @@
+#!/usr/bin/env python
+
+from __future__ import print_function
+import argparse
+import daff
+import json
+import sys
+import unicodecsv as csv
+
+from catsql.daffsql.sqlalchemy_database import SqlAlchemyDatabase
+
+def main():
+
+    parser = argparse.ArgumentParser(description='Patch a database.')
+
+    parser.add_argument('url', help='Sqlalchemy-compatible database url')
+
+    parser.add_argument('patch', help='csv patch file from daff')
+
+    parser.add_argument('--table', nargs=1, required=True, default=None,
+                        help='Table to patch')
+
+    args = parser.parse_args()
+
+    url = args.url
+    tables = args.table
+
+    db = SqlAlchemyDatabase(url)
+    st = daff.SqlTable(db, daff.SqlTableName(tables[0]))
+
+    with open(args.patch, 'rb') as fin:
+        reader = csv.reader(fin)
+        patch = list(csv.reader(fin))
+
+    daff_patch = daff.HighlightPatch(st, daff.Coopy.tablify(patch))
+    daff_patch.apply()
+    print(" * {}".format(json.dumps(db.events),
+                         file=sys.stderr))
+
+if __name__ == "__main__":
+    main()
