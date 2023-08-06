@@ -1,0 +1,109 @@
+#!/usr/bin/env python
+# baleen
+# Admin script for executing Baleen commands.
+#
+# Author:   Benjamin Bengfort <benjamin@bengfort.com>
+# Created:  Fri Sep 19 10:56:44 2014 -0400
+#
+# Copyright (C) 2014 Bengfort.com
+# For license information, see LICENSE.txt
+#
+# ID: baleen [] benjamin@bengfort.com $
+
+"""
+Admin script for executing Baleen commands.
+"""
+
+##########################################################################
+## Imports
+##########################################################################
+
+import sys
+import json
+import baleen
+import argparse
+import baleen.opml
+import baleen.feed
+import baleen.models as db
+
+##########################################################################
+## Module Constants
+##########################################################################
+
+PROG = {
+    "version": baleen.get_version(),
+    "epilog": "Not intended for production use.",
+    "description": "Administrative utility for Baleen ingestor.",
+}
+
+##########################################################################
+## Command Functions
+##########################################################################
+
+def ingest_feeds(args):
+    """
+    Ingests the RSS feeds to MongoDB
+    """
+    db.connect()
+    ingestor = baleen.feed.MongoFeedIngestor()
+    ingestor.ingest(verbose=args.verbose)
+    return ""
+
+def ingest_opml(args):
+    """
+    Imports the OPML file to MongoDB
+    """
+    count = 0
+    for path in args.opml:
+        count += baleen.opml.ingest(path)
+    return "Ingested %i feeds from %i OPML files" % (count, len(args.opml))
+
+def summary(args):
+    """
+    Performs a summary of the fields that will be returned on ingest
+    """
+    db.connect()
+    ingestor = baleen.feed.MongoFeedIngestor()
+    json.dump(ingestor.fields(), args.out, indent=2)
+    return ""
+
+def export(args):
+    """
+    Exports an HTML corpus at the specified location.
+    """
+    pass
+
+##########################################################################
+## Main Method and functionality
+##########################################################################
+
+def main(*argv):
+
+    parser     = argparse.ArgumentParser(**PROG)
+    subparsers = parser.add_subparsers(title='commands', description='Baleen utilities')
+
+    # Ingest Command
+    ingest_parser = subparsers.add_parser('ingest', help='Ingests the RSS feeds to MongoDB')
+    ingest_parser.add_argument('-v', '--verbose', action="store_true", default=False, help='Print details.')
+    ingest_parser.set_defaults(func=ingest_feeds)
+
+    # Import Command
+    import_parser = subparsers.add_parser('import', help='Import a list of feeds from an OPML file.')
+    import_parser.add_argument('opml', nargs="+", type=str, help='OPML file(s) to import to database.')
+    import_parser.set_defaults(func=ingest_opml)
+
+    # Summary Command
+    summary_parser = subparsers.add_parser('summary', help='Performs a summary of the fields that will be returned on ingest.')
+    summary_parser.add_argument('-w', '--write', dest='out', type=argparse.FileType('w'), default=sys.stdout, help='File to write the summary out to.')
+    summary_parser.set_defaults(func=summary)
+
+    # Handle input from the command line
+    args = parser.parse_args()                # Parse the arguments
+    # try:
+    msg = "%s\n" % str(args.func(args))    # Call the default function
+    parser.exit(0, msg)                    # Exit clearnly with message
+    # except Exception as e:
+    #     parser.error(str(e))                   # Exit with error
+
+if __name__ == '__main__':
+    main(*sys.argv[1:])
