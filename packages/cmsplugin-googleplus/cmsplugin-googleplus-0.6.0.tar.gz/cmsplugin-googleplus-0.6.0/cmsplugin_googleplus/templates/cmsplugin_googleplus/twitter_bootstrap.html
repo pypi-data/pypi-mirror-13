@@ -1,0 +1,101 @@
+{% load sekizai_tags i18n humanize %}
+<div>
+    {% for item in activity_list %}
+    <div class="panel panel-default">
+        <div class="panel-body">
+            <div>
+                <a href="{{ item.actor.url }}" target="_blank">
+                    <img class="img-circle" src="{{ item.actor.image.url }}">
+                </a>
+                <a href="{{ item.actor.url }}" target="_blank">
+                    <strong>{{ item.actor.displayName }}</strong>
+                </a>
+                <span class="pull-right" style="margin-top:14px">{% trans "Published" %}
+                    {{ item.published|naturaltime }}</span>
+                <div class="cleafix"></div>
+            </div>
+
+            <div>
+                {% if item.annotation %}
+                <hr>
+                <p>{{ item.annotation|safe|truncatechars_html:instance.truncate_chars }}</p>
+
+                {% endif %}
+                {% if item.object.content and item.verb != "share" %}
+                <hr>
+                {{ item.object.content|safe|truncatechars_html:instance.truncate_chars }}
+                {% endif %}
+
+                {% if item.object.attachments %}
+                {% for attachment in item.object.attachments %}
+                    {% if attachment.displayName == item.object.content %}
+                        <hr>
+                        <h3 style="margin-bottom: 20px;">
+                            {{ attachment.displayName|truncatechars_html:"140" }}
+                        </h3>
+                    {% else %}
+                        <hr>
+                    {% endif %}
+                    {% if attachment.image.url %}
+                        <a href="{{ item.object.url }}">
+                            <img class="center-block img-responsive"
+                                 src="{{ attachment.image.url }}">
+                        </a>
+                    {% elif attachment.thumbnails %}
+                        <img class="img-responsive center-block"
+                             src="{{ attachment.thumbnails.0.image.url }}">
+                    {% endif %}
+                {% endfor %}
+                {% endif %}
+                {% if item.verb == "share" %}
+
+                <p class="text-muted" style="margin-top: 10px">
+                    <a href="{{ item.object.url }}" class="small">
+                        {% blocktrans with shared_by=item.object.actor.displayName %}
+                        Originally shared by {{ shared_by }}
+                        {% endblocktrans %}
+                    </a>
+                    {% if item.object.content %}<br>
+                    {{ item.object.content|safe|truncatechars_html:"140" }}
+                    {% endif %}
+                </p>
+                {% endif %}
+                <hr>
+
+
+                <div>
+                    <div class="text-muted pull-left round">
+                        <a href="{{ item.object.url }}" type="button"
+                           class="btn btn-default btn btn-fab">
+                            <i class="material-icons">plus one</i>
+                        </a>
+                        {% if item.object.plusoners.totalItems != 0 %}
+                        &nbsp;&nbsp;
+                        <strong>{{ item.object.plusoners.totalItems}}</strong>
+                        {% endif %}
+
+                    </div>
+                    <div class="text-muted pull-right">
+                        <a href="{{ item.object.url }}" type="button"
+                           class="btn btn-default btn-fab">
+                            <i class="material-icons">comment</i>
+                        </a>
+                        {% if item.object.replies.totalItems != 0 %}
+                        &nbsp;&nbsp;<strong>{{ item.object.replies.totalItems }}</strong>
+                        {% endif %}
+                        <a href="{{ item.object.url }}" type="button"
+                           class="btn btn-default btn-fab"
+                           style="margin-left: 40px">
+
+                            <i class="material-icons">share</i>
+                        </a>
+                        {% if item.object.resharers.totalItems != 0 %}
+                            &nbsp;&nbsp;<strong>{{ item.object.resharers.totalItems }}</strong>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
