@@ -1,0 +1,165 @@
+#!/usr/bin/env python
+"""
+Note: This is a straight copy of the old newrefine.py script.
+Refine calibration by repeating it many times. 
+This program takes corners or dots found by OpenCV and computes
+the camera matrix and distortion coefficients by selecting
+N-frame subsets, running a calibration, repeating this M times,
+and returning the best P calibrations (ones with lowest 
+root mean square error).  
+
+Might be best to run in the following sequence:
+newcalibrate.py (to get initial)
+newrefine.py (to get distortion coeffs)
+newrefine.py (with principal point free)
+
+argus_refine can also be used to try to get t1 t2 k3 but this is 
+experimental and not guaranteed to work.  to do this, call with 
+--fixf --tangentials --k3 flags using a initial calibration file
+obtained from initial/refine or simplified or EasyWand. 
+
+This routine is mostly deprecated; new users should use the 
+argus_simplified script instead.  It is included for backwards
+compatibility and for special expert uses where more control
+of refinement stages is needed.
+"""
+import argparse
+import cv2
+import pickle
+import numpy as np
+import random
+import logging
+import argus
+
+# KNOWN BUG WORKAROUND
+# Old Ubuntu 12.04 has a strange calling signature for cv2.calibrateCamera
+UBUNTU1204 = (cv2.__version__ == "$Rev: 4557 $")
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Refine calibration for GoPro",
+                                     epilog=__doc__)
+    parser.add_argument("corners",
+                        help=".pkl file with objectPoints and imagePoints")
+    parser.add_argument("ifile",
+                        help=".csv file with initial guesses")
+    parser.add_argument("ofile",nargs="?",default="refined0.csv",
+                        help=".csv output file with best P results")
+    parser.add_argument("--N",default=10,
+                        help="number of patterns to use, default 10")
+    parser.add_argument("--M",default=10,
+                        help="number of replicates, default 10")
+    parser.add_argument("--P",default=5,
+                        help="report P best calibrations, default 5")
+    parser.add_argument("--fixf",action="store_true",
+                        help="fix focal length f")
+    parser.add_argument("--k1",action="store_true",
+                        help="allow adjustment of k1")
+    parser.add_argument("--k2",action="store_true",
+                        help="allow adjustment of k2")
+    parser.add_argument("--tangentials",action="store_true",
+                        help="allow adjustment of t1, t2")
+    parser.add_argument("--k3",action="store_true",
+                        help="allow adjustment of k3")
+    parser.add_argument("--principalpt",action="store_true",
+                        help="allow adjustment of principal point")
+    parser.add_argument("--AR",action="store_true",
+                        help="allow adjustment of AR. should be 1 usually.")
+    parser.add_argument("--skew",action="store_true",
+                        help="allow adjustment of skew.  should be 0 usually. not used")
+    parser.add_argument("--inverted",action="store_true",
+                        help="use if pattern inverted")
+    parser.add_argument("--verbose","-v",action="store_true",
+                        help="toggle verbosity")
+    args = parser.parse_args()
+
+    if args.verbose:
+        logging.basicConfig(level=logging.DEBUG)
+    else:
+        logging.basicConfig(level=logging.INFO)
+
+    # load object and image points and image size
+    oP,iP,frames,iS = argus.load_points(args.corners)
+#    if args.inverted:
+#        oP = -oP
+
+    # load intial guesses
+    initials = []
+    ifile = file(args.ifile,"r")
+    for each in ifile:
+        if (each[0] == "f") or (each[0] == '#'):
+            # it's the first line header or comment
+            pass
+        else:
+            print each
+            initials.append(argus.Camera.from_vec(map(float,each.split(","))))
+    ifile.close()
+
+    # repeat calibration M times using N points
+    results = []
+    for m in xrange(int(args.M)):
+        # get subset of oP and iP
+        subset = random.sample(frames,int(args.N))
+        if args.inverted:
+            ooP = [-oP[X] for X in subset]
+        else:
+            ooP = [oP[X] for X in subset]
+        iiP = [iP[X] for X in subset]
+        
+        cM,dC,rv,tv = argus.initialize_outputs(iS,len(subset))
+        # initial cM and dC with a random camera drawn from the initials
+        initial = random.choice(initials)
+        cM = initial.cM
+        dC = initial.dC
+        #np.array([[-0.2218,0.0399,-0.0006551,-0.000071864,0.]],dtype=np.float32) #initial.dC
+
+        flags = int(0)
+        flags = flags | cv2.CALIB_USE_INTRINSIC_GUESS
+        if args.fixf:
+            flags = flags | cv2.CALIB_FIX_FOCAL_LENGTH
+        if not args.principalpt:
+            flags = flags | cv2.CALIB_FIX_PRINCIPAL_POINT
+        if not args.AR:
+            flags = flags | cv2.CALIB_FIX_ASPECT_RATIO
+        if not args.k1:
+            flags = flags | cv2.CALIB_FIX_K1
+        if not args.tangentials:
+            flags = flags | cv2.CALIB_ZERO_TANGENT_DIST
+        if not args.k2:
+            flags = flags | cv2.CALIB_FIX_K2
+        if not args.k3:
+            flags = flags | cv2.CALIB_FIX_K3
+#        flags = flags | cv2.CALIB_RATIONAL_MODEL
+#        if not args.k4:
+#            flags = flags | cv2.CALIB_FIX_K5
+#        if not args.k5:
+#            flags = flags | cv2.CALIB_FIX_K6
+#        if not args.k6:
+#            flags = flags | cv2.CALIB_FIX_K7
+
+        if UBUNTU1204:
+            retval,cM,dC,rv,tv = cv2.calibrateCamera(ooP,iiP,iS,
+                                                     cM,dC,
+                                                     cM,dC,rv,tv,
+                                                     flags=flags)
+        else:
+            retval,cM,dC,rv,tv = cv2.calibrateCamera(ooP,iiP,iS,
+                                                     cM,dC,
+                                                     rv,tv,
+                                                     flags=flags)
+        if retval:
+            rmse = argus.compute_rmse(ooP,iiP,cM,dC,rv,tv)
+            result = argus.Camera(cM,dC,rmse)
+            results.append(result)
+            logging.debug("Replicate {0}, got {1}".format(m,str(result)))
+
+    # report best P results
+    ofile = file(args.ofile,"w")
+    results.sort(key=lambda cam: cam.rmse)
+    for p in xrange(int(args.P)):
+        ofile.write(str(results[p])+"\n")
+    ofile.close()
+    logging.info("Results written to {0}".format(args.ofile))
+
+    logging.info("Best rmse = {0}".format(results[0].rmse))
+    fovx,fovy,focalLength,principalPoint,aspectRatio = cv2.calibrationMatrixValues(results[0].cM,iS,6.248,4.686)
+    logging.info("fovx:{0}, fovy:{1}, focalLength:{2}".format(fovx,fovy,focalLength))

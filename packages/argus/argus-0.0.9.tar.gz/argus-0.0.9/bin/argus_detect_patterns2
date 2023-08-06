@@ -1,0 +1,222 @@
+#!/usr/bin/env python
+"""
+This script will detect boards etc but output them for use in DLTdv5 and
+other programs rather than as a pickle for use in getting an intrinsic
+calibration.
+
+Finds chessboards or dots in a video, typically an MP4 video from a GoPro. 
+The detected patterns are stored as a Python .pkl format dict() of numpy arrays
+stored in the following order: objectPoints (size (N,1,3)), imagePoints (size
+(N,1,2)), and imageSize (width,height) in pixels.  If you have trouble detecting
+check that the pattern size is correct; you may have to use --inverted flag
+or swap the rows and columns depending on how the pattern is held in the frame. 
+"""
+
+import argparse
+import logging
+import cv2
+import os
+import numpy as np
+import pandas as pd
+
+if __name__=="__main__":
+    # parse arguments
+    parser = argparse.ArgumentParser(description="Detects patterns in movie", epilog=__doc__)
+    parser.add_argument("ifile",help="movie to process, eg Green/GOPRO130.MP4")
+    parser.add_argument("--ofile",default="boardpts.csv",
+                        help="output file, default boardpts.csv")
+    parser.add_argument("--mask",nargs=4,
+                        help="take patterns only inside [xmin xmax ymin ymax]")
+    parser.add_argument("--frames",nargs=2,
+                        help="take frames only inside [start finish]")
+    parser.add_argument("--display",action="store_true",
+                        help="display while working")
+    parser.add_argument("--verbose",action="store_true",
+                        help="toggle verbosity")
+    
+    # information about the pattern
+    parser.add_argument("--chessboard",action="store_true",default=True,
+                        help="pattern is chessboard (default)")
+    parser.add_argument("--dots",action="store_true",
+                        help="pattern is dot pattern")
+    parser.add_argument("--asymmetricdots",action="store_true",
+                        help="pattern is asymmetric dot pattern")
+    parser.add_argument("--rows",type=int,default=None,
+                        help="rows, or number of points per column in pattern, default 10")
+    parser.add_argument("--cols",type=int,default=None,
+                        help="cols, or number of points per row in pattern, default 7")
+    
+    args = parser.parse_args()
+    if args.verbose:
+        logging.basicConfig(level=logging.DEBUG)
+        logging.debug("running in verbose mode")
+    else:
+        logging.basicConfig(level=logging.INFO)
+
+
+
+
+    # open movie
+    logging.debug("opening {0}".format(args.ifile))
+    movie = cv2.VideoCapture(args.ifile)
+    n_frames = int(movie.get(cv2.cv.CV_CAP_PROP_FRAME_COUNT))
+    height = int(movie.get(cv2.cv.CV_CAP_PROP_FRAME_HEIGHT))
+    width = int(movie.get(cv2.cv.CV_CAP_PROP_FRAME_WIDTH))
+
+    # initialize result
+    result = dict()
+    result['frame'] = list()
+    n_points = int(args.rows)*int(args.cols)
+    for a in xrange(n_points):
+        result['pt{0}_X'.format(a+1)] = list()
+        result['pt{0}_Y'.format(a+1)] = list()
+
+    # mask optional
+    if args.mask is not None:
+        mask = np.zeros((height,width,3),dtype=np.uint8)
+        xmin = int(args.mask[0])
+        xmax = int(args.mask[1])
+        ymin = int(args.mask[2])
+        ymax = int(args.mask[3])
+        mask[ymin:ymax,xmin:xmax,:] = 255
+    else:
+        mask = None
+
+    # frame optional
+    if args.frames is not None:
+        frames = [int(args.frames[0]),int(args.frames[1])]
+    else:
+        frames = [0,n_frames]
+
+
+    # initialize display window
+    if args.display:
+        cv2.namedWindow('argus_detect_patterns2', cv2.WINDOW_NORMAL)
+
+    # initialize pattern sizes if not specified
+    if args.cols is None:
+        if args.dots:
+            args.cols = 9
+        elif args.asymmetricdots:
+            args.cols = 6
+        else:
+            args.cols = 7
+    if args.rows is None:
+        if args.dots:
+            args.rows = 12
+        elif args.asymmetricdots:
+            args.rows = 21
+        else:
+            args.rows = 10
+    boardsize = (args.cols,args.rows)
+    if args.dots:
+        logging.debug("dot pattern size is {0}".format(boardsize))
+    elif args.asymmetricdots:
+        logging.debug("asymmetric dot pattern size is {0}".format(boardsize))
+    else:
+        logging.debug("pattern size is {0}".format(boardsize))
+
+
+
+
+
+
+
+
+
+
+
+    # find patterns in range
+    logging.info("processing frame by frame")
+    patterncount = 0
+    for frame in xrange(n_frames):
+        framefound,raw = movie.read() # read the frame
+        result['frame'].append(frame)
+
+        if (framefound and 
+            (frame >= frames[0]) and
+            (frame < frames[1])):
+
+            if args.display:
+                draw = raw # make copy for drawing on 
+
+            gray = cv2.cvtColor(raw,cv2.COLOR_RGB2GRAY) # convert to gray
+
+
+            if args.dots: # detect dot pattern
+                try:
+                    patternfound, corners = cv2.findCirclesGrid(gray,boardsize)
+                except:
+                    patternfound, corners = cv2.findCirclesGridDefault(gray,boardsize)
+            elif args.asymmetricdots:
+                try:
+                    patternfound, corners = cv2.findCirclesGrid(gray,boardsize,
+                                                                centers = None,
+                                                                flags=cv2.CALIB_CB_ASYMMETRIC_GRID | cv2.CALIB_CB_CLUSTERING)
+                except:
+                    patternfound, corners = cv2.findCirclesGridDefault(gray,boardsize,centers = None,flags=cv2.CALIB_CB_ASYMMETRIC_GRID | cv2.CALIB_CB_CLUSTERING)
+
+            else: # detect chessboard
+                patternfound, corners = cv2.findChessboardCorners(gray,boardsize)
+                if patternfound:
+                    cv2.cornerSubPix(gray,
+                                     corners,
+                                     (3,3),(-1,-1),
+                                     (cv2.cv.CV_TERMCRIT_ITER |
+                                      cv2.cv.CV_TERMCRIT_EPS,30,0.1))
+
+            if args.display:
+                # draw the found corners
+                cv2.drawChessboardCorners(draw,boardsize,corners,patternfound)
+            
+            # add to output
+            if patternfound:
+                logging.info("Pattern found at frame {0}".format(frame))
+                patterncount = patterncount+1
+                for a in xrange(n_points):
+                    result['pt{0}_X'.format(a+1)].append(corners[a,0,0])
+                    result['pt{0}_Y'.format(a+1)].append(corners[a,0,1])
+            else:
+                logging.debug("Pattern not found at frame {0}".format(frame))
+                for a in xrange(n_points):
+                    result['pt{0}_X'.format(a+1)].append(np.nan)
+                    result['pt{0}_Y'.format(a+1)].append(np.nan)
+
+            # display result if ordered to
+            if args.display:
+                cv2.imshow('argus_detect_patterns2',draw)
+                cv2.waitKey(1)
+
+        else:
+            logging.debug('no frame {0}'.format(frame))
+            for a in xrange(n_points):
+                result['pt{0}_X'.format(a+1)].append(np.nan)
+                result['pt{0}_Y'.format(a+1)].append(np.nan)
+
+
+    
+    # save results    
+    logging.info("saving results to {0}".format(args.ofile))
+    result = pd.DataFrame(result)
+    result['frame'] = result['frame'].astype(int)
+    cols = ['frame']
+    for a in xrange(n_points):
+        cols.append('pt{0}_X'.format(a+1))
+        cols.append('pt{0}_Y'.format(a+1))
+    result = result[cols]
+    result.to_csv(args.ofile,index=False,na_rep="NaN")
+    
+    # report completion
+    if args.dots:
+        logging.info("Checked {0} frames from {1}, found {2} complete dot patterns of size ({3},{4})".format(frame,args.ifile,patterncount,args.cols,args.rows)) 
+    elif args.asymmetricdots:
+        logging.info("Checked {0} frames from {1}, found {2} complete asymmetric dot patterns of size ({3},{4})".format(frame,args.ifile,patterncount,args.cols,args.rows)) 
+    else:
+        logging.info("Checked {0} frames from {1}, found {2} complete chessboards of size ({3},{4})".format(frame,args.ifile,patterncount,args.cols,args.rows))
+
+
+    # cleanup
+    logging.debug("cleaning up")
+    movie = None
+    if args.display: # destroy display if on
+        cv2.destroyAllWindows 

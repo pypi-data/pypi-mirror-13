@@ -1,0 +1,114 @@
+#!/usr/bin/env python
+"""
+Undistorts a video using Scaramuzza (2006) omnidirectional camera
+model. 
+
+As of August 2015, currently supported camera modes are:
+GoPro-Hero4 Black-1440p-80fps-wide... etc.
+"""
+
+import argparse
+import logging
+import argus.ocam
+import numpy as np
+import cv2
+import os
+import tempfile
+
+if __name__ == "__main__":
+   parser = argparse.ArgumentParser(description="undistort a video using Scaramuzza 2006 omndirectional camera model",epilog=__doc__)
+   parser.add_argument("ifile",help=".mp4 movie to undistort")
+   parser.add_argument("--ofile",default="undistorted.mp4",
+                       help="output filename, default undistorted.mp4")
+   parser.add_argument("--frames",nargs=2,
+                       help="convert only from frames [start finish]")
+   parser.add_argument("--ocam_model",nargs="+",type=float,default=None,
+                       help="use these coefficients for ocam model")
+   parser.add_argument('--model',default=None,
+                       help="lookup this model for ocam model")
+   parser.add_argument("--display",action="store_true",
+                       help="display movies while working")
+   parser.add_argument("--verbose",action="store_true",
+                       help="toggle verbosity")
+   args = parser.parse_args()
+   if args.verbose:
+      logging.basicConfig(level=logging.DEBUG)
+      logging.debug("running in verbose mode")
+   else:
+      logging.basicConfig(level=logging.INFO)
+
+
+   # create the undistorter
+   if args.ocam_model is not None:
+      logging.info("using specified ocam_model coefficients")
+      model = argus.ocam.ocam_model.from_array(np.array(args.ocam_model))
+   elif args.model is not None:
+      logging.info("using {0}".format(args.model))
+      model = argus.ocam.ocam_model.from_mode(args.model)
+   else:
+      logging.info("camera not specified, using GoPro Hero4 Black 1440p 80fps wide")
+      model = argus.ocam.GoPro_Hero4Black_1440p_80fps_wide()
+   undistorter = argus.ocam.Undistorter(model)
+
+   # create the temporary directory
+   tempdir = tempfile.mkdtemp()
+   logging.debug("created temporary directory {0}".format(tempdir))
+
+   # load the movie
+   movie = cv2.VideoCapture(args.ifile)
+   n_frames = int(movie.get(cv2.cv.CV_CAP_PROP_FRAME_COUNT))
+   fps = float(movie.get(cv2.cv.CV_CAP_PROP_FPS))
+
+   # create display optional
+   if args.display:
+      logging.debug("creating display window")
+      cv2.namedWindow("argus_ocam_undistort",cv2.WINDOW_NORMAL)
+
+   # frame optional
+   if args.frames is not None:
+      frames = [int(args.frames[0]),int(args.frames[1])]
+   else:
+      frames = [0,n_frames]
+
+   # go frame by frame
+   logging.debug("processing frame by frame, from {0}".format(frames))
+   for frame in xrange(n_frames):
+      #logging.debug("working on frame {0} of {1}".format(frame,N_frames))
+      retval,raw = movie.read()
+
+      if (retval and
+          (frame >= frames[0]) and
+          (frame < frames[1])):
+         working = raw
+         # undistort each frame
+         undistorted = undistorter.undistort_frame(working)
+         
+         # save it to temp directory
+         filename = os.path.join(tempdir,
+                                 "{0:06d}.png".format(frame))
+         cv2.imwrite(filename,undistorted)
+
+         if args.display:
+            cv2.imshow("argus_ocam_undistort",undistorted)
+            cv2.waitKey(1)
+
+   # call ffmpeg to make the frames back into a movie
+   #call = "avconv -f image2 -i ./_temp/%06d.png {0}".format(args.ofile)
+   if frames[0] == 0:
+      call = "ffmpeg -y -framerate {0} -i {1} -g 10 -c:v libx264 -profile:v baseline -pix_fmt yuv420p {2}".format(fps,os.path.join(tempdir,"%06d.png"),args.ofile)
+   else:
+      call = "ffmpeg -y -framerate {0} -start_number {1:0d} -i {2} -g 10 -c:v libx264 -profile:v baseline -pix_fmt yuv420p {3}".format(fps,frames[0],os.path.join(tempdir,"%06d.png"),args.ofile)
+   logging.debug("creating movie with following call:")
+   logging.debug(call)
+   os.system(call)
+
+   # cleanup
+   logging.debug("cleaning up")
+   movie = None # close the movie
+   # remove the temporary directory
+   logging.debug("removing {0}".format(tempdir))
+   os.system("rm -rf {0}".format(tempdir))
+   if args.display:
+      cv2.destroyAllWindows()
+
+

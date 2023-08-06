@@ -1,0 +1,65 @@
+#!/usr/bin/env python
+"""
+"""
+
+import argparse
+import logging
+import pandas as pd
+import numpy as np
+
+if __name__ == "__main__":
+
+   parser = argparse.ArgumentParser(description="compatibility with DLTdv5",
+                                    epilog=__doc__)
+   parser.add_argument("xypts",
+                       help="input filename containing hedrickized xypts")
+   parser.add_argument("ioffsets",
+                       help="table of offsets, table_offsets.csv")
+   parser.add_argument("--xyzpts",default="xyzpts.csv",
+                       help="output filename for xyz pts, default xyzpts.csv")
+   parser.add_argument("--xyzres",default="xyzres.csv",
+                       help="output filename for residual, default xyzres.csv")
+   parser.add_argument("--ooffsets",default="offsets.csv",
+                       help="output filename for offsets, default offsets.csv")
+   args = parser.parse_args()
+
+   xypts = pd.read_csv(args.xypts)
+   ioffsets = pd.read_csv(args.ioffsets)
+
+   nframes = len(xypts)
+   ncams = len(ioffsets)
+   npts = len(xypts.columns)/ncams/2
+
+   # create xyzpts
+   xyzpts = np.empty((nframes,3*npts),dtype=np.float32)
+   xyzpts.fill(np.nan)
+   xyzpts = pd.DataFrame(xyzpts)
+   cols = list()
+   for a in range(npts):
+      for b in ['X','Y','Z']:
+         cols.append('pt{0}_{1}'.format(a+1,b))
+
+   xyzpts.columns = cols
+   xyzpts.to_csv(args.xyzpts,index=False,na_rep="NaN")
+
+   # create xyzres
+   xyzres = np.empty((nframes,npts),dtype=np.float32)
+   xyzres.fill(np.nan)
+   xyzres = pd.DataFrame(xyzres)
+   cols = ['pt{0}_dltres'.format(X+1) for X in range(npts)]
+   xyzres.columns = cols
+   xyzres.to_csv(args.xyzres,index=False,na_rep="NaN")
+
+   # create hedrick offsets
+   ooffsets = np.zeros((nframes,ncams),dtype=int)
+   cols = list()
+   cols.append('cam1_offset')
+   for a in range(1,len(ioffsets)):
+      cols.append('cam{0}_offset'.format(a+1))
+      ooffsets[:,a] = ioffsets['integer_offset'].iloc[a]
+   ooffsets = pd.DataFrame(ooffsets)
+   ooffsets.columns = cols
+   ooffsets.to_csv(args.ooffsets,index=False,na_rep="NaN")
+   
+
+   

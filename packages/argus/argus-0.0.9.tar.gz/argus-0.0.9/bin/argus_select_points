@@ -1,0 +1,55 @@
+#!/usr/bin/env python
+"""
+extract columns and renumber
+"""
+
+import argparse
+import logging
+import pandas as pd
+
+if __name__ == "__main__":
+
+    parser = argparse.ArgumentParser(description="pick only certain points out of an xypts.csv file",epilog = __doc__)
+    parser.add_argument("ifile",
+                        help="input file to process, like xypts.csv")
+    parser.add_argument("points",nargs="+",
+                        help="points to select")
+    parser.add_argument("--ofile",default="fewer_xypts.csv",
+                        help="output filename, default fewer_xypts.csv")
+    parser.add_argument("--verbose",action="store_true",
+                        help="toggle verbosity")
+    args = parser.parse_args()
+    if args.verbose:
+        logging.basicConfig(level=logging.DEBUG)
+        logging.debug("running in verbose mode")
+    else:
+        logging.basicConfig(level=logging.INFO)
+
+
+
+    df = pd.read_csv(args.ifile)
+    n_pts = int(df.columns[-1].split('_')[0][2:])
+    n_cams = int(df.columns[-1].split('_')[1][3:])
+    
+    points = [int(X) for X in args.points]
+    cols = list()
+    newcols = list()
+    for newpt,pt in enumerate(points):
+        for cam in xrange(n_cams):
+            cols.append('pt{0}_cam{1}_X'.format(pt,cam+1))
+            cols.append('pt{0}_cam{1}_Y'.format(pt,cam+1))
+            newcols.append('pt{0}_cam{1}_X'.format(newpt+1,cam+1))
+            newcols.append('pt{0}_cam{1}_Y'.format(newpt+1,cam+1))
+
+    # select columns and rename them
+    result = df[cols]
+    #print result.columns
+    result.columns = newcols
+    #print result.columns
+
+    # output
+    logging.info("outputting points {0} as {1}".format(points,args.ofile))
+    result.to_csv(args.ofile,index=False,na_rep="NaN")
+
+
+

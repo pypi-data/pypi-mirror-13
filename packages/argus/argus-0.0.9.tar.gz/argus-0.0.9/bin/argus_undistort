@@ -1,0 +1,134 @@
+#!/usr/bin/env python
+"""
+If the calibration is working right, the movie when undistorted should
+look `straight' as in the pattern should preserve straight lines and 
+right angles.  It may still be distorted at the very edges; this is a 
+limitation of using only 3 radial terms. 
+"""
+
+# KNOWN BUG - if using --full option, avconv may barf depending on 
+# if final outputsize if even or odd. Later add thing that enforces size
+# to be even? 
+
+
+import cv2
+import numpy as np
+import argparse
+import pickle
+import logging
+import argus
+import os
+import tempfile
+
+SCALE = 1.10
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Check calibration by viewing undistorted movie", epilog=__doc__)
+    parser.add_argument("movie",help=".mp4 movie to undistort")
+    parser.add_argument("ifile",help=".csv file with input calibration list")
+    parser.add_argument("--ofile",default=None,
+                        help="output as a movie with this filename")
+    parser.add_argument("--full",action="store_true",
+                        help="show the full undistorted image including cutouts")
+    parser.add_argument("--noheader",action="store_true",
+                        help="file has no header")
+    parser.add_argument("--mac",action="store_true",
+                        help="use this if you are viewing on a Mac")
+    parser.add_argument("--verbose",action="store_true",
+                        help="toggle verbosity")
+    args = parser.parse_args()
+
+    if args.verbose:
+        logging.basicConfig(level=logging.DEBUG)
+        logging.debug("running in verbose mode")
+    else:
+        logging.basicConfig(level=logging.INFO)
+
+
+    # Open the input movie
+    movie = cv2.VideoCapture(args.movie)
+    if args.mac:
+        logging.debug("running with --mac flag set")
+        cv2.namedWindow("undistorted")
+    else:
+        cv2.namedWindow("undistorted",cv2.WINDOW_NORMAL)
+
+    # Open the input calibration(s)
+    ifile = file(args.ifile,"r")
+    if args.noheader:
+        logging.debug("ignoring headers in {0}".format(args.ifile))
+        line = ifile.readline()
+    else:
+        _ = ifile.readline()
+        line = ifile.readline()
+    ifile.close
+
+    best = argus.Camera.from_vec(map(float,line.split(",")))
+    cM = best.cM
+    dC = best.dC
+
+    width = int(movie.get(cv2.cv.CV_CAP_PROP_FRAME_WIDTH))
+    height = int(movie.get(cv2.cv.CV_CAP_PROP_FRAME_HEIGHT))
+    framecount = int(movie.get(cv2.cv.CV_CAP_PROP_FRAME_COUNT))
+
+    # (optional) prepare for movie output
+    if (args.ofile is not None):
+        tempdir = tempfile.mkdtemp()
+        logging.debug("created temporary directory {0}".format(tempdir))
+        #logging.debug("creating temporary directory ./_temp")
+        #os.system("mkdir ./_temp")    
+
+    # initialize the undistortion maps
+    if args.full:
+        logging.debug("providing full uncropped undistorted result")
+        R = np.eye(3)
+        oldsize = (width,height)
+        newsize = (int(width*SCALE),
+                   int(height*SCALE))
+        newcM, roi = cv2.getOptimalNewCameraMatrix(cM,dC,oldsize,1,newsize)
+        map1,map2 = cv2.initUndistortRectifyMap(cM,dC,R,newcM,newsize,
+                                                cv2.cv.CV_32FC1)
+    else:
+        R = np.eye(3)
+        newcM = cM
+        newsize = (width,height)
+        map1,map2 = cv2.initUndistortRectifyMap(cM,dC,R,newcM,newsize,
+                                                cv2.cv.CV_32FC1)
+
+
+    logging.debug("now beginning frame by frame undistortion")
+    for a in range(framecount):
+        retval,raw = movie.read()
+
+        if retval:
+            draw = raw
+    
+            if args.full:
+                undistorted = cv2.remap(draw,map1,map2,
+                                        interpolation=cv2.INTER_CUBIC,
+                                        borderMode=cv2.BORDER_CONSTANT,
+                                        borderValue=(211,160,86))
+            else:
+                undistorted = cv2.remap(draw,map1,map2,
+                                        interpolation=cv2.INTER_LINEAR)
+
+            cv2.imshow("undistorted",undistorted)
+            cv2.waitKey(1)
+
+            if (args.ofile is not None):
+                filename = os.path.join(tempdir,
+                                        "{0:06d}.png".format(a))
+                cv2.imwrite(filename,undistorted)
+
+
+    logging.debug("cleaning up")
+    movie = None
+    cv2.destroyWindow("undistorted")
+
+    if (args.ofile is not None):
+        logging.debug("creating movie with following call:")
+        call = "avconv -f image2 -i ./_temp/%06d.png {0}".format(args.ofile)
+        logging.debug(call)
+        os.system(call)
+        logging.debug("removing temporary directory {0}".format(tempdir))
+        os.system("rm -rf {0}".format(tempdir))
