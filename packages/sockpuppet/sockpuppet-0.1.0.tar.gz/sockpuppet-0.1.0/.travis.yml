@@ -1,0 +1,30 @@
+language: python
+
+# for container-y googdness:
+sudo: false
+
+python:
+  - "3.5"
+  - "3.4"
+  - "2.7"
+
+# command to install dependencies
+install: "pip install -Ue .[test,build]"
+
+# command to run tests, e.g. python setup.py test
+script: nosetests --with-cov --cov=sockpuppet
+
+after_success:
+  - coveralls
+
+deploy:
+  provider: pypi
+  user: chrisw
+  password:
+    secure: B0xDjq+7zkoeFgvTWjO+NbgP3LUaTnC+xZPd3GxZnBcDM6uw/xm99VJfDEj7K/Xu3XsOYxuibYW9GzYbcLX+3UWn+S8YcvrsGHqNfL2mEWyqstrB+8Hb0iVNuaobIV6HrWUY80J/YRlu0BMXv0702N+xDZzOTx4DauTClL6B+LzMv/97/b4ihq6v4K9g39iR6htlxonGqXqRQEQ7sUh4sOUqbbQOOrcZgxFKxcktocJQ7xPxRQtn2RuYJg36m/2JaNcerc2kYNfTZ31cAjnVFKpd2z+Alq0jk+w2XqhFK1a7Iw3tLG8lVIVH+czTn2Gj0YbT+yuIrUxYuE+ybZl1O32+Qqqn0z9v08jSMhIKdojoJmrGMnJBRVc5g+BUoAwUddlmavlfNx2HrqqqtlVusRkK0T/PZfKuOhbMXoAOnucZqMt1u836F3gZpRKMd64k8DLWkzTiKf9SfjS5aEyl8vkiCORqiIfvaLR7ZCD+H1T3TIpzJJpAxbe42JjdQ5IMrtKgtkbsxllVTURADXHYBkRW9qnlul+NZcgYsHgQH1n/OzLR88HqNXfp9BJgk8tTAl1BI00Z5KB6swedjTWY22FtUr2lvF3pKwrv93kMiq4FnTe/6qPlXuWPqVjFxoGs+9x6OPIbshX4ibN7k58pSrN3TD1NCyAetDGebklJVuk=
+  on:
+    tags: true
+    repo: cjw296/sockpuppet
+    python: "3.5"
+  skip_cleanup: true
+  distributions: "sdist bdist_wheel"
