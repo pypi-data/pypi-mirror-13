@@ -1,0 +1,31 @@
+MultiProcessPool
+=======================
+
+MultiProcessPool have for purpose to use all core of a processor.
+The usual Pool is restrict by Python's Global Interpreter Lock (GIL).
+
+This example of use:
+
+
+def double(value):
+
+    return value * 2
+    
+def queueop(value, vallistres):
+
+    vallistres.append(value)
+    
+    return vallistres
+    
+if __name__ == "__main__":
+    
+    pp = MultiProcessPool(double, [ i for i in range(0,100) ], queueop, [])
+    
+    print sorted(pp.run(4))
+    
+
+Will give a list of double value of the list in parameter.
+
+To import it do:
+
+from multiprocesspool.multiprocesspool import MultiProcessPool

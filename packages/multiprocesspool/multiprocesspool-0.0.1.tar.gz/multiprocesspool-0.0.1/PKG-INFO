@@ -1,0 +1,48 @@
+Metadata-Version: 1.1
+Name: multiprocesspool
+Version: 0.0.1
+Summary: Use multiples process to do operations on a list
+Home-page: https://bitbucket.org/Astyan/processpool
+Author: Astyan
+Author-email: aurelien.vezin@etu.unistra.fr
+License: CeCILL-B
+Description: MultiProcessPool
+        =======================
+        
+        MultiProcessPool have for purpose to use all core of a processor.
+        The usual Pool is restrict by Python's Global Interpreter Lock (GIL).
+        
+        This example of use:
+        
+        
+        def double(value):
+        
+            return value * 2
+            
+        def queueop(value, vallistres):
+        
+            vallistres.append(value)
+            
+            return vallistres
+            
+        if __name__ == "__main__":
+            
+            pp = MultiProcessPool(double, [ i for i in range(0,100) ], queueop, [])
+            
+            print sorted(pp.run(4))
+            
+        
+        Will give a list of double value of the list in parameter.
+        
+        To import it do:
+        
+        from multiprocesspool.multiprocesspool import MultiProcessPool
+        
+Keywords: multi,process,pool
+Platform: UNKNOWN
+Classifier: Development Status :: 3 - Alpha
+Classifier: Intended Audience :: Developers
+Classifier: Topic :: Software Development :: Libraries :: Python Modules
+Classifier: License :: OSI Approved
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Operating System :: OS Independent
