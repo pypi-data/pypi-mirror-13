@@ -1,0 +1,100 @@
+Metadata-Version: 1.1
+Name: CFFIpp
+Version: 0.1.0.dev1
+Summary: CFFI module for calling C++ code from within Python
+Home-page: https://gitlab.com/rubdos/cffipp
+Author: Ruben De Smet
+Author-email: ruben.de.smet@rubdos.be
+License: GPLv3
+Description: CFFIpp
+        ======
+        
+        CFFIpp is like [cffi](https://cffi.readthedocs.org), but
+        generates bindings for C++, by mapping them to C through cffi.
+        
+        License
+        =======
+        
+            CFFIpp is free software: you can redistribute it and/or modify
+            it under the terms of the GNU General Public License as published by
+            the Free Software Foundation, either version 3 of the License, or
+            (at your option) any later version.
+            
+            CFFIpp is distributed in the hope that it will be useful,
+            but WITHOUT ANY WARRANTY; without even the implied warranty of
+            MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+            GNU General Public License for more details.
+            
+            You should have received a copy of the GNU General Public License
+            along with CFFIpp.  If not, see <http://www.gnu.org/licenses/>.
+        
+        Example
+        =======
+        
+        Comes straight from a unit test:
+        
+        ```python
+        ffi = FFIpp()
+        ffi.cdef("""
+            class testClass {
+            public:
+                testClass();
+                void test(int);
+                int returnsInt(int);
+            private:
+                void shouldNotBeInModule();
+            };
+            """)
+        self.assertTrue(ffi.has_class("testClass"))
+        
+        ffi.set_source("example_module", """
+            class testClass {
+            public:
+                testClass(){}
+                void test(int){/*nop*/}
+                int returnsInt(int){return 1;}
+            private:
+                void shouldNotBeInModule() {/*nop*/}
+            };""")
+        ffi.compile()
+        import example_module
+        c = example_module.testClass()
+        self.assertEqual(c.returnsInt(5), 1)
+        ```
+        
+        Caveats
+        =======
+        
+        1. This is experimental software;
+        2. Adds a (albeit tiny) layer between Python and your C++ classes,
+            using a stupid C wrapper.
+        3. No overloading support, no type conversion yet, except for the `cffi`
+            stuff.
+        4. Returning C++ objects from methods will not yield Python objects yet.
+        5. Will only wrap classes, not mixable with C stuff at this moment.
+        6. Ironically, you probably need CPython to run this, because it relies on
+           clang bindings to proprocess C++ code.
+        
+        Development
+        ===========
+        
+        Development takes place at [my GitLab repository](https://gitlab.com/rubdos/cffipp/).
+        Merge requests and issues are welcome. If you want to start hacking on this project,
+        feel free to do so. Good starting places are the TODO.md file and the caveats listed before.
+        
+Platform: UNKNOWN
+Classifier: Development Status :: 3 - Alpha
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 2
+Classifier: Programming Language :: Python :: 2.6
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.2
+Classifier: Programming Language :: Python :: 3.3
+Classifier: Programming Language :: Python :: 3.4
+Classifier: Programming Language :: Python :: 3.5
+Classifier: Programming Language :: Python :: Implementation :: CPython
+Classifier: Programming Language :: Python :: Implementation :: PyPy
+Classifier: License :: OSI Approved :: GNU General Public License (GPL)
+Classifier: Natural Language :: English
