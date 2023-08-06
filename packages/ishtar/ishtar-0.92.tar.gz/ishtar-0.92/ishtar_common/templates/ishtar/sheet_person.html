@@ -1,0 +1,74 @@
+{% extends "ishtar/sheet.html" %}
+{% load i18n window_field window_tables %}
+
+{% block head_sheet %}
+{{block.super}}
+<h1>{% trans "Person"%}</h1>
+{% endblock %}
+
+{% block content %}
+<div class='tool'>{%trans "Export as:"%} <a href='{% url show-person item.pk "odt" %}'>{%trans "OpenOffice.org file"%}</a>, <a href='{% url show-person item.pk "pdf" %}'>{%trans "PDF file"%}</a></div>
+
+{% field "Name" item.name %}
+{% field "Surname" item.surname %}
+{% field "Raw name" item.raw_name %}
+{% field "Created by" item.history_creator.ishtaruser.full_label %}
+{% field "Email" item.email %}
+{% field "Type(s)" item.person_types_list %}
+{% field "Address" item.address %}
+{% field "Address complement" item.address_complement %}
+{% field "Postal code" item.postal_code %}
+{% field "Town" item.town %}
+{% field "Phone" item.phone %}
+{% field "Mobile phone" item.mobile_phone %}
+
+{% if item.attached_to %}<h3>{% trans "Associated organization"%}</h3>
+{% field "Name" item.attached_to %}
+{% field "Address" item.attached_to.address %}
+{% field "Address complement" item.attached_to.address_complement %}
+{% field "Postal code" item.attached_to.postal_code %}
+{% field "Town" item.attached_to.town %}
+{% field "Phone" item.attached_to.phone %}
+{% field "Mobile phone" item.attached_to.mobile_phone %}
+{% endif %}
+
+
+{% trans "Associated operations as scientist" as ao %}
+{% if item.operation_scientist_responsability.count %}
+{% dynamic_table_document ao 'operations' 'scientist' item.pk '' output %}
+{% endif %}
+{% trans "Associated operations as responsible" as ao %}
+{% if item.operation_responsability.count %}
+{% dynamic_table_document ao 'operations' 'in_charge' item.pk '' output %}
+{% endif %}
+
+
+{% trans "Associated archaelogical files" as af %}
+{% if item.file_responsability.count %}
+{% dynamic_table_document af 'files' 'in_charge' item.pk '' output %}
+{% endif %}
+
+<table>
+  <caption>{%trans "Documents"%}</caption>
+  <tr>
+    <th>{% trans "Year" %}</th>
+    <th>{% trans "Title" %}</th>
+    <th>{% trans "Type" %}</th>
+    <th>{% trans "Link" %}</th>
+  </tr>
+  {% for author in item.author.all %}
+  {% for doc in author.related_sources %}
+  <tr>
+    <td class='string'>{{ doc.creation_date|date:"Y"}}</td>
+    <td class='string'>{{ doc.title }}</td>
+    <td class='string'>{{ doc.source_type }}</td>
+    <td class='string'>{% if doc.associated_url  %}<a href='{{doc.associated_url}}'>{% trans "Link"%}</a>{% endif %}</td>
+  </tr>
+  {% endfor %}
+  {% empty %}
+  <tr><td colspan="4" class='no_items'>{% trans "No document associated to this person" %}</td></tr>
+  {% endfor %}
+</table>
+
+
+{% endblock %}
