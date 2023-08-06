@@ -1,0 +1,148 @@
+Metadata-Version: 1.1
+Name: twistml
+Version: 0.9
+Summary: TWItter STock market Machine Learning package
+Home-page: https://bitbucket.org/madmat3001/twistml.git
+Author: Matthias Manhertz
+Author-email: m@nhertz.de
+License: MIT
+Description: TwistML
+        =======
+        
+        TwistML is a package that makes it easier to work with raw twitter data
+        for machine learning tasks, like predicting changes in the stock 
+        market.
+        
+        TwistML implements a pipeline that includes filtering of the twitter 
+        data, preprocessing, feature extraction into several feature 
+        representations (bag of words, sentiments, Doc2Vec), regression / 
+        classification using algorithms from the sklearn package, and
+        model selection / evaluation.
+        
+        The API documentation is available at `TwistML's PyPI page 
+        <https://pypi.python.org/pypi/twistml>`_. A more usage focuse
+        documentation is coming soon, until then you can get the full package
+        from BitBucket (also linked at the PyPI page) and check out the 
+        experiments folder for some usage examples.
+        
+        TwistML was developed as part of my master's thesis and I hope to keep
+        improving it afterwards.
+        
+        Installation
+        ------------
+        You can use pip to install TwistML like so::
+        
+        	$ pip install twistml
+        
+        Please make you sure you **have numpy, scipy and gensim installed** as
+        well. I have opted out of adding them to the install_requires as this
+        has caused problems in my own tests on windows machines. (For numpy the
+        problem is described `here
+        <https://github.com/numpy/numpy/issues/2434>`_.) So these packages will
+        not be installed automatically by pip.
+        
+        
+        Known Issues & Planned Improvements
+        ===================================
+        
+        - Implement a DateRange class and replace all occurences of fromdate,
+          todate, dateformat.
+          
+        - Implement find_files() without dateranges at all. It should be
+          possible to simply process all files within a directory (also
+          recursively)
+          
+        - TwistML currently assumes raw twitter data to be avaialble as one
+          json file per day. Make sure the internet-archive's file scheme is
+          supported as well
+          
+        - Add support for hourly time resolution instead of daily only.
+        
+        - Evaluation subpackage can only deal with binary classification.
+          Possibly explore adding multiclass.
+          
+        - The way logging is currently set up is weird and should be reworked.
+        
+        - gensim's LabeledSentence is deprecated, use TaggedDocument instead
+        
+        
+        Changes
+        =======
+        
+        Version 0.9
+        -----------
+        
+        - Changed status to Beta
+        
+        - Added API documentation generated via sphinx and numpydoc
+        
+        - Doc2VecTransformer now supports iterative training (as explained 
+        `here <http://rare-technologies.com/doc2vec-tutorial/>`_)
+        
+        - Regression evaluation can now treat predictions as binary 
+        classifications and evaluate AUC and F1
+        
+        - Changed some command line scripts to have more intuitive usage
+        
+        - various small fixes
+        
+        
+        Version 0.2.4
+        -------------
+        
+        **ATTENTION: Some of these may break existing code!**!
+        
+        - renamed combine_tweets.py to combine.py
+        
+        - added support for stacking of features
+        
+        - classification targets are now 0 / 1 instead of -1 / 1
+        
+        - added toydata module -> create some toydata for testing
+        
+        - added F1-Score to classifcation evaluation
+        
+        - added additional window functions: window_stack and window_element_avg
+        
+        Version 0.2.3
+        -------------
+        
+        - Improved long_description generation
+        
+        - Fixed CHANGES.rst
+        
+        Version 0.2.2
+        -------------
+        
+        - Added sentiment features based on TextBlob sentiments
+        
+        Version 0.2.1
+        -------------
+        
+        - Added functionality for complex category subsets to 
+          tml-generate-features
+        
+        - Also improved documentation for tml-generate-features (on cmd line as
+          well as docstring)
+        
+        - improved test coverage 
+        
+        Version 0.2.0
+        -------------
+        
+        - Changed Development Status to Alpha
+        
+        - Removed Sentence2Vec as that functionality is included in current 
+          gensim versions' Doc2Vec class
+          
+        - Added Changelog
+        
+Keywords: twitter stock market machine learning
+Platform: any
+Classifier: Development Status :: 4 - Beta
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Topic :: Scientific/Engineering :: Information Analysis
+Classifier: Intended Audience :: Science/Research
+Classifier: Natural Language :: English
+Classifier: Operating System :: OS Independent
