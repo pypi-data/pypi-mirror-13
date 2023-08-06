@@ -1,0 +1,24 @@
+---
+tests:
+  -
+    name: "Github Status"
+    inputs:
+      headers:
+        User-Agent: "Smolder smoke test library"
+    outcomes:
+      response_redirect: "https://status.github.com/api/status.json"
+      expect_status_code: 301
+    uri: /api/status.json
+  -
+    name: "Github Status"
+    - port: 443
+    protocol: https
+    inputs:
+      headers:
+        User-Agent: "Smolder smoke test library"
+    outcomes:
+      response_body_contains: good
+      response_json_contains:
+        status: good
+      response_max_time_ms: 2000
+   uri: /api/status.json
