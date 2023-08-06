@@ -1,0 +1,103 @@
+* The python sdk for Access Trail API
+
+Provide the method to send message to Access Trail API in python way.
+
+*** How to use it
+1. Download the source and install it.
+   #+BEGIN_SRC sh
+   sudo python setup.py install
+   #+END_SRC
+
+2. Use the client
+   2.1 example for simple dict
+   #+BEGIN_SRC py
+   import accesstrailclient
+   from accesstrailclient import access_trail
+   from json
+
+   # The access trail api where send message to
+   url = "https://iauth.stage1.edge.bluemix.net/v1/trail"
+   # The token came from access trail
+   token = "eyJhbGciOiJIUzI1NiJ9"
+   # Your service space id
+   project_id = "eee11302-14b9-4ad1-9b3d-66a0a82f570b"
+   message = {
+            "started_at": 12345678,
+            "request": {
+                "method": "GET",
+                "uri": "/v1/version",
+                "size": "11",
+                "request_uri": "http://example.com/v1/version",
+                "querystring": {
+                    "key": "value"
+                },
+                "request_body": "Hello World",
+                "headers": {
+                    "content-type": "application/json",
+                    "connection": "keep-alive",
+                    "accept": "application/json",
+                    "X-Auth-Token": "Token"
+                }
+            },
+            "response": {
+                "status": 200,
+                "response_body": "Status OK",
+                "size": "9",
+                "headers": {
+                    "content-type": "application/json"
+                }
+            },
+            "client_ip": "127.0.0.1",
+            "latencies": {
+                "request": latencies
+            }
+        }
+   access_trail_api = access_trail.get_instance(url, token, project_id)
+   access_trail_api.send_message(json.dumps(message))
+   #+END_SRC
+
+   2.2 Example for cadf format
+   #+BEGIN_SRC py
+   import accesstrailclient
+   from accesstrailclient import access_trail
+
+   import json
+   import pycadf
+   from pycadf import reason
+   from pycadf import attachment
+   from pycadf import timestamp
+   from pycadf import eventfactory
+
+   url = 'https://iauth.stage1.edge.bluemix.net/v1/trail'
+   token = 'eP3tD0PGrTmG'
+   project_id = 'eee11302-14b9-4ad1-9b3d-66a0a82f570b'
+   event_reason = pycadf.reason.Reason(reasonType='http', reasonCode='200')
+   attachment = pycadf.attachment.Attachment(
+       typeURI='service/security/account/user',
+       content='Hello World!',
+       name='response_body')
+   event = pycadf.eventfactory.EventFactory().new_event(
+       reason=event_reason,
+       outcome='success',
+       eventTime=pycadf.timestamp.get_utc_now(),
+       eventType='activity',
+       action='authenticate',
+   )
+   event.add_attachment(attachment)
+   api = access_trail.get_instance(url, token, project_id)
+   api.send_message(json.dumps(event, default=lambda o: o.__dict__,
+                               sort_keys=True,
+                               indent=4))
+   #+END_SRC
+
+
+*** How to develop it
+1. Run code style tests
+   #+BEGIN_SRC sh
+   tox -epep8
+   #+END_SRC
+
+2. Run unit tests
+   #+BEGIN_SRC sh
+   tox -epy27
+   #+END_SRC
