@@ -1,0 +1,11 @@
+__version__ = "0.5.38"
+__git_commiter_name__ = "Guy Rozendorn"
+__git_commiter_email__ = "guy@rzn.co.il"
+__git_branch__ = '(HEAD detached at v0.5.38)'
+__git_remote_tracking_branch__ = '(No remote tracking)'
+__git_remote_url__ = '(Not remote tracking)'
+__git_head_hash__ = '6b4dc558b651ca0d417f6ee27ef3f0ac083cdea8'
+__git_head_subject__ = 'Finished Release v0.5.38'
+__git_head_message__ = '* develop:\n  TRIVIAL fixing a typo in my last commit\n  HOSTDEV-2337 pre/post scripts/debug now can be deactivated if a specific file is put on /tmp\n  fix tests\n  TRIVIAL NotImplementedError("no packaging recipe available for this platform")\n  HOSTDEV-2304 fixing KeyError\n  HOSTDEV-2304 fixing IndentationError\n  TRIVIAL making the test pass, using zc.buildout for now\n  HOSTDEV-2304 package revision\n  remove pylint\n  fix tests'
+__git_dirty_diff__ = ''
+__git_commit_date__ = '2016-02-15 14:09:25'
