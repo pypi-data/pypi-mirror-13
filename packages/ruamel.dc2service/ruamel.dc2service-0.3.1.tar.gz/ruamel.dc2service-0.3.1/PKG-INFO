@@ -1,0 +1,194 @@
+Metadata-Version: 1.1
+Name: ruamel.dc2service
+Version: 0.3.1
+Summary: generate init configuration file (systemd/Upstart) from docker-compose.yml
+Home-page: https://bitbucket.org/ruamel/dc2service
+Author: Anthon van der Neut
+Author-email: a.van.der.neut@ruamel.eu
+License: MIT license
+Description: ==============
+        ``dc2service``
+        ==============
+        
+        The ``dc2service`` utility generates configuration files for
+        ``systemd``/``Upstart`` based on a single ``docker-compose`` YAML input file.
+        
+        The init type is autodetected, but can be overruled from the command-line.
+        
+        The service name is determinted by the ``container_name`` entries for all
+        the services in the YAML file. Each service **has to have** a ``container_name``
+        specified.
+        
+        As ``docker-compose`` YAML file format doesn't allow for
+        extra metadata fields, two comment entries at the beginning of the
+        YAML file are parsed for a description and author.
+        
+        If the version 2 YAML file format is used you should consider using
+        ``ruamel.dcw`` as wrapper for ``docker-compose``, if you do the
+        comments are not necessary and you can specify ``author`` and
+        ``description`` under the top level ``user-data`` key.
+        
+        If external ports are specified (i.e. of the form "ip:ip") then the
+        external port numbers are extended to the description.
+        
+        The file generation is template based and can easily be adjusted to your needs.
+        Their location can be viewed by doing ``dc2service templates``
+        
+        Example version 2 input YAML file for Mongo DB 
+        ----------------------------------------------
+        
+        In a version 1 ``docker-compose.yml`` and using ``ruamel.dcw`` 
+        you can set the ``author`` and ``description`` conveniently as normal
+        key-value pairs, and also specify a default for environment variables::
+        
+          version: "2"
+          user-data:
+            author: Anthon van der Neut <a.van.der.neut@ruamel.eu>
+            description: mongo container
+            env-variables:
+              DOCKER_MONGO_PORT: 27017
+              DOCKER_MONGO_BASE_DIR: /data1/DB/mongo
+          services:
+            mongodb:
+              container_name: mongo
+              image: mongo:2.4
+              volumes:
+                - ${DOCKER_MONGO_BASE_DIR}:/data/db
+                ports:
+                  - ${DOCKER_MONGO_PORT}:27017
+        
+        .. example code docker-compose.yml
+        
+        
+        Example version 1 input YAML file for Mongo DB 
+        ----------------------------------------------
+        
+        As version 1 ``docker-compose.yml`` file for single service running
+        Mongo DB with an external (i.e. host oriented) port::
+        
+          # author: Anthon van der Neut <a.van.der.neut@ruamel.eu>
+          # description: mongo container
+          mongodb:
+            container_name: mongo
+            image: mongo:2.4
+            volumes:
+             - /data1/DB/mongo:/data/db
+            ports:
+            - 27017:27017
+        
+        .. example code docker-compose-1.yml
+        
+        
+        ``systemd``
+        -----------
+        
+        The command ``dc2service --systemd generate /opt/docker/mongo/docker-compose.yml`` will
+        generate the file ``/etc/systemd/system/mongo-docker.service``::
+        
+          [Unit]
+          Description=mongo container on port 27017
+          # Author = Anthon van der Neut <a.van.der.neut@ruamel.eu> (dc2service 0.1.0.dev)
+          Requires=docker.service
+          After=docker.service
+          
+          [Service]
+          Restart=always
+          ExecStart=/opt/util/docker-compose/bin/docker-compose -f /opt/docker/mongo/docker-compose.yml up --no-recreate
+          ExecStop=/opt/util/docker-compose/bin/docker-compose -f /opt/docker/mongo/docker-compose.yml stop
+          
+          [Install]
+          WantedBy=multi-user.target
+        
+        .. example code mongo-docker-1.service
+        
+        If you have ``ruamel.dcw`` installed ``.../bin/docker-compose`` will be ``.../bin/dcw``
+        
+        Upstart
+        -------
+        
+        The command ``dc2service --upstart generate /opt/docker/mongo/docker-compose.yml`` will
+        generate the file ``/etc/init/mongo-docker.conf``::
+        
+          description "mongo container on port 27017"
+          author "Anthon van der Neut <a.van.der.neut@ruamel.eu> (dc2service 0.1.0.dev)"
+          start on filesystem and started docker
+          stop on runlevel [!2345]
+          respawn
+          
+          pre-start script
+            /opt/util/docker-compose/bin/docker-compose -f /opt/docker/mongo/docker-compose.yml up -d --no-recreate
+          end script
+          
+          script
+            sleepWhileAppIsUp(){
+              while docker ps --filter=name=mongo | grep -qF mongo ; do
+                sleep 2
+              done
+            }
+          
+            sleepWhileAppIsUp
+          end script
+          
+          post-stop script
+            if docker ps --filter=name=mongo | grep -qF mongo; then
+              /opt/util/docker-compose/bin/docker-compose -f /opt/docker/mongo/docker-compose.yml stop
+            fi
+          end script
+        
+        .. example code mongo-docker-1.conf
+        
+        If you have ``ruamel.dcw`` installed ``.../bin/docker-compose`` will be ``.../bin/dcw``
+        
+        
+        Expanding environment variables
+        -------------------------------
+        
+        If you use environment variables in a version 1 docker-compose.yml
+        file in your YAML file they will be expanded if the are of the form
+        `${XYZ}`. The other form `$XYZ` is not expanded. You should however
+        consider installing ``ruamel.dcw`` and using the version 2 format as
+        that can handle the expansion dynamically and allow defaults to be
+        specified in the YAML file, as well as storing the environment variables for the
+        Dockerfile to use.
+        
+        Expansion is only relevant for the parts that are copied (external
+        port numbers, name of container).
+        
+        If you use this feature make sure that the environment variables are set in the
+        conf file. In ``systemd`` with::
+        
+          [Service]
+          Environment=DOCKERIMAPPORT=143
+        
+        and in Upstart::
+        
+          env DOCKERIMAPPORT=143
+        
+        ``dc2service`` will try to insert the right definitions for you.
+        
+        **For version 2 files and when using ``ruamel.dcw`` this is not necessary and 
+        therefore not done**
+        
+        Finding ``docker-compose``
+        --------------------------
+        
+        As the full path to ``docker-compose`` or ``dcw`` will be inserted in
+        the configuration file, this path needs to be
+        available. ``dc2service`` will search
+        ``/opt/util/docker-compose/bin/`` and the PATH environement variable
+        for the locations of ``dcw`` and ``docker-compose``. If your
+        ``docker-compose`` is not in your path you can hand the full path in
+        with the option ``--docker-compose`` or specify this in the file
+        ``~/.config/ruamel_dc2service/ruamel_dc2service.pon``::
+        
+          dict(
+              glbl={'docker-compose': '/opt/util/docker-compose/bin/docker-compose'},
+          )
+        
+Keywords: docker-compose upstart systemd init service
+Platform: UNKNOWN
+Classifier: Development Status :: 4 - Beta
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python
