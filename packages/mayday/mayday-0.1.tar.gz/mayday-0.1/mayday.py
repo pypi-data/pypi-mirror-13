@@ -1,0 +1,1 @@
+print('Mayday rocks \m/')
