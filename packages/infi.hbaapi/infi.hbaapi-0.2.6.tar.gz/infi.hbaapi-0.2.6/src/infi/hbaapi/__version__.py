@@ -1,0 +1,10 @@
+__version__ = "0.2.6"
+__git_commiter_name__ = "Guy Rozendorn"
+__git_commiter_email__ = "guy@rzn.co.il"
+__git_branch__ = '(HEAD detached at v0.2.6)'
+__git_remote_tracking_branch__ = '(No remote tracking)'
+__git_remote_url__ = '(Not remote tracking)'
+__git_head_hash__ = '94a2cb213a60c67197b6576c7e2c32b1e157fdf6'
+__git_head_subject__ = 'Finished Release v0.2.6'
+__git_head_message__ = '* develop:\n  HPT-1722 expose iter_port_mappings'
+__git_dirty_diff__ = ''
