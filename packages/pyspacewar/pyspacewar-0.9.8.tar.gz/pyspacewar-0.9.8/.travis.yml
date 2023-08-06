@@ -1,0 +1,18 @@
+language: python
+sudo: false
+python:
+    - 2.7
+addons:
+  apt:
+    packages:
+      - python-pygame
+virtualenv:
+    system_site_packages: true
+install:
+    - pip install coverage coveralls -e .
+script:
+    - coverage run --source=src/pyspacewar test.py
+after_success:
+    - coveralls
+notifications:
+    email: false
