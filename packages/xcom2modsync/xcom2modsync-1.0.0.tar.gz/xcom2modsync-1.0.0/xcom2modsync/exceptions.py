@@ -1,0 +1,2 @@
+class ModNotFound(Exception):
+    pass
