@@ -1,0 +1,46 @@
+#!/usr/bin/env python2
+
+from setuptools import setup
+import sys
+
+# workaround issue on OSX, where sys.prefix is not an installable location
+if sys.platform == 'darwin' and sys.prefix.startswith('/System'):
+    data_prefix = '.'
+else:
+    data_prefix = sys.prefix
+
+setup(name='fdroidserver',
+      version='0.6.0',
+      description='F-Droid Server Tools',
+      long_description=open('README.md').read(),
+      author='The F-Droid Project',
+      author_email='team@f-droid.org',
+      url='https://f-droid.org',
+      packages=['fdroidserver', 'fdroidserver.asynchronousfilereader'],
+      scripts=['fdroid', 'fd-commit'],
+      data_files=[
+          (data_prefix + '/share/doc/fdroidserver/examples',
+              ['buildserver/config.buildserver.py',
+                  'examples/config.py',
+                  'examples/makebuildserver.config.py',
+                  'examples/opensc-fdroid.cfg',
+                  'examples/fdroid-icon.png']),
+      ],
+      install_requires=[
+          'mwclient',
+          'paramiko',
+          'Pillow',
+          'apache-libcloud >= 0.14.1',
+          'pyasn1',
+          'pyasn1-modules',
+          'PyYAML',
+          'requests',
+      ],
+      classifiers=[
+          'Development Status :: 3 - Alpha',
+          'Intended Audience :: Developers',
+          'License :: OSI Approved :: GNU Affero General Public License v3 or later (AGPLv3+)',
+          'Operating System :: POSIX',
+          'Topic :: Utilities',
+      ],
+      )
