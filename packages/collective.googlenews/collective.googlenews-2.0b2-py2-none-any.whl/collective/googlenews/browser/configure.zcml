@@ -1,0 +1,31 @@
+<configure xmlns="http://namespaces.zope.org/zope"
+    xmlns:browser="http://namespaces.zope.org/browser">
+
+  <browser:page
+      for="plone.app.layout.navigation.interfaces.INavigationRoot"
+      name="googlenews-sitemap.xml"
+      class=".sitemap.GoogleNewsSiteMap"
+      template="sitemap.pt"
+      permission="zope2.Public"
+      layer="collective.googlenews.interfaces.IGoogleNewsLayer"
+      />
+
+  <browser:page
+      for="*"
+      name="googlenews-logo"
+      class=".views.GoogleNewsLogo"
+      permission="zope.Public"
+      layer="collective.googlenews.interfaces.IGoogleNewsLayer"
+      />
+
+  <browser:viewlet
+      name="googlenews.meta"
+      for="collective.googlenews.behaviors.interfaces.IGoogleNews"
+      manager="plone.app.layout.viewlets.interfaces.IHtmlHead"
+      class=".viewlets.GoogleNewsMetaTagViewlet"
+      layer="collective.googlenews.interfaces.IGoogleNewsLayer"
+      template="meta.pt"
+      permission="zope2.View"
+      />
+
+</configure>
