@@ -1,0 +1,10 @@
+__version__ = "0.4.9"
+__git_commiter_name__ = "Guy Rozendorn"
+__git_commiter_email__ = "guy@rzn.co.il"
+__git_branch__ = '(HEAD detached at v0.4.9)'
+__git_remote_tracking_branch__ = '(No remote tracking)'
+__git_remote_url__ = '(Not remote tracking)'
+__git_head_hash__ = '3d6a4651ac6d28d35d071e4371de821345a977d4'
+__git_head_subject__ = 'Finished Release v0.4.9'
+__git_head_message__ = "* develop:\n  HPT-1722 use HBAAPI instead of parsing fcinfo for mutlipath devices' path luns on Solaris\n  remove call stack to stop confusion with exception tracebacks\n  remove unused dependency\n  STORAGEMODEL-360 fix parsing of veritas output on Solaris\n  STORAGEMODEL-361 fix parsing of fcinfo in solaris"
+__git_dirty_diff__ = ''
