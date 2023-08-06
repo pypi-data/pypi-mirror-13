@@ -1,0 +1,238 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>django-avatar &mdash; django-avatar 2.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '2.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="django-avatar 2.0 documentation" href="#" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="nav-item nav-item-0"><a href="#">django-avatar 2.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="django-avatar">
+<h1>django-avatar<a class="headerlink" href="#django-avatar" title="Permalink to this headline">¶</a></h1>
+<p>Django-avatar is a reusable application for handling user avatars. It has the
+ability to default to <a class="reference external" href="http://gravatar.com">Gravatar</a> if no avatar is found for a certain user.
+Django-avatar automatically generates thumbnails and stores them to your default
+file storage backend for retrieval later.</p>
+<div class="section" id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
+<p>If you have <a class="reference external" href="http://www.pip-installer.org/">pip</a> installed, you can simply run the following command
+to install django-avatar:</p>
+<div class="highlight-python"><div class="highlight"><pre>pip install django-avatar
+</pre></div>
+</div>
+<p>Included with this application is a file named <code class="docutils literal"><span class="pre">setup.py</span></code>. It&#8217;s possible to
+use this file to install this application to your system, by invoking the
+following command:</p>
+<div class="highlight-python"><div class="highlight"><pre>python setup.py install
+</pre></div>
+</div>
+<p>Once that&#8217;s done, you should be able to begin using django-avatar at will.</p>
+</div>
+<div class="section" id="usage">
+<h2>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h2>
+<p>To integrate <code class="docutils literal"><span class="pre">django-avatar</span></code> with your site, there are relatively few things
+that are required. A minimal integration can work like this:</p>
+<ol class="arabic">
+<li><p class="first">List this application in the <code class="docutils literal"><span class="pre">INSTALLED_APPS</span></code> portion of your settings
+file. Your settings file will look something like:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">INSTALLED_APPS</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="c1"># ...</span>
+    <span class="s1">&#39;avatar&#39;</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">Migrate your database:</p>
+<div class="highlight-python"><div class="highlight"><pre>python manage.py migrate
+</pre></div>
+</div>
+</li>
+<li><p class="first">Add the avatar urls to the end of your root urlconf. Your urlconf
+will look something like:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">urlpatterns</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="c1"># ...</span>
+    <span class="p">(</span><span class="s1">r&#39;^avatar/&#39;</span><span class="p">,</span> <span class="n">include</span><span class="p">(</span><span class="s1">&#39;avatar.urls&#39;</span><span class="p">)),</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">Somewhere in your template navigation scheme, link to the change avatar
+page:</p>
+<div class="highlight-python"><div class="highlight"><pre>&lt;a href=&quot;{% url &#39;avatar_change&#39; %}&quot;&gt;Change your avatar&lt;/a&gt;
+</pre></div>
+</div>
+</li>
+<li><p class="first">Wherever you want to display an avatar for a user, first load the avatar
+template tags:</p>
+<div class="highlight-python"><div class="highlight"><pre>{% load avatar_tags %}
+</pre></div>
+</div>
+<p>Then, use the <code class="docutils literal"><span class="pre">avatar</span></code> tag to display an avatar of a default size:</p>
+<div class="highlight-python"><div class="highlight"><pre>{% avatar user %}
+</pre></div>
+</div>
+<p>Or specify a size (in pixels) explicitly:</p>
+<div class="highlight-python"><div class="highlight"><pre>{% avatar user 65 %}
+</pre></div>
+</div>
+</li>
+</ol>
+</div>
+<div class="section" id="template-tags-and-filter">
+<h2>Template tags and filter<a class="headerlink" href="#template-tags-and-filter" title="Permalink to this headline">¶</a></h2>
+<p>To begin using these template tags, you must first load the tags into the
+template rendering system:</p>
+<div class="highlight-python"><div class="highlight"><pre>{% load avatar_tags %}
+</pre></div>
+</div>
+<dl class="docutils">
+<dt><code class="docutils literal"><span class="pre">{%</span> <span class="pre">avatar_url</span> <span class="pre">user</span> <span class="pre">[size</span> <span class="pre">in</span> <span class="pre">pixels]</span> <span class="pre">%}</span></code></dt>
+<dd>Renders the URL of the avatar for the given user. User can be either a
+<code class="docutils literal"><span class="pre">django.contrib.auth.models.User</span></code> object instance or a username.</dd>
+<dt><code class="docutils literal"><span class="pre">{%</span> <span class="pre">avatar</span> <span class="pre">user</span> <span class="pre">[size</span> <span class="pre">in</span> <span class="pre">pixels]</span> <span class="pre">%}</span></code></dt>
+<dd>Renders an HTML <code class="docutils literal"><span class="pre">img</span></code> tag for the given user for the specified size. User
+can be either a <code class="docutils literal"><span class="pre">django.contrib.auth.models.User</span></code> object instance or a
+username.</dd>
+<dt><code class="docutils literal"><span class="pre">{%</span> <span class="pre">render_avatar</span> <span class="pre">avatar</span> <span class="pre">[size</span> <span class="pre">in</span> <span class="pre">pixels]</span> <span class="pre">%}</span></code></dt>
+<dd>Given an actual <code class="docutils literal"><span class="pre">avatar.models.Avatar</span></code> object instance, renders an HTML
+<code class="docutils literal"><span class="pre">img</span></code> tag to represent that avatar at the requested size.</dd>
+<dt><code class="docutils literal"><span class="pre">{{</span> <span class="pre">request.user|has_avatar</span> <span class="pre">}}</span></code></dt>
+<dd>Given a user object returns a boolean if the user has an avatar.</dd>
+</dl>
+</div>
+<div class="section" id="global-settings">
+<h2>Global Settings<a class="headerlink" href="#global-settings" title="Permalink to this headline">¶</a></h2>
+<p>There are a number of settings available to easily customize the avatars that
+appear on the site. Listed below are those settings:</p>
+<dl class="docutils">
+<dt>AVATAR_AUTO_GENERATE_SIZES</dt>
+<dd>An iterable of integers representing the sizes of avatars to generate on
+upload. This can save rendering time later on if you pre-generate the
+resized versions. Defaults to <code class="docutils literal"><span class="pre">(80,)</span></code></dd>
+<dt>AVATAR_RESIZE_METHOD</dt>
+<dd>The method to use when resizing images, based on the options available in
+PIL. Defaults to <code class="docutils literal"><span class="pre">Image.ANTIALIAS</span></code>.</dd>
+<dt>AVATAR_STORAGE_DIR</dt>
+<dd>The directory under <code class="docutils literal"><span class="pre">MEDIA_ROOT</span></code> to store the images. If using a
+non-filesystem storage device, this will simply be appended to the beginning
+of the file name.</dd>
+<dt>AVATAR_GRAVATAR_BACKUP</dt>
+<dd>A boolean determining whether to default to the Gravatar service if no
+<code class="docutils literal"><span class="pre">Avatar</span></code> instance is found in the system for the given user. Defaults to
+True.</dd>
+<dt>AVATAR_GRAVATAR_DEFAULT</dt>
+<dd>A string determining the style of the default Gravatar. Available options
+listed in the
+<a class="reference external" href="https://en.gravatar.com/site/implement/images/#default-image">Gravatar documentation</a>.
+Ex. &#8216;retro&#8217;. Defaults to None.</dd>
+<dt>AVATAR_DEFAULT_URL</dt>
+<dd>The default URL to default to if <code class="docutils literal"><span class="pre">AVATAR_GRAVATAR_BACKUP</span></code> is set to False
+and there is no <code class="docutils literal"><span class="pre">Avatar</span></code> instance found in the system for the given user.</dd>
+<dt>AVATAR_GRAVATAR_FIELD</dt>
+<dd>The name of the user&#8217;s field containing the gravatar email. For example, if you set
+this to <code class="docutils literal"><span class="pre">gravatar</span></code> then django-avatar will get the user&#8217;s gravatar in <code class="docutils literal"><span class="pre">user.gravatar</span></code>.
+Defaults to <code class="docutils literal"><span class="pre">email</span></code>.</dd>
+<dt>AVATAR_MAX_SIZE</dt>
+<dd>File size limit for avatar upload. Default is <code class="docutils literal"><span class="pre">1024</span> <span class="pre">*</span> <span class="pre">1024</span></code> (1mb).</dd>
+</dl>
+</div>
+<div class="section" id="management-commands">
+<h2>Management Commands<a class="headerlink" href="#management-commands" title="Permalink to this headline">¶</a></h2>
+<p>This application does include one management command: <code class="docutils literal"><span class="pre">rebuild_avatars</span></code>. It
+takes no arguments and, when run, re-renders all of the thumbnails for all of
+the avatars for the pixel sizes specified in the <code class="docutils literal"><span class="pre">AVATAR_AUTO_GENERATE_SIZES</span></code>
+setting.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="#">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">django-avatar</a><ul>
+<li><a class="reference internal" href="#installation">Installation</a></li>
+<li><a class="reference internal" href="#usage">Usage</a></li>
+<li><a class="reference internal" href="#template-tags-and-filter">Template tags and filter</a></li>
+<li><a class="reference internal" href="#global-settings">Global Settings</a></li>
+<li><a class="reference internal" href="#management-commands">Management Commands</a></li>
+</ul>
+</li>
+</ul>
+
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/index.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="nav-item nav-item-0"><a href="#">django-avatar 2.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2013, django-avatar developers.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.4.
+    </div>
+  </body>
+</html>
