@@ -1,0 +1,55 @@
+<header id="header"
+    	tal:define="email python:context.portal_registry['medialog.bergensiana.interfaces.IBergensianaSettings.email'] or '';
+    			  twitter python:context.portal_registry['medialog.bergensiana.interfaces.IBergensianaSettings.twitter'] or '';
+				 facebook python:context.portal_registry['medialog.bergensiana.interfaces.IBergensianaSettings.facebook'] or '';
+				instagram python:context.portal_registry['medialog.bergensiana.interfaces.IBergensianaSettings.instagram'] or '';
+				    phone python:context.portal_registry['medialog.bergensiana.interfaces.IBergensianaSettings.phone'] or None" >
+
+		 		    
+		<link rel="stylesheet"  href="++theme++bergensiana/css/blackheader.css" />
+ 
+        <div class="top-bar">
+            <div class="container">
+                <div class="row">
+                    <div class="col-sm-6 col-xs-4" tal:condition="phone">
+                        <div class="top-number"><p><i class="fa fa-phone-square"></i>  <span tal:replace="structure phone"/></p></div>
+                    </div>
+                    <div class="col-sm-6 col-xs-8">
+                       <div class="social">
+                            <ul class="social-share">
+                                <li tal:condition="facebook">
+                                	<a href="#" tal:attributes="href facebook"><i class="fa fa-facebook"></i></a>
+                                </li>
+                                <li tal:condition="twitter">
+                                	<a href="#" tal:attributes="href twitter"><i class="fa fa-twitter"></i></a>
+                                </li>
+                                <li tal:condition="instagram">
+                                	<a href="#" tal:attributes="href instagram"><i class="fa fa-instagram"></i></a>
+                                </li>
+                                <li tal:condition="email">
+                                	<a href="#" tal:define="epost python:'mailto:' + email"
+										tal:attributes="href epost"><i class="fa fa-envelope"></i></a>
+								</li>
+								<li>
+                                	<a href="search_form"><i class="fa fa-search"></i></a>
+								</li>
+								<li>
+                                	<a href="login_form"><i class="fa fa-lock"></i></a>
+								</li>
+                            </ul>
+                       </div>
+                    </div>
+                </div>
+            </div><!--/.container-->
+        </div><!--/.top-bar-->
+
+        <nav   class="navbar navbar-inverse" role="banner">
+            <div class="black">
+ 				<tal:block tal:replace="structure provider:globalnav"/>
+            </div><!--/.container-->
+        </nav><!--/nav-->
+
+     <tal:css tal:replace="structure context/@@fontload"/>
+     
+</header><!--/header-->
+

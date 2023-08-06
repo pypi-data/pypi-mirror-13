@@ -1,0 +1,28 @@
+<section id="portefolio" class="no-padding no-margin"
+	tal:condition="exists: context/portfolio">
+	<div class="clear-floats">	
+		<div class="no-gutter">
+			<tal:repeat tal:repeat="item  context/portfolio/@@folderListing">
+			<div class="col-lg-4 col-sm-6"
+				tal:define="item_url item/getURL|item/absolute_url; 
+					image_url python:item_url + '/@@images/image'">
+				<a class="portfolio-box pat-plone-modal" 
+				    data-pat-plone-modal="image: true"
+				    href="#"
+					tal:attributes="href item_url">
+					<img class="img-responsive" alt="" src="" 
+						tal:attributes="src image_url"/>
+					<div class="portfolio-box-caption">
+						<div class="portfolio-box-caption-content">
+							<div class="project-name" tal:content="item/Title" />
+							<div class="project-category text-faded" 
+									tal:content="item/Description" />
+						</div>
+					</div>
+				</a>
+			</div>
+			</tal:repeat>
+		</div>
+	</div>
+</section>
+
