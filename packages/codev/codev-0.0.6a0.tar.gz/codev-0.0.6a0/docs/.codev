@@ -1,0 +1,130 @@
+#version: 0.0.5a3
+project: hranipex
+repositories:
+  - ./
+
+debug:
+  distfile: dist/codev-{version}.tar.gz
+
+scripts:
+  end to end:
+    try:
+      - first scripts
+    except:
+      - on error scripts
+    else:
+      - on success scripts
+    finally:
+      - cleanup scripts
+
+infrastructures:
+  simple:
+    machines:
+      webservers:
+        distribution: debian
+        release: squeeze
+      elasticservers:
+        distribution: ubuntu
+        release: trusty
+
+configurations:
+  standard:
+    provider: ansible
+    specific:
+      playbooks: provisioning/%(infrastructure)s.yml
+
+environments:
+  development:
+    performer: ssh://codev:codev@192.168.1.14
+    isolation: lxc
+#    instalace?
+#    spustitelny script? - napr pro konfiguraci vpn
+    infrastructures:
+      full:
+        machines:
+          webservers:
+            provider: lxc
+            specific:
+              distribution: debian
+              release: squeeze
+              architecture: amd64
+              number: 2
+          elasticservers:
+            provider: real
+            specific:
+              ips: [10.0.1.9, 10.0.1.10]
+        provider: ansible
+        specific:
+          playbooks: provisioning/%(infrastructure)s.yml
+
+      simple:
+        machines:
+          webservers:
+            provider: lxc
+            specific:
+              distribution:
+              release:
+              number: 1
+          databases:
+            provider: real
+            specific:
+              ip: 10.0.1.5
+
+    installations:
+      - actual
+      - live
+      - svc
+
+  staging:
+    infrastructures:
+      - simple
+#    branches:
+#      - staging/*
+#      - *-staging
+  production:
+    perfomer: ssh://codev:codev@192.168.1.13
+    isolation: lxc
+    protected: true
+    infrastructures:
+      full:
+
+        machines:
+          webservers:
+            provision: real
+            host: 10.0.1.5
+        scripts:
+          before:
+            try:
+              - first scripts
+              - sdasdsad
+            except:
+              - on error scripts
+              - sad sa
+            else:
+              - on success scripts
+            finally:
+              - cleanup scripts
+          after:
+
+        configuration: standard
+    installations:
+      - svc
+
+    branches:
+      - master
+
+    scripts:
+      begin:
+        - first scripts
+      except:
+        - error scripts
+      else:
+        - success scripts
+      finally:
+        - cleanup scripts
+
+#configuration:
+#  provider: ansible
+#    version: 1.2
+#    inventory: codev://ansible/inventory
+#    playbook: provisioning/%(infrastructure)s.yml
