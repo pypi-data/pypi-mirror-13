@@ -1,0 +1,176 @@
+#!/usr/bin/env python
+
+"""
+Use cases
+
+codev init --template=[template]
+    -- create new project
+
+codev install --environment=[environment] --infrastructure=[infrastructure] --perfomer=test.coex.cz  --isolation=[lxc]
+    -- install project
+    environment default = default
+
+    -- idempotent
+
+codev stop [environment]
+    -- stop project
+
+codev restart [environment]
+    -- stop project and run project
+
+codev run [environment]
+    -- run installed project
+
+codev upgrade [environment]
+    -- install project and run/restart
+
+codev status [environment]
+    -- show info about project status on evironment (running / stopped ...)
+
+codev scenario test -e development -i simple -v actual
+
+codev exec --environment=[environment] --infrastructure=[infrastructure] [command]
+
+
+codev configuration --environment=[environment] --infrastructure=[infrastructure]
+"""
+
+import click
+
+from codev.configuration import YAMLConfiguration
+from codev.executors import Executor, Control, Perform
+
+from os import path
+from functools import wraps
+
+
+@click.group()
+def main():
+    pass
+
+
+@main.command()
+@click.option('-f', '--filepath', default='.codev', help='Path to configuration file.')
+def init(filepath):
+    """
+    Create .codev file in current directory or in given file path.
+    """
+
+    if path.exists(filepath):
+        if not click.confirm('A file "%(filepath)s" already exists. Overwrite?' % {'filepath': filepath}):
+            return
+
+    configuration = YAMLConfiguration('')
+    try:
+        configuration.save_to_file(filepath)
+    except Exception as e:
+        raise click.ClickException(e)
+
+
+def configuration_option(f):
+    def callback(ctx, param, value):
+        configuration = YAMLConfiguration.from_file(value)
+        return configuration
+
+    return click.option('-c', '--configuration',
+                        default='.codev',
+                        help='Path to configuration file.',
+                        callback=callback)(f)
+
+
+def environment_option(f):
+    return click.argument('environment')(f)
+    # return click.option('-e', '--environment',
+    #                     help='Environment to install on')(f)
+
+
+def infrastructure_option(f):
+    return click.argument('infrastructure')(f)
+    # return click.option('-i', '--infrastructure',
+    #                     help='Infrastructure to install with')(f)
+
+
+def version_option(f):
+    return click.argument('version')(f)
+    # return click.option('-v', '--version',
+    #                     help='Mode')(f)
+
+
+def mode_option(f):
+    return click.option('-m', '--mode',
+                        type=click.Choice(['control', 'perform']),
+                        default='control',
+                        help='Mode')(f)
+
+
+def force_option(f):
+    return click.option('-f', '--force',
+                        is_flag=True,
+                        help='Force')(f)
+
+
+def all_options(f):
+    f = mode_option(f)
+    f = force_option(f)
+    f = version_option(f)
+    f = infrastructure_option(f)
+    f = environment_option(f)
+    f = configuration_option(f)
+    return f
+
+
+def configure(f):
+    @wraps(f)
+    def wrapper(configuration, environment, infrastructure, version, force, mode):
+        try:
+            configuration.current = environment, infrastructure, version
+        except ValueError:
+            raise click.BadArgumentUsage('Invalid combination of environment, infrastructure or version with configuration.')
+
+        executor_class = None
+        if mode == 'control':
+            executor_class = Control
+
+        elif mode == 'perform':
+            executor_class = Perform
+
+        executor = Executor(configuration, executor_class)
+        return f(executor, configuration, environment, infrastructure, version, force)
+
+    return wrapper
+
+
+"""
+TODO commands without confirmations
+"""
+def confirmation(message):
+    def decorator(f):
+        @wraps(f)
+        def wrapper(executor, configuration, environment, infrastructure, version, force):
+            if not force and not click.confirm(
+                message % {
+                    'project': configuration.project,
+                    'environment': environment,
+                    'infrastructure': infrastructure,
+                    'version': version
+                }
+            ):
+                raise click.Abort()
+            return f(executor)
+        return wrapper
+    return decorator
+
+
+@main.command()
+@all_options
+@configure
+@confirmation('Install project "%(project)s" on environment "%(environment)s" with infrastructure "%(infrastructure)s" at version "%(version)s"')
+def install(executor):
+    """
+    install project on environment infrastructure version
+    """
+    executor.install()
+
+
+if __name__ == "__main__":
+    main()
