@@ -1,0 +1,45 @@
+<configure
+    xmlns="http://namespaces.zope.org/zope"
+    xmlns:i18n="http://namespaces.zope.org/i18n"
+    xmlns:genericsetup="http://namespaces.zope.org/genericsetup"
+    xmlns:plone="http://namespaces.plone.org/plone"
+    xmlns:zcml="http://namespaces.zope.org/zcml"
+    i18n_domain="collective.venue">
+
+  <i18n:registerTranslations directory="locales" />
+
+  <include package="plone.browserlayer"/>
+  <include package="plone.app.event"/>
+  <include package="plone.app.registry"/>
+
+  <include package=".browser"/>
+  <includeOverrides file="overrides.zcml"/>
+
+  <plone:behavior
+      title="collective.venue event location"
+      provides=".behaviors.ILocation"
+      for="*"
+      />
+
+  <!--adapter name="venue" factory=".indexer.venue_indexer"/-->
+  <adapter name="SearchableText" factory=".indexer.searchable_text_indexer"/>
+
+  <utility
+      component=".vocabularies.SearchBaseVocabulary"
+      name="collective.venue.SearchBaseVocabulary"
+      />
+  <utility
+      component=".vocabularies.DefaultVenueVocabulary"
+      name="collective.venue.DefaultVenueVocabulary"
+      />
+
+  <genericsetup:registerProfile
+      name="default"
+      title="collective.venue"
+      directory="profiles/default"
+      description="Dexterity venue type extension."
+      for="Products.CMFPlone.interfaces.IPloneSiteRoot"
+      provides="Products.GenericSetup.interfaces.EXTENSION"
+      />
+
+</configure>

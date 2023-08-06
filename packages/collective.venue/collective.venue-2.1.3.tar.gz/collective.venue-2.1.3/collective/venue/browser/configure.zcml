@@ -1,0 +1,60 @@
+<configure
+    xmlns="http://namespaces.zope.org/zope"
+    xmlns:browser="http://namespaces.zope.org/browser"
+    xmlns:zcml="http://namespaces.zope.org/zcml"
+    i18n_domain="collective.venue">
+
+  <browser:resourceDirectory
+      name="collective.venue"
+      directory="resources"
+      />
+
+  <browser:page
+      for="collective.venue.interfaces.IVenue"
+      name="venue_view"
+      class=".venue.VenueView"
+      template="venue.pt"
+      permission="zope2.View"
+      layer="..interfaces.IVenueLayer"
+      />
+
+  <browser:page
+      for="*"
+      name="venue_view"
+      class=".venue.VenueView"
+      template="venue.pt"
+      permission="zope2.View"
+      layer="..interfaces.IVenueLayer"
+      />
+
+  <!-- BBB -->
+  <browser:page
+      for="collective.venue.interfaces.IVenue"
+      name="venue"
+      class=".venue.VenueView"
+      template="venue.pt"
+      permission="zope2.View"
+      layer="..interfaces.IVenueLayer"
+      />
+
+  <browser:page
+      name="venue-controlpanel"
+      for="Products.CMFPlone.interfaces.IPloneSiteRoot"
+      class=".controlpanel.VenueControlPanel"
+      layer="collective.venue.interfaces.IVenueLayer"
+      permission="plone.app.controlpanel.Site"
+      />
+  <configure zcml:condition="installed collective.lineage">
+    <browser:page
+        name="venue-controlpanel"
+        for="collective.lineage.interfaces.IChildSite"
+        class=".controlpanel.VenueControlPanel"
+        layer="collective.venue.interfaces.IVenueLayer"
+        permission="plone.app.controlpanel.Site"
+        />
+  </configure>
+
+  <adapter factory=".controlpanel.SearchBaseFieldWidget" />
+  <adapter factory=".controlpanel.DefaultVenueFieldWidget" />
+
+</configure>
