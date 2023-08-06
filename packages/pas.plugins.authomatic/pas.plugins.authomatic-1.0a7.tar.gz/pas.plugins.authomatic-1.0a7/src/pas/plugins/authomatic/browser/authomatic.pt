@@ -1,0 +1,45 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:metal="http://xml.zope.org/namespaces/metal"
+      xmlns:tal="http://xml.zope.org/namespaces/tal"
+      i18n:domain="pas.plugins.authomatic"
+      metal:use-macro="context/main_template/macros/master">
+
+    <metal:block fill-slot="main">
+        <h1 i18n:translate="login_title"
+            tal:condition="view/is_anon">Log in using external authenticaton providers</h1>
+        <h1 i18n:translate="add_identity_title"
+            tal:condition="not: view/is_anon">Add identity from external authenticaton providers</h1>
+        <ul>
+            <li tal:repeat="provider view/providers">
+
+                <a tal:condition="not:provider/as_form"
+                   tal:attributes="class string:${provider/buttonclasses};
+                                   href string:${context/absolute_url}/@@authomatic-handler/${provider/identifier}">
+                    <span tal:attributes="class string:${provider/iconclasses}"></span>
+                    <span tal:content="provider/title">
+                        name of oauth provider
+                    </span>
+                </a>
+
+                <form tal:condition="provider/as_form"
+                      tal:attributes="action string:${context/absolute_url}/@@authomatic-handler/${provider/identifier};"
+                      class="authomatic-handler-form">
+                    <input
+                        type="text"
+                        placeholder="Your claimed ID"
+                        name="id"
+                        tal:attributes="class string:${provider/iconclasses}"
+                    />
+                    <input
+                        type="submit"
+                        value="Authenticate"
+                        tal:attributes="class string:${provider/buttonclasses};
+                                        value: provider/title"
+                    />
+                </form>
+
+            </li>
+        </ul>
+    </metal:block>
+
+</html>
