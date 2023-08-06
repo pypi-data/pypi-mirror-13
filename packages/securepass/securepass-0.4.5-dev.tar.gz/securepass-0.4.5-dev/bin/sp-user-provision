@@ -1,0 +1,57 @@
+#!/usr/bin/python
+##
+## SecurePass CLI tools utilities
+## Provision a given user
+##
+## (c) 2013 Giuseppe Paterno' (gpaterno@gpaterno.com)
+##          GARL Sagl (www.garl.ch)
+##
+
+
+from argparse import ArgumentParser
+from securepass import utils
+from securepass import securepass
+import logging
+import sys
+
+token_types = ('iphone', 'android', 'blackberry', 'software', 'googleauth', 'securepass')
+
+parser = ArgumentParser(
+    description="Provision SecurePass user",
+    prog="sp-user-provision",
+)
+
+parser.add_argument('-D', '--debug',
+                    action='store_true', dest="debug_flag",
+                    help="Enable debug output",)
+parser.add_argument('-t', '--token',
+                    action='store', dest="token",
+                    choices=token_types,
+                    default='software',
+                    help="Select token type",)
+parser.add_argument('userid', action='store')
+values = parser.parse_args()
+
+## Set debug
+FORMAT = '%(asctime)-15s %(levelname)s: %(message)s'
+if values.debug_flag:
+    logging.basicConfig(format=FORMAT, level=logging.DEBUG)
+else:
+    logging.basicConfig(format=FORMAT, level=logging.INFO)
+
+
+## Load config
+config = utils.loadConfig()
+
+## Config the handler
+sp_handler = securepass.SecurePass(app_id=config['app_id'],
+                                   app_secret=config['app_secret'],
+                                   endpoint=config['endpoint'])
+
+
+## Send provisioning request
+try:
+    sp_handler.user_provision(user=values.userid, swtoken=values.token)
+
+except Exception as e:
+    sys.exit(e)

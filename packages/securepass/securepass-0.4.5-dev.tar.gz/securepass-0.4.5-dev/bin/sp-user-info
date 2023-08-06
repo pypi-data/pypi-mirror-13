@@ -1,0 +1,72 @@
+#!/usr/bin/python
+##
+## SecurePass CLI tools utilities
+## Detail of a user
+##
+## (c) 2013 Giuseppe Paterno' (gpaterno@gpaterno.com)
+##          GARL Sagl (www.garl.ch)
+##
+
+
+from argparse import ArgumentParser
+from securepass import utils
+from securepass import securepass
+import logging
+import sys
+
+parser = ArgumentParser(
+    description="Get user details from SecurePass",
+    prog="sp-user-info",
+)
+
+parser.add_argument('-D', '--debug',
+                    action='store_true', dest="debug_flag",
+                    help="Enable debug output",)
+parser.add_argument('userid', action='store')
+values = parser.parse_args()
+
+## Set debug
+FORMAT = '%(asctime)-15s %(levelname)s: %(message)s'
+if values.debug_flag:
+    logging.basicConfig(format=FORMAT, level=logging.DEBUG)
+else:
+    logging.basicConfig(format=FORMAT, level=logging.INFO)
+
+
+## Load config
+config = utils.loadConfig()
+
+## Config the handler
+sp_handler = securepass.SecurePass(app_id=config['app_id'],
+                                   app_secret=config['app_secret'],
+                                   endpoint=config['endpoint'])
+
+## Display info
+try:
+    myuser = sp_handler.user_info(user=values.userid)
+
+    print "User details for %s" % values.userid
+    print "================================================\n"
+    print "Name.............: %s" % myuser['name']
+    print "Surname..........: %s" % myuser['surname']
+    print "E-mail...........: %s" % myuser['email']
+    print "Mobile nr........: %s" % myuser['mobile']
+    print "National ID......: %s" % myuser['nin']
+    print "RFID tag.........: %s" % myuser['rfid']
+    print "Token type.......: %s" % myuser['token']
+    print "User status......:",
+
+    if myuser['enabled']:
+        print "Enabled"
+    else:
+        print "Disabled"
+
+    print "Password status..:",
+
+    if myuser['password']:
+        print "Enabled"
+    else:
+        print "Disabled"
+
+except Exception as e:
+    sys.exit(e)

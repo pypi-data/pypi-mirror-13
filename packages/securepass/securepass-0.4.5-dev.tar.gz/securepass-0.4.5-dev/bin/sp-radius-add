@@ -1,0 +1,86 @@
+#!/usr/bin/python
+##
+## SecurePass CLI tools utilities
+## Add a RADIUS device
+##
+## (c) 2013 Giuseppe Paterno' (gpaterno@gpaterno.com)
+##          GARL Sagl (www.garl.ch)
+##
+
+from argparse import ArgumentParser
+from securepass import utils
+from securepass import securepass
+import logging
+import sys
+
+
+parser = ArgumentParser(
+    description="Add a RADIUS in SecurePass",
+    prog="sp-radius-add",
+)
+
+
+parser.add_argument('-D', '--debug',
+                    action='store_true', dest="debug_flag",
+                    help="Enable debug output",)
+
+parser.add_argument('-f', '--fqdn',
+                    default=None,
+                    action='store', dest="fqdn",
+                    help="FQDN/Name",)
+
+parser.add_argument('-s', '--secret',
+                    default=None,
+                    action='store', dest="secret",
+                    help="Shared Secret",)
+
+parser.add_argument('-g', '--group',
+                    default=None,
+                    action='store', dest="group",
+                    help="Group name (restriction)",)
+
+parser.add_argument('-R', '--rfid',
+                    action='store_true', dest="rfid",
+                    default=False,
+                    help="Enable RFID tag as username",)
+
+parser.add_argument('-r', '--realm',
+                    action='store', dest="realm",
+                    help="Set alternate realm",)
+
+parser.add_argument('radiusip', action='store')
+
+values = parser.parse_args()
+
+
+## Set debug
+FORMAT = '%(asctime)-15s %(levelname)s: %(message)s'
+if values.debug_flag:
+    logging.basicConfig(format=FORMAT, level=logging.DEBUG)
+else:
+    logging.basicConfig(format=FORMAT, level=logging.INFO)
+
+
+## Load config
+config = utils.loadConfig()
+
+## Config the handler
+sp_handler = securepass.SecurePass(app_id=config['app_id'],
+                                   app_secret=config['app_secret'],
+                                   endpoint=config['endpoint'])
+
+## Add the user
+logging.debug("Adding RADIUS %s" % values.radiusip)
+
+try:
+
+    result = sp_handler.radius_add(
+        radius=values.radiusip,
+        name=values.fqdn,
+        secret=values.secret,
+        rfid=values.rfid,
+        group=values.group,
+        realm=values.realm)
+
+except Exception as e:
+    sys.exit(e)

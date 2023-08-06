@@ -1,0 +1,67 @@
+#!/usr/bin/python
+##
+## SecurePass CLI tools utilities
+## Modify a given user
+##
+## (c) 2013 Giuseppe Paterno' (gpaterno@gpaterno.com)
+##          GARL Sagl (www.garl.ch)
+##
+
+
+from argparse import ArgumentParser
+from securepass import utils
+from securepass import securepass
+import logging
+import sys
+
+
+parser = ArgumentParser(
+    description="Modify user in SecurePass",
+    prog="sp-user-mod",
+)
+enable_parser = parser.add_mutually_exclusive_group(required=False)
+
+parser.add_argument(
+    '-D', '--debug', action='store_true',
+    dest="debug_flag", help="Enable debug output",
+)
+enable_parser.add_argument(
+    '-d', '--disable', action='store_false',
+    dest="enable_flag", help="Disable user",
+)
+enable_parser.add_argument(
+    '-e', '--enable', action='store_true',
+    dest="enable_flag", help="Enable user",
+)
+parser.add_argument('userid', action='store')
+
+parser.set_defaults(enable_flag=None)
+values = parser.parse_args()
+
+
+## Set debug
+FORMAT = '%(asctime)-15s %(levelname)s: %(message)s'
+if values.debug_flag:
+    logging.basicConfig(format=FORMAT, level=logging.DEBUG)
+else:
+    logging.basicConfig(format=FORMAT, level=logging.INFO)
+
+## Load config
+config = utils.loadConfig()
+
+## Config the handler
+sp_handler = securepass.SecurePass(app_id=config['app_id'],
+                                   app_secret=config['app_secret'],
+                                   endpoint=config['endpoint'])
+
+try:
+    ## Disable user
+    if values.enable_flag is False:
+        sp_handler.user_disable(values.userid)
+
+    ## Enable user
+    elif values.enable_flag is True:
+        sp_handler.user_enable(values.userid)
+
+except Exception as e:
+    sys.exit(e)

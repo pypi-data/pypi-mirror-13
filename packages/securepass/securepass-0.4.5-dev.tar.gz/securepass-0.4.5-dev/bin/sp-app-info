@@ -1,0 +1,68 @@
+#!/usr/bin/python
+##
+## SecurePass CLI tools utilities
+## Detail of an application
+##
+## (c) 2013 Giuseppe Paterno' (gpaterno@gpaterno.com)
+##          GARL Sagl (www.garl.ch)
+##
+
+
+from argparse import ArgumentParser
+from securepass import utils
+from securepass import securepass
+import logging
+import sys
+
+parser = ArgumentParser(
+    description="Retrieve application's details from SecurePass",
+    prog="sp-app-info",
+)
+
+parser.add_argument('-D', '--debug',
+                    action='store_true', dest="debug_flag",
+                    help="Enable debug output",)
+
+parser.add_argument('appid', action='store')
+
+values = parser.parse_args()
+
+
+## Set debug
+FORMAT = '%(asctime)-15s %(levelname)s: %(message)s'
+if values.debug_flag:
+    logging.basicConfig(format=FORMAT, level=logging.DEBUG)
+else:
+    logging.basicConfig(format=FORMAT, level=logging.INFO)
+
+
+## Load config
+config = utils.loadConfig()
+
+## Config the handler
+sp_handler = securepass.SecurePass(app_id=config['app_id'],
+                                   app_secret=config['app_secret'],
+                                   endpoint=config['endpoint'])
+
+## Display info
+try:
+    myapp = sp_handler.app_info(app_id=values.appid)
+
+    print "Application details for %s" % values.appid
+    print "================================================\n"
+    print "Label..............: %s" % myapp['label']
+    print "Realm..............: %s" % myapp['realm']
+    print "Restrict to group..: %s" % myapp['group']
+    print "Permissions........:",
+
+    if myapp['write']:
+        print "read/write"
+    else:
+        print "read-only"
+
+    print "IPv4 network ACL...: %s" % myapp['allow_network_ipv4']
+    print "IPv6 network ACL...: %s" % myapp['allow_network_ipv6']
+    print "Privacy mode ......: %s" % myapp['privacy']
+
+except Exception as e:
+    sys.exit(e)

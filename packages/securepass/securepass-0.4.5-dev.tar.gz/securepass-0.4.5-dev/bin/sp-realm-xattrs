@@ -1,0 +1,92 @@
+#!/usr/bin/python
+##
+## SecurePass CLI tools utilities
+## Extended attributes operations on realm
+##
+## (c) 2013 Giuseppe Paterno' (gpaterno@gpaterno.com)
+##          GARL Sagl (www.garl.ch)
+##
+
+from argparse import ArgumentParser
+from securepass import utils
+from securepass import securepass
+import logging
+import sys
+
+operations = ("list", "set", "delete")
+
+parser = ArgumentParser(
+    description="Operate on realms' extended attributes in SecurePass",
+    prog="sp-realm-xattrs",
+)
+
+parser.add_argument('-D', '--debug',
+                    action='store_true', dest="debug_flag",
+                    help="Enable debug output",)
+parser.add_argument('realm', action='store')
+parser.add_argument('operation', action='store', choices=operations)
+parser.add_argument('attribute', nargs="?", default=None)
+parser.add_argument('value', nargs="?", default=None)
+
+values = parser.parse_args()
+
+## Set debug
+FORMAT = '%(asctime)-15s %(levelname)s: %(message)s'
+if values.debug_flag:
+    logging.basicConfig(format=FORMAT, level=logging.DEBUG)
+else:
+    logging.basicConfig(format=FORMAT, level=logging.INFO)
+
+## Load config
+config = utils.loadConfig()
+
+## Config the handler
+sp_handler = securepass.SecurePass(app_id=config['app_id'],
+                                   app_secret=config['app_secret'],
+                                   endpoint=config['endpoint'])
+
+realm = values.realm
+operation = values.operation
+op_attribute = values.attribute
+op_value = values.value
+## If list operation specified
+if operation == "list":
+
+    ## Display info
+    try:
+        attributes = sp_handler.realms_xattr_list(realm=realm)
+
+        print "Extended attributes details for %s" % realm
+        print "================================================\n"
+
+        for attribute, value in attributes.items():
+            print "%s: %s" % (attribute, value)
+
+    except Exception as e:
+        sys.exit(e)
+elif operation == "set":  # Set values
+    if op_attribute is None or op_value is None:
+        sys.exit(
+            "Couldn't find either attribute or value: set <attribute> <value>"
+        )
+    ## Set value
+    try:
+        sp_handler.realms_xattr_set(
+            realm=realm, attribute=op_attribute, value=op_value
+        )
+
+        print "Attribute %s set for realm %s" % (op_attribute, realm)
+
+    except Exception as e:
+        sys.exit(e)
+elif operation == "delete":  # Delete
+    if op_attribute is None:
+        sys.exit(
+            "Couldn't find attribute: delete <attribute>"
+        )
+    try:
+        sp_handler.realms_xattr_delete(realm=realm, attribute=op_attribute)
+        print "Attribute %s deleted for realm %s" % (op_attribute, realm)
+
+    except Exception as e:
+        sys.exit(e)

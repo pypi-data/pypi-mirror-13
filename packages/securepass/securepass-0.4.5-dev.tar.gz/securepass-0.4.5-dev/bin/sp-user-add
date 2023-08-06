@@ -1,0 +1,96 @@
+#!/usr/bin/python
+##
+## SecurePass CLI tools utilities
+## Users add
+##
+## (c) 2013 Giuseppe Paterno' (gpaterno@gpaterno.com)
+##          GARL Sagl (www.garl.ch)
+##
+
+from argparse import ArgumentParser
+from securepass import utils
+from securepass import securepass
+import logging
+import sys
+
+
+parser = ArgumentParser(
+    description="Add user in SecurePass",
+    prog="sp-user-add",
+)
+
+parser.add_argument('-D', '--debug',
+                    action='store_true', dest="debug_flag",
+                    help="Enable debug output",)
+
+parser.add_argument('-n', '--name',
+                    required=True,
+                    action='store', dest="name",
+                    help="First name",)
+
+parser.add_argument('-s', '--surname',
+                    required=True,
+                    default=None,
+                    action='store', dest="surname",
+                    help="Last name",)
+
+parser.add_argument('-e', '--email',
+                    required=True,
+                    action='store', dest="email",
+                    help="E-mail address",)
+
+parser.add_argument('-m', '--mobile',
+                    required=True,
+                    action='store', dest="mobile",
+                    help="Mobile number",)
+
+parser.add_argument('--nin',
+                    default=None,
+                    action='store', dest="nin",
+                    help="National Identification Number (optional)",)
+
+parser.add_argument('--rfid',
+                    default=None,
+                    action='store', dest="rfid",
+                    help="RFID tag (optional)",)
+
+parser.add_argument('--manager',
+                    default=None,
+                    action='store', dest="manager",
+                    help="Manager user id (optional)",)
+
+parser.add_argument('userid', action='store')
+
+values = parser.parse_args()
+
+
+## Set debug
+FORMAT = '%(asctime)-15s %(levelname)s: %(message)s'
+if values.debug_flag:
+    logging.basicConfig(format=FORMAT, level=logging.DEBUG)
+else:
+    logging.basicConfig(format=FORMAT, level=logging.INFO)
+
+## Load config
+config = utils.loadConfig()
+
+## Config the handler
+sp_handler = securepass.SecurePass(app_id=config['app_id'],
+                                   app_secret=config['app_secret'],
+                                   endpoint=config['endpoint'])
+
+## Add the user
+logging.debug("Adding user %s" % values.userid)
+
+try:
+    sp_handler.user_add(user=values.userid,
+                        name=values.name,
+                        surname=values.surname,
+                        email=values.email,
+                        mobile=values.mobile,
+                        nin=values.nin,
+                        rfid=values.rfid,
+                        manager=values.manager)
+
+except Exception as e:
+    sys.exit(e)

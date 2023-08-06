@@ -1,0 +1,59 @@
+#!/usr/bin/python
+##
+## SecurePass CLI tools utilities
+## Remove a RADIUS remove
+##
+## (c) 2014 Giuseppe Paterno' (gpaterno@gpaterno.com)
+##          GARL Sagl (www.garl.ch)
+##
+
+
+from argparse import ArgumentParser
+from securepass import utils
+from securepass import securepass
+import logging
+import sys
+
+parser = ArgumentParser(
+    description="Delete a RADIUS in SecurePass",
+    prog="sp-radius-del",
+)
+
+parser.add_argument('-D', '--debug',
+                    action='store_true', dest="debug_flag",
+                    help="Enable debug output",)
+parser.add_argument('radiusip', action='store')
+
+values = parser.parse_args()
+
+
+## Set debug
+FORMAT = '%(asctime)-15s %(levelname)s: %(message)s'
+if values.debug_flag:
+    logging.basicConfig(format=FORMAT, level=logging.DEBUG)
+else:
+    logging.basicConfig(format=FORMAT, level=logging.INFO)
+
+
+## Load config
+config = utils.loadConfig()
+
+## Config the handler
+sp_handler = securepass.SecurePass(app_id=config['app_id'],
+                                   app_secret=config['app_secret'],
+                                   endpoint=config['endpoint'])
+
+## ask & remove
+choice = raw_input(
+    "Do you want to delete RADIUS %s (Y/N)? " % values.radiusip
+).lower()
+
+try:
+    if choice in ("yes", "y"):
+        sp_handler.radius_del(radius=values.radiusip)
+        sys.exit(0)
+    else:
+        sys.exit(1)
+
+except Exception as e:
+    sys.exit(e)

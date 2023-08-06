@@ -1,0 +1,97 @@
+#!/usr/bin/python
+##
+## SecurePass CLI tools utilities
+## Get SSH for a given user
+## helper for AuthorizedKeysCommand in OpenSSSH
+##
+## In securepass.conf specify:
+## [nss] and realm = myrealm to assign default realm
+## [ssh] and root = user,user to assign root keys
+## [ssh] and strip_windows_domain = true to strip windows domain eg: DOMAIN\user
+##       when retrieving ssh keys
+##
+## (c) 2013 Giuseppe Paterno' (gpaterno@gpaterno.com)
+##          GARL Sagl (www.garl.ch)
+##
+
+from argparse import ArgumentParser
+from securepass import utils
+from securepass import securepass
+import logging
+
+
+def get_user_key(handler, username):
+    # Output the ssh key, if found as attribute
+    # TODO: Need to put some caching here
+    try:
+        attributes = handler.users_xattr_list(user=username)
+        return attributes.get("sshkey", None)
+    except Exception:
+        return None
+
+
+# Autoappend the realm and strip windows domain if necessary
+def expand_user(user):
+    logging.debug("Expanding user %s" % user)
+
+    if 'strip_windows_domain' in config and '\\' in user:
+        if config['strip_windows_domain'].lower() == 'true':
+            logging.debug('Stripping windows domain')
+            user = user.partition("\\")[2]
+
+
+    if not '@' in user and 'realm' in config:
+        return "%s@%s" % (user, config['realm'])
+    else:
+        return user
+
+
+parser = ArgumentParser(
+    description="List user's SSH keys",
+    prog="sp-sshkey",
+)
+
+
+parser.add_argument('-D', '--debug',
+                    action='store_true', dest="debug_flag",
+                    help="Enable debug output",)
+parser.add_argument('-r', '--realm',
+                    action='store', dest="realm",
+                    help="Set alternate realm",)
+parser.add_argument('username', action='store')
+
+values = parser.parse_args()
+
+
+## Set debug
+FORMAT = '%(asctime)-15s %(levelname)s: %(message)s'
+if values.debug_flag:
+    logging.basicConfig(format=FORMAT, level=logging.DEBUG)
+else:
+    logging.basicConfig(format=FORMAT, level=logging.INFO)
+
+
+## Load config
+config = utils.loadConfig()
+
+## Config the handler
+sp_handler = securepass.SecurePass(app_id=config['app_id'],
+                                   app_secret=config['app_secret'],
+                                   endpoint=config['endpoint'])
+
+## Check if we have a domain, otherwise append
+username = expand_user(values.username)
+logging.debug("Username is: %s" % username)
+
+# Special case for root, otherwise print ssh key
+if username.split("@")[0] == 'root' and 'root' in config:
+    logging.debug("root request detected, cycling for users")
+
+    for user in config['root'].split(','):
+        key = get_user_key(sp_handler, expand_user(user))
+        if key is not None:
+            print key
+else:
+    key = get_user_key(sp_handler, username)
+    if key is not None:
+        print key

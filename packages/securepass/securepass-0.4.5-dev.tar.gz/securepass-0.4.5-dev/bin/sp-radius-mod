@@ -1,0 +1,100 @@
+#!/usr/bin/python
+##
+## SecurePass CLI tools utilities
+## Modify RADIUS
+##
+## (c) 2013 Giuseppe Paterno' (gpaterno@gpaterno.com)
+##          GARL Sagl (www.garl.ch)
+##
+
+from argparse import ArgumentParser
+from securepass import utils
+from securepass import securepass
+import logging
+import sys
+
+parser = ArgumentParser(
+    description="Modify a RADIUS in SecurePass",
+    prog="sp-radius-mod",
+)
+rfid_parser = parser.add_mutually_exclusive_group(required=False)
+
+parser.add_argument('-D', '--debug',
+                    action='store_true', dest="debug_flag",
+                    help="Enable debug output",)
+
+parser.add_argument('-f', '--fqdn',
+                    default=None,
+                    action='store', dest="fqdn",
+                    help="FQDN/Name",)
+
+parser.add_argument('-s', '--secret',
+                    default=None,
+                    action='store', dest="secret",
+                    help="Shared Secret",)
+
+parser.add_argument('-g', '--group',
+                    default=None,
+                    action='store', dest="group",
+                    help="Group name (restriction)",)
+
+rfid_parser.add_argument('-R', '--rfid',
+                         action='store_true', dest="rfid",
+                         help="Enable RFID tag as username",)
+
+rfid_parser.add_option('-n', '--no-rfid',
+                       action='store_false', dest="rfid",
+                       help="Disable RFID tag as username",)
+
+parser.add_argument('-r', '--realm',
+                    action='store', dest="realm",
+                    help="Set alternate realm",)
+
+parser.add_argument('radiusip', action='store')
+
+parser.set_defaults(rfid=None)
+values = parser.parse_args()
+
+## Set debug
+FORMAT = '%(asctime)-15s %(levelname)s: %(message)s'
+if values.debug_flag:
+    logging.basicConfig(format=FORMAT, level=logging.DEBUG)
+else:
+    logging.basicConfig(format=FORMAT, level=logging.INFO)
+
+
+## Load config
+config = utils.loadConfig()
+
+## Config the handler
+sp_handler = securepass.SecurePass(app_id=config['app_id'],
+                                   app_secret=config['app_secret'],
+                                   endpoint=config['endpoint'])
+
+## Add the user
+logging.debug("Modifying RADIUS %s" % values.radiusip)
+
+try:
+
+    ## Grabbing previous configuration
+    radius = sp_handler.radius_info(values.radiusip)
+
+    if values.fqdn is not None:
+        radius['name'] = values.fqdn
+
+    if values.secret is not None:
+        radius['secret'] = values.secret
+
+    if values.group is not None:
+        radius['group'] = values.group.strip()
+
+    if values.rfid is not None:
+        radius['rfid'] = values.rfid
+
+    result = sp_handler.radius_modify(radius=values.radiusip,
+                                      name=radius['name'],
+                                      secret=radius['secret'],
+                                      rfid=radius['rfid'],
+                                      group=radius['group'])
+except Exception as e:
+    sys.exit(e)

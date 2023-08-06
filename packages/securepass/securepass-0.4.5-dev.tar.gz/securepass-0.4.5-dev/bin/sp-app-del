@@ -1,0 +1,57 @@
+#!/usr/bin/python
+##
+## SecurePass CLI tools utilities
+## Application remove
+##
+## (c) 2013 Giuseppe Paterno' (gpaterno@gpaterno.com)
+##          GARL Sagl (www.garl.ch)
+##
+
+from argparse import ArgumentParser
+from securepass import utils
+from securepass import securepass
+import logging
+import sys
+
+parser = ArgumentParser(
+    description="Delete an application from SecurePass",
+    prog="sp-app-del",
+)
+
+parser.add_argument('-D',
+                    '--debug',
+                    action='store_true', dest="debug_flag",
+                    help="Enable debug output",)
+
+parser.add_argument('appid', action='store')
+
+values = parser.parse_args()
+
+
+## Set debug
+FORMAT = '%(asctime)-15s %(levelname)s: %(message)s'
+if values.debug_flag:
+    logging.basicConfig(format=FORMAT, level=logging.DEBUG)
+else:
+    logging.basicConfig(format=FORMAT, level=logging.INFO)
+
+
+## Load config
+config = utils.loadConfig()
+
+## Config the handler
+sp_handler = securepass.SecurePass(app_id=config['app_id'],
+                                   app_secret=config['app_secret'],
+                                   endpoint=config['endpoint'])
+## ask & remove
+choice = raw_input(
+    "Do you want to delete application %s (Y/N)? " % values.appid
+).lower()
+
+try:
+    if choice in ("yes", "y"):
+        sp_handler.app_delete(app_id=values.appid)
+    exit(1)
+
+except Exception as e:
+    sys.exit(e)

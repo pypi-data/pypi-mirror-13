@@ -1,0 +1,73 @@
+#!/usr/bin/python
+##
+## SecurePass CLI tools utilities
+## Change/disable user's password
+##
+## (c) 2013 Giuseppe Paterno' (gpaterno@gpaterno.com)
+##          GARL Sagl (www.garl.ch)
+##
+
+from argparse import ArgumentParser
+from securepass import utils
+from securepass import securepass
+import getpass
+import logging
+import sys
+
+parser = ArgumentParser(
+    description="Change or disable user password for SecurePass",
+    prog="sp-user-passwd",
+)
+
+parser.add_argument('-D', '--debug',
+                    action='store_true', dest="debug_flag",
+                    help="Enable debug output",)
+parser.add_argument('-d', '--disable',
+                    action='store_true', dest="disable_flag",
+                    default=False,
+                    help="Disable user's password",)
+
+parser.add_argument('username', action='store')
+values = parser.parse_args()
+
+## Set debug
+FORMAT = '%(asctime)-15s %(levelname)s: %(message)s'
+if values.debug_flag:
+    logging.basicConfig(format=FORMAT, level=logging.DEBUG)
+else:
+    logging.basicConfig(format=FORMAT, level=logging.INFO)
+
+
+## Load config
+config = utils.loadConfig()
+
+## Config the handler
+sp_handler = securepass.SecurePass(app_id=config['app_id'],
+                                   app_secret=config['app_secret'],
+                                   endpoint=config['endpoint'])
+
+username = values.username
+if values.disable_flag:  # was asked to disable password
+    try:
+        sp_handler.user_password_disable(values.username.strip())
+        print "Password removed."
+    except Exception as e:
+        sys.exit(e)
+    sys.exit(0)
+else:  # was asked to change the password
+    password = getpass.getpass()
+    verifypw = getpass.getpass(prompt='Verify Password: ')
+
+    ## if matches
+    if password == verifypw:
+        try:
+            sp_handler.user_password_change(
+                user=username,
+                password=password
+            )
+            print "Password changed."
+        except Exception as e:
+            sys.exit(e)
+
+    else:
+        sys.exit("Passwords don't match!")

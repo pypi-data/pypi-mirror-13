@@ -1,0 +1,62 @@
+#!/usr/bin/python
+##
+## SecurePass CLI tools utilities
+## Test authentication
+## Exits 0 if ok, 1 if not authenticated
+##
+## (c) 2013 Giuseppe Paterno' (gpaterno@gpaterno.com)
+##          GARL Sagl (www.garl.ch)
+##
+
+from argparse import ArgumentParser
+from securepass import utils
+from securepass import securepass
+import logging
+import sys
+
+parser = ArgumentParser(
+    description="Test authentication for SecurePass",
+    prog="sp-user-auth",
+)
+
+parser.add_argument('-D', '--debug',
+                    action='store_true', dest="debug_flag",
+                    help="Enable debug output",)
+parser.add_argument('-o', '--no-output',
+                    action='store_true', dest="nooutput_flag",
+                    help="Suppress output",)
+parser.add_argument("username", action="store")
+parser.add_argument("password", action="store")
+
+values = parser.parse_args()
+
+## Set debug
+FORMAT = '%(asctime)-15s %(levelname)s: %(message)s'
+if values.debug_flag:
+    logging.basicConfig(format=FORMAT, level=logging.DEBUG)
+else:
+    logging.basicConfig(format=FORMAT, level=logging.INFO)
+
+
+## Load config
+config = utils.loadConfig()
+
+## Config the handler
+sp_handler = securepass.SecurePass(app_id=config['app_id'],
+                                   app_secret=config['app_secret'],
+                                   endpoint=config['endpoint'])
+
+# Test the actual authentication
+try:
+    if sp_handler.user_auth(user=values.username,
+                            secret=values.password):
+        if not values.nooutput_flag:
+            print "Authenticated!"
+    else:
+        if not values.nooutput_flag:
+            sys.exit("Access denied.")
+
+except Exception as e:
+    if not values.nooutput_flag:
+        sys.exit(e)
+    sys.exit(1)

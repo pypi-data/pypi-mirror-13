@@ -1,0 +1,70 @@
+#!/usr/bin/python
+##
+## SecurePass CLI tools utilities
+## Test group membership
+## Exits 0 if ok, 1 if not belongs
+##
+## (c) 2013 Giuseppe Paterno' (gpaterno@gpaterno.com)
+##          GARL Sagl (www.garl.ch)
+##
+
+
+from argparse import ArgumentParser
+from securepass import utils
+from securepass import securepass
+import logging
+import sys
+
+
+parser = ArgumentParser(
+    description="Test group membership for a SecurePass user",
+    prog="sp-group-member",
+)
+
+parser.add_argument('-D', '--debug',
+                    action='store_true', dest="debug_flag",
+                    help="Enable debug output",)
+
+parser.add_argument('-o', '--no-output',
+                    action='store_true', dest="nooutput_flag",
+                    help="Suppress output",)
+
+parser.add_argument('userid', action='store')
+parser.add_argument('group', action='store')
+
+
+values = parser.parse_args()
+
+## Set debug
+FORMAT = '%(asctime)-15s %(levelname)s: %(message)s'
+if values.debug_flag:
+    logging.basicConfig(format=FORMAT, level=logging.DEBUG)
+else:
+    logging.basicConfig(format=FORMAT, level=logging.INFO)
+
+
+## Load config
+config = utils.loadConfig()
+
+## Config the handler
+sp_handler = securepass.SecurePass(app_id=config['app_id'],
+                                   app_secret=config['app_secret'],
+                                   endpoint=config['endpoint'])
+
+## Test the actual authentication
+try:
+    if sp_handler.group_member(user=values.userid, group=values.group):
+        if not values.nooutput_flag:
+            print "User %s belongs to group %s!" % (
+                values.userid, values.group)
+        sys.exit(0)
+    else:
+        if not values.nooutput_flag:
+            print "User %s not in group %s!" % (
+                values.userid, values.group)
+        sys.exit(1)
+
+except Exception as e:
+    if not values.nooutput_flag:
+        sys.exit(e)
+    sys.exit(1)
