@@ -1,0 +1,18 @@
+{% load crispy_forms_filters %}
+{% load l10n %}
+<div class="ng-form-row">
+<div class="ng-form-controls {{ field_class }}"{% if flat_attrs %} {{ flat_attrs|safe }}{% endif %}>
+    {% include 'ngkit/layout/field_errors_block.html' %}
+
+{% if inline_class %}<div class="ng-grid">{% endif %}
+    {% for choice in field.field.choices %}
+      <div class="{% if inline_class %}ng-width-1-{{field.field.choices|length }}{% else %}radio{% endif %}">
+            <input type="radio"{% if choice.0|stringformat:"s" == field.value|stringformat:"s" %} checked="checked"{% endif %} name="{{ field.html_name }}" id="id_{{ field.html_name }}_{{ forloop.counter }}" value="{{ choice.0|unlocalize }}" {{ field.field.widget.attrs|flatatt }}><label for="id_{{ field.html_name }}_{{ forloop.counter }}">{{ choice.1|unlocalize }}</label>
+        </label>
+      </div>
+    {% endfor %}
+{% if inline_class %}</div> {# class="ng-grid"  #}{% endif %}
+
+    {% include 'ngkit/layout/help_text.html' %}
+</div>
+</div>

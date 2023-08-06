@@ -1,0 +1,25 @@
+{% extends "eventcalendar/base.html" %}
+{% load static from staticfiles %}
+{% load i18n %}
+
+{% block pagetitle %}Events{% endblock %}
+
+{% block extra_head %}
+    <link rel="stylesheet" type="text/css" href="{% static "eventcalendar/bootstrap-datepaginator.css" %}">
+    <link rel="stylesheet" type="text/css" href="{% static "select2/dist/css/select2.min.css" %}">
+{% endblock %}
+
+
+{% block body %}
+    <h1>Upcoming Events</h1>
+
+    {% include "_widgets/_filter.html" with form=form %}
+    <div id="searchresults">
+    {% include "_widgets/_occurrence_tile_by_date.html" with object_list=page_obj.object_list %}
+    </div>
+
+{% endblock %}
+
+{% block footer_js %}
+    {% include "_widgets/_filter_js.html" %}
+{% endblock footer_js %}

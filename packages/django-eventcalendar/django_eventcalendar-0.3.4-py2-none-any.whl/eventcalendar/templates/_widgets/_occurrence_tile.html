@@ -1,0 +1,17 @@
+{% load humanize %}
+{# requires variables: object, include_date #}
+<div> {# This gets the styling for the automatic layout#}
+    <div class="ng-panel ng-panel-card" itemscope itemtype="http://schema.org/{{ object.event.category.event_type }}">
+        {% if object.image %}<div class="ng-panel-teaser">
+            <a href="{{ object.event_url }}">
+                <img src="{{ object.image }}" width="490" height="277" alt="{{ object.title }}" />
+            </a>
+        </div>{% endif %}
+        <h3 class="ng-panel-title"><a href="{{ object.event_url }}" itemprop="url"><span itemprop="name">{{ object.title }}</span></a></h3>
+        <p class="ng-margin-bottom-remove" itemprop="startDate" datetime="{{ object.start_time.isoformat }}">{% if include_date %}{{ object.start_time|naturalday:"n-j-Y"|capfirst }} @{% endif %} {{ object.start_time|date:"P" }}</p>
+        <div class="location" itemprop="location" itemscope itemtype="address">
+            {% if object.location_name %}<p class="ng-margin-bottom-remove ng-text-bold" itemprop="name">{{ object.location_name }}</p>{% endif %}
+            <p class="ng-margin-remove">{% if object.parsable_address %}<span itemprop="streetAddress">{{ object.street_address }}</span>, <span itemprop="addressLocality">{{ object.city }}</span>, <span itemprop="addressRegion">{{ object.state }}</span> <span itemprop="postalCode">{{ object.zipcode }}</span>{% else %}{{ object.raw_location }}{% endif %}</p>
+        </div>
+    </div>
+</div>

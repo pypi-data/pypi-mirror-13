@@ -1,0 +1,195 @@
+{% extends "eventcalendar/event_form_base.html" %}
+{% load i18n %}
+{% load static from staticfiles %}
+{% load crispy_forms_tags %}
+
+{% block pagetitle %}Create Event{% endblock %}
+
+{% block extra_head %}
+    {{ block.super }}
+    {{ form.media }}
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.10.6/moment.min.js"></script>
+    <script type="text/javascript" src="{% static "eventcalendar/inlines.js" %}"></script>
+    <style type="text/css">
+        .asteriskField {
+            color: #f00;
+        }
+        .empty-form {
+            display: none;
+        }
+        .inline-group {
+            margin-top: 20px;
+        }
+        .inline-related + .inline-related {
+            margin-top: 20px;
+        }
+        .inline-deletelink {
+            float: right;
+            color: #F00;
+        }
+        .ng-form-icon-right {
+            position: relative;
+            display: inline-block;
+            max-width: 100%;
+        }
+        .ng-form-icon-right>[class*='ng-icon-'],
+        .ng-form-icon-right>[class='ng-close'] {
+            position: absolute;
+            top: 50%;
+            right: 0;
+            width: 30px;
+            margin-top: -7px;
+            font-size: 14px;
+            color: #999;
+            text-align: center;
+            pointer-events: none;
+        }
+        .ng-form-icon-right>[class='ng-close'] {
+            pointer-events: auto;
+            margin-top: -10px;
+        }
+  </style>
+{% endblock extra_head %}
+
+{% block body %}
+    <div class="ng-width ng-container-center" style="max-width: 500px">
+
+        <form class="ng-form ng-form-stacked" method="POST" {% if form.is_multipart %} enctype="multipart/form-data"{% endif %}>
+
+            {% crispy form form.form_helper %}
+
+            {% for inline in inlines %}
+            <div class="inline-group" id="{{ inline.prefix }}-group">
+                <h3>{{ inline.prefix|capfirst }}</h3>
+                {{ inline.management_form|crispy }}
+                {{ inline.non_form_errors }}
+                {% for formset in inline %}
+                  {% include "eventcalendar/_schedule_inline.html" %}
+                {% endfor %}
+
+                {% include "eventcalendar/_schedule_inline.html" with formset=inline.empty_form schedule_helper=schedule_helper empty=True only %}
+
+            </div>
+            {% endfor %}
+          <div class="ng-form-row ng-margin-top">
+            {% if object.id %}<a href="{% url "eventcalendar-delete-event" slug=object.slug %}" class="ng-button ng-button-danger ng-float-left" />{% trans "Delete" %}</a>{% endif %}
+
+            <span class="ng-float-right">
+                <input type="button" class="ng-button" value="{% trans "Cancel" %}" />
+                <input type="submit" class="ng-button ng-button-success" value="{% trans "Save" %}">
+            </span>
+          </div>
+
+        </form>
+    </div>
+    <script type="text/autocomplete" id="venue-autcomplete">{% verbatim %}
+        <ul class="ng-nav ng-nav-autocomplete ng-autocomplete-results">
+            {{~items}}
+            <li data-value="{{ $item.name}}" data-id="{{ $item.id }}" data-address="{{ $item.address }}">
+                <a>{{ $item.name }}</a>
+            </li>
+            {{/items}}
+        </ul>
+    {% endverbatim %}</script>
+{% endblock body %}
+
+{% block footer_js %}
+    {{ block.super }}
+    <script type="text/javascript">
+    $('#id_age_range').on("change", function(){
+        var $this = $(this),
+            value = $this.prop("value").split(";");
+        $("#id_min_age").val(value[0]);
+        $("#id_max_age").val(value[1]);
+    });
+    $("#{{ inlines.0.prefix|escapejs }}-group .inline-related").stackedFormset({
+        prefix: "{{ inlines.0.prefix|escapejs }}",
+        deleteText: "{% filter escapejs %}{% trans "Remove" %}{% endfilter %}",
+        addText: "{% filter escapejs %}{% blocktrans with verbose_name=inlines.0.opts.verbose_name|capfirst %}Add another schedule{% endblocktrans %}{% endfilter %}"
+    });
+
+    function showDates(container, dates) {
+        var output = [],
+            outstr = '';
+        for (var i = 0; i < dates.length; i++) {
+            if (dates[i] instanceof Date)
+                output.push("<li>" + moment(dates[i]).format("ddd M-D-YYYY h:mm A") + "</li>");
+            else
+                output.push("<li>" + dates[i] + "</li>");
+        };
+        outstr = output.join("");
+        container.html(outstr);
+        $('.schedule-dates').html(outstr);
+    }
+
+    function handleRuleChange(eventObject) {
+        var $target = $(eventObject.target),
+            $container = $target.parents('.inline-related'),
+            baseId = $container.attr('id'),
+            $startDate = $("#id_" + baseId + "-begins_0"),
+            $startTime = $("#id_" + baseId + "-begins_1"),
+            $recurring = $("#id_" + baseId + "-schedule_text"),
+            $rrule = $("#id_" + baseId + "-rrule_str"),
+            text = $recurring.val(),
+            startDate = $startDate.val(),
+            startTime = $startTime.val(),
+            max = 30,
+            dates,
+            rule,
+            opts,
+            $scheduleDates = $container.find(".schedule-dates");
+        opts = RRule.parseText(text);
+        if (opts){
+            rule = RRule.fromText(text);
+            opts = rule.origOptions
+        } else {
+            opts = {count: 1, freq: 2}
+        }
+        opts.dtstart = new Date(startDate + " " + startTime);
+        rule = new RRule(opts);
+        $rrule.val(rule.toString());
+
+        dates = rule.all(function(date, i) {
+            if (!rule.options.count && i === max) {return false;}
+            return true;
+        })
+
+        if (dates.length === max) dates.push("&hellip;");
+        showDates($scheduleDates, dates);
+    }
+
+    $(document).ready(function() {
+        $("#id_schedules-0-schedule_text").change(handleRuleChange);
+        $("#id_schedules-0-begins_0").change(handleRuleChange);
+        $("#id_schedules-0-begins_1").change(handleRuleChange);
+        handleRuleChange({target: $('#id_schedules-0-begins_0')});
+        var autoElem = $("#div_id_location_name");
+        autoElem.addClass('ng-position-relative');
+        var autocomplete = NGkit.autocomplete(autoElem, {source: "/events/venues/", template: $("#venue-autcomplete").html()});
+    });
+
+    $(document).on("selectitem.ng.autocomplete", function(event, data, acobject) {
+        $("#id_venue").val(data.id);
+        $("#id_raw_location").val(data.address).prop("readonly", true);
+        $("#id_location_name").prop("readonly", true);
+        $("#div_id_location_name .ng-close").removeClass('ng-hidden');
+    });
+    $("#div_id_location_name .ng-close").on('click', function(event) {
+        $("#id_venue").val("");
+        $("#id_raw_location").val("").prop("readonly", false);
+        $("#id_location_name").val("").prop("readonly", false);
+        $("#div_id_location_name .ng-close").addClass('ng-hidden');
+    });
+    $(document).on("inline.add", function setupNewInline(event) {
+        var numforms = $("#id_{{ inlines.0.prefix }}-TOTAL_FORMS").val(),
+            numforms_zero = numforms - 1,
+            $row = $(event.target);
+        $row.find(".inline-number").append(numforms);
+        $("#id_schedules-" + numforms_zero + "-duration").ionRangeSlider();
+        $("#id_schedules-" + numforms_zero + "-schedule_text").change(handleRuleChange);
+        $("#id_schedules-" + numforms_zero + "-begins_0").change(handleRuleChange);
+        $("#id_schedules-" + numforms_zero + "-begins_1").change(handleRuleChange);
+    });
+    </script>
+
+{% endblock footer_js %}

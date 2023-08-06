@@ -1,0 +1,52 @@
+{% load i18n %}
+<script type="text/html" id="hstore-row-template-{{ field_name }}" class="hstore-row-template-inline">
+    <tr>
+        <td class="ng-width-4-10">
+            <input type="text" placeholder="{% trans 'label' %}" value="<%= key %>" style="width:100%;">
+        </td>
+        <td class="ng-width-5-10">
+            <input style="width:100%" value="<%= _.escape(value) %>" type="text" placeholder="{% trans 'price' %}">
+        </td>
+        <td class="ng-width-1-10">
+            <a href="#" class="remove-row" title="{% trans 'remove price' %}">
+                <img src="{{ STATIC_URL }}admin/img/icon_deletelink.gif" width="10" height="10">
+            </a>
+        </td>
+    </tr>
+</script>
+
+<script type="text/html" id="hstore-ui-template-{{ field_name }}">
+    <div class="hstore ng-form-row" id="hstore-{{ field_name }}">
+        <label class="ng-form-label"><%= label %></label>
+        <% if(help && help != '') { %>
+            <p class="ng-form-help-block"><%= help %></p>
+        <% } %>
+
+        <table class="ng-table ng-table-condensed hstore-rows">
+            <% if(errors){ %>
+                <ul class="ng-text-danger">
+                    <%= errors %>
+                </ul>
+            <% } %>
+            <% for(key in data){ %>
+                <%= _.template($('.hstore-row-template-inline').eq(0).html(), { 'key': key, 'value': data[key] }) %>
+            <% } %>
+        </table>
+
+        <div class="form-row field-data hstore-textarea" style="display:none">
+            <div>
+                <label for="<%= id %>" class="required">{% trans 'Raw textarea' %}:</label>
+                <textarea class="vLargeTextField" cols="40" id="<%= id %>" name="<%= name %>" rows="10"><%= value %></textarea>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <a href="#" class="hs-add-row" title="{% trans 'Add a price' %}">
+                <img src="{{ STATIC_URL }}admin/img/icon_addlink.gif" width="10" height="10" alt="{% trans 'Add a price' %}">
+                {% trans "Add a price" %}
+            </a>
+        </div>
+    </div>
+</script>
+
+<script>$(document).ready(function() { initDjangoHStoreWidget('{{ field_name }}') });</script>

@@ -1,0 +1,67 @@
+{% extends "eventcalendar/event_form_base.html" %}
+{% load i18n %}
+{% load static from staticfiles %}
+{% block extra_head %}
+{{ block.super }}
+{{ form.media }}
+<script type="text/javascript" src="{% static "eventcalendar/inlines.js" %}"></script>
+{% endblock %}
+
+{% block body %}
+<style type="text/css">
+    .ng-form-required label:after {
+        content: "*";
+        color: #f00;
+    }
+    .empty-form {display: none;}
+</style>
+<div class="ng-width ng-container-center" style="max-width: 500px">
+<form action="." method="post" class="ng-form ng-form-stacked">{% csrf_token %}
+  {% if form.non_field_errors %}
+  <div class="ng-alert ng-alert-danger">{{ form.non_field_errors|join:"<br \>" }}</div>
+  {% endif %}
+
+{% for field in form.hidden_fields %}
+  {{ field }}
+{% endfor %}
+  {% for field in form.visible_fields %}
+    {% if field.name == 'price_info' %}
+      <div class="ng-form-row {{ field.css_classes }}">
+        {{ field.label_tag }}
+        {% if field.help_text %}
+        <p class="ng-form-help-block">{{ field.help_text }}</p>
+        {% endif %}
+        {% if field.errors %}
+        <p class="ng-text-danger">{{ field.errors|join:"<br \>" }}</p>
+        {% endif %}
+        {{ field }}
+      </div>
+    {% else %}
+      {% include "eventcalendar/_form_row.html" %}
+    {% endif %}
+  {% endfor %}
+
+{% for inline in inlines %}
+  <div class="ng-form-row">
+  <h3>Schedules</h3>
+    {% include "eventcalendar/_schedule_inline.html" with formset=inline %}
+  </div>
+{% endfor %}
+
+  <div class="ng-form-row ng-float-right">
+    <input type="button" class="ng-button" value="{% trans "Cancel" %}" />
+    <input type="submit" class="ng-button ng-button-success" value="{% trans "Save" %}">
+  </div>
+
+</form>
+</div>
+
+<script type="text/javascript">
+  $('#id_age_range').on("change", function(){
+    var $this = $(this),
+        value = $this.prop("value").split(";");
+    $("#id_min_age").val(value[0]);
+    $("#id_max_age").val(value[1]);
+  });
+</script>
+{% endblock %}

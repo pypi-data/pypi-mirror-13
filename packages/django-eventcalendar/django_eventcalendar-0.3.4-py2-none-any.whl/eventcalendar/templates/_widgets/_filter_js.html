@@ -1,0 +1,79 @@
+{% load static from staticfiles %}
+<script type="text/javascript" src="{% static "eventcalendar/moment.min.js" %}"></script>
+<script type="text/javascript" src="{% static "select2/dist/js/select2.min.js" %}"></script>
+<script type="text/javascript">
+    function parseQS() {
+        var vars = [],
+            hash;
+        var q = document.URL.split('?')[1];
+        if (q !== undefined) {
+            q = q.split('&');
+            for(var i = 0; i < q.length; i++){
+                hash = q[i].split('=');
+                vars.push(hash[1]);
+                vars[hash[0]] = hash[1];
+            }
+        }
+        return vars;
+    }
+    function getCookie(name) {
+        var cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            var cookies = document.cookie.split(';');
+            for (var i = 0; i < cookies.length; i++) {
+                var cookie = jQuery.trim(cookies[i]);
+                // Does this cookie string begin with the name we want?
+
+                if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    $.ajaxSetup({
+         beforeSend: function(xhr, settings) {
+             if (!(/^http:.*/.test(settings.url) || /^https:.*/.test(settings.url))) {
+                 // Only send the token to relative URLs i.e. locally.
+                 xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
+             }
+         }
+    });
+    function submitFilterForm() {
+        var formData = $('#filterform').serialize();
+        $.get(window.location, formData, function(data, textStatus, xhr) {
+            $("#searchresults").html(data.html);
+            $('[data-ng-grid]').each(function(){
+                var ele = $(this);
+                if(!ele.data("grid")) {
+                    var plugin = NGkit.grid(ele, NGkit.Utils.options(ele.attr('data-ng-grid')));
+                }
+            });
+        });
+    }
+    $(function() {
+        var qsVars = parseQS(),
+            startDate = moment().format('YYYY-MM-DD'),
+            selectedDate = qsVars.start_date || startDate;
+        $('#filterform input, #filterform select').on('change', function(event) {
+            if ("geolocation" in navigator && $('#id_use_current_location').prop("checked")) {
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    var lat = position.coords.latitude.toString(),
+                        lon = position.coords.longitude.toString();
+                    $('#id_latitude').val(lat);
+                    $('#id_longitude').val(lon);
+                    submitFilterForm();
+                });
+            } else {
+                $('#id_latitude').val("");
+                $('#id_longitude').val("");
+                submitFilterForm();
+            }
+        });
+        $(document).on('ng-open', function(event){
+            $('#id_neighborhoods').select2();
+            $('#id_categories').select2();
+        });
+    });
+</script>

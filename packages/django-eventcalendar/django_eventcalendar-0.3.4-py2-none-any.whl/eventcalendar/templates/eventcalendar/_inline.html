@@ -1,0 +1,34 @@
+{% load i18n admin_urls admin_static %}
+<div class="inline-group" id="{{ formset.prefix }}-group">
+{{ formset.management_form }}
+{{ formset.non_form_errors }}
+
+{% for form in formset %}<div class="inline-related{% if forloop.last %} empty-form last-related{% endif %}" id="{{ formset.formset.prefix }}-{% if not forloop.last %}{{ forloop.counter0 }}{% else %}empty{% endif %}">
+
+  {% if form.form.non_field_errors %}{{ form.form.non_field_errors }}{% endif %}
+  {% for field in form.visible_fields %}
+    {% include "eventcalendar/_form_row.html" %}
+  {% endfor %}
+  {% if form.needs_explicit_pk_field %}{{ form.pk_field.field }}{% endif %}
+  {{ form.fk_field.field }}
+</div>{% endfor %}
+
+<div class="inline-related empty-form last-related" id="{{ formset.prefix }}-empty">
+  {% for field in formset.empty_form.hidden_fields %}
+    {{ field }}
+  {% endfor %}
+  {% for field in formset.empty_form.visible_fields %}
+    {% include "eventcalendar/_form_row.html" %}
+  {% endfor %}
+  {{ form.fk_field.field }}
+</div>
+</div>
+<script type="text/javascript">
+(function($) {
+  $("#{{ formset.prefix|escapejs }}-group .inline-related").stackedFormset({
+    prefix: "{{ formset.prefix|escapejs }}",
+    deleteText: "{% filter escapejs %}{% trans "Remove" %}{% endfilter %}",
+    addText: "{% filter escapejs %}{% blocktrans with verbose_name=formset.opts.verbose_name|capfirst %}Add another {{ verbose_name }}{% endblocktrans %}{% endfilter %}"
+  });
+})($);
+</script>

@@ -1,0 +1,80 @@
+{% load i18n admin_urls admin_static %}
+{% load eventcalendar_tags %}
+<div class="inline-group" id="{{ formset.prefix }}-group">
+{{ formset.management_form }}
+{{ formset.non_form_errors }}
+{% for form in formset %}<div class="inline-related{% if forloop.last %} empty-form last-related{% endif %}" id="{{ formset.formset.prefix }}-{% if not forloop.last %}{{ forloop.counter0 }}{% else %}empty{% endif %}">
+
+  {% if form.form.non_field_errors %}{{ form.form.non_field_errors }}{% endif %}
+  {% for field in form.visible_fields %}
+    {% if field.name == 'start_date' or field.name == 'start_time' or field.name == 'end_time' %}
+      {% if field.name == "start_date" %}
+      <div class="ng-grid">
+      {% endif %}
+        <div class="ng-width-1-3"><div class="ng-form-row {{ field.css_classes }}">
+          {{ field.label_tag|add_class:"ng-form-label" }}
+          {% if field.help_text %}
+            <p class="ng-form-help-block">{{ field.help_text }}</p>
+          {% endif %}
+          {% if field.errors %}
+            <p class="ng-text-danger">{{ field.errors|join:"<br \>" }}</p>
+          {% endif %}
+          {% if field.name == "start_date" %}
+            <div class="ng-form-icon">
+              <i class="ng-icon-calendar"></i>
+          {% endif %}
+          {{ field|add_class:"ng-form-control ng-width-1-1" }}
+          {% if field.name == "start_date" %}
+            </div>
+          {% endif %}
+      {% if field.name == "end_time" %}
+      </div>
+      {% endif %}
+      </div></div>
+    {% else %}
+      {% include "eventcalendar/_form_row.html" %}
+    {% endif %}
+  {% endfor %}
+  {% if form.needs_explicit_pk_field %}{{ form.pk_field.field }}{% endif %}
+  {{ form.fk_field.field }}
+</div>{% endfor %}
+
+<div class="inline-related empty-form last-related" id="{{ formset.prefix }}-empty">
+  {% for field in formset.empty_form.hidden_fields %}
+    {{ field }}
+  {% endfor %}
+  {% for field in formset.empty_form.visible_fields %}
+    {% if field.name == 'start_date' or field.name == 'start_time' or field.name == 'end_time' %}
+        <div class="ng-form-row ng-width-1-3 {{ field.css_classes }}">
+          {{ field.label_tag|add_class:"ng-form-label" }}
+          {% if field.help_text %}
+            <p class="ng-form-help-block">{{ field.help_text }}</p>
+          {% endif %}
+          {% if field.errors %}
+            <p class="ng-text-danger">{{ field.errors|join:"<br \>" }}</p>
+          {% endif %}
+          {% if field.name == "start_date" %}
+            <div class="ng-form-icon">
+              <i class="ng-icon-calendar"></i>
+          {% endif %}
+          {{ field|add_class:"ng-form-control ng-width-1-1" }}
+          {% if field.name == "start_date" %}
+            </div>
+          {% endif %}
+      </div>
+    {% else %}
+      {% include "eventcalendar/_form_row.html" %}
+    {% endif %}
+  {% endfor %}
+  {{ form.fk_field.field }}
+</div>
+</div>
+<script type="text/javascript">
+(function($) {
+  $("#{{ formset.prefix|escapejs }}-group .inline-related").stackedFormset({
+    prefix: "{{ formset.prefix|escapejs }}",
+    deleteText: "{% filter escapejs %}{% trans "Remove" %}{% endfilter %}",
+    addText: "{% filter escapejs %}{% blocktrans with verbose_name=formset.opts.verbose_name|capfirst %}Add another {{ verbose_name }}{% endblocktrans %}{% endfilter %}"
+  });
+})($);
+</script>

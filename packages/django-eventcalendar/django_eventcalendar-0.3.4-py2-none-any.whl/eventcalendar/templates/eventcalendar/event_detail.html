@@ -1,0 +1,43 @@
+{% extends "eventcalendar/base.html" %}
+{% load i18n staticfiles %}
+
+{% block body %}
+
+<div class="event_actions" align="center">
+  <a href="{% url "eventcalendar-edit-event" event.slug %}">
+    <img border="0" src="{% static "schedule/img/pencil.png" %}" alt="{% trans "Change" %}"/>
+  </a>
+  &nbsp;
+  <a href="{% url "eventcalendar-delete-event" event.slug %}">
+    <img border="0" src="{% static "schedule/img/delete.png" %}" alt="{% trans "Delete" %}"/>
+  </a>
+</div>
+<h1>{{event.title}}</h1>
+{% if event.description %}
+<h3>{% trans "Description" %}</h3>
+<p>{{event.description}}</p>
+{% endif %}
+<h3>Category</h3>
+<p>{{ event.category }}</p>
+{% if event.venue %}
+<h3>Location</h3>
+<p>{{ event.venue }}</p>
+{% elif event.raw_location %}
+<h3>Location</h3>
+<p>{{ event.raw_location }}</p>
+{% endif %}
+<h3>Age range</h3>
+<p>{{ event.age_range }}</p>
+{% if event.more_info_url %}
+<p><a href="{{ event.more_info_url }}" title="click here for more information">More Information</a></p>
+{% endif %}
+{% if event.ticket_url %}
+<p><a href="{{ event.ticket_url }}" title="click here for ticketing information">Ticket Information</a></p>
+{% endif %}
+{% if event.price_info.keys %}
+    <h3>Pricing information</h3>
+    <ul>{% for key,val in event.price_info.items %}
+        <li>{{ key }}: {{ val}}</li>
+    {% endfor %}</ul>
+{% endif %}
+{% endblock %}

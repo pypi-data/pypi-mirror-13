@@ -1,0 +1,20 @@
+{% extends "eventcalendar/base.html" %}
+{% load i18n %}
+
+{% block body %}
+    <div class="ng-width-medium-1-2 ng-container-center">
+        <div class="ng-panel ng-panel-box">
+            <form action="" class="ng-form" method="post">{% csrf_token %}
+                <h3 class="ng-panel-title">{% trans "Delete" %}</h3>
+
+                {% blocktrans %}Are you sure that you really want to delete &lsquo;{{ object }}&rsquo;?{% endblocktrans %}
+
+                <div class="ng-form-row ng-margin-top">
+                    <input type="submit" class="ng-button ng-button-danger ng-float-right ng-margin-left" value="{% trans "Yes" %}" />
+                    <a href="{% url "eventcalendar-edit-event" slug=object.slug %}" class="ng-button ng-float-right">{% trans "No" %}</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+{% endblock %}
