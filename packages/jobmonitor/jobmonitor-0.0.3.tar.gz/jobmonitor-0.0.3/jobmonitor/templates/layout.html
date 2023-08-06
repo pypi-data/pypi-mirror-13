@@ -1,0 +1,79 @@
+{#
+  Main layout template for the application.
+  Defines the overall HTML framework, and includes JobMonitor stylesheets and javascripts.
+  Extending templates have access to the following blocks:
+
+  * `stylesheets` - Extra stylesheets <link> tags in the header, after all JobMonitor stylesheets
+  * `navbartop` - Top navigation bar
+  * `maincontent` - Main content body below the navigation bar
+  * `javascripts`  Extra javascripts just before the closing <body> tag, after all JobMonitor javascripts
+
+  They also have access to the helpers defined in _helpers.html, as this templates includes that file.
+#}
+{% from "_helpers.html" import stylesheet_tag, javascript_tag, list_link_tag %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+
+  <title>{{ config['APP_NAME'] }}</title>
+  <meta name="description" content="{{ config['APP_DESCRIPTION'] }}">
+  <!--
+    Favicon from the Fugue set, released under Creative Commons Attribution 3.0 License.
+    http://p.yusukekamiyamane.com/
+  -->
+  <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  {{ stylesheet_tag('lib/bootstrap.min', blueprint='catchall') }}
+  {{ stylesheet_tag('jobmonitor', blueprint='catchall') }}
+  {% block stylesheets %}{% endblock %}
+</head>
+<body>
+  <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+    <div class="container-fluid">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="/">{{ config['APP_NAME'] }}</a>
+      </div>
+      <div class="navbar-collapse collapse">
+        <ul class="nav navbar-nav navbar-right">
+          {% block navtopbar %}{% endblock %}
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="container-fluid">
+    {% block maincontainer %}{% endblock %}
+  </div>
+  <!-- jQuery for AJAX calls and DOM manipulation. -->
+  {{ javascript_tag('lib/jquery.min', blueprint='catchall') }}
+  <!-- Bootstrap.js for Bootstrap interactivity. -->
+  {{ javascript_tag('lib/bootstrap.min', blueprint='catchall') }}
+  <!-- D3 for plotting -->
+  {{ javascript_tag('lib/d3.min', blueprint='catchall') }}
+  <!-- D3 charts for nice D3 charting -->
+  {{ javascript_tag('lib/d3.chart.min', blueprint='catchall') }}
+  <!-- Our own D3 chart definitions (https://github.com/alexpearce/histograms) -->
+  {{ javascript_tag('lib/d3.chart.histograms.min', blueprint='catchall') }}
+  <!-- Loading indicators with Spin.js -->
+  {{ javascript_tag('lib/spin.min', blueprint='catchall') }}
+  <!-- App JS. -->
+  {{ javascript_tag('jobmonitor', blueprint='catchall') }}
+  <script>
+    // Strings referring to page-specific modules in the jobmonitor.js module.
+    // The active_page var is formatted as parent_name/child_name, but the JobMonitor
+    // module expects parentName/childName, so let's format it here.
+    var activePage = '{{ g.active_page }}'.replace(/_([a-z])/g, function(match, char) {
+      return char.toUpperCase();
+    });
+  </script>
+  {% block javascripts %}{% endblock %}
+</body>
+</html>
