@@ -1,0 +1,86 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xml:lang="en"
+      xmlns:tal="http://xml.zope.org/namespaces/tal"
+      xmlns:metal="http://xml.zope.org/namespaces/metal"
+      xmlns:i18n="http://xml.zope.org/namespaces/i18n"
+      lang="en"
+      metal:use-macro="context/main_template/macros/master"
+      i18n:domain="ps.plone.mls"
+      tal:omit-tag="">
+  <body>
+    <metal:main fill-slot="main" >
+      <tal:pageload tal:condition="not:ajax_load">
+        <article class="listing-summary"
+          tal:define="batch view/batching | nothing;
+                      page_url view/view_url | nothing;"
+          tal:condition="view/available">
+
+          <div id="viewlet-above-content-title" tal:content="structure provider:plone.abovecontenttitle" />
+          <hgroup>
+            <h1 class="documentFirstHeading" i18n:translate="">Listings</h1>
+          </hgroup>
+          <div id="viewlet-below-content-title" tal:content="structure provider:plone.belowcontenttitle" />
+
+          <div metal:use-macro="context/@@ps.plone.mls.macros/listing_results">Show list of listings.</div>
+
+          <div id="viewlet-above-content-body" tal:content="structure provider:plone.abovecontentbody" />
+          <div id="viewlet-below-content-body" tal:content="structure provider:plone.belowcontentbody" />
+        </article>
+      </tal:pageload>
+      <tal:ajaxload tal:condition="ajax_load">
+        <article class="listing-summary"
+          tal:define="batch view/batching | nothing;
+                      page_url view/view_url | nothing;"
+          tal:condition="view/available">
+          <tal:listings tal:condition="batch | nothing">
+            <tal:listing tal:repeat="listing batch">
+            <div class="tileItem visualIEFloatFix"
+                tal:define="mls_id listing/id/value|nothing;
+                            listingtype python:mls_id[0] + mls_id[1];"
+                tal:attributes="class string:tileItem visualIEFloatFix ${listingtype}">
+              <div class="image_row">
+                <figure tal:define="image listing/lead_image | nothing">
+                  <a href=""
+                    tal:attributes="href string:${page_url}${listing/id/value};
+                                title listing/title/value"><img src="" alt=""
+                    tal:condition="image"
+                    tal:attributes="src image" /><img
+                    tal:condition="not:image" alt="" title=""
+                    src="++resource++plone.mls.listing.images/no-image.png" /></a>
+                  <figcaption>
+                    <small><span tal:replace="listing/title/value">[Caption]</span></small>
+                  </figcaption>
+                </figure>
+
+              <div class="tileHeadline"><a href="" class="summary url"
+                tal:attributes="href string:${page_url}${listing/id/value}"><span
+                tal:replace="listing/title/value">[Listing Title]</span></a></div>
+            </div>
+            <div class="data_row">
+              <div class="price"
+                tal:define="item listing/price | nothing"
+                tal:condition="item"
+                tal:content="item/value" />
+              <div class="lot_size"
+                tal:define="item listing/lot_size | nothing"
+                tal:condition="item"
+                tal:content="structure item/value"
+                />
+              <div class="beds"
+                tal:define="item listing/rooms_beds | nothing"
+                tal:condition="item"
+                tal:content="structure item/value" />
+              <div class="baths"
+                tal:define="item listing/rooms_baths | nothing"
+                tal:condition="item"
+                tal:content="item/value" />
+            </div>
+          <div class="visualClear"></div>
+        </div>
+        </tal:listing>
+      </tal:listings>
+        </article>
+      </tal:ajaxload>
+    </metal:main>
+  </body>
+</html>

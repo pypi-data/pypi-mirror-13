@@ -1,0 +1,83 @@
+<configure
+    xmlns="http://namespaces.zope.org/zope"
+    xmlns:browser="http://namespaces.zope.org/browser"
+    i18n_domain="ps.plone.mls">
+
+  <!-- Include packages and files. -->
+  <!-- =========================== -->
+  <include package=".developments" />
+  <include package=".listings" />
+
+
+  <!-- Browser Resources. -->
+  <!-- ================== -->
+  <browser:resourceDirectory
+      directory="static"
+      layer=".interfaces.IPloneMLSLayer"
+      name="ps.plone.mls"
+      />
+
+
+  <!-- Traversing Adapter. -->
+  <!-- =================== -->
+
+  <!-- Basic Development Traverser. -->
+  <adapter
+      factory=".traversal.DevelopmentTraverser"
+      permission="zope2.View"
+      />
+
+  <!-- Basic Listing Traverser. -->
+  <adapter
+      factory=".traversal.ListingTraverser"
+      permission="zope2.View"
+      />
+
+  <!-- Featured Listings specific Traverser. -->
+  <adapter
+      factory=".traversal.FeaturedListingsTraverser"
+      permission="zope2.View"
+      />
+
+
+  <!-- Breadcrumb Navigation. -->
+  <!-- ====================== -->
+  <browser:page
+      allowed_attributes="breadcrumbs"
+      class=".navigation.DevelopmentDetailsNavigationBreadcrumbs"
+      for="ps.plone.mls.interfaces.IDevelopmentTraversable"
+      layer=".interfaces.IPloneMLSLayer"
+      name="breadcrumbs_view"
+      permission="zope.Public"
+      />
+
+  <browser:page
+      allowed_attributes="breadcrumbs"
+      class=".navigation.ListingDetailsNavigationBreadcrumbs"
+      for="ps.plone.mls.interfaces.IListingTraversable"
+      layer=".interfaces.IPloneMLSLayer"
+      name="breadcrumbs_view"
+      permission="zope.Public"
+      />
+
+  <browser:page
+      for="*"
+      name="ps.plone.mls.macros"
+      template="templates/macros.pt"
+      permission="zope2.View"
+      />
+
+
+  <!-- Custom viewlets. -->
+  <!-- ================ -->
+
+  <!-- Render the browser title -->
+  <browser:viewlet
+      name="ps.plone.htmlhead.title"
+      manager="plone.app.layout.viewlets.interfaces.IHtmlHead"
+      class=".viewlets.TitleViewlet"
+      permission="zope2.View"
+      />
+
+
+</configure>

@@ -1,0 +1,424 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xml:lang="en"
+      xmlns:tal="http://xml.zope.org/namespaces/tal"
+      xmlns:metal="http://xml.zope.org/namespaces/metal"
+      xmlns:i18n="http://xml.zope.org/namespaces/i18n"
+      lang="en"
+      metal:use-macro="context/main_template/macros/master"
+      i18n:domain="ps.plone.mls"
+      tal:omit-tag="">
+  <head>
+    <metal:baseslot fill-slot="base"
+        tal:define="item view/item | nothing;
+                    id item/id/value | nothing;
+                    base_link string:${plone_view/renderBase};
+                    seperator python: '' if base_link.endswith('/') else '/';
+                    self_link string:${plone_view/renderBase}${seperator}${id};">
+      <base tal:attributes="href self_link" /><!--[if lt IE 7]></base><![endif]-->
+    </metal:baseslot>
+  </head>
+
+  <body>
+    <metal:main fill-slot="main">
+      <div class="anchorlink"
+        tal:condition="view/contact_link | nothing">
+        <a id="contact-us"
+          href="#quick_form" i18n:translate="">Contact us</a>
+      </div>
+      <article class="mls detail development"
+           metal:define-macro="main"
+           tal:define="item view/item | nothing;
+                       images item/pictures | nothing;
+                       title item/title/value | nothing;
+                       id item/id/value | nothing;
+                       base_link string:${plone_view/renderBase};
+                       seperator python: '' if base_link.endswith('/') else '/';
+                       self_link string:${plone_view/renderBase}${seperator}${id};
+                       amenities item/amenities_order/value | nothing;
+                       amenities_dict item/amenities_lookup/value | nothing;
+                       amenities_count python:len(amenities) if amenities is not None else None;">
+
+        <div id="viewlet-above-content-title" tal:content="structure provider:plone.abovecontenttitle" tal:condition="not:ajax_load" />
+        <div id="viewlet-below-content-title" tal:content="structure provider:plone.belowcontenttitle" tal:condition="not:ajax_load" />
+
+        <div id="viewlet-above-content-body" tal:content="structure provider:plone.abovecontentbody" tal:condition="not:ajax_load" />
+
+        <div id="content-core" class="development_details" tal:condition="item">
+          <section class="development__amenities" tal:condition="amenities">
+            <tal:amenity tal:repeat="amenity amenities">
+
+              <span aria-hidden="true"
+                  tal:define="amentity_label python:amenities_dict[amenity]"
+                  tal:attributes="class string:amenitiesicon icon_re-${amenity} count_${amenities_count};
+                                  aria-label amentity_label;
+                                  title amentity_label;" >
+              </span>
+            </tal:amenity>
+          </section>
+
+          <section class="development__overview"
+                  tal:define="description_text item/description/value | nothing;
+                              text item/long_description/value | nothing;
+                              lead_image view/lead_image | nothing;"
+                  tal:condition="python: description_text or text or lead_image">
+            <h2 class="" i18n:translate="">Overview</h2>
+            <div class="documentDescription" tal:condition="description_text">
+              <tal:descriptionline tal:repeat="line python:description_text.splitlines()">
+                <p tal:content="line">[Description Line]</p>
+              </tal:descriptionline>
+            </div>
+
+            <div class="overview__long_description">
+              <!-- use lead image next to description-->
+              <picture class="lead_image"
+                tal:define="lead_href python: lead_image.get('preview') if lead_image is not None else None;
+                            lead_title lead_image/title | nothing;
+                            lead_alt lead_image/description| nothing;"
+                tal:condition="lead_image" >
+                  <img
+                    tal:attributes="src lead_href;
+                                  alt lead_alt;
+                                  title lead_title" />
+                  <span class="caption"
+                    tal:condition="lead_title"
+                    tal:content="lead_title" />
+              </picture>
+              <tal:descriptionline tal:repeat="line python:text.splitlines()" tal:condition="text">
+                <p tal:content="line">[Description Line]</p>
+              </tal:descriptionline>
+            </div>
+            <div class="visualClear" />
+          </section>
+
+          <section class="development__groups"
+              tal:define="groups item/groups | nothing"
+              tal:condition="groups">
+            <h2 i18n:translate="">Properties Available</h2>
+            <ul id="group-listings">
+              <tal:groups tal:repeat="group groups">
+                <tal:group tal:define="group_id group/id/value | nothing;
+                                  group_listings_link string:${self_link}/listings?group=${group_id}&amp;ajax_load=1">
+                  <li tal:attributes="id string:fieldsetlegend-${group_id};">
+                    <a class="tab_link"
+                        tal:content="group/title/value | string:-"
+                        tal:attributes="href group_listings_link" />
+                  </li>
+                </tal:group>
+              </tal:groups>
+            </ul>
+            <div class="tab_content">
+              <tal:groups tal:repeat="group groups">
+                <div></div>
+              </tal:groups>
+            </div>
+            <script>
+              $(function() {
+                $("#group-listings").tabs("div.tab_content > div", {
+                  effect: 'fade',
+                  onBeforeClick: function(event, i) {
+                  // get the pane to be opened
+                  var pane = this.getPanes().eq(i);
+                    // only load once.
+                    if (pane.is(":empty")) {
+                    // load it with a page specified in the tab's href
+                    content_raw= this.getTabs().eq(i).attr("href");
+                    content_selected= content_raw.concat(" #content .listing-summary")
+                    pane.load(content_selected);
+                    }
+                  }
+                });
+              });
+             </script>
+          </section>
+
+          <section class="development__projectmap"
+              tal:define="projectmap item/project_map_embedding | nothing"
+              tal:condition="projectmap">
+            <h2 i18n:translate="">Project Map</h2>
+            <div class="projectmap"
+                  tal:content="structure projectmap/value"></div>
+            <div class="pdf_download"
+                tal:define="file item/project_map_pdf | nothing;
+                            file_href file/value | nothing;
+                            download_title string:${title}"
+                tal:condition="file_href">
+                <a class="download text"
+                  tal:attributes="href file_href;
+                                  download download_title;
+                                  target string:_blank;"
+                  i18n:translate="">Download PDF</a>
+                <a class="download icon"
+                  tal:attributes="href file_href;
+                                  download download_title;
+                                  target string:_blank;">
+                  <img src="++resource++ps.plone.mls/icons/pdf.png" />
+                </a>
+
+            </div>
+          </section>
+
+          <section class="development__gallery"
+              tal:condition="images"
+              tal:define="lead_image view/lead_image | nothing;
+                          use_fotorama view/use_fotorama | nothing;
+                          use_galleria view/use_galleria | nothing;">
+            <h2 i18n:translate="">Gallery</h2>
+            <tal:leadimage tal:condition="python: not images and lead_image">
+              <a href="" rel="prettyPhoto[listing]" class="preview"
+                 tal:condition="lead_image"
+                 tal:attributes="href lead_image/large;
+                                 title lead_image/title | nothing;"><img src=""
+                 tal:attributes="src lead_image/preview" /></a>
+            </tal:leadimage>
+
+            <tal:fotorama tal:condition="python: images and use_fotorama">
+              <div class="fotorama"
+                   data-allow-full-screen="native"
+                   data-autoplay="true"
+                   data-loop="true"
+                   data-nav="thumbs"
+                   data-ratio="3/2"
+                   data-width="100%">
+                <tal:images tal:repeat="image images">
+                  <a href="" data-caption=""
+                     tal:define="caption image/title;
+                                 description image/description | nothing;
+                                 caption python: description and ' - '.join([caption, description]) or caption"
+                     tal:attributes="href python: image.get('url');
+                                     data-caption caption"><img src="" alt=""
+                     tal:attributes="src python: image.get('thumb');
+                                     title image/title;
+                                     alt image/description;" /></a>
+                </tal:images>
+              </div>
+              <script type="text/javascript">
+                jQuery(function(jq) {
+                  jq('#listing-images > div').addClass('fotorama');
+                  jq('.fotorama').fotorama();
+                });
+              </script>
+            </tal:fotorama>
+
+            <tal:galleria tal:condition="python: images and use_galleria">
+              <ul class="thumbnails"
+                  tal:condition="images" style="list-style: none; margin-left: 0;">
+                <li tal:repeat="image images" style="display: inline-block; padding: 0.5em;"><a href="" rel="prettyPhoto[gallery]"
+                    tal:attributes="href image/get;
+                                    title image/title | nothing;"><img src="" alt="" title=""
+                    tal:attributes="src python: image.get('thumb');
+                                    alt image/title | nothing;
+                                    title image/description | nothing" /></a></li>
+              </ul>
+              <script type="text/javascript" src="++resource++plone.mls.listing.javascript/galleria-1.2.2.js"></script>
+              <script type="text/javascript" src="++resource++plone.mls.listing.javascript/classic/galleria.classic.min.js"></script>
+            </tal:galleria>
+          </section>
+          <section class="development__video_embedding"
+                  tal:define="video item/video_embedding | nothing"
+                  tal:condition="video">
+            <h2 i18n:translate="">Video</h2>
+            <div class="video"
+                  tal:content="structure video/value"></div>
+          </section>
+
+          <section class="development__area"
+              tal:define="text item/area_description/value | nothing"
+              tal:condition="text">
+            <h2 i18n:translate="">About the Area</h2>
+            <picture class="area__picture"
+                tal:define="image item/area_picture | nothing"
+                tal:condition="image"><a href="" rel="prettyPhoto[item]"
+                tal:attributes="href image/value"><img src="" title="" alt=""
+                tal:attributes="src image/value;
+                                title title;
+                                alt title;" /></a></picture>
+            <div class="area__description">
+              <tal:descriptionline tal:repeat="line python:text.splitlines()">
+                    <p tal:content="line">[Description Line]</p>
+              </tal:descriptionline>
+            </div>
+          </section>
+
+          <section class="development__map"
+               tal:define="js view/javascript_map | nothing"
+               tal:condition="js">
+            <h2 i18n:translate="">Map &amp; Distances</h2>
+            <div class="map__canvas" id="map"
+                i18n:translate=""
+                tal:attributes="id view/map_id">Please enable JavaScript to show the Map.</div>
+            <script type="text/javascript" tal:content="structure js"></script>
+          </section>
+
+          <section class="development__distances"
+            tal:define="distance_class view/distance_class;
+                        distance_available python: None if distance_class=='count_0' else 1"
+            tal:attributes="class string:development__distances ${distance_class}"
+            tal:condition="distance_available">
+            <div class="distanceicon"
+              tal:define="name item/airport_name/value | nothing;
+                          distance item/airport_distance/value | nothing;"
+              tal:condition="python: name or distance">
+              <span aria-hidden="true"
+                  class="icon icon_re-airport"
+                  tal:attributes="title python: view.get_field_label('airport_name')" ></span>
+              <h5 tal:content="python: view.get_field_label('airport_name')">[Closest Airport]</h5>
+              <span tal:content="python: view.format_distance(name, distance)" ></span>
+            </div>
+            <div class="distanceicon"
+              tal:define="name item/hospital_name/value | nothing;
+                          distance item/hospital_distance/value | nothing;"
+              tal:condition="python: name or distance">
+              <span aria-hidden="true" class="icon icon_re-hospital"
+                    tal:attributes="title python: view.get_field_label('hospital_name')" ></span>
+              <h5 tal:content="python: view.get_field_label('hospital_name')">[Closest Hospital]</h5>
+              <span tal:content="python: view.format_distance(name, distance)" ></span>
+            </div>
+            <div class="distanceicon"
+              tal:define="name item/shopping_name/value | nothing;
+                          distance item/shopping_distance/value | nothing;"
+              tal:condition="python: name or distance">
+              <span aria-hidden="true"
+                  class="icon icon_re-mall"
+                  tal:attributes="title python: view.get_field_label('shopping_name')" ></span>
+              <h5 tal:content="python: view.get_field_label('shopping_name')">[Closest Shopping Center]</h5>
+              <span tal:content="python: view.format_distance(name, distance)" ></span>
+            </div>
+            <div class="distanceicon"
+              tal:define="name item/bank_name/value | nothing;
+                          distance item/bank_distance/value | nothing;"
+              tal:condition="python: name or distance">
+              <span aria-hidden="true"
+                  class="icon icon_re-bank"
+                  tal:attributes="title python: view.get_field_label('bank_name')" ></span>
+              <h5 tal:content="python: view.get_field_label('bank_name')">[Closest Bank/ATM]</h5>
+              <span tal:content="python: view.format_distance(name, distance)" ></span>
+            </div>
+            <div class="distanceicon"
+              tal:define="name item/gas_station_name/value | nothing;
+                          distance item/gas_station_distance/value | nothing;"
+              tal:condition="python: name or distance">
+              <span aria-hidden="true"
+                  class="icon icon_re-gas-station"
+                  tal:attributes="title python: view.get_field_label('gas_station_name')"></span>
+              <h5 tal:content="python: view.get_field_label('gas_station_name')">[Closest Gas Station]</h5>
+              <span tal:content="python: view.format_distance(name, distance)" ></span>
+            </div>
+          </section>
+          <section class="development__phases"
+              tal:define="phases item/phases | nothing"
+              tal:condition="phases">
+            <h2 i18n:translate="">Phases</h2>
+            <table class="listing phases__table">
+              <thead
+                  tal:define="titles view/titles_for_phases | nothing"
+                  tal:condition="titles">
+                <tr>
+                  <th class="title" tal:content="titles/title | nothing">[Phase Name]</th>
+                  <th class="units" tal:content="titles/units | nothing">[Number of Units]</th>
+                  <th class="status" tal:content="titles/status | nothing">[Status]</th>
+                  <th class="completion_date" tal:content="titles/completion_date | nothing">[Completion Date]</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr tal:repeat="phase phases">
+                  <tal:phases>
+                    <td class="title" tal:content="phase/title/value | string:-">[Title]</td>
+                    <td class="units" tal:content="phase/units/value | string:-">[Units]</td>
+                    <td class="status" tal:content="phase/status/value | string:-">[Status]</td>
+                    <td class="completion_date" tal:content="phase/completion_date/value | string:-">[Completion Date]</td>
+                  </tal:phases>
+                </tr>
+              </tbody>
+            </table>
+          </section>
+          <section class="development__representatives"
+              tal:define="representatives item/representatives | nothing"
+              tal:condition="representatives">
+            <h2 i18n:translate="">Meet the Developers</h2>
+            <div class="visualClear representatives__item"
+                tal:repeat="agent representatives">
+
+              <tal:agent
+                  tal:define="avatar agent/avatar | nothing;
+                              name agent/name | nothing;"
+                  tal:condition="name">
+                <picture class="representative__avatar"
+                    tal:condition="avatar"><a href="" rel="prettyPhoto[item]"
+                    tal:attributes="href avatar/value"><img src="" title="" alt=""
+                    tal:attributes="src avatar/value;
+                                    title name/value;
+                                    alt name/value;" /></a></picture>
+                <h3 class="representative__name"
+                    tal:content="name/value">[Developer Name]</h3>
+                <p class="representative__user_title"
+                    tal:define="user_title agent/user_title/value | nothing"
+                    tal:condition="user_title"
+                    tal:content="user_title">[Developer Title]</p>
+                <div class="representative__personal_description"
+                      tal:define="text agent/personal_description/value | nothing"
+                      tal:condition="text">
+                  <tal:descriptionline tal:repeat="line python:text.splitlines()">
+                    <p tal:content="line">[Description Line]</p>
+                  </tal:descriptionline>
+                </div>
+              </tal:agent>
+            </div>
+          </section>
+
+          <section class="development__contact"
+              itemscope="itemscope" itemtype="http://schema.org/LocalBusiness"
+              tal:condition="view/show_section_contact | nothing">
+            <h2 i18n:translate="">Contact</h2>
+            <a name="quick_form" tal:condition="view/contact_link | nothing"></a>
+            <tal:form
+                tal:define="form view/contact_form"
+                tal:condition="form">
+              <form action=""
+                  tal:condition="not: form/already_sent"
+                  tal:replace="structure form/render"></form>
+            </tal:form>
+            <div class="development__vcard"
+                tal:define="contact_info view/contact_info | nothing;
+                            agency contact_info/agency | nothing;
+                            agent contact_info/agent | nothing;
+                            name agency/title | nothing;
+                            description agency/description | nothing;
+                            address agency/address | nothing;
+                            office_phone agency/office_phone | nothing;
+                            office_fax agency/office_fax | nothing;
+                            website agency/website | nothing;
+                            email agency/email | nothing;"
+                tal:condition="contact_info">
+              <h3 itemprop="name"
+                  tal:condition="name"
+                  tal:content="name/value">[Agency Name]</h3>
+              <p itemprop="description"
+                  tal:condition="description"
+                  tal:content="description/value">[Description]</p>
+
+              <address>
+                <div itemprop="address" itemscope="itemscope" itemtype="http://schema.org/PostalAddress" >
+                  <span itemprop="streetAddress"
+                    tal:condition="address"
+                    tal:content="address/value">[address]</span></div>
+                <div itemprop="telephone"
+                    tal:condition="office_phone"
+                    tal:content="office_phone/value">[office_phone]</div>
+                <div itemprop="faxNumber"
+                    tal:condition="office_fax"
+                    tal:content="office_fax/value">[office_fax]</div>
+                <div itemprop="url"
+                    tal:condition="website"><a href=""
+                    tal:content="website/value"
+                    tal:attributes="href website/value">[website]</a></div>
+                <div itemprop="email"
+                    tal:condition="email"
+                    tal:content="email/value">[email]</div>
+              </address>
+            </div>
+          </section>
+        </div>
+      </article>
+    </metal:main>
+  </body>
+</html>
