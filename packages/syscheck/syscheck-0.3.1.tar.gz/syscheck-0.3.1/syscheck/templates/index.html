@@ -1,0 +1,24 @@
+{% autoescape None %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ title }}</title>
+    <link href="{{ static_url('css/bootstrap.min.css') }}" rel="stylesheet">
+    <link href="{{ static_url('css/bootstrap-slate.min.css') }}" rel="stylesheet">
+    <link href="{{ static_url('css/syscheck.css') }}" rel="stylesheet">
+    <link href="{{ static_url('wrench-gear.png') }}" rel="icon" type="image/png">
+  </head>
+  <body>
+    <div class="container status-container">
+      {% for category in categories %}
+        {% module Category(monitor, category, columns) %}
+      {% end %}
+    </div>
+    <script type="text/javascript">
+     var CHECKERS = JSON.parse({{ json_encode(checkers) }});
+    </script>
+    <script src="{{ static_url('js/syscheck.js')}}"></script>
+  </body>
+</html>
