@@ -1,0 +1,25 @@
+description "{description}"
+author "{author}"
+start on filesystem and started docker
+stop on runlevel [!2345]
+respawn
+{envs}{respawnlimit}
+pre-start script
+  {dc} -f {file} up -d
+end script
+
+script
+  sleepWhileAppIsUp(){{
+    while docker ps --filter=name={name[0]} | grep -qF {name[0]} ; do
+      sleep 2
+    done
+  }}
+
+  sleepWhileAppIsUp
+end script
+
+post-stop script
+  if docker ps --filter=name={name[0]} | grep -qF {name[0]}; then
+    {dc} -f {file} stop
+  fi
+end script
